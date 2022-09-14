@@ -5,3 +5,4 @@ edition = "2021"
 
 [dependencies]
 byteorder = "1.4.3"
+regex = { version = "1.6.0", features = ["std"] }

@@ -207,8 +207,8 @@ impl FromReader<Self> for EntryStore {
 }
 
 impl DiskCache {
-  pub fn from_dir(path: &str) -> Result<Self> {
-    let cache_dir = Path::new(path).to_path_buf();
+  pub fn from_dir<P : AsRef<Path>>(path: P) -> Result<Self> {
+    let cache_dir = path.as_ref().to_path_buf();
     let cache_md = metadata(&cache_dir)?;
     if !cache_md.is_dir() {
       Err(Error::new(ErrorKind::InvalidInput, "Expected path is a directory"))
@@ -226,5 +226,10 @@ impl DiskCache {
         block_files
       })
     }
+  }
+
+  pub fn from_dir_str(path: &str) -> Result<Self> {
+    let path = Path::new(path);
+    Self::from_dir(path)
   }
 }
