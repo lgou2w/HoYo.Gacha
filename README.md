@@ -2,6 +2,8 @@
 
 A tool to get Genshin Impact gacha logs on PC.
 
+No need for a local proxy server. Just read the chromium disk cache file and request the api endpoint.
+
 ## Reference
 
 https://www.chromium.org/developers/design-documents/network-stack/disk-cache/
