@@ -1,3 +1,19 @@
-# Genshin Gacha
+# Genshin Gacha (WIP)
 
-TODO
+A tool to get Genshin Impact gacha logs on PC.
+
+## Reference
+
+https://www.chromium.org/developers/design-documents/network-stack/disk-cache/
+
+https://www.chromium.org/developers/design-documents/network-stack/disk-cache/disk-cache-v3
+
+https://github.com/chromium/chromium/blob/main/net/disk_cache/blockfile/disk_format_base.h
+
+https://github.com/chromium/chromium/blob/main/net/disk_cache/blockfile/disk_format.h
+
+https://github.com/libyal/dtformats/blob/main/documentation/Chrome%20Cache%20file%20format.asciidoc
+
+## License
+
+MIT
