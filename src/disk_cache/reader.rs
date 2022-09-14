@@ -209,7 +209,7 @@ impl FromReader<Self> for EntryStore {
 impl DiskCache {
   pub fn from_dir(path: &str) -> Result<Self> {
     let cache_dir = Path::new(path).to_path_buf();
-    let cache_md = metadata(path)?;
+    let cache_md = metadata(&cache_dir)?;
     if !cache_md.is_dir() {
       Err(Error::new(ErrorKind::InvalidInput, "Expected path is a directory"))
     } else {
