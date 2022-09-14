@@ -7,6 +7,8 @@
 
 无需任何本地代理服务器。只需读取 Chromium 磁盘缓存文件并请求 API 端点。
 
+> 我正在学习 Rust，代码设计可能存在很多问题。欢迎贡献和 PR。
+
 ## 参考
 
 https://www.chromium.org/developers/design-documents/network-stack/disk-cache/

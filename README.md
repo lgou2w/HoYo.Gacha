@@ -7,6 +7,8 @@ A tool to get `Genshin Impact` gacha logs on PC.
 
 No need for a local proxy server. Just read the chromium disk cache file and request the api endpoint.
 
+> I'm learning Rust, and there can be a lot of problems with code design. Contributions and pull requests are welcome.
+
 ## Reference
 
 https://www.chromium.org/developers/design-documents/network-stack/disk-cache/
