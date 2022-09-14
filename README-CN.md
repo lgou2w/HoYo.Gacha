@@ -1,13 +1,13 @@
-- **English**
-- [简体中文](README-CN.md)
+- [English](README.md)
+- **简体中文**
 
 # Genshin Gacha (WIP)
 
-A tool to get `Genshin Impact` gacha logs on PC.
+一个获取 PC 端 `原神` 祈愿记录的工具。
 
-No need for a local proxy server. Just read the chromium disk cache file and request the api endpoint.
+无需任何本地代理服务器。只需读取 Chromium 磁盘缓存文件并请求 API 端点。
 
-## Reference
+## 参考
 
 https://www.chromium.org/developers/design-documents/network-stack/disk-cache/
 
@@ -19,6 +19,6 @@ https://github.com/chromium/chromium/blob/main/net/disk_cache/blockfile/disk_for
 
 https://github.com/libyal/dtformats/blob/main/documentation/Chrome%20Cache%20file%20format.asciidoc
 
-## License
+## 协议
 
 MIT
