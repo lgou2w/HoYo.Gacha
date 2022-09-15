@@ -1,10 +1,11 @@
 extern crate byteorder;
+extern crate chrono;
 
 use std::fs::{File, metadata};
 use std::io::{BufReader, Error, ErrorKind, Read, Result};
 use std::path::Path;
 use byteorder::{ReadBytesExt, LittleEndian};
-use crate::disk_cache::addr::{CacheAddr, addr_is_initialized};
+use crate::disk_cache::addr::*;
 use crate::disk_cache::structs::*;
 
 pub trait FromReader<T> {
@@ -206,11 +207,31 @@ impl FromReader<Self> for EntryStore {
   }
 }
 
+fn windows_ticks_to_unix_timestamps(ticks: u64) -> (i64, u32) {
+  let seconds = ticks / 10_000_000 - 11_644_473_600;
+  let nano_seconds = ticks % 10_000_000;
+  (seconds as i64, nano_seconds as u32)
+}
+
+impl EntryStore {
+  pub fn get_creation_time_as_utc(&self) -> chrono::DateTime<chrono::Utc> {
+    let creation_time = self.creation_time;
+    let (seconds, nano_seconds) = windows_ticks_to_unix_timestamps(
+      // The creation time of the entry store must be multiplied by 10 for correct windows ticks
+      creation_time * 10
+    );
+    chrono::NaiveDateTime
+      ::from_timestamp(seconds, nano_seconds)
+      .and_local_timezone(chrono::Utc)
+      .unwrap()
+  }
+}
+
 impl DiskCache {
   pub fn from_dir<P : AsRef<Path>>(path: P) -> Result<Self> {
     let cache_dir = path.as_ref().to_path_buf();
-    let cache_md = metadata(&cache_dir)?;
-    if !cache_md.is_dir() {
+    let cache_dir_md = metadata(&cache_dir)?;
+    if !cache_dir_md.is_dir() {
       Err(Error::new(ErrorKind::InvalidInput, "Expected path is a directory"))
     } else {
       let index_file = IndexFile::from_file(cache_dir.join("index"))?;
@@ -231,5 +252,46 @@ impl DiskCache {
   pub fn from_dir_str(path: &str) -> Result<Self> {
     let path = Path::new(path);
     Self::from_dir(path)
+  }
+
+  fn read_data(&self, addr: CacheAddr) -> Result<&[u8]> {
+    if !addr_is_initialized(addr) {
+      return Err(Error::new(ErrorKind::InvalidInput, "Invalid address"))
+    }
+    if addr_is_separate_file(addr) {
+      // TODO: Read separate file data
+      return Err(Error::new(ErrorKind::Unsupported, "Separate file not implemented"))
+    }
+    // Always a block file
+    assert_eq!(addr_is_block_file(addr), true);
+    let file_number = addr_file_number(addr);
+    let block_size = addr_block_size(addr);
+    let num_blocks = addr_num_blocks(addr);
+    let offset = (addr_start_block(addr) * block_size) as usize;
+    let length = (block_size * num_blocks) as usize;
+    let data = &self.block_files[file_number as usize].data[offset .. (offset + length)];
+    Ok(data)
+  }
+
+  pub fn read_entry(&self, addr: CacheAddr) -> Result<EntryStore> {
+    let data = self.read_data(addr)?;
+    let entry = EntryStore::from_reader(data)?;
+    Ok(entry)
+  }
+
+  pub fn read_entry_key_as_url(&self, entry: &EntryStore) -> Result<String> {
+    if entry.long_key == 0 {
+      if entry.key_len <= BLOCK_KEY_SIZE as i32 {
+        let data = &entry.key[0 .. entry.key_len as usize];
+        Ok(String::from_utf8_lossy(data).to_string())
+      } else {
+        Ok(String::from_utf8_lossy(&*entry.key).to_string())
+      }
+    } else {
+      // Long key are stored in other block files, such as data_2
+      let long_key_data = self.read_data(entry.long_key)?;
+      let data = &long_key_data[0 .. entry.key_len as usize];
+      Ok(String::from_utf8_lossy(data).to_string())
+    }
   }
 }

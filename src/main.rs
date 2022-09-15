@@ -1,6 +1,8 @@
 mod disk_cache;
 mod genshin;
 
+use std::io::{Write, BufWriter};
+
 fn main() {
   println!("Genshin Gacha");
 
@@ -11,4 +13,16 @@ fn main() {
 
   assert_eq!(disk_cache.index_file.header.magic, disk_cache::structs::INDEX_MAGIC);
   assert_eq!(disk_cache.index_file.header.version, disk_cache::structs::INDEX_VERSION2_1);
+
+  // FIXME: DEBUG CODE
+  let file = std::fs::File::create("D:/ys_cache_tables.txt").unwrap();
+  let mut writer = BufWriter::new(file);
+
+  for addr in disk_cache.index_file.table.iter().cloned() {
+    let entry = disk_cache.read_entry(addr).unwrap();
+    let url = disk_cache.read_entry_key_as_url(&entry).unwrap();
+    let creation_time = entry.get_creation_time_as_utc().to_rfc3339_opts(chrono::SecondsFormat::Millis, true);
+    writer.write(format!("[{}] [{}] {}\n", addr, creation_time, url).as_bytes()).unwrap();
+  }
+  println!("done");
 }
