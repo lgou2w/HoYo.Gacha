@@ -24,7 +24,7 @@ pub fn find_recent_gacha_url() -> Result<(DateTime<Utc>, String)> {
     let creation_time = entry.get_creation_time_as_utc();
     let mut url = disk_cache.read_entry_key_as_url(&entry)?;
 
-    // These url start with '0/1/', only get the later part
+    // These url start with '1/0/', only get the later part
     if url.starts_with("1/0/") {
       url = url[4..].to_string();
     }
