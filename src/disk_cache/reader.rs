@@ -263,7 +263,6 @@ impl DiskCache {
       return Err(Error::new(ErrorKind::Unsupported, "Separate file not implemented"))
     }
     // Always a block file
-    assert_eq!(addr_is_block_file(addr), true);
     let file_number = addr_file_number(addr);
     let block_size = addr_block_size(addr);
     let num_blocks = addr_num_blocks(addr);
