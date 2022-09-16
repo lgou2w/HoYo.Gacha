@@ -23,4 +23,4 @@ https://github.com/libyal/dtformats/blob/main/documentation/Chrome%20Cache%20fil
 
 ## 协议
 
-MIT
+MIT OR Apache-2.0
