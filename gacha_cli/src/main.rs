@@ -7,10 +7,10 @@ use chrono::{Duration, Local, SecondsFormat};
 use gacha_url;
 
 fn cli() -> Command<'static> {
-  Command::new("genshin-gacha-cli")
-    .author("lgou2w <lgou2w@hotmail.com>")
-    .version("0.1.0")
-    .about("A tool to get Genshin Impact gacha logs.")
+  Command::new("Genshin Gacha CLI")
+    .author(env!("CARGO_PKG_AUTHORS"))
+    .version(env!("CARGO_PKG_VERSION"))
+    .about(env!("CARGO_PKG_DESCRIPTION"))
     .subcommand_required(true)
     .subcommand(
       Command::new("url")
