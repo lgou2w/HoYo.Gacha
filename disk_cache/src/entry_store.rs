@@ -67,7 +67,7 @@ impl EntryStore {
   pub fn from_block_file(block_file: &BlockFile, addr: CacheAddr) -> Result<Self> {
     if block_file.header.this_file != 1 {
       Err(Error::new(
-        ErrorKind::InvalidData,
+        ErrorKind::Unsupported,
         format!(
           "Entry store is only in data_1 block file. (Current file: {}, Expected: 1)",
           block_file.header.this_file
@@ -107,7 +107,7 @@ impl EntryStore {
 
     if block_file.header.this_file != 2 {
       Err(Error::new(
-        ErrorKind::InvalidData,
+        ErrorKind::Unsupported,
         format!(
           "Long key is only in data_2 block file. (Current file: {}, Expected: 2)",
           block_file.header.this_file
