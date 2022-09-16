@@ -1,32 +1,7 @@
-[package]
-name = "genshin-gacha"
-version = "0.1.0"
-edition = "2021"
-description = "A tool to get Genshin Impact gacha logs."
-homepage = "https://github.com/lgou2w/genshin-gacha"
-repository = "https://github.com/lgou2w/genshin-gacha"
-keywords = ["wish", "gacha", "genshin", "genshin-impact"]
-readme = "README.md"
-license = "MIT OR Apache-2.0"
-default-run = "genshin-gacha"
-
-[dependencies]
-byteorder = "1.4.3"
-chrono = { version = "0.4.22", features = ["std"] }
-clap = { version = "3.2.21", features = ["std"] }
-form_urlencoded = "1.1.0"
-regex = { version = "1.6.0", features = ["std"] }
-
-[[bin]]
-name = "genshin-gacha"
-path = "src/main.rs"
-
-[[bin]]
-name = "genshin-gacha-cli"
-path = "src/cli.rs"
-
-[profile.release]
-opt-level = 'z'
-lto = true
-codegen-units = 1
-panic = 'abort'
+[workspace]
+members = [
+  "disk_cache",
+  "genshin_path",
+  "gacha_url",
+  "gacha_cli",
+]
