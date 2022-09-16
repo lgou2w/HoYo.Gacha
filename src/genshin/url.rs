@@ -1,11 +1,14 @@
 extern crate chrono;
-extern crate regex;
+extern crate form_urlencoded;
 
+use std::collections::HashMap;
 use std::io::{Error, ErrorKind, Result};
 use chrono::{DateTime, Utc};
-use regex::Regex;
 use crate::disk_cache;
 use crate::genshin;
+
+const GACHA_URL_ENDPOINT: &'static str = "/event/gacha_info/api/getGachaLog?";
+const GACHA_URL_ENDPOINT_LEN: usize = GACHA_URL_ENDPOINT.len();
 
 pub fn find_recent_gacha_url() -> Result<(DateTime<Utc>, String)> {
   let genshin_data_dir = genshin::path::get_data_dir_path()?;
@@ -21,14 +24,19 @@ pub fn find_recent_gacha_url() -> Result<(DateTime<Utc>, String)> {
       continue;
     }
 
-    let creation_time = entry.get_creation_time_as_utc();
     let mut url = disk_cache.read_entry_key_as_url(&entry)?;
+
+    // Get only valid gacha url
+    if !url.contains(GACHA_URL_ENDPOINT) {
+      continue;
+    }
 
     // These url start with '1/0/', only get the later part
     if url.starts_with("1/0/") {
       url = url[4..].to_string();
     }
 
+    let creation_time = entry.get_creation_time_as_utc();
     records.push((creation_time, url));
   }
 
@@ -36,12 +44,14 @@ pub fn find_recent_gacha_url() -> Result<(DateTime<Utc>, String)> {
   records.sort_by(|a, b| b.0.cmp(&a.0));
 
   // Find first gacha url
-  let regex = Regex::new(r"(event/gacha_info/api/getGachaLog)").unwrap();
-  for record in records {
-    if regex.is_match(&record.1) {
-      return Ok(record)
-    }
+  match records.first() {
+    Some(record) => Ok(record.to_owned()),
+    None => Err(Error::new(ErrorKind::NotFound, "Gacha url not found"))
   }
+}
 
-  Err(Error::new(ErrorKind::NotFound, "Gacha url not found"))
+pub fn parse_gacha_url_queries(gacha_url: &String) -> HashMap<String, String> {
+  let start = gacha_url.find(GACHA_URL_ENDPOINT).expect("Invalid gacha url");
+  let query = &gacha_url[start + GACHA_URL_ENDPOINT_LEN..];
+  form_urlencoded::parse(query.as_bytes()).into_owned().collect()
 }
