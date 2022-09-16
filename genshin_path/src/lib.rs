@@ -1,10 +1,10 @@
 extern crate regex;
 
+use regex::Regex;
 use std::env::var;
 use std::fs::File;
 use std::io::{prelude::*, BufReader, Error, ErrorKind, Result};
 use std::path::{Path, PathBuf};
-use regex::Regex;
 
 pub fn get_output_log_path() -> Result<PathBuf> {
   let user_profile_env = var("USERPROFILE").unwrap();
@@ -24,7 +24,7 @@ pub fn get_output_log_path() -> Result<PathBuf> {
   Ok(output_log_path)
 }
 
-pub fn get_data_dir_path() -> Result<PathBuf> {
+pub fn get_game_data_dir_path() -> Result<PathBuf> {
   let output_log_path = get_output_log_path()?;
   let output_log_file = File::open(output_log_path)?;
 
@@ -40,6 +40,6 @@ pub fn get_data_dir_path() -> Result<PathBuf> {
 
   Err(Error::new(
     ErrorKind::NotFound,
-    "Genshin installation data directory not found"
+    "Genshin game installation data directory not found"
   ))
 }

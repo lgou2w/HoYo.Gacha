@@ -1,12 +1,10 @@
 extern crate clap;
 extern crate chrono;
 
-mod disk_cache;
-mod genshin;
-
 use std::io::ErrorKind;
 use clap::{arg, ArgMatches, Command};
 use chrono::{Duration, Local, SecondsFormat};
+use gacha_url;
 
 fn cli() -> Command<'static> {
   Command::new("genshin-gacha-cli")
@@ -30,7 +28,7 @@ fn main() {
 }
 
 fn get_genshin_gacha_url(sub_matches: &ArgMatches) {
-  let (creation_time, gacha_url) = match genshin::url::find_recent_gacha_url() {
+  let (creation_time, gacha_url) = match gacha_url::find_recent_gacha_url() {
     Ok(result) => result,
     Err(error) => {
       match error.kind() {
