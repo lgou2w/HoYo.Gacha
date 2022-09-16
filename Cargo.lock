@@ -103,6 +103,7 @@ dependencies = [
  "chrono",
  "clap",
  "gacha_url",
+ "genshin_path",
 ]
 
 [[package]]
@@ -112,7 +113,6 @@ dependencies = [
  "chrono",
  "disk_cache",
  "form_urlencoded",
- "genshin_path",
 ]
 
 [[package]]

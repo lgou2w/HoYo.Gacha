@@ -13,6 +13,7 @@ default-run = "genshin-gacha-cli"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+genshin_path = { version = "0.1.0", path = "../genshin_path" }
 gacha_url = { version = "0.1.0", path = "../gacha_url" }
 chrono = { version = "0.4.22", default-features = false, features = ["clock", "std"] }
 clap = { version = "3.2.21", default-features = false, features = ["std"] }

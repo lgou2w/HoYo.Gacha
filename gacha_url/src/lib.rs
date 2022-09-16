@@ -3,19 +3,17 @@ extern crate form_urlencoded;
 
 use std::collections::HashMap;
 use std::io::{Error, ErrorKind, Result};
+use std::path::PathBuf;
 use chrono::{DateTime, NaiveDateTime, Utc};
 use disk_cache::index_file::IndexFile;
 use disk_cache::block_file::BlockFile;
 use disk_cache::entry_store::EntryStore;
-use genshin_path;
 
 const GACHA_URL_ENDPOINT: &'static str = "/event/gacha_info/api/getGachaLog?";
 const GACHA_URL_ENDPOINT_LEN: usize = GACHA_URL_ENDPOINT.len();
 
-pub fn find_recent_gacha_url() -> Result<(DateTime<Utc>, String)> {
-  let genshin_data_dir = genshin_path::get_game_data_dir_path()?;
+pub fn find_recent_gacha_url(genshin_data_dir: PathBuf) -> Result<(DateTime<Utc>, String)> {
   let cache_dir = genshin_data_dir.join("webCaches/Cache/Cache_Data");
-
   let index_file = IndexFile::from_file(cache_dir.join("index"))?;
   let block_file1 = BlockFile::from_file(cache_dir.join("data_1"))?;
   let block_file2 = BlockFile::from_file(cache_dir.join("data_2"))?;

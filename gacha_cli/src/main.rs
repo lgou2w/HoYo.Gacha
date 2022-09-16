@@ -4,6 +4,7 @@ extern crate chrono;
 use std::io::ErrorKind;
 use clap::{arg, ArgMatches, Command};
 use chrono::{Duration, Local, SecondsFormat};
+use genshin_path;
 use gacha_url;
 
 fn cli() -> Command<'static> {
@@ -28,7 +29,8 @@ fn main() {
 }
 
 fn get_genshin_gacha_url(sub_matches: &ArgMatches) {
-  let (creation_time, gacha_url) = match gacha_url::find_recent_gacha_url() {
+  let genshin_data_dir = genshin_path::get_game_data_dir_path().unwrap();
+  let (creation_time, gacha_url) = match gacha_url::find_recent_gacha_url(genshin_data_dir) {
     Ok(result) => result,
     Err(error) => {
       match error.kind() {
