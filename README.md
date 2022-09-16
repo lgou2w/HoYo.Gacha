@@ -3,7 +3,7 @@
 
 # Genshin Gacha (WIP)
 
-A tool to get `Genshin Impact` gacha logs on PC.
+A tool to get `Genshin Impact` gacha logs.
 
 No need for a local proxy server. Just read the chromium disk cache file and request the api endpoint.
 
