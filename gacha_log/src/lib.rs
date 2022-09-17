@@ -40,14 +40,14 @@ pub struct GachaLog {
   pub data: Option<GachaLogData>
 }
 
-async fn fetch_gacha_log(client: &Client, url: &Url, gacha_type: &str, end_id: &str) -> GachaLog {
+async fn fetch_gacha_log(client: &Client, url: &Url, gacha_type: &str, end_id: String) -> GachaLog {
   client
     .get(url.as_str())
     .query(&[
       ("gacha_type", gacha_type.to_string()),
       ("page", String::from("1")),
       ("size", String::from("20")),
-      ("end_id", end_id.to_string())
+      ("end_id", end_id)
     ])
     .send()
     .await.unwrap()
@@ -83,7 +83,7 @@ pub async fn fetch_gacha_logs(gacha_url: &str, gacha_type: &str) -> Vec<GachaLog
       sleep(Duration::from_secs(3)).await;
     }
 
-    let gacha_log = fetch_gacha_log(&client, &url, gacha_type, &end_id).await;
+    let gacha_log = fetch_gacha_log(&client, &url, gacha_type, end_id).await;
     count = count + 1;
 
     if let Some(data) = gacha_log.data {

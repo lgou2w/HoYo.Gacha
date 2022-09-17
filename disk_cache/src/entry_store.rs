@@ -1,6 +1,7 @@
 extern crate byteorder;
 
 use byteorder::{ReadBytesExt, LittleEndian};
+use std::borrow::Cow;
 use std::io::{Error, ErrorKind, Read, Result};
 use crate::addr::CacheAddr;
 use crate::block_file::{BLOCK_KEY_SIZE, BlockFile};
@@ -84,7 +85,7 @@ impl EntryStore {
     self.long_key != 0
   }
 
-  pub fn get_url(&self) -> Result<String> {
+  pub fn get_url(&self) -> Result<Cow<'_, str>> {
     if self.is_long_url() {
       return Err(Error::new(
         ErrorKind::Unsupported,
@@ -94,13 +95,13 @@ impl EntryStore {
 
     if self.key_len <= BLOCK_KEY_SIZE as i32 {
       let data = &self.key[0..self.key_len as usize];
-      Ok(String::from_utf8_lossy(data).to_string())
+      Ok(String::from_utf8_lossy(data))
     } else {
-      Ok(String::from_utf8_lossy(&*self.key).to_string())
+      Ok(String::from_utf8_lossy(&*self.key))
     }
   }
 
-  pub fn get_long_url(&self, block_file: &BlockFile) -> Result<String> {
+  pub fn get_long_url<'a>(&self, block_file: &'a BlockFile) -> Result<Cow<'a, str>> {
     if !self.is_long_url() {
       return Err(Error::new(ErrorKind::Unsupported, "Entry store is a short key"))
     }
@@ -116,7 +117,7 @@ impl EntryStore {
     } else {
       let long_key_data = block_file.read_data(self.long_key)?;
       let data = &long_key_data[0..self.key_len as usize];
-      Ok(String::from_utf8_lossy(data).to_string())
+      Ok(String::from_utf8_lossy(data))
     }
   }
 }

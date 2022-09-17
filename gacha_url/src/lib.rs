@@ -23,12 +23,14 @@ pub fn find_recent_gacha_url(genshin_data_dir: PathBuf) -> Result<(DateTime<Utc>
       continue;
     }
 
-    let mut url = entry.get_long_url(&block_file2)?;
+    let url = entry.get_long_url(&block_file2)?;
 
     // Get only valid gacha url
     if !url.contains("/event/gacha_info/api/getGachaLog?") {
       continue;
     }
+
+    let mut url = url.to_string();
 
     // These url start with '1/0/', only get the later part
     if url.starts_with("1/0/") {
