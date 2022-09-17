@@ -1,16 +1,11 @@
 extern crate chrono;
-extern crate form_urlencoded;
 
-use std::collections::HashMap;
 use std::io::{Error, ErrorKind, Result};
 use std::path::PathBuf;
 use chrono::{DateTime, NaiveDateTime, Utc};
 use disk_cache::index_file::IndexFile;
 use disk_cache::block_file::BlockFile;
 use disk_cache::entry_store::EntryStore;
-
-const GACHA_URL_ENDPOINT: &'static str = "/event/gacha_info/api/getGachaLog?";
-const GACHA_URL_ENDPOINT_LEN: usize = GACHA_URL_ENDPOINT.len();
 
 pub fn find_recent_gacha_url(genshin_data_dir: PathBuf) -> Result<(DateTime<Utc>, String)> {
   let cache_dir = genshin_data_dir.join("webCaches/Cache/Cache_Data");
@@ -31,7 +26,7 @@ pub fn find_recent_gacha_url(genshin_data_dir: PathBuf) -> Result<(DateTime<Utc>
     let mut url = entry.get_long_url(&block_file2)?;
 
     // Get only valid gacha url
-    if !url.contains(GACHA_URL_ENDPOINT) {
+    if !url.contains("/event/gacha_info/api/getGachaLog?") {
       continue;
     }
 
@@ -52,12 +47,6 @@ pub fn find_recent_gacha_url(genshin_data_dir: PathBuf) -> Result<(DateTime<Utc>
     Some(record) => Ok(record.to_owned()),
     None => Err(Error::new(ErrorKind::NotFound, "Gacha url not found"))
   }
-}
-
-pub fn parse_gacha_url_queries(gacha_url: &String) -> HashMap<String, String> {
-  let start = gacha_url.find(GACHA_URL_ENDPOINT).expect("Invalid gacha url");
-  let query = &gacha_url[start + GACHA_URL_ENDPOINT_LEN..];
-  form_urlencoded::parse(query.as_bytes()).into_owned().collect()
 }
 
 fn windows_ticks_to_unix_timestamps(ticks: u64) -> (i64, u32) {

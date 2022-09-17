@@ -3,5 +3,6 @@ members = [
   "disk_cache",
   "genshin_path",
   "gacha_url",
+  "gacha_log",
   "gacha_cli",
 ]
