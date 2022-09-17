@@ -208,8 +208,10 @@ version = "0.1.0"
 dependencies = [
  "chrono",
  "clap",
+ "gacha_log",
  "gacha_url",
  "genshin_path",
+ "tokio",
 ]
 
 [[package]]

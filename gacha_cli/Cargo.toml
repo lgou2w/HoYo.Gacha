@@ -15,8 +15,10 @@ default-run = "genshin-gacha-cli"
 [dependencies]
 genshin_path = { version = "0.1.0", path = "../genshin_path" }
 gacha_url = { version = "0.1.0", path = "../gacha_url" }
+gacha_log = { version = "0.1.0", path = "../gacha_log" }
 chrono = { version = "0.4.22", default-features = false, features = ["clock", "std"] }
 clap = { version = "3.2.21", default-features = false, features = ["std"] }
+tokio = { version = "1", features = ["full"] }
 
 [[bin]]
 name = "genshin-gacha-cli"
