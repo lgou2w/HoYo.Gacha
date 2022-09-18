@@ -236,6 +236,7 @@ dependencies = [
  "gacha_log",
  "gacha_url",
  "genshin_path",
+ "serde_json",
  "tokio",
 ]
 
