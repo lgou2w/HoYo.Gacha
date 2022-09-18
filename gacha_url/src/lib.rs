@@ -46,7 +46,7 @@ pub fn find_recent_gacha_url(genshin_data_dir: PathBuf) -> Result<(DateTime<Utc>
 
   // Find first gacha url
   match records.first() {
-    Some(record) => Ok(record.to_owned()),
+    Some(record) => Ok(record.clone()),
     None => Err(Error::new(ErrorKind::NotFound, "Gacha url not found"))
   }
 }
