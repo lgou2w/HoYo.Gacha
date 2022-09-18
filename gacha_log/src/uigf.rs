@@ -19,6 +19,7 @@ pub struct UIGFGachaLogEntry {
   pub gacha_type: String,
   pub id: String,
   pub item_id: Option<String>,
+  pub item_type: String,
   pub lang: Option<String>,
   pub name: String,
   pub rank_type: Option<String>,

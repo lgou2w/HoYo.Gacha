@@ -151,6 +151,7 @@ pub fn convert_to_uigf(
         gacha_type: entry.gacha_type.clone(),
         id: entry.id.clone(),
         item_id: Some(entry.item_id.clone()),
+        item_type: entry.item_type.clone(),
         lang: Some(entry.lang.clone()),
         name: entry.name.clone(),
         rank_type: Some(entry.rank_type.clone()),
