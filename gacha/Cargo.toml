@@ -1,16 +1,17 @@
 [package]
-name = "gacha_url"
+name = "gacha"
 version = "0.1.0"
 edition = "2021"
-description = "A tool to get Genshin Impact gacha logs."
-homepage = "https://github.com/lgou2w/genshin-gacha"
-repository = "https://github.com/lgou2w/genshin-gacha"
-keywords = ["wish", "gacha", "genshin", "genshin-impact"]
-readme = "../README.md"
-license = "MIT OR Apache-2.0"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 disk_cache = { version = "0.1.0", path = "../disk_cache" }
 chrono = { version = "0.4.22", default-features = false, features = ["std"] }
+form_urlencoded = "1.1.0"
+lazy_static = "1.4.0"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+simple_excel_writer = "0.2.0"
+ureq = { version = "2.5.0", features = ["json"] }
+url = "2.3.1"

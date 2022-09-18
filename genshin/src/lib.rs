@@ -1,6 +1,3 @@
-extern crate regex;
-
-use regex::Regex;
 use std::env::var;
 use std::fs::File;
 use std::io::{prelude::*, BufReader, Error, ErrorKind, Result};
@@ -21,6 +18,7 @@ pub fn get_output_log_path() -> Result<PathBuf> {
       ))
     }
   }
+
   Ok(output_log_path)
 }
 
@@ -28,13 +26,17 @@ pub fn get_game_data_dir_path() -> Result<PathBuf> {
   let output_log_path = get_output_log_path()?;
   let output_log_file = File::open(output_log_path)?;
 
-  let regex = Regex::new(r"(\w:/.+(GenshinImpact_Data|YuanShen_Data))").unwrap();
   let reader = BufReader::new(output_log_file);
   for line in reader.lines() {
     let line = line.unwrap();
-    if let Some(caps) = regex.captures(&line) {
-      let value = caps.get(1).unwrap().as_str();
-      return Ok(Path::new(value).to_owned())
+    if line.contains("/GenshinImpact_Data/") || line.contains("/YuanShen_Data/") {
+      if let Some(colon) = line.find(':') {
+        if let Some(end) = line.find("_Data/") {
+          // -> X:/Foo/Bar/(GenshinImpact|YuanShen)_Data/
+          let path = &line[colon - 1..end + 6];
+          return Ok(Path::new(path).to_path_buf());
+        }
+      }
     }
   }
 

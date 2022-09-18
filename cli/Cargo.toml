@@ -1,5 +1,5 @@
 [package]
-name = "gacha_cli"
+name = "cli"
 version = "0.1.0"
 edition = "2021"
 description = "A tool to get Genshin Impact gacha logs."
@@ -13,13 +13,10 @@ default-run = "genshin-gacha-cli"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-genshin_path = { version = "0.1.0", path = "../genshin_path" }
-gacha_url = { version = "0.1.0", path = "../gacha_url" }
-gacha_log = { version = "0.1.0", path = "../gacha_log" }
+genshin = { version = "0.1.0", path = "../genshin" }
+gacha = { version = "0.1.0", path = "../gacha" }
 chrono = { version = "0.4.22", default-features = false, features = ["clock", "std"] }
 clap = { version = "3.2.21", default-features = false, features = ["std"] }
-tokio = { version = "1", features = ["full"] }
-serde_json = "1.0"
 
 [[bin]]
 name = "genshin-gacha-cli"

@@ -1,4 +1,5 @@
 extern crate chrono;
+extern crate disk_cache;
 
 use std::io::{Error, ErrorKind, Result};
 use std::path::PathBuf;
@@ -6,6 +7,8 @@ use chrono::{DateTime, NaiveDateTime, Utc};
 use disk_cache::index_file::IndexFile;
 use disk_cache::block_file::BlockFile;
 use disk_cache::entry_store::EntryStore;
+
+pub const ENDPOINT: &'static str = "/event/gacha_info/api/getGachaLog?";
 
 pub fn find_recent_gacha_url(genshin_data_dir: PathBuf) -> Result<(DateTime<Utc>, String)> {
   let cache_dir = genshin_data_dir.join("webCaches/Cache/Cache_Data");
@@ -26,7 +29,7 @@ pub fn find_recent_gacha_url(genshin_data_dir: PathBuf) -> Result<(DateTime<Utc>
     let url = entry.get_long_url(&block_file2)?;
 
     // Get only valid gacha url
-    if !url.contains("/event/gacha_info/api/getGachaLog?") {
+    if !url.contains(ENDPOINT) {
       continue;
     }
 
