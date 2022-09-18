@@ -9,6 +9,13 @@
 
 > 我正在学习 Rust，代码设计可能存在很多问题。欢迎贡献和 PR。
 
+## 功能
+
+- [x] 获取祈愿链接。
+- [x] 获取所有祈愿记录。
+- [x] 导出 JSON（[UIGF](https://www.snapgenshin.com/development/UIGF.html)），Excel 格式。
+- [ ] 更多开发中...
+
 ## 参考
 
 https://www.chromium.org/developers/design-documents/network-stack/disk-cache/

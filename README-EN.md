@@ -9,6 +9,13 @@ No need for a local proxy server. Just read the chromium disk cache file and req
 
 > I'm learning Rust, and there can be a lot of problems with code design. Contributions and pull requests are welcome.
 
+## Features
+
+- [x] Get gacha url.
+- [x] Fetch all gacha logs.
+- [x] Export JSON ([UIGF](https://www.snapgenshin.com/development/UIGF.html)), Excel formats.
+- [ ] More in development...
+
 ## Reference
 
 https://www.chromium.org/developers/design-documents/network-stack/disk-cache/
