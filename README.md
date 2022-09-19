@@ -3,6 +3,10 @@
 
 # Genshin Gacha (WIP)
 
+<p>
+<a href="https://github.com/lgou2w/genshin-gacha/actions"><img src="https://img.shields.io/github/workflow/status/lgou2w/genshin-gacha/Build?logo=github&style=flat-square"/></a>
+</p>
+
 一个获取 `原神` 祈愿记录的工具。
 
 无需任何本地代理服务器。只需读取 Chromium 磁盘缓存文件并请求 API 端点。

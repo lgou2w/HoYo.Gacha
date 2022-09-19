@@ -3,6 +3,10 @@
 
 # Genshin Gacha (WIP)
 
+<p>
+<a href="https://github.com/lgou2w/genshin-gacha/actions"><img src="https://img.shields.io/github/workflow/status/lgou2w/genshin-gacha/Build?logo=github&style=flat-square"/></a>
+</p>
+
 A tool to get `Genshin Impact` gacha logs.
 
 No need for a local proxy server. Just read the chromium disk cache file and request the api endpoint.
