@@ -3,11 +3,11 @@ extern crate simple_excel_writer;
 use simple_excel_writer::{Workbook, Column, Row, row};
 use crate::log::GachaLogEntry;
 
-pub fn convert_gacha_logs_to_excel(gacha_logs_vec: Vec<(&'static str, Vec<GachaLogEntry>)>) -> Vec<u8> {
+pub fn convert_gacha_logs_to_excel(gacha_logs_vec: &Vec<(&'static str, Vec<GachaLogEntry>)>) -> Vec<u8> {
   let mut work_book = Workbook::create_in_memory();
 
   for (name, gacha_logs) in gacha_logs_vec {
-    write_excel_sheet(&mut work_book, name, &gacha_logs);
+    write_excel_sheet(&mut work_book, *name, gacha_logs);
   }
 
   work_book
@@ -28,6 +28,7 @@ fn write_excel_sheet(work_book: &mut Workbook, name: &str, gacha_logs: &Vec<Gach
     // TODO: Support locale
     writer.append_row(row!["时间", "名称", "类别", "星级", "总次数", "保底内"])?;
 
+    // Reverse gacha logs
     let mut entries = gacha_logs.clone();
     entries.reverse();
 

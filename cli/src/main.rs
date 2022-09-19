@@ -26,8 +26,7 @@ fn cli() -> Command<'static> {
     .subcommand(
       Command::new("logs")
         .about("Fetch and export all gacha logs from gacha url")
-        .arg(arg!(-f --format <FORMAT> "Set output format. (json, excel)"))
-        .arg(arg!(-o --out <FILE> "Set output file.").value_parser(value_parser!(PathBuf)))
+        .arg(arg!(-o --out <DIRECTORY> "Set output directory.").value_parser(value_parser!(PathBuf)))
     )
 }
 
@@ -36,26 +35,17 @@ fn main() {
   match matches.subcommand() {
     Some(("url", sub_matches)) => print_genshin_gacha_url(sub_matches.get_flag("pure")),
     Some(("logs", sub_matches)) => {
-      let out_format = sub_matches.get_one::<String>("format").unwrap();
-      let is_json_format = out_format.eq_ignore_ascii_case("json");
-      if !is_json_format && !out_format.eq_ignore_ascii_case("excel") {
-        panic!("Invalid out format: {} (Expected: json, excel)", out_format);
+      let out_directory = sub_matches.get_one::<PathBuf>("out").unwrap();
+      if !out_directory.is_dir() {
+        panic!("The output argument must be a directory");
       }
-      let out_path = sub_matches.get_one::<PathBuf>("out").unwrap();
-      export_genshin_gacha_logs(
-        if is_json_format { &OutFormat::Json } else { &OutFormat::Excel },
-        out_path
-      );
+      export_genshin_gacha_logs(out_directory);
     },
     _ => {
       print_genshin_gacha_url(false);
 
-      let now = Local::now();
-      let export_time = now.format("%Y%m%d_%H%M%S");
-
-      let current_dir = current_dir().unwrap(); // TODO: custom filename
-      let out_path = current_dir.join(format!("原神祈愿记录_{}.xlsx", export_time));
-      export_genshin_gacha_logs(&OutFormat::Excel, &out_path);
+      let current_dir = current_dir().unwrap();
+      export_genshin_gacha_logs(&current_dir);
 
       // TODO: temporary
       println!("");
@@ -106,12 +96,7 @@ fn print_genshin_gacha_url(pure: bool) {
   }
 }
 
-enum OutFormat {
-  Json,
-  Excel
-}
-
-fn export_genshin_gacha_logs(out_format: &OutFormat, out_path: &PathBuf) {
+fn export_genshin_gacha_logs(out_directory: &PathBuf) {
   let genshin_data_dir = genshin::get_game_data_dir_path().unwrap();
   let (creation_time, gacha_url) = find_gacha_url(genshin_data_dir);
 
@@ -121,51 +106,60 @@ fn export_genshin_gacha_logs(out_format: &OutFormat, out_path: &PathBuf) {
     panic!("Last gacha url has expired. Please reopen the gacha history page in the game!")
   }
 
-  let mut out_file = File::create(out_path).unwrap();
-
   println!("");
   println!("Fetch gacha logs...");
 
   // TODO: locale
   let gacha_types = vec![(301, "角色活动祈愿"), (302, "武器活动祈愿"), (200, "常驻祈愿"), (100, "新手祈愿")];
-  let mut gacha_logs_vec = Vec::new();
-  for (gacha_type, name) in gacha_types.iter() {
-    println!("Fetch gacha type: {} ({})", gacha_type, *name);
+  let mut gacha_logs_vec: Vec<(&str, Vec<gacha::log::GachaLogEntry>)> = Vec::new();
+  for (gacha_type, name) in gacha_types {
+    println!("Fetch gacha type: {} ({})", gacha_type, name);
     let gacha_logs = gacha::log::fetch_gacha_logs(
       &gacha_url,
       &gacha_type.to_string(),
       true
     );
-    gacha_logs_vec.push((*name, gacha_logs));
+    gacha_logs_vec.push((name, gacha_logs));
   }
-
 
   println!("Exporting...");
-  match out_format {
-    OutFormat::Json => {
-      let mut gacha_logs = Vec::new();
-      for (_, logs) in gacha_logs_vec {
-        gacha_logs.extend(logs);
+  let time_suffix =  now.format("%Y%m%d_%H%M%S");
+
+  // Export UIGF JSON
+  {
+    let out_path = &out_directory.join(format!("genshin_gacha_logs_uigf_{}.json", time_suffix));
+    let out_uigf_file = File::create(out_path).unwrap();
+
+    let mut gacha_logs = Vec::new();
+      for (_, logs) in &gacha_logs_vec {
+        gacha_logs.extend(logs.clone());
       }
 
-      gacha::uigf::convect_gacha_logs_to_uigf(
-        "Genshin Gacha",
-        env!("CARGO_PKG_VERSION"),
-        Some(now),
-        &gacha_logs,
-        true
-      )
-        .to_write(out_file, false)
-        .expect("Write uigf failed");
-    },
-    OutFormat::Excel => {
-      let excel_gacha_log = gacha::excel::convert_gacha_logs_to_excel(gacha_logs_vec);
-      out_file
-        .write(&excel_gacha_log)
-        .expect("Write excel failed");
-    }
+    gacha::uigf::convect_gacha_logs_to_uigf(
+      "Genshin Gacha",
+      env!("CARGO_PKG_VERSION"),
+      Some(now),
+      &gacha_logs,
+      true
+    )
+      .to_write(out_uigf_file, false)
+      .expect("Write uigf failed");
+
+    println!("{:?}", out_path.as_os_str());
   }
 
-  println!("{:?}", out_path.as_os_str());
+  // Export Excel
+  {
+    let out_path = &out_directory.join(format!("genshin_gacha_logs_excel_{}.xlsx", time_suffix));
+    let mut out_excel_file = File::create(out_path).unwrap();
+
+    let excel_gacha_log = gacha::excel::convert_gacha_logs_to_excel(&gacha_logs_vec);
+    out_excel_file
+      .write(&excel_gacha_log)
+      .expect("Write excel failed");
+
+    println!("{:?}", out_path.as_os_str());
+  }
+
   println!("ok");
 }
