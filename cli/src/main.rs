@@ -151,6 +151,7 @@ fn export_genshin_gacha_logs(out_format: &OutFormat, out_path: &PathBuf) {
       gacha::uigf::convect_gacha_logs_to_uigf(
         "Genshin Gacha",
         env!("CARGO_PKG_VERSION"),
+        Some(now),
         &gacha_logs,
         true
       )

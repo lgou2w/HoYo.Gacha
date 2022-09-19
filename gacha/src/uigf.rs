@@ -4,7 +4,7 @@ extern crate serde_json;
 
 use std::collections::HashMap;
 use std::io::{Read, Write};
-use chrono::Local;
+use chrono::{DateTime, Local};
 use lazy_static::lazy_static;
 use serde::{Serialize, Deserialize};
 use crate::log::GachaLogEntry;
@@ -82,6 +82,7 @@ lazy_static! {
 pub fn convect_gacha_logs_to_uigf(
   export_app: &str,
   export_app_version: &str,
+  export_time: Option<DateTime<Local>>,
   gacha_logs: &Vec<GachaLogEntry>,
   include_log_entry_uid: bool
 ) -> UIGFGachaLog {
@@ -108,14 +109,14 @@ pub fn convect_gacha_logs_to_uigf(
     .collect();
 
   let first_entry = uigf_gacha_log_entries.first().expect("Empty gacha logs");
-  let now = Local::now();
+  let time = export_time.unwrap_or(Local::now());
 
   UIGFGachaLog {
     info: UIGFGachaLogInfo {
       uid: first_entry.uid.clone().unwrap(),
       lang: first_entry.lang.clone().unwrap(),
-      export_time: now.format("%Y-%m-%d %H:%M:%S").to_string(),
-      export_timestamp: now.timestamp(),
+      export_time: time.format("%Y-%m-%d %H:%M:%S").to_string(),
+      export_timestamp: time.timestamp(),
       export_app: String::from(export_app),
       export_app_version: String::from(export_app_version),
       uigf_version: String::from(UIGF_VERSION)
