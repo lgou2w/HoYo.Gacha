@@ -16,7 +16,7 @@ No need for a local proxy server. Just read the chromium disk cache file and req
 ## Features
 
 - [x] Get gacha url.
-- [x] Fetch all gacha logs.
+- [x] Fetch the latest gacha logs.
 - [x] Export JSON ([UIGF](https://www.snapgenshin.com/development/UIGF.html)), Excel formats.
 - [ ] More in development...
 

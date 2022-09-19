@@ -7,7 +7,7 @@
 <a href="https://github.com/lgou2w/genshin-gacha/actions"><img src="https://img.shields.io/github/workflow/status/lgou2w/genshin-gacha/Build?logo=github&style=flat-square"/></a>
 </p>
 
-一个获取 `原神` 祈愿记录的工具。
+用于获取 `原神` 祈愿记录的工具。
 
 无需任何本地代理服务器。只需读取 Chromium 磁盘缓存文件并请求 API 端点。
 
@@ -16,7 +16,7 @@
 ## 功能
 
 - [x] 获取祈愿链接。
-- [x] 获取所有祈愿记录。
+- [x] 获取最新的祈愿记录。
 - [x] 导出 JSON（[UIGF](https://www.snapgenshin.com/development/UIGF.html)），Excel 格式。
 - [ ] 更多开发中...
 
