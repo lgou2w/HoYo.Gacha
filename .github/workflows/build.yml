@@ -1,0 +1,41 @@
+name: Build
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    runs-on: windows-latest
+    name: ${{ matrix.target }}
+    strategy:
+      max-parallel: 2
+      fail-fast: false
+      matrix:
+        target: [
+          i686-pc-windows-gnu,
+          i686-pc-windows-msvc,
+          x86_64-pc-windows-gnu,
+          x86_64-pc-windows-msvc
+        ]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install Rustup
+        shell: powershell
+        run: |
+          $ProgressPreference = "SilentlyContinue"
+          Invoke-WebRequest https://win.rustup.rs/ -OutFile rustup-init.exe
+          .\rustup-init.exe -y --default-host=x86_64-pc-windows-msvc --default-toolchain=none
+          del rustup-init.exe
+          rustup target add ${{ matrix.target }}
+
+      - name: Build
+        run: cargo build --verbose
