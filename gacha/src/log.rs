@@ -81,13 +81,15 @@ pub fn fetch_gacha_logs(gacha_url: &str, gacha_type: &str, verbose: bool) -> Vec
     if count % 5 == 0 {
       // Avoid visit too frequently
       if count > 0 && verbose {
-        println!("Fetch 5 times, wait 3 seconds...")
+        // TODO: locale
+        println!("已获取 5 次，等待 3 秒...")
       }
       sleep(Duration::from_secs(3));
     }
 
+    // TODO: locale
     if verbose {
-      println!("Fetch gacha log for page {}...", count + 1);
+      println!("获取第 {} 页的记录...", count + 1);
     }
 
     let gacha_log = fetch_gacha_log( &url, gacha_type, &end_id);
