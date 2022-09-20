@@ -11,31 +11,39 @@ env:
 
 jobs:
   build:
-    runs-on: windows-latest
-    name: ${{ matrix.target }}
+    name: ${{ matrix.build_name }}
     strategy:
       max-parallel: 2
       fail-fast: false
       matrix:
-        target: [
-          i686-pc-windows-gnu,
-          i686-pc-windows-msvc,
-          x86_64-pc-windows-gnu,
-          x86_64-pc-windows-msvc
-        ]
+        include:
+          - build_name: windows-x64-gnu
+            os: windows-latest
+            target: x86_64-pc-windows-gnu
 
+          - build_name: windows-x64-msvc
+            os: windows-latest
+            target: x86_64-pc-windows-msvc
+
+    runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Install Rustup
-        shell: powershell
-        run: |
-          $ProgressPreference = "SilentlyContinue"
-          Invoke-WebRequest https://win.rustup.rs/ -OutFile rustup-init.exe
-          .\rustup-init.exe -y --default-host=x86_64-pc-windows-msvc --default-toolchain=none
-          del rustup-init.exe
-          rustup target add ${{ matrix.target }}
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          target: ${{ matrix.target }}
 
       - name: Build
-        run: cargo build --verbose
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --workspace --verbose
+
+      - name: Test
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
