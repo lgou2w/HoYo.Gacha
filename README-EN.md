@@ -1,7 +1,7 @@
 - **English**
 - [简体中文](README.md)
 
-# Genshin Gacha (WIP)
+# Genshin Gacha
 
 <p>
 <a href="https://github.com/lgou2w/genshin-gacha/actions"><img src="https://img.shields.io/github/workflow/status/lgou2w/genshin-gacha/Build?logo=github&style=flat-square"/></a>
