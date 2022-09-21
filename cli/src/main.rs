@@ -33,20 +33,30 @@ fn cli() -> Command<'static> {
 fn main() {
   let matches = cli().get_matches();
   match matches.subcommand() {
-    Some(("url", sub_matches)) => print_genshin_gacha_url(sub_matches.get_flag("verbose")),
+    Some(("url", sub_matches)) => {
+      let genshin_data_dir = genshin::get_game_data_dir_path().unwrap();
+      let (creation_time, gacha_url) = find_gacha_url(genshin_data_dir);
+      print_genshin_gacha_url(&creation_time, &gacha_url, sub_matches.get_flag("verbose"));
+    },
     Some(("logs", sub_matches)) => {
       let out_directory = sub_matches.get_one::<PathBuf>("out").unwrap();
       if !out_directory.is_dir() {
         panic!("参数 out 必须是一个目录文件夹");
       } else {
-        export_genshin_gacha_logs(out_directory);
+        let genshin_data_dir = genshin::get_game_data_dir_path().unwrap();
+        let (creation_time, gacha_url) = find_gacha_url(genshin_data_dir);
+        export_genshin_gacha_logs(&creation_time, &gacha_url, out_directory);
       }
     },
     _ => {
-      print_genshin_gacha_url(true);
+      let genshin_data_dir = genshin::get_game_data_dir_path().unwrap();
+      let (creation_time, gacha_url) = find_gacha_url(genshin_data_dir);
+
+      print_genshin_gacha_url(&creation_time, &gacha_url, true);
+      std::thread::sleep(std::time::Duration::from_secs(3));
 
       let current_dir = current_dir().unwrap();
-      export_genshin_gacha_logs(&current_dir);
+      export_genshin_gacha_logs(&creation_time, &gacha_url, &current_dir);
 
       // TODO: temporary
       println!();
@@ -75,17 +85,14 @@ fn find_gacha_url(genshin_data_dir: PathBuf) -> (DateTime<Utc>, String) {
   }
 }
 
-fn print_genshin_gacha_url(verbose: bool) {
-  let genshin_data_dir = genshin::get_game_data_dir_path().unwrap();
-  let (creation_time, gacha_url) = find_gacha_url(genshin_data_dir);
-
+fn print_genshin_gacha_url(creation_time: &DateTime<Utc>, gacha_url: &str, verbose: bool) {
   if !verbose {
     println!("{}", gacha_url);
   } else {
     let now = Local::now();
-    let expire_time = (creation_time + Duration::days(1)).with_timezone(&Local);
+    let expire_time = (*creation_time + Duration::days(1)).with_timezone(&Local);
     println!();
-    println!("祈愿链接:");
+    println!("祈愿链接：");
     println!("创建日期（国际）：{}", creation_time.to_rfc3339_opts(SecondsFormat::Millis, true));
     println!("创建日期（本地）：{}", creation_time.with_timezone(&Local).format("%Y/%m/%d %H:%M:%S"));
     println!("过期时间（本地）：{}【创建时间 + 1 天】", expire_time.format("%Y/%m/%d %H:%M:%S"));
@@ -95,12 +102,9 @@ fn print_genshin_gacha_url(verbose: bool) {
   }
 }
 
-fn export_genshin_gacha_logs(out_directory: &PathBuf) {
-  let genshin_data_dir = genshin::get_game_data_dir_path().unwrap();
-  let (creation_time, gacha_url) = find_gacha_url(genshin_data_dir);
-
+fn export_genshin_gacha_logs(creation_time: &DateTime<Utc>, gacha_url: &str, out_directory: &PathBuf) {
   let now = Local::now();
-  let expire_time = (creation_time + Duration::days(1)).with_timezone(&Local);
+  let expire_time = (*creation_time + Duration::days(1)).with_timezone(&Local);
   if now >= expire_time {
     panic!("最新的祈愿链接已过期。请在游戏内重新打开祈愿历史记录页面！")
   }
@@ -126,13 +130,13 @@ fn export_genshin_gacha_logs(out_directory: &PathBuf) {
 
   // Export UIGF JSON
   {
-    let out_path = &out_directory.join(format!("原神祈愿记录_UIGF_{}.json", time_suffix));
-    let out_uigf_file = File::create(out_path).unwrap();
+    let out_path = out_directory.join(format!("原神祈愿记录_UIGF_{}.json", time_suffix));
+    let out_uigf_file = File::create(&out_path).unwrap();
 
     let mut gacha_logs = Vec::new();
-      for (_, logs) in &gacha_logs_vec {
-        gacha_logs.extend(logs.clone());
-      }
+    for (_, logs) in &gacha_logs_vec {
+      gacha_logs.extend(logs.clone());
+    }
 
     gacha::uigf::convect_gacha_logs_to_uigf(
       "Genshin Gacha",
