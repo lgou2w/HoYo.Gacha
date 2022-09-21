@@ -1,57 +1,103 @@
-extern crate simple_excel_writer;
+extern crate xlsxwriter;
 
-use simple_excel_writer::{Workbook, Column, Row, row};
+use xlsxwriter::{Workbook, FormatAlignment, FormatColor, XlsxError};
 use crate::log::GachaLogEntry;
 
-pub fn convert_gacha_logs_to_excel(gacha_logs_vec: &Vec<(&'static str, Vec<GachaLogEntry>)>) -> Vec<u8> {
-  let mut work_book = Workbook::create_in_memory();
-
+pub fn convert_gacha_logs_to_excel(filename: &str, gacha_logs_vec: &Vec<(&'static str, Vec<GachaLogEntry>)>) {
+  let work_book = Workbook::new(filename);
   for (name, gacha_logs) in gacha_logs_vec {
-    write_excel_sheet(&mut work_book, *name, gacha_logs);
+    write_excel_sheet(&work_book, *name, gacha_logs).expect("Write excel sheet failed");
   }
-
   work_book
     .close()
-    .expect("Close excel error")
-    .unwrap()
+    .expect("Write excel failed");
 }
 
-fn write_excel_sheet(work_book: &mut Workbook, name: &str, gacha_logs: &Vec<GachaLogEntry>) {
-  let mut sheet = work_book.create_sheet(name);
-  sheet.add_column(Column { width: 22.0 });
-  sheet.add_column(Column { width: 15.0 });
-  sheet.add_column(Column { width: 9.0 });
-  sheet.add_column(Column { width: 9.0 });
-  sheet.add_column(Column { width: 9.0 });
-  sheet.add_column(Column { width: 9.0 });
-  work_book.write_sheet(&mut sheet, |writer| {
-    // TODO: Support locale
-    writer.append_row(row!["时间", "名称", "类别", "星级", "总次数", "保底内"])?;
+// TODO: Locale
 
-    // Reverse gacha logs
-    let mut entries = gacha_logs.clone();
-    entries.reverse();
+fn write_excel_sheet(work_book: &Workbook, name: &str, gacha_logs: &Vec<GachaLogEntry>) -> Result<(), XlsxError> {
+  let mut sheet = work_book.add_worksheet(Some(name))?;
 
-    let mut count = 0;
-    let mut count_pity = 0;
-    for entry in entries {
-      count = count + 1;
-      count_pity = count_pity + 1;
+  // Column
+  let format_column = work_book
+    .add_format()
+    .set_align(FormatAlignment::Center)
+    .set_font_name("微软雅黑");
 
-      let mut row = Row::new();
-      row.add_cell(entry.time);
-      row.add_cell(entry.name);
-      row.add_cell(entry.item_type);
-      row.add_cell(entry.rank_type.clone());
-      row.add_cell(count.to_string());
-      row.add_cell(count_pity.to_string());
-      writer.append_row(row)?;
+  sheet.set_column(0, 0, 22.0, Some(&format_column))?;
+  sheet.set_column(1, 1, 15.0, Some(&format_column))?;
+  sheet.set_column(2, 6, 9.0, Some(&format_column))?;
 
-      if entry.rank_type.eq("5") {
-        count_pity = 0;
-      }
+  // Header
+  let format_header = work_book
+    .add_format()
+    .set_bold()
+    .set_font_size(12.0)
+    .set_font_name("微软雅黑")
+    .set_align(FormatAlignment::Center);
+
+  sheet.write_string(0, 0, "时间", Some(&format_header))?;
+  sheet.write_string(0, 1, "名称", Some(&format_header))?;
+  sheet.write_string(0, 2, "类别", Some(&format_header))?;
+  sheet.write_string(0, 3, "星级", Some(&format_header))?;
+  sheet.write_string(0, 4, "总次数", Some(&format_header))?;
+  sheet.write_string(0, 5, "保底内", Some(&format_header))?;
+  sheet.write_string(0, 6, "备注", Some(&format_header))?;
+
+  // Logs
+
+  // Rank format
+  let format_rank4 = work_book
+    .add_format()
+    .set_bold()
+    .set_align(FormatAlignment::Center)
+    .set_font_color(FormatColor::Custom(0xA256E1))
+    .set_font_name("微软雅黑");
+  let format_rank5 = work_book
+    .add_format()
+    .set_bold()
+    .set_align(FormatAlignment::Center)
+    .set_font_color(FormatColor::Custom(0xBD6932))
+    .set_font_name("微软雅黑");
+
+  // Reverse gacha logs
+  let mut entries = gacha_logs.clone();
+  entries.reverse();
+
+  let mut row: u32 = 1;
+  let mut count: u32 = 0;
+  let mut count_pity: u32 = 0;
+
+  for entry in entries {
+    let is_rank5 = entry.rank_type.eq("5");
+    let format = if entry.rank_type.eq("4") {
+      Some(&format_rank4)
+    } else if is_rank5 {
+      Some(&format_rank5)
+    } else {
+      None
+    };
+
+    count = count + 1;
+    count_pity = count_pity + 1;
+
+    sheet.write_string(row, 0, &entry.time, format)?;
+    sheet.write_string(row, 1, &entry.name, format)?;
+    sheet.write_string(row, 2, &entry.item_type, format)?;
+    sheet.write_string(row, 3, &entry.rank_type, format)?;
+    sheet.write_string(row, 4, &count.to_string(), format)?;
+    sheet.write_string(row, 5, &count_pity.to_string(), format)?;
+
+    if entry.gacha_type.eq("400") {
+      sheet.write_string(row, 6, "祈愿-2", format)?;
     }
 
-    Ok(())
-  }).expect("Write excel error");
+    if is_rank5 {
+      count_pity = 0;
+    }
+
+    row = row + 1;
+  }
+
+  Ok(())
 }

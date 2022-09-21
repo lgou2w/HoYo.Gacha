@@ -153,14 +153,10 @@ fn export_genshin_gacha_logs(creation_time: &DateTime<Utc>, gacha_url: &str, out
 
   // Export Excel
   {
-    let out_path = &out_directory.join(format!("原神祈愿记录_EXCEL_{}.xlsx", time_suffix));
-    let mut out_excel_file = File::create(out_path).unwrap();
+    let out_path = out_directory.join(format!("原神祈愿记录_EXCEL_{}.xlsx", time_suffix));
+    let filename = out_path.as_os_str().to_str().unwrap();
 
-    let excel_gacha_log = gacha::excel::convert_gacha_logs_to_excel(&gacha_logs_vec);
-    out_excel_file
-      .write(&excel_gacha_log)
-      .expect("写 EXCEL 文件错误");
-
+    gacha::excel::convert_gacha_logs_to_excel(filename, &gacha_logs_vec);
     println!("EXCEL：{:?}", out_path.as_os_str());
   }
 

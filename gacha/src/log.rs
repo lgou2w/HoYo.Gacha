@@ -3,7 +3,6 @@ extern crate form_urlencoded;
 extern crate lazy_static;
 extern crate serde;
 extern crate serde_json;
-extern crate simple_excel_writer;
 extern crate ureq;
 extern crate url;
 
@@ -36,7 +35,6 @@ pub struct GachaLogData {
   pub list: Vec<GachaLogEntry>,
   pub region: String,
 }
-
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct GachaLog {
