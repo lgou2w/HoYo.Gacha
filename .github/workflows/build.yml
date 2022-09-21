@@ -17,10 +17,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - build_name: windows-x64-gnu
-            os: windows-latest
-            target: x86_64-pc-windows-gnu
-
           - build_name: windows-x64-msvc
             os: windows-latest
             target: x86_64-pc-windows-msvc
