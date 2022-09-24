@@ -29,10 +29,22 @@ jobs:
           command: build
           args: --workspace --release --verbose --target x86_64-pc-windows-msvc
 
+      - name: Extract tag name
+        shell: bash
+        run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
+        id: extract_tag
+
+      - name: Copy target with tag name
+        shell: bash
+        run: |
+          cd target/x86_64-pc-windows-msvc/release/
+          cp genshin-gacha-cli.exe genshin-gacha-cli-${{ steps.extract_tag.outputs.tag }}.exe
+          cd -
+
       - name: Release
         uses: softprops/action-gh-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
         with:
           files: |
-            target/x86_64-pc-windows-msvc/release/genshin-gacha-cli.exe
+            target/x86_64-pc-windows-msvc/release/genshin-gacha-cli-${{ steps.extract_tag.outputs.tag }}.exe
