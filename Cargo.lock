@@ -187,7 +187,7 @@ dependencies = [
 
 [[package]]
 name = "cli"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "chrono",
  "clap 3.2.22",
@@ -212,7 +212,7 @@ dependencies = [
 
 [[package]]
 name = "disk_cache"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "byteorder",
 ]
@@ -257,7 +257,7 @@ dependencies = [
 
 [[package]]
 name = "gacha"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "chrono",
  "disk_cache",
@@ -272,7 +272,7 @@ dependencies = [
 
 [[package]]
 name = "genshin"
-version = "0.1.0"
+version = "0.1.1"
 
 [[package]]
 name = "glob"
