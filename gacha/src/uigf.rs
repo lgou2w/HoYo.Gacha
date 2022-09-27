@@ -1,3 +1,4 @@
+extern crate chrono;
 extern crate lazy_static;
 extern crate serde;
 extern crate serde_json;
