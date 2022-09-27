@@ -87,7 +87,7 @@ pub fn convect_gacha_logs_to_uigf(
   gacha_logs: &Vec<GachaLogEntry>,
   include_log_entry_uid: bool
 ) -> UIGFGachaLog {
-  let uigf_gacha_log_entries: Vec<UIGFGachaLogEntry> = gacha_logs
+  let mut uigf_gacha_log_entries: Vec<UIGFGachaLogEntry> = gacha_logs
     .iter()
     .map(|entry| {
       UIGFGachaLogEntry {
@@ -108,6 +108,9 @@ pub fn convect_gacha_logs_to_uigf(
       }
     })
     .collect();
+
+  // Sort by id ASC
+  uigf_gacha_log_entries.sort_by(|a, b| a.id.cmp(&b.id));
 
   let first_entry = uigf_gacha_log_entries.first().expect("Empty gacha logs");
   let time = export_time.unwrap_or(Local::now());
