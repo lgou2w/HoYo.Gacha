@@ -10,14 +10,14 @@ use disk_cache::entry_store::EntryStore;
 
 pub const ENDPOINT: &'static str = "/event/gacha_info/api/getGachaLog?";
 
-pub fn find_recent_gacha_url(genshin_data_dir: PathBuf) -> Result<(DateTime<Utc>, String)> {
+pub fn find_recent_gacha_url(genshin_data_dir: &PathBuf) -> Result<(DateTime<Utc>, String)> {
   let cache_dir = genshin_data_dir.join("webCaches/Cache/Cache_Data");
   let index_file = IndexFile::from_file(cache_dir.join("index"))?;
   let block_file1 = BlockFile::from_file(cache_dir.join("data_1"))?;
   let block_file2 = BlockFile::from_file(cache_dir.join("data_2"))?;
 
   let mut records: Vec<(DateTime<Utc>, String)> = Vec::new();
-  for addr in index_file.table.iter().cloned() {
+  for addr in *index_file.table {
 
     let entry = EntryStore::from_block_file(&block_file1, addr)?;
     if !entry.is_long_url() {

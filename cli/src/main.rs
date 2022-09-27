@@ -35,7 +35,7 @@ fn main() {
   match matches.subcommand() {
     Some(("url", sub_matches)) => {
       let genshin_data_dir = genshin::get_game_data_dir_path().unwrap();
-      let (creation_time, gacha_url) = find_gacha_url(genshin_data_dir);
+      let (creation_time, gacha_url) = find_gacha_url(&genshin_data_dir);
       print_genshin_gacha_url(&creation_time, &gacha_url, sub_matches.get_flag("verbose"));
     },
     Some(("logs", sub_matches)) => {
@@ -44,13 +44,13 @@ fn main() {
         panic!("参数 out 必须是一个目录文件夹");
       } else {
         let genshin_data_dir = genshin::get_game_data_dir_path().unwrap();
-        let (creation_time, gacha_url) = find_gacha_url(genshin_data_dir);
+        let (creation_time, gacha_url) = find_gacha_url(&genshin_data_dir);
         export_genshin_gacha_logs(&creation_time, &gacha_url, out_directory);
       }
     },
     _ => {
       let genshin_data_dir = genshin::get_game_data_dir_path().unwrap();
-      let (creation_time, gacha_url) = find_gacha_url(genshin_data_dir);
+      let (creation_time, gacha_url) = find_gacha_url(&genshin_data_dir);
 
       print_genshin_gacha_url(&creation_time, &gacha_url, true);
       std::thread::sleep(std::time::Duration::from_secs(3));
@@ -73,7 +73,7 @@ fn main() {
   }
 }
 
-fn find_gacha_url(genshin_data_dir: PathBuf) -> (DateTime<Utc>, String) {
+fn find_gacha_url(genshin_data_dir: &PathBuf) -> (DateTime<Utc>, String) {
   match gacha::url::find_recent_gacha_url(genshin_data_dir) {
     Ok(result) => result,
     Err(error) => {
