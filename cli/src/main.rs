@@ -145,7 +145,7 @@ fn export_genshin_gacha_logs(creation_time: &DateTime<Utc>, gacha_url: &str, out
       &gacha_logs,
       true
     )
-      .to_write(out_uigf_file, false)
+      .to_writer(out_uigf_file, false)
       .expect("写 UIGF 文件错误");
 
     println!("JSON（UIGF）：{:?}", out_path.as_os_str());

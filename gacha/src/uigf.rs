@@ -47,7 +47,7 @@ impl UIGFGachaLog {
     serde_json::from_reader(reader)
   }
 
-  pub fn to_write(&self, writer: impl Write, pretty: bool) -> Result<(), serde_json::Error> {
+  pub fn to_writer(&self, writer: impl Write, pretty: bool) -> Result<(), serde_json::Error> {
     if pretty {
       serde_json::to_writer_pretty(writer, self)
     } else {
