@@ -63,7 +63,6 @@ pub fn addr_start_block(addr: CacheAddr) -> u32 {
   }
 }
 
-
 #[inline(always)]
 pub fn addr_num_blocks(addr: CacheAddr) -> u32 {
   if addr_is_separate_file(addr) {
