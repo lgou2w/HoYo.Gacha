@@ -15,7 +15,7 @@ pub struct UIGFGachaLogInfo {
   pub uid: String,
   pub lang: String,
   pub export_time: String,
-  pub export_timestamp: i64,
+  pub export_timestamp: Option<i64>,
   pub export_app: String,
   pub export_app_version: String,
   pub uigf_version: String
@@ -120,7 +120,7 @@ pub fn convect_gacha_logs_to_uigf(
       uid: first_entry.uid.clone().unwrap(),
       lang: first_entry.lang.clone().unwrap(),
       export_time: time.format("%Y-%m-%d %H:%M:%S").to_string(),
-      export_timestamp: time.timestamp(),
+      export_timestamp: Some(time.timestamp()),
       export_app: String::from(export_app),
       export_app_version: String::from(export_app_version),
       uigf_version: String::from(UIGF_VERSION)
