@@ -80,33 +80,36 @@ lazy_static! {
   };
 }
 
+impl UIGFGachaLogEntry {
+  fn from_official(entry: &GachaLogEntry, keep_uid: bool) -> Self {
+    Self {
+      count: Some(entry.count.clone()),
+      gacha_type: entry.gacha_type.clone(),
+      id: entry.id.clone(),
+      item_id: Some(entry.item_id.clone()),
+      item_type: entry.item_type.clone(),
+      lang: Some(entry.lang.clone()),
+      name: entry.name.clone(),
+      rank_type: Some(entry.rank_type.clone()),
+      time: Some(entry.time.clone()),
+      uid: if keep_uid { Some(entry.uid.clone()) } else { None },
+      uigf_gacha_type: GACHA_TYPE_UIGF_MAPPINGS
+        .get(&entry.gacha_type)
+        .expect("Invalid gacha type")
+        .clone()
+    }
+  }
+}
+
 pub fn convect_gacha_logs_to_uigf(
   export_app: &str,
   export_app_version: &str,
   export_time: Option<DateTime<Local>>,
-  gacha_logs: &Vec<GachaLogEntry>,
-  include_log_entry_uid: bool
+  gacha_logs: &Vec<GachaLogEntry>
 ) -> UIGFGachaLog {
-  let mut uigf_gacha_log_entries: Vec<UIGFGachaLogEntry> = gacha_logs
+  let mut uigf_gacha_log_entries: Vec<_> = gacha_logs
     .iter()
-    .map(|entry| {
-      UIGFGachaLogEntry {
-        count: Some(entry.count.clone()),
-        gacha_type: entry.gacha_type.clone(),
-        id: entry.id.clone(),
-        item_id: Some(entry.item_id.clone()),
-        item_type: entry.item_type.clone(),
-        lang: Some(entry.lang.clone()),
-        name: entry.name.clone(),
-        rank_type: Some(entry.rank_type.clone()),
-        time: Some(entry.time.clone()),
-        uid: if include_log_entry_uid { Some(entry.uid.clone()) } else { None },
-        uigf_gacha_type: GACHA_TYPE_UIGF_MAPPINGS
-          .get(&entry.gacha_type)
-          .expect("Invalid gacha type")
-          .clone()
-      }
-    })
+    .map(|entry| UIGFGachaLogEntry::from_official(entry, true))
     .collect();
 
   // Sort by id ASC

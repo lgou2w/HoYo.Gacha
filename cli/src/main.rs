@@ -113,15 +113,21 @@ fn export_genshin_gacha_logs(creation_time: &DateTime<Utc>, gacha_url: &str, out
   println!("获取祈愿记录中...");
 
   // TODO: locale
-  let gacha_types = vec![(301, "角色活动祈愿"), (302, "武器活动祈愿"), (200, "常驻祈愿"), (100, "新手祈愿")];
+  let gacha_types = vec![
+    ("301", "角色活动祈愿"),
+    ("302", "武器活动祈愿"),
+    ("200", "常驻祈愿"),
+    ("100", "新手祈愿")
+  ];
+
+  let counter_fn: Box<dyn Fn(u32) -> ()> = Box::new(|count| {
+    println!("获取第 {} 页的记录...", count);
+  });
+
   let mut gacha_logs_vec: Vec<(&str, Vec<gacha::log::GachaLogEntry>)> = Vec::new();
   for (gacha_type, name) in gacha_types {
     println!("获取祈愿类型：{}（{}）", gacha_type, name);
-    let gacha_logs = gacha::log::fetch_gacha_logs(
-      &gacha_url,
-      &gacha_type.to_string(),
-      true
-    );
+    let gacha_logs = gacha::log::fetch_gacha_logs(&gacha_url, &gacha_type, &counter_fn);
     gacha_logs_vec.push((name, gacha_logs));
   }
 
@@ -142,8 +148,7 @@ fn export_genshin_gacha_logs(creation_time: &DateTime<Utc>, gacha_url: &str, out
       "Genshin Gacha",
       env!("CARGO_PKG_VERSION"),
       Some(now),
-      &gacha_logs,
-      true
+      &gacha_logs
     )
       .to_writer(out_uigf_file, false)
       .expect("写 UIGF 文件错误");

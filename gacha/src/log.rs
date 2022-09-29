@@ -59,7 +59,11 @@ fn fetch_gacha_log(url: &Url, gacha_type: &str, end_id: &str) -> GachaLog {
     .unwrap()
 }
 
-pub fn fetch_gacha_logs(gacha_url: &str, gacha_type: &str, verbose: bool) -> Vec<GachaLogEntry> {
+pub fn fetch_gacha_logs(
+  gacha_url: &str,
+  gacha_type: &str,
+  counter_fn: &Box<dyn Fn(u32) -> ()>
+) -> Vec<GachaLogEntry> {
   let endpoint_start = gacha_url.find(ENDPOINT).expect("Invalid gacha url");
   let base_url = &gacha_url[0..endpoint_start + ENDPOINT.len()];
   let query_str = &gacha_url[endpoint_start + ENDPOINT.len()..];
@@ -78,19 +82,14 @@ pub fn fetch_gacha_logs(gacha_url: &str, gacha_type: &str, verbose: bool) -> Vec
   loop {
     if count % 5 == 0 {
       // Avoid visit too frequently
-      if count > 0 && verbose {
-        // TODO: locale
-        println!("已获取 5 次，等待 3 秒...")
-      }
       sleep(Duration::from_secs(3));
     }
 
-    // TODO: locale
-    if verbose {
-      println!("获取第 {} 页的记录...", count + 1);
-    }
+    // Consume count
+    counter_fn(count + 1);
 
-    let gacha_log = fetch_gacha_log( &url, gacha_type, &end_id);
+    // Fetch
+    let gacha_log = fetch_gacha_log(&url, gacha_type, &end_id);
     count = count + 1;
 
     if let Some(data) = gacha_log.data {

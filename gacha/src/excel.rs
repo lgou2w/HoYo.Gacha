@@ -3,10 +3,11 @@ extern crate xlsxwriter;
 use xlsxwriter::{Workbook, FormatAlignment, FormatColor, XlsxError};
 use crate::log::GachaLogEntry;
 
-pub fn convert_gacha_logs_to_excel(filename: &str, gacha_logs_vec: &Vec<(&'static str, Vec<GachaLogEntry>)>) {
+pub fn convert_gacha_logs_to_excel(filename: &str, gacha_logs_vec: &Vec<(&str, Vec<GachaLogEntry>)>) {
   let work_book = Workbook::new(filename);
-  for (name, gacha_logs) in gacha_logs_vec {
-    write_excel_sheet(&work_book, *name, gacha_logs).expect("Write excel sheet failed");
+  for entry in gacha_logs_vec {
+    write_excel_sheet(&work_book, entry.0, &entry.1)
+      .expect("Write excel sheet failed");
   }
   work_book
     .close()
