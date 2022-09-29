@@ -12,7 +12,7 @@ use std::path::PathBuf;
 use clap::{arg, value_parser, ArgAction, Command};
 use chrono::{Duration, Local, Utc, SecondsFormat, DateTime};
 
-fn cli() -> Command<'static> {
+fn cli() -> Command {
   Command::new("Genshin Gacha CLI")
     .author(env!("CARGO_PKG_AUTHORS"))
     .version(env!("CARGO_PKG_VERSION"))
@@ -26,7 +26,9 @@ fn cli() -> Command<'static> {
     .subcommand(
       Command::new("logs")
         .about("从祈愿链接获取最新的记录并导出")
-        .arg(arg!(-o --out <DIRECTORY> "设置输出目录").value_parser(value_parser!(PathBuf)))
+        .arg(arg!(-o --out <DIRECTORY> "设置输出目录")
+          .value_parser(value_parser!(PathBuf))
+          .required(true))
     )
 }
 
