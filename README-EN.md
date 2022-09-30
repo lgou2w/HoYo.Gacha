@@ -19,6 +19,7 @@ No need for a local proxy server. Just read the `Chromium` disk cache file and r
 - [x] Get gacha url.
 - [x] Fetch the latest gacha logs.
 - [x] Export `JSON` ([UIGF](https://www.snapgenshin.com/development/UIGF.html)) and `Excel` formats.
+- [x] Import old `JSON` ([UIGF](https://www.snapgenshin.com/development/UIGF.html)) data and auto-complete Fetch the latest gacha logs, merge them, and export them.
 - [x] Command line tool. See also: [CLI](https://github.com/lgou2w/genshin-gacha/tree/main/cli/README-EN.md)
 - [ ] More tools in development...
 

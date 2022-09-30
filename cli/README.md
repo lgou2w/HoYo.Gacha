@@ -16,7 +16,15 @@
 
 该方式会获取祈愿链接并打印，然后获取最新的祈愿记录数据，并导出到当前程序运行目录。
 
-### 2. 只获取祈愿链接
+### 2. 拖拽旧的 JSON（UIGF）数据文件到 `genshin-gacha-cli.exe` 并打开
+
+该方式会获取祈愿链接并打印，然后获取最新的祈愿记录数据，并将拖拽输入旧的 JSON（UIGF）数据文件和最新数据进行合并去重，最后导出到当前程序运行目录。
+
+> 目前拖拽导入只支持 JSON（UIGF）标准的数据文件。
+
+简单点说就是：**导入旧数据，获取新数据，合并去重再导出**
+
+### 3. 只获取祈愿链接
 
 使用：`./genshin-gacha-cli.exe url --verbose`
 
@@ -34,7 +42,7 @@ auth_appid=webview_gacha&init_type=301&gacha_id=b4ac24d133739b7b1d55173f30ccf980
 device_type=pc&game_version=CNRELWin3.0.0_R10283122_S10446836_D10316937&plat_type=pc&region=cn_gf01&authkey=nI%2f3TVFfMBDUbcIWksQ......
 ```
 
-### 3. 从祈愿链接获取最新的祈愿记录并导出到指定目录
+### 4. 从祈愿链接获取最新的祈愿记录并导出到指定目录
 
 使用：`./genshin-gacha-cli.exe logs --out ./your_out_dir`
 

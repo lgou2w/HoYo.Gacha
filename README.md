@@ -19,6 +19,7 @@
 - [x] 获取祈愿链接。
 - [x] 获取最新的祈愿记录。
 - [x] 导出为 `JSON`（[UIGF](https://www.snapgenshin.com/development/UIGF.html)）和 `Excel` 格式。
+- [x] 导入旧的 `JSON`（[UIGF](https://www.snapgenshin.com/development/UIGF.html)）数据并自动完成获取最新的祈愿记录然后合并，最后导出。
 - [x] 命令行工具。另见：[CLI](https://github.com/lgou2w/genshin-gacha/tree/main/cli/README.md)
 - [ ] 更多工具开发中...
 
