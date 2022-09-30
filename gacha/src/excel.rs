@@ -3,9 +3,9 @@ extern crate xlsxwriter;
 use xlsxwriter::{Workbook, FormatAlignment, FormatColor, XlsxError};
 use crate::log::GachaLogEntry;
 
-pub fn convert_gacha_logs_to_excel(filename: &str, gacha_logs_vec: &Vec<(&str, Vec<GachaLogEntry>)>) {
+pub fn gacha_logs_into_excel(filename: &str, gacha_logs_map: &Vec<(&str, Vec<GachaLogEntry>)>) {
   let work_book = Workbook::new(filename);
-  for entry in gacha_logs_vec {
+  for entry in gacha_logs_map {
     write_excel_sheet(&work_book, entry.0, &entry.1)
       .expect("Write excel sheet failed");
   }
@@ -61,9 +61,9 @@ fn write_excel_sheet(work_book: &Workbook, name: &str, gacha_logs: &Vec<GachaLog
     .set_font_color(FormatColor::Custom(0xBD6932))
     .set_font_name("微软雅黑");
 
-  // Reverse gacha logs
+  // Sort by id ASC
   let mut entries = gacha_logs.clone();
-  entries.reverse();
+  entries.sort_by(|a, b| a.id.cmp(&b.id));
 
   let mut row: u32 = 1;
   let mut count: u32 = 0;

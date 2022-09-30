@@ -58,7 +58,7 @@ impl UIGFGachaLog {
 
 /* UIGF : https://www.snapgenshin.com/development/UIGF.html */
 
-const UIGF_VERSION: &'static str = "2.2";
+const UIGF_VERSION: &'static str = "v2.2";
 
 lazy_static! {
   /*
@@ -81,7 +81,7 @@ lazy_static! {
 }
 
 impl UIGFGachaLogEntry {
-  fn from_official(entry: &GachaLogEntry, keep_uid: bool) -> Self {
+  pub fn from_official(entry: &GachaLogEntry, keep_uid: bool) -> Self {
     Self {
       count: Some(entry.count.clone()),
       gacha_type: entry.gacha_type.clone(),
@@ -101,33 +101,36 @@ impl UIGFGachaLogEntry {
   }
 }
 
-pub fn convect_gacha_logs_to_uigf(
+pub fn convect_gacha_logs_to_uigf(gacha_logs: &Vec<GachaLogEntry>, keep_uid: bool) -> Vec<UIGFGachaLogEntry> {
+  gacha_logs
+    .iter()
+    .map(|entry| UIGFGachaLogEntry::from_official(entry, keep_uid))
+    .collect()
+}
+
+pub fn gacha_logs_into_uigf(
   export_app: &str,
   export_app_version: &str,
-  export_time: Option<DateTime<Local>>,
+  export_time: &DateTime<Local>,
   gacha_logs: &Vec<GachaLogEntry>
 ) -> UIGFGachaLog {
-  let mut uigf_gacha_log_entries: Vec<_> = gacha_logs
-    .iter()
-    .map(|entry| UIGFGachaLogEntry::from_official(entry, true))
-    .collect();
+  let mut gacha_logs = convect_gacha_logs_to_uigf(gacha_logs, true);
 
   // Sort by id ASC
-  uigf_gacha_log_entries.sort_by(|a, b| a.id.cmp(&b.id));
+  gacha_logs.sort_by(|a, b| a.id.cmp(&b.id));
 
-  let first_entry = uigf_gacha_log_entries.first().expect("Empty gacha logs");
-  let time = export_time.unwrap_or(Local::now());
+  let first_entry = gacha_logs.first().expect("Empty gacha logs");
 
   UIGFGachaLog {
     info: UIGFGachaLogInfo {
       uid: first_entry.uid.clone().unwrap(),
       lang: first_entry.lang.clone().unwrap(),
-      export_time: time.format("%Y-%m-%d %H:%M:%S").to_string(),
-      export_timestamp: Some(time.timestamp()),
+      export_time: export_time.format("%Y-%m-%d %H:%M:%S").to_string(),
+      export_timestamp: Some(export_time.timestamp()),
       export_app: String::from(export_app),
       export_app_version: String::from(export_app_version),
       uigf_version: String::from(UIGF_VERSION)
     },
-    list: uigf_gacha_log_entries
+    list: gacha_logs
   }
 }
