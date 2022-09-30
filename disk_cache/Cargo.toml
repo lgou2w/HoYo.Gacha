@@ -1,6 +1,6 @@
 [package]
 name = "disk_cache"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 description = "A tool to get Genshin Impact gacha logs."
 homepage = "https://github.com/lgou2w/genshin-gacha"
