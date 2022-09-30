@@ -10,9 +10,9 @@
 
 用于获取 **`原神`** 祈愿记录的工具。
 
-无需任何本地代理服务器。只需读取 `Chromium` 磁盘缓存文件并请求 API 端点。
+无需任何本地代理服务器。只需读取 `Chromium` 硬盘缓存文件并请求 API 端点。
 
-> 我正在学习 Rust，代码设计可能存在很多问题。欢迎贡献和 PR。
+> **我正在学习 Rust，代码设计可能存在很多问题。欢迎贡献和 PR。**
 
 ## 功能
 
@@ -24,6 +24,8 @@
 - [ ] 更多工具开发中...
 
 ## 参考
+
+> **关于从 `Chromium` 硬盘缓存获取祈愿链接的实现原理请参考：[DISK-CACHE.md](DISK-CACHE.md)**
 
 https://www.chromium.org/developers/design-documents/network-stack/disk-cache/
 
