@@ -253,7 +253,7 @@ fn merge_gacha_logs(
   for (gacha_type, name, gacha_logs) in new_data {
     let old_gacha_logs: Vec<_> = old_data.list
       .iter()
-      .filter(|&entry| entry.gacha_type.eq(gacha_type))
+      .filter(|&entry| entry.uigf_gacha_type.eq(gacha_type))
       .collect();
 
     let mut old_gacha_logs_mappings = HashMap::new();
