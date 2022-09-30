@@ -223,11 +223,13 @@ fn merge_gacha_logs(
   println!();
   println!("合并旧数据中...");
   println!("{:#?}", old_data.info);
-  println!("旧数据祈愿记录数量为：{}", old_data.list.len());
 
   let first_uigf_entry = old_data.list.first();
   match first_uigf_entry {
-    None => return None,
+    None => {
+      println!("旧数据未存在任何记录。跳过合并...");
+      return None
+    },
     Some(first) => {
       if first.time.is_none() || first.rank_type.is_none() {
         println!("旧数据中祈愿记录没有存在 time 或 rank_type 字段！");
@@ -238,6 +240,9 @@ fn merge_gacha_logs(
   }
 
   let mut result: GachaLogsVec = Vec::new();
+  let mut total: usize = 0;
+  let mut merged: usize = 0;
+
   let uid = &old_data.info.uid;
   let lang = &old_data.info.lang;
 
@@ -262,6 +267,9 @@ fn merge_gacha_logs(
       .filter(|entry| !old_gacha_logs_mappings.contains_key(&entry.id))
       .collect();
 
+    // Add new gacha logs length
+    merged += new_gacha_logs.len();
+
     for old_gacha_log in &old_gacha_logs {
       let convert = GachaLogEntry {
         uid: old_gacha_log.uid.clone().unwrap_or(uid.clone()),
@@ -276,11 +284,20 @@ fn merge_gacha_logs(
         id: old_gacha_log.id.clone()
       };
       new_gacha_logs.push(convert);
+
+      // Old gacha log + 1
+      merged += 1;
     }
 
-    result.push((gacha_type, name, new_gacha_logs))
+    result.push((gacha_type, name, new_gacha_logs));
+    total += gacha_logs.len();
   }
 
-  println!("合并成功");
+  println!("合并成功：");
+  println!("旧祈愿记录数据量：{}", old_data.list.len());
+  println!("最新祈愿记录数量：{}", total);
+  println!("合并去重后的数量：{}", merged);
+  println!();
+
   Some(result)
 }
