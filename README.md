@@ -25,7 +25,7 @@
 
 ## 参考
 
-> **关于从 `Chromium` 硬盘缓存获取祈愿链接的实现原理请参考：[DISK-CACHE.md](DISK-CACHE.md)**
+> **关于从 `Chromium Disk Cache` 硬盘缓存获取祈愿链接的实现原理请参考：[DISK-CACHE.md](DISK-CACHE.md)**
 
 https://www.chromium.org/developers/design-documents/network-stack/disk-cache/
 

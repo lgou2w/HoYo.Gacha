@@ -25,7 +25,7 @@ No need for a local proxy server. Just read the `Chromium` disk cache file and r
 
 ## Reference
 
-> **For more information about how to get a gacha url from the `Chromium` disk cache. See also: [DISK-CACHE.md](DISK-CACHE.md)**
+> **For more information about how to get a gacha url from the `Chromium Disk Cache`. See also: [DISK-CACHE.md](DISK-CACHE.md)**
 
 https://www.chromium.org/developers/design-documents/network-stack/disk-cache/
 
