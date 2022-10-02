@@ -17,6 +17,9 @@
   - [了解硬盘缓存文件结构](#了解硬盘缓存文件结构)
   - [硬盘缓存的目录文件](#硬盘缓存的目录文件)
   - [索引文件](#索引文件)
+    - [结构头](#结构头)
+    - [LRU](#lru)
+    - [缓存地址](#缓存地址)
   - [数据块文件](#数据块文件)
   - [存储条目](#存储条目)
 - [实现](#实现)
@@ -32,7 +35,7 @@
 
 ### 和原神有什么关系
 
-在原神游戏内打开公告页面或者祈愿历史记录页面。其实就是一个名为 `ZFGameBrowser.exe` 的内置浏览器，它是基于 `Chromium` 内核的。所以这些页面的 URL 链接都会被存储在 `硬盘缓存` 里面。
+在原神游戏内打开公告页面或者祈愿历史记录页面。其实就是一个名为 [ZFGameBrowser](https://zenfulcrum.com/browser/docs/Readme.html) 的内置浏览器，它是基于 `Chromium` 内核的。所以这些页面的 `URL` 链接都会被存储在 `硬盘缓存` 里面。
 
 ## 结构
 
@@ -40,7 +43,7 @@
 
 ![disk-cache-files.png](assets/disk-cache-files.png)
 
-> This diagram shows a disk cache with 7 files on disk: the index file, 5 block-files and one separate file. data_1 and data_4 are chained together so they store blocks of the same size (256 bytes), while data_2 stores blocks of 1KB and data_3 stores blocks of 4 KB. The depicted entry has its key stored outside the EntryStore structure, and given that it uses two blocks, it must be between one and two kilobytes. This entry also has two data streams, one for the HTTP headers (less than 256 bytes) and another one for the actual payload (more than 16 KB so it lives on a dedicated file). All blue arrows indicate that a cache address is used to locate another piece of data.
+This diagram shows a disk cache with 7 files on disk: the index file, 5 block-files and one separate file. data_1 and data_4 are chained together so they store blocks of the same size (256 bytes), while data_2 stores blocks of 1KB and data_3 stores blocks of 4 KB. The depicted entry has its key stored outside the EntryStore structure, and given that it uses two blocks, it must be between one and two kilobytes. This entry also has two data streams, one for the HTTP headers (less than 256 bytes) and another one for the actual payload (more than 16 KB so it lives on a dedicated file). All blue arrows indicate that a cache address is used to locate another piece of data.
 
 图片和原文引用自：[The Big Picture](https://www.chromium.org/developers/design-documents/network-stack/disk-cache/#the-big-picture)
 
@@ -48,29 +51,72 @@
 
 ### 硬盘缓存的目录文件
 
-| 文件名      | 结构      | 备注  |
-| :--------: | :-------- | ----- |
+| 文件名      | 结构      | 备注 |
+| ---------- | --------- | ---- |
 | `index`    | 索引文件   | `Cache address` 缓存地址，哈希指针 |
 | `data_0`   | 数据块文件 | `N/A` |
 | `data_1`   | 数据块文件 | `Entry store` 存储条目 |
 | `data_2`   | 数据块文件 | `Long key` 长密钥、长键、URL |
 | `data_3`   | 数据块文件 | `N/A` |
 | `data_4`   | 数据块文件 | `Http Headers` HTTP 头 |
-| `f_000000` | 单独块文件 | `Payload` HTTP 有效载荷 |
+| `f_######` | 外部块文件 | `Payload` HTTP 有效载荷 |
+
+这些数据文件以二进制 `Little Ending` 小端字节序（低端字节序）存储的。
+
+> 注意：目前这个结构为硬盘缓存 v2 版本。
 
 ### 索引文件
 
-索引文件就是一个 `缓存地址表` 或者 `哈希指针表`。它由 `8192 字节的结构头` 和 `至少 65536 个缓存地址` 构成。但实际长度由结构头内的 `table_len` 字段控制。其每一个缓存地址对应数据块文件 `data_1` 中的指定 `Entry store` 存储条目数据。
+索引文件就是一个 `缓存地址表` 或者 `哈希指针表`。它由 `256 字节的结构头` 和 `112 字节的 LRU 驱逐控制数据` 以及 `至少 65536 个缓存地址` 构成。但实际的缓存地址数量由 `结构头` 内的 `table_len` 字段控制。其每一个缓存地址对应数据块文件 `data_1` 中的指定 `Entry store` 存储条目数据。
 
 #### 结构头
 
-索引文件的结构头是一个 8192 字节的数据结构。
+索引文件的结构头是一个 `256` 字节的数据结构。
 
-WIP...
+| 字段名         | 类型                             | 描述 |
+| ------------- | -------------------------------- | ---- |
+| `magic`       | `unsigned int` 无符号 32 位整数   | `魔数签名` 其值为：`0xC103C3CA` |
+| `version`     | `unsigned int` 无符号 32 位整数   | `版本号` 已知有：`0x20000`、`0x20001`、`0x30000` 三个版本。 |
+| `num_entries` | `int` 有符号 32 位整数            | `当前存储的条目数` |
+| `num_bytes`   | `int` 有符号 32 位整数            | `存储数据的总大小` |
+| `last_file`   | `int` 有符号 32 位整数            | `上次创建的外部文件` 表示 `f_######` 中的 # 值。 |
+| `this_id`     | `int` 有符号 32 位整数            | `所有正在更改的条目的 ID（脏标志）` |
+| `stats`       | `unsigned int` 无符号 32 位整数   | `存储使用数据` |
+| `table_len`   | `int` 有符号 32 位整数            | `缓存地址表的实际大小`（为 0 时 == 0x10000 \[65536]） |
+| `crash`       | `int` 有符号 32 位整数            | `表示之前的崩溃` |
+| `experiment`  | `int` 有符号 32 位整数            | `正在进行的测试的 ID` |
+| `create_time` | `unsigned int64` 无符号 64 位整数 | `这组文件的创建时间` |
+| `pad`         | `int[52]` 有符号 32 位整数数组    | `用于填充的空字节数组` 其长度为 52 |
+
+#### LRU
+
+索引文件的 LRU 驱逐控制数据时一个 `112` 字节的数据结构。
+
+| 字段名            | 类型                                 | 描述 |
+| ---------------- | ------------------------------------ | ---- |
+| `pad1`           | `int[2]` 有符号 32 位整数数组          | `用于填充的空字节数组` 其长度为 2 |
+| `failled`        | `int` 有符号 32 位整数                | `用于告知我们何时填充缓存的标志` |
+| `sizes`          | `int[5]` 无符号 32 位整数数组          | `大小数组。其长度为 5` |
+| `heads`          | `unsigned int[5]` 无符号 32 位整数数组 | `头部缓存地址数组。其长度为 5` |
+| `tails`          | `unsigned int[5]` 无符号 32 位整数数组 | `尾部缓存地址数组。其长度为 5` |
+| `transaction`    | `unsigned int` 无符号 32 位整数       | `In-flight operation target` |
+| `operation`      | `int` 有符号 32 位整数                | `Actual in-flight operation` |
+| `operation_list` | `int` 有符号 32 位整数                | `In-flight operation list` |
+| `pad2`           | `int[7]` 有符号 32 位整数数组          | `用于填充的空字节数组` 其长度为 7 |
 
 #### 缓存地址
 
-WIP...
+Every piece of data stored by the disk cache has a given “cache address”. The cache address is simply a 32-bit number that describes exactly where the data is actually located.
+
+引用自：[Cache Address](https://www.chromium.org/developers/design-documents/network-stack/disk-cache/#cache-address)
+
+> 表示一个无符号的 32 位整数，准确的描述了一条数据的实际位置。实际就是一个 `FLAG` 状态标志寄存器，需要用位操作来获取其状态值。
+
+例子：
+
+- `0x00000000`：未初始化
+- `0x8000002A`：外部文件 `f_00002A`
+- `0xA0010003`：块文件号 1（data_1），初始块号 3，长度为 1 个块。
 
 ### 数据块文件
 
