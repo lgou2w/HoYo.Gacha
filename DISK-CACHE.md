@@ -54,10 +54,10 @@ This diagram shows a disk cache with 7 files on disk: the index file, 5 block-fi
 | 文件名      | 结构      | 备注 |
 | ---------- | --------- | ---- |
 | `index`    | 索引文件   | `Cache address` 缓存地址，哈希指针 |
-| `data_0`   | 数据块文件 | `N/A` |
+| `data_0`   | 数据块文件 | `Rankings` |
 | `data_1`   | 数据块文件 | `Entry store` 存储条目 |
 | `data_2`   | 数据块文件 | `Long key` 长密钥、长键、URL |
-| `data_3`   | 数据块文件 | `N/A` |
+| `data_3`   | 数据块文件 | `未知` |
 | `data_4`   | 数据块文件 | `Http Headers` HTTP 头 |
 | `f_######` | 外部块文件 | `Payload` HTTP 有效载荷 |
 
@@ -67,7 +67,7 @@ This diagram shows a disk cache with 7 files on disk: the index file, 5 block-fi
 
 ### 索引文件
 
-索引文件就是一个 `缓存地址表` 或者 `哈希指针表`。它由 `256 字节的结构头` 和 `112 字节的 LRU 驱逐控制数据` 以及 `至少 65536 个缓存地址` 构成。但实际的缓存地址数量由 `结构头` 内的 `table_len` 字段控制。其每一个缓存地址对应数据块文件 `data_1` 中的指定 `Entry store` 存储条目数据。
+索引文件是一个 `缓存地址表` 或者 `哈希指针表`。它由 `256 字节的结构头` 和 `112 字节的 LRU 驱逐控制数据` 以及 `至少 65536 个缓存地址` 构成。但实际的缓存地址数量由 `结构头` 内的 `table_len` 字段控制。其每一个缓存地址对应数据块文件 `data_1` 中的指定 `Entry store` 存储条目数据。
 
 #### 结构头
 
@@ -90,7 +90,7 @@ This diagram shows a disk cache with 7 files on disk: the index file, 5 block-fi
 
 #### LRU
 
-索引文件的 LRU 驱逐控制数据时一个 `112` 字节的数据结构。
+索引文件的 LRU 驱逐控制数据是一个 `112` 字节的数据结构。
 
 | 字段名            | 类型                                 | 描述 |
 | ---------------- | ------------------------------------ | ---- |
@@ -118,13 +118,50 @@ Every piece of data stored by the disk cache has a given “cache address”. Th
 - `0x8000002A`：外部文件 `f_00002A`
 - `0xA0010003`：块文件号 1（data_1），初始块号 3，长度为 1 个块。
 
+详细的状态获取可以查看：[disk_cache/src/addr.rs](disk_cache/src/addr.rs)
+
 ### 数据块文件
 
-WIP...
+数据块文件都是由 `8192 字节的结构头` 和实际数据构成。具体的数据大小取决于数据块文件编号类型。
+
+| 字段名            | 类型                                    | 描述 |
+| ---------------- | --------------------------------------- | ---- |
+| `magic`          | `unsigned int` 无符号 32 位整数           | `魔数签名` 其值为：`0xC104CAC3` |
+| `version`        | `unsigned int` 无符号 32 位整数           | `版本号` 已知有：`0x20000`、`0x30000` 两个版本。 |
+| `this_file`      | `int16` 有符号 16 位整数                  | `此文件的索引号` |
+| `next_file`      | `int16` 有符号 16 位整数                  | `当这个文件已满时，下一个文件的索引号` |
+| `entry_size`     | `int` 有符号 32 位整数                    | `此文件的块大小` |
+| `num_entries`    | `int` 有符号 32 位整数                    | `存储的条目数量` |
+| `max_entries`    | `int` 有符号 32 位整数                    | `当前最大条数数量` |
+| `empty`          | `int[4]` 有符号 32 位整数数组             | `每种类型的空条目计数器` 其长度为 4 |
+| `hints`          | `int[4]` 有符号 32 位整数数组             | `每个条目类型的最后使用位置` 其长度为 4 |
+| `updating`       | `int` 有符号 32 位整数                   | `跟踪标头的更新` |
+| `user`           | `int[5]` 有符号 32 位整数数组             | `User` 其长度为 5 |
+| `allocation_map` | `unsigned int[2028]` 无符号 32 位整数数组 | `Allocation map` 其长度为 2028 |
 
 ### 存储条目
 
-WIP...
+已知数据块文件 `data_1` 内的存储条目数据结构。
+
+> 注意：其他数据块文件的块数据头也有可能是这个结构，但个人未其验证。另见：[实现](#实现)
+
+| 字段名           | 类型                                    | 描述 |
+| --------------- | --------------------------------------- | ---- |
+| `hash`          | `unsigned int` 无符号 32 位整数          | `键的完整哈希` |
+| `next`          | `unsigned int` 无符号 32 位整数          | `具有相同哈希或存储桶的下一个条目` |
+| `rankings_node` | `unsigned int` 无符号 32 位整数          | `Rankings 节点` |
+| `reuse_count`   | `int` 有符号 32 位整数                   | `使用次数` |
+| `refetch_count` | `int` 有符号 32 位整数                   | `重获取次数` |
+| `state`         | `int` 有符号 32 位整数                   | `当前状态` |
+| `creation_time` | `unsigned int64` 无符号 64 位整数        | `创建时间` |
+| `key_len`       | `int` 有符号 32 位整数                   | `键的实际长度` |
+| `long_key`      | `unsigned int` 无符号 32 位整数          | `可选的长键缓存地址` |
+| `data_size`     | `unsigned int[4]` 无符号 32 位整数数组   | `最多可以为每个存储 4 个数据流` 长度为 4 |
+| `data_addr`     | `unsigned int[4]` 无符号 32 位整数数组   | `数据条目缓存地址` 其长度为 4 |
+| `flags`         | `unsigned int` 无符号 32 位整数          | `条目的标志` |
+| `pad`           | `int[4]` 有符号 32 位整数数组            | `用于填充的空字节数组` 其长度为 4 |
+| `self_hash`     | `unsigned int` 无符号 32 位整数          | `The hash of EntryStore up to this point` |
+| `key`           | `unsigned char[160]` 无符号 8 位字节数组 | `键值` 其长度为 160 |
 
 ## 实现
 
