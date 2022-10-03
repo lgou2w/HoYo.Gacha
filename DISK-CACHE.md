@@ -78,7 +78,7 @@ This diagram shows a disk cache with 7 files on disk: the index file, 5 block-fi
 
 | 字段名         | 类型                             | 描述 |
 | ------------- | -------------------------------- | ---- |
-| `magic`       | `unsigned int` 无符号 32 位整数   | `魔数签名` 其值为：`0xC103C3CA` |
+| `magic`       | `unsigned int` 无符号 32 位整数   | `魔数签名` 其值为：`0xC103CAC3` |
 | `version`     | `unsigned int` 无符号 32 位整数   | `版本号` 已知有：`0x20000`、`0x20001`、`0x30000` 三个版本。 |
 | `num_entries` | `int` 有符号 32 位整数            | `当前存储的条目数` |
 | `num_bytes`   | `int` 有符号 32 位整数            | `存储数据的总大小` |
@@ -168,7 +168,7 @@ Every piece of data stored by the disk cache has a given “cache address”. Th
 
 ## 实现
 
-由于只需要获取祈愿链接，所以我们只需要用到 `index`、`data_1` 以及 `data_2` 这三个数据文件。从这个 [图中](#了解硬盘缓存文件结构) 可以知道 `index` 文件包含了所有的缓存地址，其每一条地址指向了 `data_1` 文件的某个块数据。这个块数据就是一项 `Entry store` 存储条目。从这个存储条目的 `creation_time` 创建时间和 `key`、`long_key` 就可以获取到这项记录的 `URL` 链接和时间。
+由于只需要获取祈愿链接，所以我们只需要用到 `index`、`data_1` 以及 `data_2` 这三个数据文件。从这个 [图中](#了解硬盘缓存文件结构) 可以知道 `index` 文件包含了所有的缓存地址，其每一条地址指向了 `data_1` 文件的某个块数据。这个块数据就是一项 `Entry store` 存储条目。从这个存储条目的 `creation_time` 创建时间和 `key`、`long_key` 就可以获取到这项记录的 `URL` 链接和创建时间。
 
 > 注意：祈愿链接是包含了 `authkey` 参数的一个非常长的链接，而 `Entry store` 存储条目记录的字段 `key` 是无法存储的。所以要通过 `long_key` 这个长键的缓存地址获取其指向 `data_2` 文件的块数据，才能够得到正确的完整的祈愿链接数据。
 
@@ -179,7 +179,7 @@ Every piece of data stored by the disk cache has a given “cache address”. Th
 3. 判断这个存储条目的 `long_key` 不为 `0` 时，说明这是一个有效的长键缓存地址。
 4. 再用这个 `long_key` 长键缓存地址从其 `data_2` 文件读取所对应的 URL 链接数据。
 5. 判断是否为正确的祈愿链接，并和存储条目的 `creation_time` 创建时间一同添加到集合。
-6. 最后按创建时间倒序排序，其第一个就是最新的有效的祈愿链接。
+6. 最后按创建时间倒序排序，其第一个就是最新的祈愿链接。
 
 > 下面有 Rust、Node.js、Java 语言的对应实现源代码。由于本人对其他语言，例如 C#、Python、Go 这些了解不深，无法提供其实现。
 
