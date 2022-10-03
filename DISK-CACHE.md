@@ -192,7 +192,264 @@ Every piece of data stored by the disk cache has a given “cache address”. Th
 
 ### Node.js
 
-WIP...
+索引文件的读取：
+
+> 结构内的 `pad` 和 `lru` 字段对获取祈愿链接没有作用，所以直接用 `Buffer.slice` 截取比较方便。而 `table` 字段就是索引文件实际的缓存地址表数据，我们通过 `table_len` 字段可以知道实际长度然后遍历读取即可。并且读取到 `addr` 后的地方使用到了一个 `if ((addr & 0x80000000) !== 0)` 的操作，这一步是只获取有效的缓存地址。因为如果某一项缓存地址未被使用时，它的值一定为 `0` 。
+
+```typescript
+import fs from 'fs'
+
+interface IndexFile {
+  magic: number       // unsigned int
+  version: number     // unsigned int
+  num_entries: number // int
+  num_bytes: number   // int
+  last_file: number   // int
+  this_id: number     // int
+  stats: number       // unsigned int
+  table_len: number   // int
+  crash: number       // int
+  experiment: number  // int
+  create_time: bigint // unsigned int64
+  pad: Buffer         // int[52] -> 52 * 4 = 208 bytes
+  lru: Buffer         // 112 bytes lru data
+  table: number[]     // cache address
+}
+
+function readIndexFile(file: string): IndexFile {
+  const buf: Buffer = fs.readFileSync(file, { flag: 'r' });
+
+  let offset = 0;
+  const magic = buf.readUInt32LE(offset); offset += 4;
+  const version = buf.readUInt32LE(offset); offset += 4;
+  const num_entries = buf.readInt32LE(offset); offset += 4;
+  const num_bytes = buf.readInt32LE(offset); offset += 4;
+  const last_file = buf.readInt32LE(offset); offset += 4;
+  const this_id = buf.readInt32LE(offset); offset += 4;
+  const stats = buf.readUInt32LE(offset); offset += 4;
+  const table_len = buf.readInt32LE(offset); offset += 4;
+  const crash = buf.readInt32LE(offset); offset += 4;
+  const experiment = buf.readInt32LE(offset); offset += 4;
+  const create_time = buf.readBigUInt64LE(offset); offset += 8;
+  const pad = buf.slice(offset, offset + 52 * 4); offset += 52 * 4;
+  const lru = buf.slice(offset, offset + 112); offset += 112;
+  const table: number[] = [];
+
+  for (let i = 0; i < table_len; i++) {
+    let addr = buf.readUInt32LE(offset);
+    if ((addr & 0x80000000) !== 0) {
+      // 这一步是只获取有效的缓存地址
+      table.push(addr);
+    }
+    offset += 4;
+  }
+
+  return { magic, version, num_entries, num_bytes, last_file, this_id,
+    stats, table_len, crash, experiment, create_time, pad, lru, table }
+}
+```
+
+数据块文件的读取：
+
+```typescript
+import fs from 'fs'
+
+interface BlockFile {
+  magic: number          // unsigned int
+  version: number        // unsigned int
+  this_file: number      // int16
+  next_file: number      // int16
+  entry_size: number     // int
+  num_entries: number    // int
+  max_entries: number    // int
+  empty: number[]        // int[4]
+  hints: number[]        // int[4]
+  updating: number       // int
+  user: number[]         // int[5]
+  allocation_map: Buffer // unsigned int[2028] -> 2028 * 4 = 8112 bytes
+  data: Buffer           // block data
+}
+
+function readBlockFile(file: string): BlockFile {
+  const buf = fs.readFileSync(file, { flag: 'r' });
+
+  let offset = 0;
+  const magic = buf.readUInt32LE(offset); offset += 4;
+  const version = buf.readUInt32LE(offset); offset += 4;
+  const this_file = buf.readInt16LE(offset); offset += 2;
+  const next_file = buf.readInt16LE(offset); offset += 2;
+  const entry_size = buf.readInt32LE(offset); offset += 4;
+  const num_entries = buf.readInt32LE(offset); offset += 4;
+  const max_entries = buf.readInt32LE(offset); offset += 4;
+
+  function readInt32LEArray(length: number): number[] {
+    const array: number[] = [];
+    for (let i = 0; i < length; i++) {
+      let value = buf.readInt32LE(offset);
+      array.push(value);
+      offset += 4;
+    }
+    return array;
+  }
+
+  const empty = readInt32LEArray(4);
+  const hints = readInt32LEArray(4);
+  const updating = buf.readInt32LE(offset); offset += 4;
+  const user = readInt32LEArray(5);
+  const allocation_map = buf.slice(offset, offset + 2028 * 4); offset += 2028 * 4;
+  const data = buf.slice(offset);
+
+  return { magic, version, this_file, next_file, entry_size, num_entries,
+    max_entries, empty, hints, updating, user, allocation_map, data }
+}
+
+const BlockSizeMappings: Record<number, number> = {
+  1: 36,
+  2: 256,
+  3: 1024,
+  4: 4096,
+  5: 8,
+  6: 104,
+  7: 48
+}
+
+function readBlockFileData(blockFile: BlockFile, addr: number): Buffer {
+  if ((addr & 0x80000000) === 0) {
+    throw new Error('Invalid address')
+  }
+
+  if ((addr & 0x70000000) === 0) {
+    throw new Error('Address is not block file')
+  } else {
+    const file_type = (addr & 0x70000000) >> 28;
+    const block_size = BlockSizeMappings[file_type] || 0;
+    const num_blocks = ((addr & 0x03000000) >> 24) + 1;
+    const offset = (addr & 0x0000FFFF) * block_size;
+    const length = block_size * num_blocks;
+    return blockFile.data.slice(offset, offset + length);
+  }
+}
+```
+
+存储条目的读取实现：
+
+```typescript
+interface EntryStore {
+  hash: number          // unsigned int
+  next: number          // unsigned int
+  rankings_node: number // unsigned int
+  reuse_count: number   // int
+  refetch_count: number // int
+  state: number         // int
+  creation_time: bigint // unsigned int64
+  key_len: number       // int
+  long_key: number      // unsigned int
+  data_size: number[]   // unsigned int[4]
+  data_addr: number[]   // unsigned int[4]
+  flags: number         // unsigned int
+  pad: Buffer           // int[4] -> 4 * 4 = 16 bytes
+  self_hash: number     // unsigned int
+  key: Buffer           // char[160]
+}
+
+function readEntryStore(blockFile: BlockFile, addr: number): EntryStore {
+  const data = readBlockFileData(blockFile, addr);
+
+  let offset = 0;
+  const hash = data.readUInt32LE(offset); offset += 4;
+  const next = data.readUInt32LE(offset); offset += 4;
+  const rankings_node = data.readUInt32LE(offset); offset += 4;
+  const reuse_count = data.readInt32LE(offset); offset += 4;
+  const refetch_count = data.readInt32LE(offset); offset += 4;
+  const state = data.readInt32LE(offset); offset += 4;
+  const creation_time = data.readBigUInt64LE(offset); offset += 8;
+  const key_len = data.readInt32LE(offset); offset += 4;
+  const long_key = data.readUInt32LE(offset); offset += 4;
+
+  const data_size = [
+    data.readUInt32LE(offset + 0),
+    data.readUInt32LE(offset + 4),
+    data.readUInt32LE(offset + 8),
+    data.readUInt32LE(offset + 12),
+  ]; offset += 16;
+  const data_addr = [
+    data.readUInt32LE(offset + 0),
+    data.readUInt32LE(offset + 4),
+    data.readUInt32LE(offset + 8),
+    data.readUInt32LE(offset + 12),
+  ]; offset += 16;
+
+  const flags = data.readUInt32LE(offset); offset += 4;
+  const pad = data.slice(offset, offset + 16); offset += 16;
+  const self_hash = data.readUInt32LE(offset); offset += 4;
+  const key = data.slice(offset, offset + 160);
+
+  return { hash, next, rankings_node, reuse_count, refetch_count, state, creation_time,
+    key_len, long_key, data_size, data_addr, flags, pad, self_hash, key }
+}
+```
+
+获取祈愿链接的实现：
+
+> 函数的 `genshinDataDir` 参数就是原神的数据目录。例如：`X:\Genshin Impact\Genshin Impact Game\YuanShen_Data`。可以从读取 `output_log.txt` 文件获取到这个路径。
+
+```typescript
+import path from 'path'
+
+function findGachaUrl(genshinDataDir: string): { creation_time: Date, url: string } {
+  const cacheDir = path.join(genshinDataDir, 'webCaches/Cache/Cache_Data');
+  const indexFile = readIndexFile(path.join(cacheDir, 'index'));
+  const blockFile1 = readBlockFile(path.join(cacheDir, 'data_1'));
+  const blockFile2 = readBlockFile(path.join(cacheDir, 'data_2'));
+
+  const records: Array<{ creation_time: number, url: string }> = [];
+  for (const addr of indexFile.table) {
+    const entry = readEntryStore(blockFile1, addr);
+    if (entry.long_key === 0) {
+      // 存储条目的长键为 0 时说明这个链接是短链接，并不是我们需要的祈愿链接
+      continue;
+    }
+
+    // 用这个长键缓存地址从 data_2 文件获取链接数据
+    // 然后从 key_len 字段截取到正确的链接数据并转为 UTF-8 字符串
+    const data = readBlockFileData(blockFile2, entry.long_key);
+    let url = data.slice(0, entry.key_len).toString('utf-8');
+
+    if (!url.includes('/event/gacha_info/api/getGachaLog?')) {
+      // 这个链接并不一定就是祈愿链接，没有包含这个端点就跳过
+      continue;
+    }
+
+    // 截取正确的部分
+    if (url.startsWith('1/0/')) {
+      url = url.substring(4);
+    }
+
+    // 将 Windows ticks 转换（这里必须要将存储条目的创建时间乘 10 才是正确的 ticks
+    const ticks = entry.creation_time * 10n;
+    const seconds = ticks / 10_000_000n - 11_644_473_600n;
+
+    records.push({
+      creation_time: Number(seconds * 1000n),
+      url
+    })
+  }
+
+  // 按时间戳倒序排序
+  records.sort((a, b) => b.creation_time - a.creation_time);
+
+  // 获取第一个记录
+  const first = records[0];
+  if (!first) {
+    throw new Error('Gacha url not found');
+  }
+
+  return {
+    creation_time: new Date(first.creation_time),
+    url: first.url
+  }
+}
+```
 
 ### Java
 
