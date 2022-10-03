@@ -69,7 +69,7 @@ This diagram shows a disk cache with 7 files on disk: the index file, 5 block-fi
 | `data_4`   | 数据块文件 | `Http Headers` HTTP 头 |
 | `f_######` | 外部块文件 | `Payload` HTTP 有效载荷 |
 
-这些数据文件以二进制 `Little Ending` 小端字节序（低端字节序）存储的。
+这些数据文件以二进制 `Little-Endian` 小端字节序（低端字节序）存储的。
 
 > 注意：目前这个结构为硬盘缓存 v2 版本。
 
