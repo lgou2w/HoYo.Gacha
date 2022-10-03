@@ -13,6 +13,7 @@
 - [前言](#前言)
   - [什么是硬盘缓存](#什么是硬盘缓存)
   - [和原神有什么关系](#和原神有什么关系)
+  - [为什么要用这种方式](#为什么要用这种方式)
 - [结构](#结构)
   - [了解硬盘缓存文件结构](#了解硬盘缓存文件结构)
   - [硬盘缓存的目录文件](#硬盘缓存的目录文件)
@@ -39,6 +40,10 @@
 ### 和原神有什么关系
 
 在原神游戏内打开公告页面或者祈愿历史记录页面。其实就是一个名为 [ZFGameBrowser](https://zenfulcrum.com/browser/docs/Readme.html) 的内置浏览器，它是基于 `Chromium` 内核的。所以这些页面的 `URL` 链接都会被存储在 `硬盘缓存` 里面。
+
+### 为什么要用这种方式
+
+在查看了很多个开源的祈愿记录导出工具，它们基本都是直接使用 `UTF-8` 编码读取 `data_2` 这个文件的方式去查找最后一个祈愿链接。但是最后一个并不一定是最新的有效的，可能是很久之前已经过期了的链接。当你了解 `硬盘缓存` 的数据结构后，就能知道其原因。
 
 ## 结构
 
@@ -457,4 +462,12 @@ WIP...
 
 ## 参考
 
-WIP...
+https://www.chromium.org/developers/design-documents/network-stack/disk-cache/
+
+https://www.chromium.org/developers/design-documents/network-stack/disk-cache/disk-cache-v3
+
+https://github.com/chromium/chromium/blob/main/net/disk_cache/blockfile/disk_format_base.h
+
+https://github.com/chromium/chromium/blob/main/net/disk_cache/blockfile/disk_format.h
+
+https://github.com/libyal/dtformats/blob/main/documentation/Chrome%20Cache%20file%20format.asciidoc
