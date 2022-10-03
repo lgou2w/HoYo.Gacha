@@ -23,6 +23,9 @@
   - [数据块文件](#数据块文件)
   - [存储条目](#存储条目)
 - [实现](#实现)
+  - [Rust](#rust)
+  - [Node.js](#nodejs)
+  - [Java](#java)
 - [参考](#参考)
 
 ## 前言
@@ -161,9 +164,37 @@ Every piece of data stored by the disk cache has a given “cache address”. Th
 | `flags`         | `unsigned int` 无符号 32 位整数          | `条目的标志` |
 | `pad`           | `int[4]` 有符号 32 位整数数组            | `用于填充的空字节数组` 其长度为 4 |
 | `self_hash`     | `unsigned int` 无符号 32 位整数          | `The hash of EntryStore up to this point` |
-| `key`           | `unsigned char[160]` 无符号 8 位字节数组 | `键值` 其长度为 160 |
+| `key`           | `char[160]` 8 位字节数组                | `键值` 其长度为 160 |
 
 ## 实现
+
+由于只需要获取祈愿链接，所以我们只需要用到 `index`、`data_1` 以及 `data_2` 这三个数据文件。从这个 [图中](#了解硬盘缓存文件结构) 可以知道 `index` 文件包含了所有的缓存地址，其每一条地址指向了 `data_1` 文件的某个块数据。这个块数据就是一项 `Entry store` 存储条目。从这个存储条目的 `creation_time` 创建时间和 `key`、`long_key` 就可以获取到这项记录的 `URL` 链接和时间。
+
+> 注意：祈愿链接是包含了 `authkey` 参数的一个非常长的链接，而 `Entry store` 存储条目记录的字段 `key` 是无法存储的。所以要通过 `long_key` 这个长键的缓存地址获取其指向 `data_2` 文件的块数据，才能够得到正确的完整的祈愿链接数据。
+
+流程说明如下：
+
+1. 读取 `index` 索引文件的所有缓存地址。
+2. 遍历这个缓存地址表从其 `data_1` 文件依次读取到 `Entry store` 存储条目。
+3. 判断这个存储条目的 `long_key` 不为 `0` 时，说明这是一个有效的长键缓存地址。
+4. 再用这个 `long_key` 长键缓存地址从其 `data_2` 文件读取所对应的 URL 链接数据。
+5. 判断是否为正确的祈愿链接，并和存储条目的 `creation_time` 创建时间一同添加到集合。
+6. 最后按创建时间倒序排序，其第一个就是最新的有效的祈愿链接。
+
+> 下面有 Rust、Node.js、Java 语言的对应实现源代码。由于本人对其他语言，例如 C#、Python、Go 这些了解不深，无法提供其实现。
+
+### Rust
+
+请参考本仓库内的源代码实现：
+
+- 硬盘缓存：[disk_cache/src/](disk_cache/src/)
+- 获取祈愿链接：[gacha/src/url.rs](gacha/src/url.rs)
+
+### Node.js
+
+WIP...
+
+### Java
 
 WIP...
 
