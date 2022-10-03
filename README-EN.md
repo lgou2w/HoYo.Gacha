@@ -10,7 +10,7 @@
 
 A tool to get **`Genshin Impact`** gacha logs.
 
-No need for a local proxy server. Just read the `Chromium` disk cache file and request the api endpoint.
+**No need for a local proxy server**. Just read the `Chromium` [disk cache](#disk-cache) file and request the api endpoint.
 
 > **I'm learning Rust, and there can be a lot of problems with code design. Contributions and pull requests are welcome.**
 
@@ -23,19 +23,9 @@ No need for a local proxy server. Just read the `Chromium` disk cache file and r
 - [x] Command line tool. See also: [CLI](https://github.com/lgou2w/genshin-gacha/tree/main/cli/README-EN.md)
 - [ ] More tools in development...
 
-## Reference
+## Disk Cache
 
-> **For more information about how to get a gacha url from the `Chromium Disk Cache`. See also: [DISK-CACHE.md](DISK-CACHE.md)**
-
-https://www.chromium.org/developers/design-documents/network-stack/disk-cache/
-
-https://www.chromium.org/developers/design-documents/network-stack/disk-cache/disk-cache-v3
-
-https://github.com/chromium/chromium/blob/main/net/disk_cache/blockfile/disk_format_base.h
-
-https://github.com/chromium/chromium/blob/main/net/disk_cache/blockfile/disk_format.h
-
-https://github.com/libyal/dtformats/blob/main/documentation/Chrome%20Cache%20file%20format.asciidoc
+**For more information about how to get a gacha url from the `Chromium Disk Cache`. See also: [DISK-CACHE.md](DISK-CACHE.md)**
 
 ## License
 

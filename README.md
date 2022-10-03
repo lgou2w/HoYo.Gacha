@@ -10,7 +10,7 @@
 
 用于获取 **`原神`** 祈愿记录的工具。
 
-无需任何本地代理服务器。只需读取 `Chromium` 硬盘缓存文件并请求 API 端点。
+**无需任何本地代理服务器**。只需读取 `Chromium` [硬盘缓存](#硬盘缓存)文件并请求 API 端点。
 
 > **我正在学习 Rust，代码设计可能存在很多问题。欢迎贡献和 PR。**
 
@@ -23,19 +23,9 @@
 - [x] 命令行工具。另见：[CLI](https://github.com/lgou2w/genshin-gacha/tree/main/cli/README.md)
 - [ ] 更多工具开发中...
 
-## 参考
+## 硬盘缓存
 
-> **关于从 `Chromium Disk Cache` 硬盘缓存获取祈愿链接的实现原理请参考：[DISK-CACHE.md](DISK-CACHE.md)**
-
-https://www.chromium.org/developers/design-documents/network-stack/disk-cache/
-
-https://www.chromium.org/developers/design-documents/network-stack/disk-cache/disk-cache-v3
-
-https://github.com/chromium/chromium/blob/main/net/disk_cache/blockfile/disk_format_base.h
-
-https://github.com/chromium/chromium/blob/main/net/disk_cache/blockfile/disk_format.h
-
-https://github.com/libyal/dtformats/blob/main/documentation/Chrome%20Cache%20file%20format.asciidoc
+**关于从 `Chromium Disk Cache` 硬盘缓存获取祈愿链接的实现原理请参考：[DISK-CACHE.md](DISK-CACHE.md)**
 
 ## 协议
 
