@@ -70,7 +70,7 @@ This diagram shows a disk cache with 7 files on disk: the index file, 5 block-fi
 
 这些数据文件以二进制 `Little-Endian` 小端字节序（低端字节序）存储的。
 
-> 注意：目前这个结构为硬盘缓存 v2 版本。
+> 注意：目前文档实现的硬盘缓存结构是 v2 版本。
 
 ### 索引文件
 
@@ -201,7 +201,7 @@ Every piece of data stored by the disk cache has a given “cache address”. Th
 > 结构内的 `pad` 和 `lru` 字段对获取祈愿链接没有作用，所以直接用 `Buffer.slice` 截取比较方便。而 `table` 字段就是索引文件实际的缓存地址表数据，我们通过 `table_len` 字段可以知道实际长度然后遍历读取即可。并且读取到 `addr` 后的地方使用到了一个 `if ((addr & 0x80000000) !== 0)` 的操作，这一步是只获取有效的缓存地址。因为如果某一项缓存地址未被使用时，它的值一定为 `0` 。
 
 ```typescript
-import fs from 'fs'
+import fs from 'fs';
 
 interface IndexFile {
   magic: number       // unsigned int
@@ -249,14 +249,14 @@ function readIndexFile(file: string): IndexFile {
   }
 
   return { magic, version, num_entries, num_bytes, last_file, this_id,
-    stats, table_len, crash, experiment, create_time, pad, lru, table }
+    stats, table_len, crash, experiment, create_time, pad, lru, table };
 }
 ```
 
 数据块文件的读取：
 
 ```typescript
-import fs from 'fs'
+import fs from 'fs';
 
 interface BlockFile {
   magic: number          // unsigned int
@@ -304,7 +304,7 @@ function readBlockFile(file: string): BlockFile {
   const data = buf.slice(offset);
 
   return { magic, version, this_file, next_file, entry_size, num_entries,
-    max_entries, empty, hints, updating, user, allocation_map, data }
+    max_entries, empty, hints, updating, user, allocation_map, data };
 }
 
 const BlockSizeMappings: Record<number, number> = {
@@ -315,15 +315,15 @@ const BlockSizeMappings: Record<number, number> = {
   5: 8,
   6: 104,
   7: 48
-}
+};
 
 function readBlockFileData(blockFile: BlockFile, addr: number): Buffer {
   if ((addr & 0x80000000) === 0) {
-    throw new Error('Invalid address')
+    throw new Error('Invalid address');
   }
 
   if ((addr & 0x70000000) === 0) {
-    throw new Error('Address is not block file')
+    throw new Error('Address is not block file');
   } else {
     const file_type = (addr & 0x70000000) >> 28;
     const block_size = BlockSizeMappings[file_type] || 0;
@@ -374,13 +374,13 @@ function readEntryStore(blockFile: BlockFile, addr: number): EntryStore {
     data.readUInt32LE(offset + 0),
     data.readUInt32LE(offset + 4),
     data.readUInt32LE(offset + 8),
-    data.readUInt32LE(offset + 12),
+    data.readUInt32LE(offset + 12)
   ]; offset += 16;
   const data_addr = [
     data.readUInt32LE(offset + 0),
     data.readUInt32LE(offset + 4),
     data.readUInt32LE(offset + 8),
-    data.readUInt32LE(offset + 12),
+    data.readUInt32LE(offset + 12)
   ]; offset += 16;
 
   const flags = data.readUInt32LE(offset); offset += 4;
@@ -389,7 +389,7 @@ function readEntryStore(blockFile: BlockFile, addr: number): EntryStore {
   const key = data.slice(offset, offset + 160);
 
   return { hash, next, rankings_node, reuse_count, refetch_count, state, creation_time,
-    key_len, long_key, data_size, data_addr, flags, pad, self_hash, key }
+    key_len, long_key, data_size, data_addr, flags, pad, self_hash, key };
 }
 ```
 
@@ -398,7 +398,7 @@ function readEntryStore(blockFile: BlockFile, addr: number): EntryStore {
 > 函数的 `genshinDataDir` 参数就是原神的数据目录。例如：`X:\Genshin Impact\Genshin Impact Game\YuanShen_Data`。可以从读取 `output_log.txt` 文件获取到这个路径。
 
 ```typescript
-import path from 'path'
+import path from 'path';
 
 function findGachaUrl(genshinDataDir: string): { creation_time: Date, url: string } {
   const cacheDir = path.join(genshinDataDir, 'webCaches/Cache/Cache_Data');
@@ -436,7 +436,7 @@ function findGachaUrl(genshinDataDir: string): { creation_time: Date, url: strin
     records.push({
       creation_time: Number(seconds * 1000n),
       url
-    })
+    });
   }
 
   // 按时间戳倒序排序
@@ -451,7 +451,7 @@ function findGachaUrl(genshinDataDir: string): { creation_time: Date, url: strin
   return {
     creation_time: new Date(first.creation_time),
     url: first.url
-  }
+  };
 }
 ```
 
