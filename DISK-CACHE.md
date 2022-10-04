@@ -26,14 +26,13 @@
 - [实现](#实现)
   - [Rust](#rust)
   - [Node.js](#nodejs)
-  - [Java](#java)
 - [参考](#参考)
 
 ## 前言
 
 ### 什么是硬盘缓存
 
-> `磁盘缓存` 存储从 Web 获取的资源，以便以后可以在需要时快速访问它们。
+`磁盘缓存` 存储从 Web 获取的资源，以便以后可以在需要时快速访问它们。
 
 引用自：[Overview](https://www.chromium.org/developers/design-documents/network-stack/disk-cache/#overview)
 
@@ -186,7 +185,7 @@ Every piece of data stored by the disk cache has a given “cache address”. Th
 5. 判断是否为正确的祈愿链接，并和存储条目的 `creation_time` 创建时间一同添加到集合。
 6. 最后按创建时间倒序排序，其第一个就是最新的祈愿链接。
 
-> 下面有 Rust、Node.js、Java 语言的对应实现源代码。由于本人对其他语言，例如 C#、Python、Go 这些了解不深，无法提供其实现。
+> 下面有 Rust 和 Node.js 语言的对应实现源代码。由于本人对其他语言，例如 C#、Python、Go 这些了解不深，无法提供其实现。
 
 ### Rust
 
@@ -336,7 +335,7 @@ function readBlockFileData(blockFile: BlockFile, addr: number): Buffer {
 }
 ```
 
-存储条目的读取实现：
+存储条目的读取：
 
 ```typescript
 interface EntryStore {
@@ -394,7 +393,7 @@ function readEntryStore(blockFile: BlockFile, addr: number): EntryStore {
 }
 ```
 
-获取祈愿链接的实现：
+获取祈愿链接：
 
 > 函数的 `genshinDataDir` 参数就是原神的数据目录。例如：`X:\Genshin Impact\Genshin Impact Game\YuanShen_Data`。可以从读取 `output_log.txt` 文件获取到这个路径。
 
@@ -455,10 +454,6 @@ function findGachaUrl(genshinDataDir: string): { creation_time: Date, url: strin
   }
 }
 ```
-
-### Java
-
-WIP...
 
 ## 参考
 
