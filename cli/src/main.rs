@@ -10,6 +10,7 @@ use std::env::current_dir;
 use std::fs::File;
 use std::io::{ErrorKind, Read, Write};
 use std::path::{Path, PathBuf};
+use std::process::exit;
 use clap::{arg, value_parser, ArgAction, Command};
 use chrono::{Duration, Local, Utc, SecondsFormat, DateTime};
 use gacha::log::GachaLogEntry;
@@ -41,7 +42,7 @@ fn main() {
   match matches.subcommand() {
     Some(("url", sub_matches)) => {
       let genshin_data_dir = genshin::get_game_data_dir_path().unwrap();
-      let (creation_time, gacha_url) = find_gacha_url(&genshin_data_dir);
+      let (creation_time, gacha_url) = find_gacha_url(&genshin_data_dir, true);
       print_genshin_gacha_url(&creation_time, &gacha_url, sub_matches.get_flag("verbose"));
     },
     Some(("logs", sub_matches)) => {
@@ -50,22 +51,30 @@ fn main() {
         panic!("参数 out 必须是一个目录文件夹");
       } else {
         let genshin_data_dir = genshin::get_game_data_dir_path().unwrap();
-        let (creation_time, gacha_url) = find_gacha_url(&genshin_data_dir);
-        let (out_time, gacha_logs_vec) = fetch_all_gacha_logs(&creation_time, &gacha_url);
+        let (creation_time, gacha_url) = find_gacha_url(&genshin_data_dir, true);
+        let (out_time, gacha_logs_vec) = fetch_all_gacha_logs(&creation_time, &gacha_url, true);
         export_genshin_gacha_logs(&gacha_logs_vec, &out_time, out_directory);
       }
     },
     Some((other, _)) => {
       let input_path = Path::new(other);
       if !input_path.is_file() {
-        panic!("数据合并的输入参数必须是一个文件");
+        println!("数据合并的输入参数必须是一个文件");
+        wait_enter();
+        exit(1);
       }
 
-      let input_file = File::open(input_path).expect("无法打开文件");
-      let old_data = UIGFGachaLog::from_reader(input_file)
-        .expect("文件不是一个有效的 UIGF 标准祈愿 JSON 数据");
+      let input_file = File::open(input_path).unwrap();
+      let old_data = UIGFGachaLog::from_reader(input_file);
 
-      gacha_workflow(Some(old_data));
+      match old_data {
+        Ok(data) => gacha_workflow(Some(data)),
+        Err(err) => {
+          println!("文件不是一个有效的 UIGF 标准祈愿 JSON 数据：{:?}", err);
+          wait_enter();
+          exit(1);
+        }
+      }
     },
     _ => {
       gacha_workflow(None);
@@ -75,14 +84,14 @@ fn main() {
 
 fn gacha_workflow(merge_data: Option<UIGFGachaLog>) {
   let genshin_data_dir = genshin::get_game_data_dir_path().unwrap();
-  let (creation_time, gacha_url) = find_gacha_url(&genshin_data_dir);
+  let (creation_time, gacha_url) = find_gacha_url(&genshin_data_dir, false);
 
   // Print url
   print_genshin_gacha_url(&creation_time, &gacha_url, true);
 
   // Fetch
   std::thread::sleep(std::time::Duration::from_secs(3));
-  let (out_time, mut gacha_logs_vec) = fetch_all_gacha_logs(&creation_time, &gacha_url);
+  let (out_time, mut gacha_logs_vec) = fetch_all_gacha_logs(&creation_time, &gacha_url, false);
 
   // Merge
   if let Some(ref old_data) = merge_data {
@@ -95,19 +104,32 @@ fn gacha_workflow(merge_data: Option<UIGFGachaLog>) {
   let out_directory = current_dir().unwrap();
   export_genshin_gacha_logs(&gacha_logs_vec, &out_time, &out_directory);
 
-  // Await exit
+  wait_enter();
+}
+
+fn wait_enter () {
+  // Wait exit
   let mut stdout = std::io::stdout();
   stdout.write("按回车继续...".as_bytes()).unwrap();
   stdout.flush().unwrap();
   std::io::stdin().read(&mut [0]).unwrap();
 }
 
-fn find_gacha_url(genshin_data_dir: &PathBuf) -> (DateTime<Utc>, String) {
+fn find_gacha_url(genshin_data_dir: &PathBuf, cli: bool) -> (DateTime<Utc>, String) {
   match gacha::url::find_recent_gacha_url(genshin_data_dir) {
     Ok(result) => result,
     Err(error) => {
       match error.kind() {
-        ErrorKind::NotFound => panic!("祈愿链接未找到。请先在游戏内打开祈愿历史记录页面！"),
+        ErrorKind::NotFound => {
+          const ERROR: &'static str = "祈愿链接未找到。请先在游戏内打开祈愿历史记录页面！";
+          if cli {
+            panic!("{ERROR}");
+          } else {
+            println!("{ERROR}");
+            wait_enter();
+            exit(1);
+          }
+        },
         _ => panic!("{:?}", error)
       }
     }
@@ -128,16 +150,24 @@ fn print_genshin_gacha_url(creation_time: &DateTime<Utc>, gacha_url: &str, verbo
     println!("是否已过期：{}", now >= expire_time);
     println!();
     println!("{}", gacha_url);
+    println!();
   }
 }
 
 type GachaLogsVec = Vec<(&'static str, &'static str, Vec<GachaLogEntry>)>;
 
-fn fetch_all_gacha_logs(creation_time: &DateTime<Utc>, gacha_url: &str) -> (DateTime<Local>, GachaLogsVec) {
+fn fetch_all_gacha_logs(creation_time: &DateTime<Utc>, gacha_url: &str, cli: bool) -> (DateTime<Local>, GachaLogsVec) {
   let now = Local::now();
   let expire_time = (*creation_time + Duration::days(1)).with_timezone(&Local);
   if now >= expire_time {
-    panic!("最新的祈愿链接已过期。请在游戏内重新打开祈愿历史记录页面！");
+    const ERROR: &'static str = "最新的祈愿链接已过期。请在游戏内重新打开祈愿历史记录页面！";
+    if cli {
+      panic!("{ERROR}");
+    } else {
+      println!("{ERROR}");
+      wait_enter();
+      exit(1);
+    }
   }
 
   // TODO: locale
