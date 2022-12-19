@@ -67,7 +67,8 @@ fn entry_store_creation_time_as_utc(entry: &EntryStore) -> DateTime<Utc> {
     creation_time * 10
   );
   NaiveDateTime
-    ::from_timestamp(seconds, nano_seconds)
+    ::from_timestamp_opt(seconds, nano_seconds)
+    .expect("Invalid creation time")
     .and_local_timezone(Utc)
     .unwrap()
 }
