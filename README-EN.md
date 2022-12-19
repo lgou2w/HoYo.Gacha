@@ -4,7 +4,7 @@
 # Genshin Gacha
 
 <p>
-<a href="https://github.com/lgou2w/genshin-gacha/actions"><img src="https://img.shields.io/github/workflow/status/lgou2w/genshin-gacha/Build?logo=github&style=flat-square"/></a>
+<a href="https://github.com/lgou2w/genshin-gacha/actions"><img src="https://img.shields.io/github/actions/workflow/status/lgou2w/genshin-gacha/build.yml?branch=main&logo=github&style=flat-square"/></a>
 <a href="https://github.com/lgou2w/genshin-gacha/releases"><img src="https://img.shields.io/github/v/release/lgou2w/genshin-gacha?logo=github&style=flat-square" /></a>
 </p>
 
