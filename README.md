@@ -1,6 +1,3 @@
-- **简体中文**
-- [English](README-EN.md)
-
 # Genshin Gacha
 
 <p>
@@ -12,16 +9,9 @@
 
 **无需任何本地代理服务器**。只需读取 `Chromium` [硬盘缓存](DISK-CACHE.md)文件并请求 API 端点。
 
-> **我正在学习 Rust，代码设计可能存在很多问题。欢迎贡献和 PR。**
-
 ## 功能
 
-- [x] 获取祈愿链接。
-- [x] 获取最新的祈愿记录。
-- [x] 导出为 `JSON`（[UIGF](https://www.snapgenshin.com/development/UIGF.html)）和 `Excel` 格式。
-- [x] 导入旧的 `JSON`（[UIGF](https://www.snapgenshin.com/development/UIGF.html)）数据并自动完成获取最新的祈愿记录然后合并，最后导出。
-- [x] 命令行工具。另见：[CLI](https://github.com/lgou2w/genshin-gacha/tree/main/cli/README.md)
-- [ ] 更多工具开发中...
+TODO：Refactoring
 
 ## 硬盘缓存
 

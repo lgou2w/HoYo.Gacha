@@ -1,3 +1,0 @@
-# Genshin Gacha - CLI
-
-English TODO...
