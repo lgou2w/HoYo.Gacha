@@ -10,8 +10,12 @@ build = "build.rs"
 tauri-build = { version = "1", features = [] }
 
 [dependencies]
+byteorder = "1.4.3"
+chrono = { version = "0.4.23", default-features = false, features = ["std", "clock"] }
+lazy_static = "1.4.0"
+serde = { version = "1.0.152", features = ["derive"] }
 tauri = { version = "1", features = ["api-all"] }
 
 [features]
-default = [ "custom-protocol" ]
-custom-protocol = [ "tauri/custom-protocol" ]
+default = ["custom-protocol"]
+custom-protocol = ["tauri/custom-protocol"]

@@ -5,8 +5,13 @@
 
 extern crate tauri;
 
+mod disk_cache;
+mod genshin;
+mod commands;
+
 fn main() {
   tauri::Builder::default()
+    .invoke_handler(commands::get_handlers())
     .run(tauri::generate_context!())
     .expect("error while runing tauri application")
 }
