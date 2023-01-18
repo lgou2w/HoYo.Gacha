@@ -30,7 +30,7 @@ pub fn get_game_data_dir_path() -> Result<PathBuf> {
   for line in reader.lines() {
     let line = line.unwrap();
     if line.contains("/GenshinImpact_Data/") || line.contains("/YuanShen_Data/") {
-      if let Some(colon) = line.find(':') {
+      if let Some(colon) = line.rfind(':') {
         if let Some(end) = line.find("_Data/") {
           // -> X:/Foo/Bar/(GenshinImpact|YuanShen)_Data/
           let path = &line[colon - 1..end + 6];
