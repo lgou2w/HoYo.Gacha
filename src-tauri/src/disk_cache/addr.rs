@@ -1,11 +1,13 @@
 extern crate byteorder;
 extern crate lazy_static;
+extern crate serde;
 
 use std::cmp::Ordering;
 use std::collections::HashMap;
 use std::io::{Read, Result};
 use byteorder::{ByteOrder, ReadBytesExt};
 use lazy_static::lazy_static;
+use serde::ser::{Serialize, Serializer};
 
 const ADDR_INITIALIZED_MASK     : u32 = 0x80000000;
 const ADDR_FILE_TYPE_MASK       : u32 = 0x70000000;
@@ -117,3 +119,10 @@ pub trait ReadCacheAddrExt: Read {
 }
 
 impl<R: Read + ?Sized> ReadCacheAddrExt for R {}
+
+impl Serialize for CacheAddr {
+  fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+  where S: Serializer {
+    serializer.serialize_u32(self.0)
+  }
+}

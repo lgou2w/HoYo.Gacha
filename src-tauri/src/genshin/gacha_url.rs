@@ -4,7 +4,7 @@ extern crate serde;
 use std::io::Result;
 use std::path::Path;
 use chrono::{DateTime, Duration, Local, NaiveDateTime, SecondsFormat, Utc};
-use serde::Serialize;
+use serde::ser::{Serialize, Serializer, SerializeStruct};
 use crate::disk_cache::{CacheAddr, IndexFile, BlockFile, EntryStore};
 
 pub const GACHA_URL_ENDPOINT: &str = "/event/gacha_info/api/getGachaLog?";
@@ -16,33 +16,27 @@ pub struct GachaUrl {
   pub url: String
 }
 
-#[derive(Debug, Serialize)]
-pub struct SerializedGachaUrl {
-  pub addr: u32,
-  pub creation_time: String,
-  pub url: String
-}
-
 impl GachaUrl {
   pub fn is_expired(&self, current_time: &DateTime<Local>) -> bool {
-    let expired_time = (self.creation_time + Duration::days(1)).with_timezone(&Local);
-    *current_time >= expired_time
+    let expiration_time = (self.creation_time + Duration::days(1)).with_timezone(&Local);
+    *current_time >= expiration_time
   }
 }
 
-impl From<GachaUrl> for SerializedGachaUrl {
-  fn from(value: GachaUrl) -> Self {
-    Self {
-      addr: value.addr.into(),
-      creation_time: value.creation_time.to_rfc3339_opts(SecondsFormat::Millis, true),
-      url: value.url
-    }
+impl Serialize for GachaUrl {
+  fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+  where S: Serializer {
+    let mut state = serializer.serialize_struct("GachaUrl", 3)?;
+    state.serialize_field("addr", &self.addr)?;
+    state.serialize_field("creationTime", &self.creation_time.to_rfc3339_opts(SecondsFormat::Millis, true))?;
+    state.serialize_field("url", &self.url)?;
+    state.end()
   }
 }
 
-pub fn find_gacha_urls(genshin_data_dir: &Path) -> Result<Vec<GachaUrl>> {
+pub fn find_gacha_urls(game_data_dir: &Path) -> Result<Vec<GachaUrl>> {
   // Join the path to the web cache data directory
-  let cache_dir = genshin_data_dir.join("webCaches/Cache/Cache_Data");
+  let cache_dir = game_data_dir.join("webCaches/Cache/Cache_Data");
 
   // Read index file and data_1, data_2 block files
   let index_file = IndexFile::from_file(cache_dir.join("index"))?;
@@ -90,9 +84,9 @@ pub fn find_gacha_urls(genshin_data_dir: &Path) -> Result<Vec<GachaUrl>> {
   Ok(result)
 }
 
-pub fn find_recent_gacha_url(genshin_data_dir: &Path) -> Option<GachaUrl> {
+pub fn find_recent_gacha_url(game_data_dir: &Path) -> Option<GachaUrl> {
   // Find all gacha urls
-  let mut gacha_urls = match find_gacha_urls(genshin_data_dir) {
+  let mut gacha_urls = match find_gacha_urls(game_data_dir) {
     Ok(result) => result,
     Err(_) => return None
   };

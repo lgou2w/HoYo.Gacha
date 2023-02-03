@@ -1,27 +1,31 @@
-import React, { useState, useEffect } from 'react'
-import { findGameDataDir, findRecentGachaUrl } from './utilities/commands'
+import React from 'react'
+import { ThemeProvider, createTheme } from '@mui/material/styles'
+import { zhCN } from '@mui/material/locale'
+import CssBaseline from '@mui/material/CssBaseline'
+import Box from '@mui/material/Box'
+import AppNavbar from './components/navbar'
+import AppSidebar from './components/sidebar'
+import AppContent from './components/content'
+import AppRoutes from './routes'
+import './assets/index.css'
+
+const theme = createTheme({
+  typography: {
+    fontFamily: '汉仪文黑-85w'
+  }
+}, zhCN)
 
 export default function App () {
-  const [gameDataDir, setGameDataDir] = useState<string>()
-  const [gachaUrl, setGachaUrl] = useState<Awaited<ReturnType<typeof findRecentGachaUrl>> | string>()
-
-  useEffect(() => {
-    globalThis.setTimeout(() => {
-      findGameDataDir()
-        .then(setGameDataDir)
-        .catch(setGameDataDir)
-      findRecentGachaUrl()
-        .then(setGachaUrl)
-        .catch(setGachaUrl)
-    }, 1000)
-  }, [])
-
   return (
-    <div className="app m-4">
-      <h1 className="text-xl text-red-300">Genshin Gacha</h1>
-      <p className="text-lg text-black">原神</p>
-      {gameDataDir && <p>游戏数据目录：{gameDataDir}</p>}
-      {gachaUrl && <p>祈愿链接：{JSON.stringify(gachaUrl)}</p>}
-    </div>
+    <ThemeProvider theme={theme}>
+      <Box sx={{ display: 'flex' }}>
+        <CssBaseline />
+        <AppNavbar />
+        <AppSidebar />
+        <AppContent>
+          <AppRoutes />
+        </AppContent>
+      </Box>
+    </ThemeProvider>
   )
 }
