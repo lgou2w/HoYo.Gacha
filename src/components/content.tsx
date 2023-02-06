@@ -1,12 +1,12 @@
 import React, { PropsWithChildren } from 'react'
 import Box from '@mui/material/Box'
-import Toolbar from '@mui/material/Toolbar'
 import Container from '@mui/material/Container'
+import AppNavbar from './navbar'
 
 export default function AppContent (props: PropsWithChildren) {
   return (
     <Box component="main" sx={{ flexGrow: 1, height: '100vh' }}>
-      <Toolbar disableGutters />
+      <AppNavbar />
       <Container maxWidth={false} sx={{ padding: 2 }} disableGutters>
         {props.children}
       </Container>

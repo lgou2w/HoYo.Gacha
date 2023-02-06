@@ -1,11 +1,11 @@
 extern crate tauri;
 
 use tauri::State;
-use super::{AccountManage, Accounts, Account};
+use super::{AccountManage, AccountManageInner, Account};
 
 #[tauri::command]
-pub fn cmd_get_accounts(state: State<AccountManage>) -> Accounts {
-  state.get_accounts()
+pub fn cmd_get_account_mange(state: State<AccountManage>) -> AccountManageInner {
+  state.get_inner()
 }
 
 #[tauri::command]
@@ -26,6 +26,16 @@ pub fn cmd_remove_account(
   uid: u32
 ) -> Result<Option<Account>, String> {
   let account = state.remove_account(uid);
+  state.save().map_err(|err| err.to_string())?;
+  Ok(account)
+}
+
+#[tauri::command]
+pub fn cmd_select_account(
+  state: State<AccountManage>,
+  uid: u32
+) -> Result<Account, String> {
+  let account = state.select_account(uid)?;
   state.save().map_err(|err| err.to_string())?;
   Ok(account)
 }

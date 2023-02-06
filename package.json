@@ -4,12 +4,16 @@
   "description": "A tool to get and export Genshin Impact gacha logs",
   "private": "true",
   "type": "module",
+  "engines": {
+    "node": ">=16.0.0",
+    "pnpm": ">=7.0.0"
+  },
   "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build",
-    "preview": "vite preview",
     "tauri": "tauri",
-    "lint": "eslint --ext .ts,.tsx --ignore-path .gitignore ."
+    "dev": "cross-env NODE_ENV=development vite",
+    "build": "cross-env NODE_ENV=production tsc && vite build",
+    "lint": "eslint --ext .ts,.tsx --ignore-path .gitignore .",
+    "lint:fix": "eslint --fix --ext .ts,.tsx --ignore-path .gitignore ."
   },
   "dependencies": {
     "@emotion/react": "^11.10.5",
@@ -25,12 +29,13 @@
   "devDependencies": {
     "@babel/core": "^7.20.12",
     "@tauri-apps/cli": "^1.2.3",
-    "@types/node": "^16.18.11",
+    "@types/node": "^18.11.19",
     "@types/react": "^18.0.27",
     "@types/react-dom": "^18.0.10",
     "@typescript-eslint/eslint-plugin": "^5.50.0",
     "@typescript-eslint/parser": "^5.50.0",
     "@vitejs/plugin-react": "^3.1.0",
+    "cross-env": "^7.0.3",
     "eslint": "^8.33.0",
     "eslint-config-standard": "^17.0.0",
     "eslint-plugin-import": "^2.27.5",

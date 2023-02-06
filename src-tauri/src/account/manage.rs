@@ -1,3 +1,4 @@
+extern crate serde;
 extern crate serde_json;
 
 use std::collections::hash_map::Entry;
@@ -6,6 +7,8 @@ use std::fs::{create_dir, File};
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::sync::Mutex;
+use serde::{Serialize, Deserialize};
+
 use super::Account;
 use crate::errors;
 
@@ -14,7 +17,13 @@ pub type Accounts = HashMap<u32, Account>;
 #[derive(Debug)]
 pub struct AccountManage {
   file: PathBuf,
-  accounts: Mutex<Accounts>
+  inner: Mutex<AccountManageInner>
+}
+
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
+pub struct AccountManageInner {
+  accounts: Accounts,
+  selected: Option<u32>
 }
 
 impl AccountManage {
@@ -22,7 +31,7 @@ impl AccountManage {
   pub fn new(file: PathBuf) -> Self {
     Self {
       file,
-      accounts: Default::default()
+      inner: Default::default()
     }
   }
 
@@ -40,24 +49,28 @@ impl AccountManage {
 
   pub fn load(&self) -> Result<(), Box<dyn Error>> {
     if self.file.exists() {
-      let mut accounts = self.accounts.lock().unwrap();
+      let mut inner = self.inner.lock().unwrap();
       let file = File::open(&self.file)?;
-      *accounts = serde_json::from_reader(&file)?;
+      *inner = serde_json::from_reader(&file)?;
     }
     Ok(())
   }
 
   pub fn save(&self) -> Result<(), Box<dyn Error>> {
-    let accounts = self.accounts.lock().unwrap();
-    let data = (*accounts).clone();
+    let inner = self.inner.lock().unwrap();
     let file = File::create(&self.file)?;
-    serde_json::to_writer_pretty(&file, &data)?;
+    serde_json::to_writer_pretty(&file, &(*inner))?;
     Ok(())
   }
 
+  pub fn get_inner(&self) -> AccountManageInner {
+    let inner = self.inner.lock().unwrap();
+    inner.clone()
+  }
+
   pub fn get_accounts(&self) -> Accounts {
-    let accounts = self.accounts.lock().unwrap();
-    (*accounts).clone()
+    let inner = self.inner.lock().unwrap();
+    inner.accounts.clone()
   }
 
   pub fn get_account(&self, uid: u32) -> Result<Account, String> {
@@ -67,8 +80,8 @@ impl AccountManage {
   }
 
   pub fn try_get_account(&self, uid: u32) -> Option<Account> {
-    let accounts = self.accounts.lock().unwrap();
-    accounts.get(&uid).cloned()
+    let inner = self.inner.lock().unwrap();
+    inner.accounts.get(&uid).cloned()
   }
 
   pub fn add_account(
@@ -77,8 +90,8 @@ impl AccountManage {
     display_name: Option<String>,
     game_data_dir: String
   ) -> Result<Account, String> {
-    let mut accounts = self.accounts.lock().unwrap();
-    if let Entry::Vacant(e) = accounts.entry(uid) {
+    let mut inner = self.inner.lock().unwrap();
+    if let Entry::Vacant(e) = inner.accounts.entry(uid) {
       let account = e.insert(Account {
         uid,
         display_name,
@@ -91,7 +104,39 @@ impl AccountManage {
   }
 
   pub fn remove_account(&self, uid: u32) -> Option<Account> {
-    let mut accounts = self.accounts.lock().unwrap();
-    accounts.remove(&uid)
+    let mut inner = self.inner.lock().unwrap();
+    let removed = inner.accounts.remove(&uid);
+
+    // And remove current selected
+    if removed.is_some() && inner.selected.eq(&Some(uid)) {
+      inner.selected.take();
+    }
+
+    removed
+  }
+
+  pub fn get_selected(&self) -> Option<u32> {
+    let inner = self.inner.lock().unwrap();
+    inner.selected
+  }
+
+  pub fn get_selected_account(&self) -> Option<Account> {
+    let inner = self.inner.lock().unwrap();
+    if let Some(ref selected) = inner.selected {
+      inner.accounts.get(selected).cloned()
+    } else {
+      None
+    }
+  }
+
+  pub fn select_account(&self, uid: u32) -> Result<Account, String> {
+    let mut inner = self.inner.lock().unwrap();
+    let account = inner.accounts
+      .get(&uid)
+      .cloned()
+      .ok_or(errors::ERR_ACCOUNT_NOT_FOUND)?;
+
+    inner.selected.replace(uid);
+    Ok(account)
   }
 }

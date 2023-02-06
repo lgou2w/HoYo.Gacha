@@ -3,7 +3,7 @@ import { ThemeProvider, createTheme } from '@mui/material/styles'
 import { zhCN } from '@mui/material/locale'
 import CssBaseline from '@mui/material/CssBaseline'
 import Box from '@mui/material/Box'
-import AppNavbar from './components/navbar'
+import { StatefulAccountsProvider } from './hooks/accounts'
 import AppSidebar from './components/sidebar'
 import AppContent from './components/content'
 import AppRoutes from './routes'
@@ -20,11 +20,12 @@ export default function App () {
     <ThemeProvider theme={theme}>
       <Box sx={{ display: 'flex' }}>
         <CssBaseline />
-        <AppNavbar />
-        <AppSidebar />
-        <AppContent>
-          <AppRoutes />
-        </AppContent>
+        <StatefulAccountsProvider>
+          <AppSidebar />
+          <AppContent>
+            <AppRoutes />
+          </AppContent>
+        </StatefulAccountsProvider>
       </Box>
     </ThemeProvider>
   )

@@ -7,6 +7,11 @@ export interface Account {
 
 export type Accounts = Record<number, Account>
 
+export interface AccountManage {
+  accounts: Accounts
+  selected: number | null
+}
+
 /** See: src-tauri/src/genshin/gacha_url.rs */
 export interface GachaUrl {
   addr: number
