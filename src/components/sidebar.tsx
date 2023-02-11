@@ -8,30 +8,21 @@ import Divider from '@mui/material/Divider'
 import Box from '@mui/material/Box'
 import Button, { ButtonTypeMap } from '@mui/material/Button'
 import Typography from '@mui/material/Typography'
-import HomeIcon from '@mui/icons-material/Home'
-import GroupIcon from '@mui/icons-material/Group'
-import StarIcon from '@mui/icons-material/Star'
 import SettingsIcon from '@mui/icons-material/Settings'
-
-const Width = 100
-const Navs = [
-  { title: '首页', href: '/', icon: <HomeIcon /> },
-  { title: '账号', href: '/account', icon: <GroupIcon /> },
-  { title: '祈愿', href: '/gacha', icon: <StarIcon /> }
-]
+import { SidebarWidth, SidebarNavs } from './constants'
 
 export default function AppSidebar () {
   return (
     <Drawer variant="permanent" sx={{
-      width: Width,
+      width: SidebarWidth,
       flexShrink: 0,
       bgcolor: 'white',
       '& .MuiDrawer-paper': {
-        width: Width,
+        width: SidebarWidth,
         boxSizing: 'border-box'
       }
     }}>
-      <Toolbar sx={{ marginX: 'auto' }} variant="dense" disableGutters>
+      <Toolbar sx={{ marginX: 'auto' }} disableGutters>
         LOGO
       </Toolbar>
       <Divider />
@@ -47,7 +38,7 @@ function NavList () {
         marginBottom: 1
       }
     }}>
-      {Navs.map((nav, i) => (
+      {SidebarNavs.map((nav, i) => (
         <NavItem key={i} {...nav} />
       ))}
       <Box marginTop="auto">
@@ -57,7 +48,7 @@ function NavList () {
   )
 }
 
-function NavItem ({ title, href, icon }: typeof Navs[number]) {
+function NavItem ({ title, href, icon }: typeof SidebarNavs[number]) {
   const location = useLocation()
   return (
     <NavButton component={Link} to={href} activated={location.pathname === href} fullWidth>

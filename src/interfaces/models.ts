@@ -5,7 +5,7 @@ export interface Account {
   gameDataDir: string
 }
 
-export type Accounts = Record<number, Account>
+export type Accounts = Record<number | string, Account>
 
 export interface AccountManage {
   accounts: Accounts

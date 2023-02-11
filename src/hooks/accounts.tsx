@@ -1,3 +1,5 @@
+/* eslint-disable camelcase */
+
 import React, { PropsWithChildren, useCallback, useContext, useEffect, useState } from 'react'
 import { Account, Accounts } from '../interfaces/models'
 import Commands from '../utilities/commands'
@@ -8,6 +10,8 @@ interface StatefulAccounts {
   addAccount (account: Account): Promise<void>
   removeAccount (uid: Account['uid']): Promise<void>
   selectAccount (uid: Account['uid']): Promise<void>
+  __debug__clear_accounts?: () => void
+  __debug__reload_accounts?: () => void
 }
 
 const StatefulAccountsContext =
@@ -23,7 +27,8 @@ export const StatefulAccountsProvider = (props: PropsWithChildren) => {
       console.debug('New account added:', result)
       return Object.assign({ [result.uid]: result }, prev)
     })
-  }, [setAccounts])
+    setSelected(result)
+  }, [setAccounts, setSelected])
 
   const removeAccount = useCallback<StatefulAccounts['removeAccount']>(async (uid) => {
     const result = await Commands.removeAccount({ uid })
@@ -33,10 +38,15 @@ export const StatefulAccountsProvider = (props: PropsWithChildren) => {
         console.debug('Account has been removed:', removed)
         return rest
       })
+      setSelected((prev) => {
+        return prev && prev.uid === result.uid
+          ? null // Empty selected
+          : prev
+      })
     } else {
       console.debug('There is no account with uid:', uid)
     }
-  }, [setAccounts])
+  }, [setAccounts, setSelected])
 
   const selectAccount = useCallback<StatefulAccounts['selectAccount']>(async (uid) => {
     if (uid !== selected?.uid) {
@@ -46,7 +56,7 @@ export const StatefulAccountsProvider = (props: PropsWithChildren) => {
     }
   }, [selected, setSelected])
 
-  useEffect(() => {
+  const reload = useCallback(() => {
     console.debug('Loading account manage...')
     Commands
       .getAccountMange()
@@ -58,14 +68,29 @@ export const StatefulAccountsProvider = (props: PropsWithChildren) => {
       .catch((error) => {
         console.error('Failed to load account manage:', error)
       })
-  }, [setAccounts])
+  }, [setAccounts, setSelected])
+
+  useEffect(() => { reload() }, [])
+
+  // HACK: Development only
+  let __debug__clear_accounts: StatefulAccounts['__debug__clear_accounts']
+  let __debug__reload_accounts: StatefulAccounts['__debug__reload_accounts']
+  if (import.meta.env.DEV) {
+    __debug__reload_accounts = reload
+    __debug__clear_accounts = useCallback(() => {
+      setAccounts({})
+      setSelected(null)
+    }, [setAccounts, setSelected])
+  }
 
   const value = {
     accounts,
     selected,
     addAccount,
     removeAccount,
-    selectAccount
+    selectAccount,
+    __debug__clear_accounts,
+    __debug__reload_accounts
   }
 
   return (

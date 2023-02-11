@@ -1,6 +1,8 @@
+extern crate log;
 extern crate tauri;
 
 use std::error::Error;
+use log::debug;
 use tauri::{App, Manager};
 use crate::account::AccountManage;
 
@@ -15,10 +17,10 @@ pub fn get_setup() -> Setup {
 
 fn setup_manage(app: &mut App) -> Result<(), Box<dyn Error>> {
   let data_dir = app.path_resolver().app_data_dir().ok_or("tauri app data dir")?;
-  println!("Data dir: {data_dir:#?}");
+  debug!("Data dir: {data_dir:#?}");
 
   let account_manage = AccountManage::from_data_dir(&data_dir)?;
-  println!("Account manage: {account_manage:#?}");
+  debug!("Account manage: {account_manage:#?}");
   app.manage(account_manage);
 
   Ok(())

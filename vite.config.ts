@@ -32,6 +32,9 @@ export default defineConfig({
       }
     }
   ],
+  define: {
+    __APP_VERSION__: `"${process.env.npm_package_version}"`
+  },
   clearScreen: false,
   server: {
     port: 1420,

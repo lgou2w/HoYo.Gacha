@@ -3,6 +3,7 @@
   windows_subsystem = "windows"
 )]
 
+extern crate env_logger;
 extern crate tauri;
 
 mod disk_cache;
@@ -13,6 +14,7 @@ mod hooks;
 mod commands;
 
 fn main() {
+  env_logger::init();
   tauri::Builder::default()
     .setup(hooks::get_setup())
     .invoke_handler(commands::get_handlers())

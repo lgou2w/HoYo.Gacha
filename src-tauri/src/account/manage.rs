@@ -1,3 +1,4 @@
+extern crate log;
 extern crate serde;
 extern crate serde_json;
 
@@ -7,6 +8,7 @@ use std::fs::{create_dir, File};
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::sync::Mutex;
+use log::debug;
 use serde::{Serialize, Deserialize};
 
 use super::Account;
@@ -48,6 +50,7 @@ impl AccountManage {
   }
 
   pub fn load(&self) -> Result<(), Box<dyn Error>> {
+    debug!("Loading state...");
     if self.file.exists() {
       let mut inner = self.inner.lock().unwrap();
       let file = File::open(&self.file)?;
@@ -57,6 +60,7 @@ impl AccountManage {
   }
 
   pub fn save(&self) -> Result<(), Box<dyn Error>> {
+    debug!("Saving state...");
     let inner = self.inner.lock().unwrap();
     let file = File::create(&self.file)?;
     serde_json::to_writer_pretty(&file, &(*inner))?;
@@ -90,13 +94,15 @@ impl AccountManage {
     display_name: Option<String>,
     game_data_dir: String
   ) -> Result<Account, String> {
-    let mut inner = self.inner.lock().unwrap();
+    let inner = &mut *self.inner.lock().unwrap();
     if let Entry::Vacant(e) = inner.accounts.entry(uid) {
       let account = e.insert(Account {
         uid,
         display_name,
         game_data_dir: PathBuf::from(game_data_dir)
       });
+      debug!("New account added: {account:#?}");
+      inner.selected.replace(account.uid);
       Ok(account.clone())
     } else {
       Err(errors::ERR_ACCOUNT_EXISTED.into())
@@ -107,9 +113,12 @@ impl AccountManage {
     let mut inner = self.inner.lock().unwrap();
     let removed = inner.accounts.remove(&uid);
 
-    // And remove current selected
-    if removed.is_some() && inner.selected.eq(&Some(uid)) {
-      inner.selected.take();
+    if removed.is_some() {
+      debug!("Account has been removed: {removed:#?}");
+      if inner.selected.eq(&Some(uid)) {
+        debug!("Empty selected account: {uid}");
+        inner.selected.take();
+      }
     }
 
     removed
@@ -136,6 +145,7 @@ impl AccountManage {
       .cloned()
       .ok_or(errors::ERR_ACCOUNT_NOT_FOUND)?;
 
+    debug!("Account {uid} selected");
     inner.selected.replace(uid);
     Ok(account)
   }
