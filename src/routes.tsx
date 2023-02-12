@@ -2,10 +2,10 @@
 
 import React from 'react'
 import { Routes, Route, RouteProps } from 'react-router-dom'
-import IndexPage from './pages/index'
-import AccountPage from './pages/account'
-import GachaPage from './pages/gacha'
-import SettingPage from './pages/setting'
+import IndexPage from '@/pages/index'
+import AccountPage from '@/pages/account'
+import GachaPage from '@/pages/gacha'
+import SettingPage from '@/pages/setting'
 
 const routes: RouteProps[] = [
   { path: '/'       , element: <IndexPage />   },

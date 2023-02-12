@@ -2,9 +2,9 @@ import React from 'react'
 import Stack from '@mui/material/Stack'
 import Box from '@mui/material/Box'
 import Typography from '@mui/material/Typography'
-import AccountList from '../components/account/account-list'
-import AddAccountAction from '../components/account/add-account-action'
-import AccountDebugActions from '../components/account/debug-actions'
+import AccountList from '@/components/account/account-list'
+import AddAccountAction from '@/components/account/add-account-action'
+import AccountDebugActions from '@/components/account/debug-actions'
 
 export default function AccountPage () {
   return (

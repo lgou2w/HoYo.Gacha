@@ -8,10 +8,10 @@ import LabelIcon from '@mui/icons-material/LabelOutlined'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import GpsFixedIcon from '@mui/icons-material/GpsFixed'
 import PanToolAltIcon from '@mui/icons-material/PanToolAlt'
-import ConfirmDialog from '../common/confirm-dialog'
+import ConfirmDialog from '@/components/common/confirm-dialog'
 import { FormContainer, TextFieldElement, SubmitHandler, UseFormReturn, useForm } from 'react-hook-form-mui'
-import { useStatefulAccounts } from '../../hooks/accounts'
-import Commands from '../../utilities/commands'
+import { useStatefulAccounts } from '@/hooks/accounts'
+import Commands from '@/utilities/commands'
 import { dialog } from '@tauri-apps/api'
 
 interface FormProps {

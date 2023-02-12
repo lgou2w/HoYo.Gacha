@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import path from 'path'
 
 export default defineConfig({
   plugins: [
@@ -34,6 +35,12 @@ export default defineConfig({
   ],
   define: {
     __APP_VERSION__: `"${process.env.npm_package_version}"`
+  },
+  resolve: {
+    extensions: ['.js', '.jsx', '.ts', '.tsx'],
+    alias: {
+      '@': path.resolve(__dirname, 'src')
+    }
   },
   clearScreen: false,
   server: {

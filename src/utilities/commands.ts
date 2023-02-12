@@ -1,5 +1,5 @@
 import { invoke } from '@tauri-apps/api'
-import { Account, AccountManage, GachaUrl, GameDirectory } from '../interfaces/models'
+import { Account, AccountManage, GachaUrl, GameDirectory } from '@/interfaces/models'
 
 interface InvocableCommand<R = unknown> {
   (args?: Record<string, unknown> | undefined): R extends Promise<unknown> ? R : Promise<R>

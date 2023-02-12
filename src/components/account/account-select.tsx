@@ -9,8 +9,8 @@ import MenuItem from '@mui/material/MenuItem'
 import Divider from '@mui/material/Divider'
 import MoodIcon from '@mui/icons-material/Mood'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
-import { Account } from '../../interfaces/models'
-import { useStatefulAccounts } from '../../hooks/accounts'
+import { Account } from '@/interfaces/models'
+import { useStatefulAccounts } from '@/hooks/accounts'
 
 export default function AccountSelect () {
   const { accounts, selected } = useStatefulAccounts()

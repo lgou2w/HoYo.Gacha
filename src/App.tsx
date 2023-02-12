@@ -3,11 +3,11 @@ import { ThemeProvider, createTheme } from '@mui/material/styles'
 import { zhCN } from '@mui/material/locale'
 import CssBaseline from '@mui/material/CssBaseline'
 import Box from '@mui/material/Box'
-import { StatefulAccountsProvider } from './hooks/accounts'
-import AppSidebar from './components/sidebar'
-import AppContent from './components/content'
-import AppRoutes from './routes'
-import './assets/index.css'
+import { StatefulAccountsProvider } from '@/hooks/accounts'
+import AppSidebar from '@/components/sidebar'
+import AppContent from '@/components/content'
+import AppRoutes from '@/routes'
+import '@/assets/index.css'
 
 const theme = createTheme({
   typography: {

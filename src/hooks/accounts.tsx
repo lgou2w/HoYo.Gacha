@@ -1,8 +1,8 @@
 /* eslint-disable camelcase */
 
 import React, { PropsWithChildren, useCallback, useContext, useEffect, useState } from 'react'
-import { Account, Accounts } from '../interfaces/models'
-import Commands from '../utilities/commands'
+import { Account, Accounts } from '@/interfaces/models'
+import Commands from '@/utilities/commands'
 
 interface StatefulAccounts {
   readonly accounts: Readonly<Accounts>

@@ -3,8 +3,8 @@ import { useLocation } from 'react-router-dom'
 import AppBar from '@mui/material/AppBar'
 import Toolbar from '@mui/material/Toolbar'
 import Typography from '@mui/material/Typography'
-import { NavbarRouteTitles, SidebarWidth } from './constants'
-import AccountSelect from './account/account-select'
+import { NavbarRouteTitles, SidebarWidth } from '@/components/constants'
+import AccountSelect from '@/components/account/account-select'
 
 export default function AppNavbar () {
   const location = useLocation()

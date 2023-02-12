@@ -11,9 +11,9 @@ import IconButton from '@mui/material/IconButton'
 import MoodIcon from '@mui/icons-material/Mood'
 import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
-import ConfirmDialog from '../common/confirm-dialog'
-import { Account } from '../../interfaces/models'
-import { useStatefulAccounts } from '../../hooks/accounts'
+import ConfirmDialog from '@/components/common/confirm-dialog'
+import { Account } from '@/interfaces/models'
+import { useStatefulAccounts } from '@/hooks/accounts'
 
 export default function AccountList () {
   const { accounts, removeAccount } = useStatefulAccounts()

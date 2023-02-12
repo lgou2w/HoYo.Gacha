@@ -3,7 +3,7 @@
 import React from 'react'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
-import { useStatefulAccounts } from '../../hooks/accounts'
+import { useStatefulAccounts } from '@/hooks/accounts'
 
 // HACK: Development only
 // See : hooks/accounts

@@ -9,7 +9,7 @@ import Box from '@mui/material/Box'
 import Button, { ButtonTypeMap } from '@mui/material/Button'
 import Typography from '@mui/material/Typography'
 import SettingsIcon from '@mui/icons-material/Settings'
-import { SidebarWidth, SidebarNavs } from './constants'
+import { SidebarWidth, SidebarNavs } from '@/components/constants'
 
 export default function AppSidebar () {
   return (
