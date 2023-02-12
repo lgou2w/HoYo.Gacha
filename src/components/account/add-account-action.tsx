@@ -53,7 +53,7 @@ function AddAccountForm (props: AddAccountFormProps) {
   const { addAccount } = useStatefulAccounts()
   const context = useForm<FormProps>()
 
-  const handleAutoFind = useCallback(() => {
+  const handleGameDataDirAutoFind = useCallback(() => {
     handleGameDataDir(
       context,
       Commands
@@ -69,7 +69,7 @@ function AddAccountForm (props: AddAccountFormProps) {
     )
   }, [context])
 
-  const handleManualOpen = useCallback(() => {
+  const handleGameDataDirManualOpen = useCallback(() => {
     handleGameDataDir(
       context,
       dialog
@@ -155,13 +155,13 @@ function AddAccountForm (props: AddAccountFormProps) {
         <Button variant="outlined" size="small" color="secondary"
           startIcon={<GpsFixedIcon />}
           sx={{ marginRight: 1 }}
-          onClick={handleAutoFind}
+          onClick={handleGameDataDirAutoFind}
         >
           自动查找
         </Button>
         <Button variant="outlined" size="small" color="success"
           startIcon={<PanToolAltIcon />}
-          onClick={handleManualOpen}
+          onClick={handleGameDataDirManualOpen}
         >
           手动选择
         </Button>
@@ -184,7 +184,7 @@ function handleGameDataDir (context: UseFormReturn<FormProps>, promise: Promise<
     })
   }).catch((error) => {
     context.setError('gameDataDir', {
-      message: typeof error === 'object'
+      message: error instanceof Error || typeof error === 'object'
         ? error.message
         : error
     })

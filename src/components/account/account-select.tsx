@@ -2,13 +2,13 @@ import React, { useCallback, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
-import Avatar from '@mui/material/Avatar'
 import Typography from '@mui/material/Typography'
 import Menu from '@mui/material/Menu'
 import MenuItem from '@mui/material/MenuItem'
 import Divider from '@mui/material/Divider'
 import MoodIcon from '@mui/icons-material/Mood'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
+import Avatar from '@/components/common/avatar'
 import { Account } from '@/interfaces/models'
 import { useStatefulAccounts } from '@/hooks/accounts'
 
@@ -16,22 +16,14 @@ export default function AccountSelect () {
   const { accounts, selected } = useStatefulAccounts()
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
   const open = Boolean(anchorEl)
-
-  const handleClick = useCallback<React.MouseEventHandler<HTMLElement>>((event) => {
-    setAnchorEl(event.currentTarget)
-  }, [setAnchorEl])
-
-  const handleClose = useCallback(() => {
-    setAnchorEl(null)
-  }, [setAnchorEl])
+  const handleClick = (event: React.MouseEvent<HTMLElement>) => { setAnchorEl(event.currentTarget) }
+  const handleClose = () => { setAnchorEl(null) }
 
   return (
     <>
       <Box onClick={handleClick} display="flex" alignItems="center">
         <Button color="inherit" endIcon={<KeyboardArrowDownIcon />} sx={{ '&:hover': { bgcolor: 'transparent' } }} disableRipple>
-          <Avatar sx={{ height: 36, width: 36 }}>
-            <MoodIcon />
-          </Avatar>
+          <Avatar />
           <Box display="inline-flex" flexDirection="column" marginLeft={1} textAlign="left">
             <Typography component="div" variant="body2" noWrap>
               {selected?.displayName || '旅行者'}

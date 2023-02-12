@@ -5,13 +5,13 @@ import ListItem from '@mui/material/ListItem'
 import ListItemButton from '@mui/material/ListItemButton'
 import ListItemAvatar from '@mui/material/ListItemAvatar'
 import ListItemText from '@mui/material/ListItemText'
-import Avatar from '@mui/material/Avatar'
 import Typography from '@mui/material/Typography'
 import IconButton from '@mui/material/IconButton'
 import MoodIcon from '@mui/icons-material/Mood'
 import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
 import ConfirmDialog from '@/components/common/confirm-dialog'
+import Avatar from '@/components/common/avatar'
 import { Account } from '@/interfaces/models'
 import { useStatefulAccounts } from '@/hooks/accounts'
 
@@ -89,9 +89,12 @@ function AccountListItem (props: AccountListItemProps) {
   return (
     <ListItem className="account-list-item" secondaryAction={
       <Box paddingRight={1}>
-        <IconButton size="small" value={props.account.uid} onClick={props.onPreEdit} disabled>
-          <EditIcon />
-        </IconButton>
+        {
+          // TODO: feat: Account edit
+          false && <IconButton size="small" value={props.account.uid} onClick={props.onPreEdit}>
+            <EditIcon />
+          </IconButton>
+        }
         <IconButton size="small" color="error" value={props.account.uid} onClick={props.onPreRemove}>
           <DeleteIcon />
         </IconButton>
@@ -99,9 +102,7 @@ function AccountListItem (props: AccountListItemProps) {
     } disablePadding>
       <ListItemButton onClick={() => selectAccount(props.account.uid)} selected={isSelected} sx={{ paddingX: 1 }}>
         <ListItemAvatar>
-          <Avatar>
-            <MoodIcon />
-          </Avatar>
+          <Avatar />
         </ListItemAvatar>
         <ListItemText
           primary={props.account.displayName || '旅行者'}
