@@ -11,7 +11,9 @@
   },
   "tauri": {
     "allowlist": {
-      "all": true
+      "all": false,
+      "clipboard": { "all": true },
+      "dialog": { "all": true }
     },
     "bundle": {
       "active": true,
@@ -55,10 +57,10 @@
     "windows": [
       {
         "fullscreen": false,
-        "height": 600,
+        "height": 768,
         "resizable": true,
         "title": "Genshin Gacha",
-        "width": 800
+        "width": 1024
       }
     ]
   }

@@ -8,6 +8,7 @@ extern crate tauri;
 
 mod disk_cache;
 mod genshin;
+mod gacha;
 mod account;
 mod errors;
 mod hooks;
