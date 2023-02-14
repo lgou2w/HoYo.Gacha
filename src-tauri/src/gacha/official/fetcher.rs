@@ -14,6 +14,7 @@ use tokio::sync::mpsc;
 use url::Url;
 use super::{GachaType, GachaLogItem, GachaLogPagination, Response};
 use crate::genshin::GACHA_URL_ENDPOINT;
+use crate::errors;
 
 pub struct GachaLogFetcher {
   pub client: Client,
@@ -22,7 +23,7 @@ pub struct GachaLogFetcher {
 
 impl GachaLogFetcher {
   pub fn new(gacha_url: &str) -> Result<Self, Box<dyn Error>> {
-    let endpoint_start = gacha_url.find(GACHA_URL_ENDPOINT).ok_or("Invalid Gacha url")?;
+    let endpoint_start = gacha_url.find(GACHA_URL_ENDPOINT).ok_or(errors::ERR_GACHA_INVALID_GACHA_URL)?;
     let base_url = &gacha_url[0..endpoint_start + GACHA_URL_ENDPOINT.len()];
     let query_str = &gacha_url[endpoint_start + GACHA_URL_ENDPOINT.len()..];
 
@@ -32,7 +33,7 @@ impl GachaLogFetcher {
     queries.remove("size");
     queries.remove("end_id");
 
-    let url = Url::parse_with_params(base_url, queries).map_err(|err| err.to_string())?;
+    let url = Url::parse_with_params(base_url, queries)?;
     let mut headers = HeaderMap::new();
     headers.insert("Accept", HeaderValue::from_static("application/json"));
     headers.insert("User-Agent", HeaderValue::from_str(
@@ -46,8 +47,7 @@ impl GachaLogFetcher {
 
     let client = ClientBuilder::new()
       .default_headers(headers)
-      .build()
-      .map_err(|err| err.to_string())?;
+      .build()?;
 
     Ok(Self {
       client,
@@ -55,20 +55,20 @@ impl GachaLogFetcher {
     })
   }
 
-  fn combine_url(&self, gacha_type: &GachaType, end_id: u64) -> Url {
+  fn combine_url(&self, gacha_type: &GachaType, end_id: &str) -> Url {
     let mut url = self.gacha_url.clone();
     url
       .query_pairs_mut()
       .append_pair("gacha_type", (*gacha_type as u32).to_string().as_str())
       .append_pair("page", "1")
       .append_pair("size", "20")
-      .append_pair("end_id", end_id.to_string().as_str());
+      .append_pair("end_id", end_id);
     url
   }
 
   pub async fn fetch(&self,
     gacha_type: &GachaType,
-    end_id: u64
+    end_id: &str
   ) -> Result<Response<Option<GachaLogPagination>>, reqwest::Error> {
     let url = self.combine_url(gacha_type, end_id);
     let response: Response<Option<GachaLogPagination>> = self.client
@@ -83,9 +83,10 @@ impl GachaLogFetcher {
 
 #[derive(Debug, Clone, Serialize)]
 pub enum GachaLogFetcherChannelMessage {
-  Completed,
+  #[serde(rename = "status")]
   Status(String),
-  Data(GachaLogItem)
+  #[serde(rename = "data")]
+  Data(Vec<GachaLogItem>)
 }
 
 pub struct GachaLogFetcherChannel {
@@ -105,32 +106,29 @@ impl GachaLogFetcherChannel {
     })
   }
 
-  // TODO: status msg
+  // TODO: better status msg
+
   async fn poll(&self, gacha_type: &GachaType) -> Result<(), Box<dyn Error>> {
     let sender = &(self.inner.lock().await);
-    sender.send(GachaLogFetcherChannelMessage::Status(format!("Fetching type: {gacha_type:#?}"))).await?;
+    sender.send(GachaLogFetcherChannelMessage::Status(format!("开始获取祈愿数据：{gacha_type:?}"))).await?;
+    time::sleep(time::Duration::from_secs(3)).await;
 
-    let mut end_id: u64 = 0;
+    let mut end_id = String::from("0");
     let mut count: u32 = 0;
     loop {
       if count > 0 && count % 5 == 0 {
-        sender.send(GachaLogFetcherChannelMessage::Status("Wait 3 seconds".into())).await?;
+        sender.send(GachaLogFetcherChannelMessage::Status(format!("等待 {:?} 秒钟...", 3))).await?;
         time::sleep(time::Duration::from_secs(3)).await;
       }
 
-      sender.send(GachaLogFetcherChannelMessage::Status(format!("Fetching page: {}", count + 1))).await?;
-      let response = self.fetcher.fetch(gacha_type, end_id).await?;
+      sender.send(GachaLogFetcherChannelMessage::Status(format!("获取第 {:?} 页数据...", count + 1))).await?;
+      let response = self.fetcher.fetch(gacha_type, &end_id).await?;
       count += 1;
 
       if let Some(pagination) = response.data {
         if !pagination.list.is_empty() {
-          let size = pagination.list.len();
-          for (index, data) in pagination.list.iter().enumerate() {
-            sender.send(GachaLogFetcherChannelMessage::Data(data.clone())).await?;
-            if index + 1 == size {
-              end_id = data.id;
-            }
-          }
+          end_id = pagination.list.last().unwrap().id.clone();
+          sender.send(GachaLogFetcherChannelMessage::Data(pagination.list)).await?;
           time::sleep(time::Duration::from_secs(1)).await;
           continue;
         }
@@ -139,57 +137,20 @@ impl GachaLogFetcherChannel {
       break;
     }
 
-    sender.send(GachaLogFetcherChannelMessage::Status("Completed".into())).await?;
-    sender.send(GachaLogFetcherChannelMessage::Completed).await?;
+    sender.send(GachaLogFetcherChannelMessage::Status("完成".into())).await?;
     Ok(())
   }
 
-  // TODO: test code
-  pub async fn start(&self) -> Result<(), Box<dyn Error>> {
-    for ref gacha_type in [
-      // GachaType::CharacterEvent,
-      // GachaType::CharacterEvent2,
-      // GachaType::WeaponEvent,
+  pub async fn start(&self, gacha_types: Option<&Vec<GachaType>>) -> Result<(), Box<dyn Error>> {
+    for gacha_type in gacha_types.unwrap_or(&vec![
+      GachaType::CharacterEvent,
+      GachaType::CharacterEvent2,
+      GachaType::WeaponEvent,
       GachaType::Permanent,
-      // GachaType::Newbie
-    ] {
+      GachaType::Newbie
+    ]) {
       self.poll(gacha_type).await?;
     }
     Ok(())
-  }
-}
-
-#[cfg(test)]
-mod tests {
-  use super::*;
-
-  #[ignore]
-  #[tokio::test(flavor = "multi_thread")]
-  async fn test_fetcher_channel() {
-    let gacha_url = "your gacha url";
-    let (sender, mut receiver) = mpsc::channel(1);
-    let fetcher_channel = GachaLogFetcherChannel::new(gacha_url, sender).unwrap();
-
-    println!("spawn");
-    tokio::spawn(async move {
-      fetcher_channel.start().await.unwrap();
-    });
-
-    let mut stdout = tokio::io::stdout();
-    use tokio::io::AsyncWriteExt;
-    println!("receiver");
-    while let Some(message) = receiver.recv().await {
-      match message {
-        GachaLogFetcherChannelMessage::Status(msg) => {
-          stdout.write_all(format!("\n{msg}\n").as_bytes()).await.unwrap();
-          stdout.flush().await.unwrap();
-        },
-        GachaLogFetcherChannelMessage::Data(data) => {
-          stdout.write_all(format!("{:?}，", data.name).as_bytes()).await.unwrap();
-          stdout.flush().await.unwrap();
-        },
-        GachaLogFetcherChannelMessage::Completed => {}
-      }
-    }
   }
 }

@@ -25,3 +25,17 @@ export interface GameDirectory {
   gameDataDir: string
   international: boolean
 }
+
+/** See: src-tauri/src/gacha/official/model.rs */
+export interface GachaLogItem {
+  uid: string
+  gachaType: '100' | '200' | '301' | '302' | '400'
+  itemId: string
+  count: string
+  time: string
+  name: string
+  lang: string
+  itemType: string
+  rankType: string
+  id: string
+}
