@@ -1,29 +1,34 @@
 extern crate form_urlencoded;
+extern crate log;
 extern crate reqwest;
 extern crate tokio;
 extern crate url;
 
 use std::collections::HashMap;
 use std::error::Error;
+use std::future::Future;
+use log::debug;
 use reqwest::{Client, ClientBuilder};
 use reqwest::header::{HeaderMap, HeaderValue};
 use serde::Serialize;
 use tokio::time;
-use tokio::sync::Mutex;
 use tokio::sync::mpsc;
 use url::Url;
 use super::{GachaType, GachaLogItem, GachaLogPagination, Response};
 use crate::genshin::GACHA_URL_ENDPOINT;
 use crate::errors;
 
+type Result<T> = std::result::Result<T, Box<dyn Error + Send + Sync>>;
+
 pub struct GachaLogFetcher {
   pub client: Client,
-  pub gacha_url: Url
+  pub gacha_url: Url,
+  pub raw_gacha_url: String
 }
 
 impl GachaLogFetcher {
-  pub fn new(gacha_url: &str) -> Result<Self, Box<dyn Error>> {
-    let endpoint_start = gacha_url.find(GACHA_URL_ENDPOINT).ok_or(errors::ERR_GACHA_INVALID_GACHA_URL)?;
+  pub fn new(gacha_url: &str) -> Result<Self> {
+    let endpoint_start = gacha_url.find(GACHA_URL_ENDPOINT).ok_or(errors::ERR_INVALID_GACHA_URL)?;
     let base_url = &gacha_url[0..endpoint_start + GACHA_URL_ENDPOINT.len()];
     let query_str = &gacha_url[endpoint_start + GACHA_URL_ENDPOINT.len()..];
 
@@ -51,7 +56,8 @@ impl GachaLogFetcher {
 
     Ok(Self {
       client,
-      gacha_url: url
+      gacha_url: url,
+      raw_gacha_url: gacha_url.to_owned()
     })
   }
 
@@ -66,10 +72,20 @@ impl GachaLogFetcher {
     url
   }
 
+  fn validate_response(response: &Response<Option<GachaLogPagination>>) -> Result<()> {
+    if response.retcode != 0 {
+      return match response.retcode {
+        -101 => Err(errors::ERR_TIMEOUTD_GACHA_URL.into()),
+        other => Err(format!("{} ({})", response.message, other).into())
+      }
+    }
+    Ok(())
+  }
+
   pub async fn fetch(&self,
     gacha_type: &GachaType,
     end_id: &str
-  ) -> Result<Response<Option<GachaLogPagination>>, reqwest::Error> {
+  ) -> Result<Response<Option<GachaLogPagination>>> {
     let url = self.combine_url(gacha_type, end_id);
     let response: Response<Option<GachaLogPagination>> = self.client
       .get(url)
@@ -77,6 +93,20 @@ impl GachaLogFetcher {
       .await?
       .json()
       .await?;
+
+    Self::validate_response(&response)?;
+    Ok(response)
+  }
+
+  pub(crate) async fn fetch_raw(&self) -> Result<Response<Option<GachaLogPagination>>> {
+    let response: Response<Option<GachaLogPagination>> = self.client
+      .get(&self.raw_gacha_url)
+      .send()
+      .await?
+      .json()
+      .await?;
+
+    Self::validate_response(&response)?;
     Ok(response)
   }
 }
@@ -91,44 +121,50 @@ pub enum GachaLogFetcherChannelMessage {
 
 pub struct GachaLogFetcherChannel {
   fetcher: GachaLogFetcher,
-  inner: Mutex<mpsc::Sender<GachaLogFetcherChannelMessage>>
+  sender: mpsc::Sender<GachaLogFetcherChannelMessage>
 }
 
 impl GachaLogFetcherChannel {
   pub fn new(
     gacha_url: &str,
     sender: mpsc::Sender<GachaLogFetcherChannelMessage>
-  ) -> Result<Self, Box<dyn Error>> {
+  ) -> Result<Self> {
     let fetcher = GachaLogFetcher::new(gacha_url)?;
     Ok(Self {
       fetcher,
-      inner: Mutex::new(sender)
+      sender
     })
   }
 
   // TODO: better status msg
 
-  async fn poll(&self, gacha_type: &GachaType) -> Result<(), Box<dyn Error>> {
-    let sender = &(self.inner.lock().await);
-    sender.send(GachaLogFetcherChannelMessage::Status(format!("开始获取祈愿数据：{gacha_type:?}"))).await?;
+  async fn poll(&self, gacha_type: &GachaType, end_id: Option<&str>) -> Result<()> {
+    debug!("Polling gacha {gacha_type:?}({}) EndID ({end_id:?})...", (*gacha_type as u32));
+    self.sender.send(GachaLogFetcherChannelMessage::Status(format!("开始获取祈愿数据：{gacha_type:?}"))).await?;
     time::sleep(time::Duration::from_secs(3)).await;
 
-    let mut end_id = String::from("0");
+    let mut end_id = end_id.unwrap_or("0").to_owned();
     let mut count: u32 = 0;
+    const SLEEP_SECONDS: u8 = 3;
+
     loop {
       if count > 0 && count % 5 == 0 {
-        sender.send(GachaLogFetcherChannelMessage::Status(format!("等待 {:?} 秒钟...", 3))).await?;
-        time::sleep(time::Duration::from_secs(3)).await;
+        debug!("Waiting {SLEEP_SECONDS} seconds...");
+        self.sender.send(GachaLogFetcherChannelMessage::Status(format!("等待 {SLEEP_SECONDS} 秒钟..."))).await?;
+        time::sleep(time::Duration::from_secs(SLEEP_SECONDS as u64)).await;
       }
 
-      sender.send(GachaLogFetcherChannelMessage::Status(format!("获取第 {:?} 页数据...", count + 1))).await?;
+      debug!("Fetching page {} data...", count + 1);
+      self.sender.send(GachaLogFetcherChannelMessage::Status(format!("获取第 {} 页数据...", count + 1))).await?;
       let response = self.fetcher.fetch(gacha_type, &end_id).await?;
+
       count += 1;
 
       if let Some(pagination) = response.data {
         if !pagination.list.is_empty() {
           end_id = pagination.list.last().unwrap().id.clone();
-          sender.send(GachaLogFetcherChannelMessage::Data(pagination.list)).await?;
+          debug!("Next end id: {end_id:?}");
+          self.sender.send(GachaLogFetcherChannelMessage::Data(pagination.list)).await?;
           time::sleep(time::Duration::from_secs(1)).await;
           continue;
         }
@@ -137,11 +173,13 @@ impl GachaLogFetcherChannel {
       break;
     }
 
-    sender.send(GachaLogFetcherChannelMessage::Status("完成".into())).await?;
+    debug!("Poll done");
+    self.sender.send(GachaLogFetcherChannelMessage::Status("完成".into())).await?;
     Ok(())
   }
 
-  pub async fn start(&self, gacha_types: Option<&Vec<GachaType>>) -> Result<(), Box<dyn Error>> {
+  pub async fn start(&self, gacha_types: Option<&Vec<GachaType>>) -> Result<()> {
+    debug!("Start fetching gacha types: {gacha_types:?}");
     for gacha_type in gacha_types.unwrap_or(&vec![
       GachaType::CharacterEvent,
       GachaType::CharacterEvent2,
@@ -149,8 +187,31 @@ impl GachaLogFetcherChannel {
       GachaType::Permanent,
       GachaType::Newbie
     ]) {
-      self.poll(gacha_type).await?;
+      self.poll(gacha_type, None).await?;
     }
+    debug!("Fetch done");
     Ok(())
   }
+}
+
+pub async fn create_gacha_log_fetcher_channel<F, Fut>(
+  gacha_url: String,
+  gacha_types: Option<Vec<GachaType>>,
+  receiver: F
+) -> Result<()>
+where
+  F: Fn(GachaLogFetcherChannelMessage) -> Fut,
+  Fut: Future<Output = Result<()>> {
+  let (tx, mut rx) = mpsc::channel(1);
+  let done = tokio::spawn(async move {
+    GachaLogFetcherChannel::new(&gacha_url, tx)?
+      .start(gacha_types.as_ref())
+      .await
+  });
+
+  while let Some(message) = rx.recv().await {
+    receiver(message).await?
+  }
+
+  done.await?
 }

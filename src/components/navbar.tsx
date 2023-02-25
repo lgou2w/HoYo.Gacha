@@ -3,7 +3,7 @@ import { useLocation } from 'react-router-dom'
 import AppBar from '@mui/material/AppBar'
 import Toolbar from '@mui/material/Toolbar'
 import Typography from '@mui/material/Typography'
-import { NavbarRouteTitles, SidebarWidth } from '@/components/constants'
+import { MainTitle, NavbarRouteTitles, SidebarWidth } from '@/components/constants'
 import AccountSelect from '@/components/account/account-select'
 
 export default function AppNavbar () {
@@ -19,7 +19,7 @@ export default function AppNavbar () {
       }}>
         <Toolbar sx={{ paddingX: 2 }} disableGutters>
           <Typography component="h2" variant="h6" sx={{ flexGrow: 1 }} noWrap>
-            {routeTitle}
+            {routeTitle} · {MainTitle}
           </Typography>
           <AccountSelect />
         </Toolbar>

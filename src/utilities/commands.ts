@@ -1,5 +1,5 @@
 import { invoke } from '@tauri-apps/api'
-import { Account, AccountManage, GachaUrl, GameDirectory } from '@/interfaces/models'
+import { GameDirectory, GachaUrl, GachaLogItem } from '@/interfaces/models'
 
 interface InvocableCommand<R = unknown> {
   (args?: Record<string, unknown> | undefined): R extends Promise<unknown> ? R : Promise<R>
@@ -13,12 +13,9 @@ function declareInvocableCommand<R = unknown> (cmd: string): InvocableCommand<R>
 
 const Commands = Object.freeze({
   findAvailableGameDirectories: declareInvocableCommand<GameDirectory[]>('cmd_find_available_game_directories'),
-  findRecentGachaUrlFromAccount: declareInvocableCommand<GachaUrl | null>('cmd_find_recent_gacha_url_from_account'),
+  findRecentGachaUrl: declareInvocableCommand<GachaUrl | null>('cmd_find_recent_gacha_url'),
   crateGachaLogFetcherChannel: declareInvocableCommand<void>('cmd_crate_gacha_log_fetcher_channel'),
-  getAccountMange: declareInvocableCommand<AccountManage>('cmd_get_account_mange'),
-  addAccount: declareInvocableCommand<Account>('cmd_add_account'),
-  removeAccount: declareInvocableCommand<Account | null>('cmd_remove_account'),
-  selectAccount: declareInvocableCommand<Account>('cmd_select_account')
+  findGachaLogsByUID: declareInvocableCommand<GachaLogItem[]>('cmd_find_gacha_logs_by_uid')
 })
 
 export default Commands

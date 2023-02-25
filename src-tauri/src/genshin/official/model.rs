@@ -17,12 +17,15 @@ pub enum GachaType {
   CharacterEvent2 = 400
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, PartialOrd)]
+pub const GACHA_ITEM_TYPE_CHARACTER: &str = "角色";
+pub const GACHA_ITEM_TYPE_WEAPON   : &str = "武器";
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, PartialOrd)]
 pub enum GachaItemType {
   #[serde(rename = "角色")]
-  Character,
+  Character = 0,
   #[serde(rename = "武器")]
-  Weapon
+  Weapon = 1
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

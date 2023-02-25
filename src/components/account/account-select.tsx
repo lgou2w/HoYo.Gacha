@@ -6,14 +6,13 @@ import Typography from '@mui/material/Typography'
 import Menu from '@mui/material/Menu'
 import MenuItem from '@mui/material/MenuItem'
 import Divider from '@mui/material/Divider'
-import MoodIcon from '@mui/icons-material/Mood'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
 import Avatar from '@/components/common/avatar'
-import { Account } from '@/interfaces/models'
-import { useStatefulAccounts } from '@/hooks/accounts'
+import { Account } from '@/interfaces/settings'
+import { useStatefulSettings } from '@/hooks/useStatefulSettings'
 
 export default function AccountSelect () {
-  const { accounts, selected } = useStatefulAccounts()
+  const { accounts, selectedAccount } = useStatefulSettings()
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
   const open = Boolean(anchorEl)
   const handleClick = (event: React.MouseEvent<HTMLElement>) => { setAnchorEl(event.currentTarget) }
@@ -26,10 +25,10 @@ export default function AccountSelect () {
           <Avatar />
           <Box display="inline-flex" flexDirection="column" marginLeft={1} textAlign="left">
             <Typography component="div" variant="body2" noWrap>
-              {selected?.displayName || '旅行者'}
+              {selectedAccount?.displayName || '旅行者'}
             </Typography>
             <Typography component="div" variant="caption" lineHeight={1}>
-              {selected?.uid || 'NULL UID'}
+              {selectedAccount?.uid || 'NULL UID'}
             </Typography>
           </Box>
         </Button>
@@ -57,8 +56,8 @@ interface AccountSelectItemProps {
 }
 
 function AccountSelectItem (props: AccountSelectItemProps) {
-  const { selected, selectAccount } = useStatefulAccounts()
-  const isSelected = useMemo(() => props.account.uid === selected?.uid, [props, selected])
+  const { selectedAccount, selectAccount } = useStatefulSettings()
+  const isSelected = useMemo(() => props.account.uid === selectedAccount?.uid, [props, selectedAccount])
 
   const handleClick = useCallback(() => {
     props.onPreClick?.()

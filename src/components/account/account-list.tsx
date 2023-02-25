@@ -7,30 +7,28 @@ import ListItemAvatar from '@mui/material/ListItemAvatar'
 import ListItemText from '@mui/material/ListItemText'
 import Typography from '@mui/material/Typography'
 import IconButton from '@mui/material/IconButton'
-import MoodIcon from '@mui/icons-material/Mood'
 import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
 import ConfirmDialog from '@/components/common/confirm-dialog'
 import Avatar from '@/components/common/avatar'
-import { Account } from '@/interfaces/models'
-import { useStatefulAccounts } from '@/hooks/accounts'
+import { Account } from '@/interfaces/settings'
+import { useStatefulSettings } from '@/hooks/useStatefulSettings'
 
 export default function AccountList () {
-  const { accounts, removeAccount } = useStatefulAccounts()
-
+  const { accounts, removeAccount } = useStatefulSettings()
   const accountRef = useRef<Account>()
   const [removeDialog, setRemoveDialog] = useState(false)
 
   const handlePreEdit = useCallback<React.MouseEventHandler<HTMLButtonElement>>((event) => {
     event.preventDefault()
-    const uid = event.currentTarget.value
+    const uid = Number(event.currentTarget.value)
     accountRef.current = accounts[uid]
     // TODO: Account Edit
   }, [accounts, accountRef])
 
   const handlePreRemove = useCallback<React.MouseEventHandler<HTMLButtonElement>>((event) => {
     event.preventDefault()
-    const uid = event.currentTarget.value
+    const uid = Number(event.currentTarget.value)
     accountRef.current = accounts[uid]
     setRemoveDialog(true)
   }, [accounts, accountRef, setRemoveDialog])
@@ -83,8 +81,8 @@ interface AccountListItemProps {
 }
 
 function AccountListItem (props: AccountListItemProps) {
-  const { selected, selectAccount } = useStatefulAccounts()
-  const isSelected = useMemo(() => props.account.uid === selected?.uid, [props, selected])
+  const { selectedAccount, selectAccount } = useStatefulSettings()
+  const isSelected = useMemo(() => props.account.uid === selectedAccount?.uid, [props, selectedAccount])
 
   return (
     <ListItem className="account-list-item" secondaryAction={

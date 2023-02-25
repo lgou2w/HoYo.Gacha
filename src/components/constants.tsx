@@ -10,6 +10,7 @@ export const SidebarNavs = [
   { title: '祈愿', href: '/gacha', icon: <StarIcon /> }
 ]
 
+export const MainTitle = 'Genshin Gacha'
 export const NavbarRouteTitles: Record<string, string> = {
   '/': '首页',
   '/account': '账号',

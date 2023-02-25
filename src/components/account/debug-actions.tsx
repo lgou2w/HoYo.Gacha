@@ -3,13 +3,13 @@
 import React from 'react'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
-import { useStatefulAccounts } from '@/hooks/accounts'
+import { useStatefulSettings } from '@/hooks/useStatefulSettings'
 
 // HACK: Development only
-// See : hooks/accounts
+// See : hooks/useStatefulSettings.tsx
 
 export default function AccountDebugActions () {
-  const { __debug__clear_accounts, __debug__reload_accounts } = useStatefulAccounts()
+  const { __debug__clear_accounts, __debug__reload_accounts } = useStatefulSettings()
   return (
     <Box marginX={2}>
       <Button variant="outlined" size="small" color="error"

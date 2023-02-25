@@ -10,7 +10,7 @@ import GpsFixedIcon from '@mui/icons-material/GpsFixed'
 import PanToolAltIcon from '@mui/icons-material/PanToolAlt'
 import ConfirmDialog from '@/components/common/confirm-dialog'
 import { FormContainer, TextFieldElement, SubmitHandler, UseFormReturn, useForm } from 'react-hook-form-mui'
-import { useStatefulAccounts } from '@/hooks/accounts'
+import { useStatefulSettings } from '@/hooks/useStatefulSettings'
 import Commands from '@/utilities/commands'
 import { dialog } from '@tauri-apps/api'
 
@@ -50,7 +50,7 @@ interface AddAccountFormProps {
 }
 
 function AddAccountForm (props: AddAccountFormProps) {
-  const { addAccount } = useStatefulAccounts()
+  const { addAccount } = useStatefulSettings()
   const context = useForm<FormProps>()
 
   const handleGameDataDirAutoFind = useCallback(() => {
@@ -90,7 +90,8 @@ function AddAccountForm (props: AddAccountFormProps) {
     addAccount({
       uid: Number(data.uid),
       displayName: data.displayName,
-      gameDataDir: data.gameDataDir
+      gameDataDir: data.gameDataDir,
+      gachaUrl: null
     })
       .then(() => { props.close?.() })
       .catch((error) => {

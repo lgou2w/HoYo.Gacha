@@ -2,6 +2,10 @@
   "name": "genshin-gacha",
   "version": "0.2.0",
   "description": "A tool to get and export Genshin Impact gacha logs",
+  "author": "lgou2w <lgou2w@hotmail.com>",
+  "homepage": "https://github.com/lgou2w/genshin-gacha#readme",
+  "repository": "https://github.com/lgou2w/genshin-gacha.git",
+  "license": "MIT OR Apache-2.0",
   "private": "true",
   "type": "module",
   "engines": {
@@ -16,28 +20,31 @@
     "lint:fix": "eslint --fix --ext .ts,.tsx --ignore-path .gitignore ."
   },
   "dependencies": {
-    "@emotion/react": "^11.10.5",
-    "@emotion/styled": "^11.10.5",
-    "@mui/icons-material": "^5.11.0",
-    "@mui/material": "^5.11.8",
-    "@mui/system": "^5.11.8",
-    "@mui/x-date-pickers": "^5.0.18",
+    "@emotion/react": "^11.10.6",
+    "@emotion/styled": "^11.10.6",
+    "@mui/icons-material": "^5.11.9",
+    "@mui/material": "^5.11.10",
+    "@mui/system": "^5.11.9",
+    "@mui/x-date-pickers": "^5.0.20",
+    "@tanstack/react-query": "^4.24.10",
+    "@tanstack/react-query-devtools": "^4.24.10",
     "@tauri-apps/api": "^1.2.0",
     "dayjs": "^1.11.7",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-hook-form": "^7.43.1",
-    "react-hook-form-mui": "^5.13.1",
-    "react-router-dom": "^6.8.1"
+    "react-hook-form": "^7.43.2",
+    "react-hook-form-mui": "^5.15.1",
+    "react-router-dom": "^6.8.1",
+    "tauri-plugin-store-api": "github:tauri-apps/tauri-plugin-store"
   },
   "devDependencies": {
-    "@babel/core": "^7.20.12",
+    "@babel/core": "^7.21.0",
     "@tauri-apps/cli": "^1.2.3",
-    "@types/node": "^18.13.0",
+    "@types/node": "^18.14.1",
     "@types/react": "^18.0.28",
-    "@types/react-dom": "^18.0.10",
-    "@typescript-eslint/eslint-plugin": "^5.51.0",
-    "@typescript-eslint/parser": "^5.51.0",
+    "@types/react-dom": "^18.0.11",
+    "@typescript-eslint/eslint-plugin": "^5.53.0",
+    "@typescript-eslint/parser": "^5.53.0",
     "@vitejs/plugin-react": "^3.1.0",
     "cross-env": "^7.0.3",
     "eslint": "^8.34.0",
@@ -47,6 +54,6 @@
     "eslint-plugin-promise": "^6.1.1",
     "eslint-plugin-react": "^7.32.2",
     "typescript": "^4.9.5",
-    "vite": "^4.1.1"
+    "vite": "^4.1.4"
   }
 }

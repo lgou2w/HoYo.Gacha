@@ -84,6 +84,7 @@ impl EntryStore {
     self.long_key.is_initialized()
   }
 
+  #[allow(unused)]
   pub fn read_url(&self) -> Result<Cow<'_, str>> {
     if self.is_long_url() {
       return Err(Error::new(

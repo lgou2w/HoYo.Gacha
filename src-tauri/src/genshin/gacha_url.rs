@@ -1,11 +1,15 @@
 extern crate chrono;
+extern crate futures_core;
 extern crate serde;
 
-use std::io::Result;
+use std::error::Error;
 use std::path::Path;
 use chrono::{DateTime, Duration, Local, NaiveDateTime, SecondsFormat, Utc};
+use futures_core::future::BoxFuture;
 use serde::ser::{Serialize, Serializer, SerializeStruct};
+use super::gacha_fetcher::GachaLogFetcher;
 use crate::disk_cache::{CacheAddr, IndexFile, BlockFile, EntryStore};
+use crate::errors;
 
 pub const GACHA_URL_ENDPOINT: &str = "/event/gacha_info/api/getGachaLog?";
 
@@ -16,15 +20,8 @@ pub struct GachaUrl {
   pub url: String
 }
 
-impl GachaUrl {
-  pub fn is_expired(&self, current_time: &DateTime<Local>) -> bool {
-    let expiration_time = (self.creation_time + Duration::days(1)).with_timezone(&Local);
-    *current_time >= expiration_time
-  }
-}
-
 impl Serialize for GachaUrl {
-  fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+  fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
   where S: Serializer {
     let mut state = serializer.serialize_struct("GachaUrl", 3)?;
     state.serialize_field("addr", &self.addr)?;
@@ -34,9 +31,9 @@ impl Serialize for GachaUrl {
   }
 }
 
-pub fn find_gacha_urls(game_data_dir: &Path) -> Result<Vec<GachaUrl>> {
+pub fn find_gacha_urls<P: AsRef<Path>>(game_data_dir: P) -> std::io::Result<Vec<GachaUrl>> {
   // Join the path to the web cache data directory
-  let cache_dir = game_data_dir.join("webCaches/Cache/Cache_Data");
+  let cache_dir = game_data_dir.as_ref().join("webCaches/Cache/Cache_Data");
 
   // Read index file and data_1, data_2 block files
   let index_file = IndexFile::from_file(cache_dir.join("index"))?;
@@ -84,7 +81,7 @@ pub fn find_gacha_urls(game_data_dir: &Path) -> Result<Vec<GachaUrl>> {
   Ok(result)
 }
 
-pub fn find_recent_gacha_url(game_data_dir: &Path) -> Option<GachaUrl> {
+pub fn find_recent_gacha_url<P: AsRef<Path>>(game_data_dir: P) -> Option<GachaUrl> {
   // Find all gacha urls
   let mut gacha_urls = match find_gacha_urls(game_data_dir) {
     Ok(result) => result,
@@ -114,4 +111,40 @@ fn creation_time_as_utc(creation_time: &u64) -> DateTime<Utc> {
     .expect("Invalid creation time")
     .and_local_timezone(Utc)
     .unwrap()
+}
+
+pub fn find_recent_gacha_url_and_validate<'a, P: AsRef<Path> + Send + 'a>(
+  game_data_dir: P,
+  expected_uid: u32
+) -> BoxFuture<'a, Result<GachaUrl, Box<dyn Error + Send + Sync>>> {
+  Box::pin(async move {
+    let gacha_url = find_recent_gacha_url(game_data_dir).ok_or(errors::ERR_GACHA_URL_NOT_FOUND)?;
+
+    // First verify the creation time of the current gacha url
+    {
+      let current_time = Local::now() + Duration::minutes(1); // One minute ahead of time
+      let expiration_time = (gacha_url.creation_time + Duration::days(1)).with_timezone(&Local);
+      if current_time >= expiration_time {
+        return Err(errors::ERR_TIMEOUTD_GACHA_URL.into());
+      }
+    }
+
+    // Request validation
+    {
+      let fetcher = GachaLogFetcher::new(&gacha_url.url)?;
+      let response = fetcher.fetch_raw().await?;
+      let mut current_uid: Option<u32> = None;
+      if let Some(data) = response.data {
+        if let Some(any) = data.list.first() {
+          current_uid = Some(any.uid.parse()?)
+        }
+      }
+
+      if current_uid != Some(expected_uid) {
+        return Err(errors::ERR_INVALID_GACHA_URL.into())
+      }
+    }
+
+    Ok(gacha_url)
+  })
 }
