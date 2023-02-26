@@ -141,7 +141,7 @@ pub fn find_recent_gacha_url_and_validate<'a, P: AsRef<Path> + Send + 'a>(
       }
 
       if current_uid != Some(expected_uid) {
-        return Err(errors::ERR_INVALID_GACHA_URL.into())
+        return Err(errors::ERR_GACHA_URL_NOT_FOUND.into())
       }
     }
 

@@ -13,9 +13,10 @@ function declareInvocableCommand<R = unknown> (cmd: string): InvocableCommand<R>
 
 const Commands = Object.freeze({
   findAvailableGameDirectories: declareInvocableCommand<GameDirectory[]>('cmd_find_available_game_directories'),
-  findRecentGachaUrl: declareInvocableCommand<GachaUrl | null>('cmd_find_recent_gacha_url'),
+  findRecentGachaUrl: declareInvocableCommand<GachaUrl>('cmd_find_recent_gacha_url'),
   crateGachaLogFetcherChannel: declareInvocableCommand<void>('cmd_crate_gacha_log_fetcher_channel'),
-  findGachaLogsByUID: declareInvocableCommand<GachaLogItem[]>('cmd_find_gacha_logs_by_uid')
+  findGachaLogsByUID: declareInvocableCommand<GachaLogItem[]>('cmd_find_gacha_logs_by_uid'),
+  exportGachaLogsByUID: declareInvocableCommand<void>('cmd_export_gacha_logs_by_uid')
 })
 
 export default Commands

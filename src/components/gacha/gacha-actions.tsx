@@ -4,21 +4,38 @@ import { TabsProps } from '@mui/material/Tabs'
 import GachaUrlAction from './gacha-url-action'
 import GachaTabsAction from './gacha-tabs-action'
 import GachaExtAction from './gacha-ext-action'
+import { Account } from '@/interfaces/settings'
 
 interface Props {
+  account: Account
   tabs: string[]
   tabIndex: number
   onTabChange?: TabsProps['onChange']
+  onSuccess?: (message?: string) => void
+  onError?: (error: Error | string) => void
   disabled?: boolean
 }
 
 export default function GachaActions (props: Props) {
   return (
     <Box display="flex" alignItems="center">
-      <GachaUrlAction disabled={props.disabled} />
+      <GachaUrlAction
+        account={props.account}
+        onSuccess={props.onSuccess}
+        onError={props.onError}
+        disabled={props.disabled}
+      />
       <Box display="inline-flex" marginLeft="auto">
-        <GachaTabsAction tabs={props.tabs} value={props.tabIndex} onChange={props.onTabChange} disabled={props.disabled} />
-        <GachaExtAction disabled={props.disabled} />
+        <GachaTabsAction
+          tabs={props.tabs}
+          value={props.tabIndex}
+          onChange={props.onTabChange}
+          disabled={props.disabled}
+        />
+        <GachaExtAction
+          account={props.account}
+          disabled={props.disabled}
+        />
       </Box>
     </Box>
   )

@@ -44,20 +44,20 @@ pub struct UIGFGachaLog {
 }
 
 impl UIGFGachaLog {
-  pub fn new(uid: u32, lang: &str, time: &DateTime<Local>, list: &[UIGFGachaLogItem]) -> Self {
-    let export_time = time.format("%Y-%m%d %H:%M:%S").to_string();
+  pub fn new(uid: u32, lang: String, time: &DateTime<Local>, list: Vec<UIGFGachaLogItem>) -> Self {
+    let export_time = time.format("%Y-%m-%d %H:%M:%S").to_string();
     let export_timestamp = Some(time.timestamp());
     Self {
       info: UIGFGachaLogInfo {
         uid: uid.to_string(),
-        lang: lang.to_owned(),
+        lang,
         export_time,
         export_timestamp,
         export_app: env!("CARGO_PKG_NAME").into(),
         export_app_version: env!("CARGO_PKG_VERSION").into(),
         uigf_version: UIGF_VERSION.into()
       },
-      list: list.to_vec()
+      list
     }
   }
 

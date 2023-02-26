@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import Box from '@mui/material/Box'
 import Stack from '@mui/material/Stack'
 import TextField from '@mui/material/TextField'
@@ -9,19 +9,52 @@ import LinkIcon from '@mui/icons-material/Link'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import AddLinkIcon from '@mui/icons-material/AddLink'
 import CachedIcon from '@mui/icons-material/Cached'
+import { Account } from '@/interfaces/settings'
 import { useStatefulSettings } from '@/hooks/useStatefulSettings'
+import Commands from '@/utilities/commands'
+import { clipboard } from '@tauri-apps/api'
 
 interface Props {
+  account: Account
+  onSuccess?: (message?: string) => void
+  onError?: (error: Error | string) => void
   disabled?: boolean
 }
 
 export default function GachaUrlAction (props: Props) {
-  const { selectedAccount } = useStatefulSettings()
+  const { updateAccount } = useStatefulSettings()
+  const [busy, setBusy] = useState(false)
+  const gachaUrl = useMemo(() => props.account.gachaUrl || '', [props])
+
+  const handleFetchGachaUrl = useCallback(() => {
+    setBusy(true)
+    const account = props.account
+    Commands.findRecentGachaUrl({
+      gameDataDir: account.gameDataDir,
+      expectedUid: account.uid
+    })
+      .then((result) => updateAccount(account.uid, { gachaUrl: result.url }))
+      .then(() => { props.onSuccess?.('祈愿链接获取成功！') })
+      .catch((error) => { props.onError?.(error) })
+      .finally(() => { setBusy(false) })
+  }, [props, updateAccount, setBusy])
+
+  const handleCopyGachaUrl = useCallback(() => {
+    if (!gachaUrl) {
+      props.onError?.('祈愿链接不可用！请先尝试读取链接。')
+    } else {
+      clipboard
+        .writeText(gachaUrl)
+        .then(() => { props.onSuccess?.('祈愿链接已复制到剪切板！') })
+        .catch((error) => { props.onError?.(error) })
+    }
+  }, [gachaUrl])
+
   return (
     <Box display="inline-flex">
       <TextField variant="outlined" size="small"
         label="祈愿链接" placeholder="祈愿链接"
-        value={selectedAccount?.gachaUrl}
+        value={gachaUrl}
         disabled={props.disabled}
         sx={{ maxWidth: 200 }}
         InputProps={{
@@ -34,7 +67,7 @@ export default function GachaUrlAction (props: Props) {
           ),
           endAdornment: (
             <InputAdornment position="end">
-              <IconButton size="small">
+              <IconButton size="small" onClick={handleCopyGachaUrl} disabled={props.disabled || busy}>
                 <ContentCopyIcon fontSize="small" />
               </IconButton>
             </InputAdornment>
@@ -44,13 +77,14 @@ export default function GachaUrlAction (props: Props) {
       <Stack marginLeft={2} spacing={2} direction="row">
         <Button variant="outlined" color="secondary" size="small"
           startIcon={<AddLinkIcon />}
-          disabled={props.disabled}
+          onClick={handleFetchGachaUrl}
+          disabled={props.disabled || busy}
         >
           读取链接
         </Button>
         <Button variant="outlined" color="primary" size="small"
           startIcon={<CachedIcon />}
-          disabled={props.disabled}
+          disabled={props.disabled || busy}
         >
           更新祈愿
         </Button>

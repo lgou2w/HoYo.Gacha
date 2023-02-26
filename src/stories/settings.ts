@@ -68,8 +68,20 @@ export class SettingsStore implements SettingsFn {
     ]
   }
 
-  async updateAccount (uid: number, updated: Omit<Account, 'uid'>): Promise<Accounts> {
-    throw new Error('TODO')
+  async updateAccount (uid: number, updated: Partial<Omit<Account, 'uid'>>): Promise<[Accounts, Account]> {
+    const accounts = await this.getAccounts()
+    let account: Account
+    if (!accounts || !(account = accounts[uid])) {
+      throw new Error(ERR_ACCOUNT_NOT_FOUND)
+    }
+
+    const updatedAccount: Account = { ...account, ...updated, uid }
+    const newAccounts = Object.assign(accounts, { [uid]: updatedAccount })
+    await this.setAccounts(newAccounts)
+    return [
+      newAccounts,
+      updatedAccount
+    ]
   }
 
   async selectAccount (uid: number): Promise<Account | null> {

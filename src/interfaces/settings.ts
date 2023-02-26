@@ -2,7 +2,8 @@ export interface Account {
   uid: number
   displayName: string | null
   gameDataDir: string
-  gachaUrl: string | null
+  gachaUrl?: string | null
+  lastUpdated?: string | null
 }
 
 export type Accounts = Record<number, Account>
@@ -15,6 +16,6 @@ export interface Settings {
 export interface SettingsFn {
   addAccount (account: Account): Promise<Accounts>
   removeAccount (uid: Account['uid']): Promise<[Accounts, Account]>
-  updateAccount (uid: Account['uid'], updated: Omit<Account, 'uid'>): Promise<Accounts>
+  updateAccount (uid: Account['uid'], updated: Partial<Omit<Account, 'uid'>>): Promise<[Accounts, Account]>
   selectAccount (uid: Account['uid']): Promise<Account | null>
 }

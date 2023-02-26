@@ -48,8 +48,11 @@ export const StatefulSettingsProvider = (props: PropsWithChildren) => {
   }, [store, setAccounts, setSelectedAccount])
 
   const updateAccount = useCallback<StatefulSettings['updateAccount']>(async (uid, updated) => {
-    // TODO: update account
-    return await store.updateAccount(uid, updated)
+    const [newAccounts, updatedAccount] = await store.updateAccount(uid, updated)
+    console.debug('Account has been updated:', updatedAccount)
+    setAccounts(newAccounts)
+    setSelectedAccount(updatedAccount)
+    return [newAccounts, updatedAccount]
   }, [store, setAccounts, setSelectedAccount])
 
   const selectAccount = useCallback<StatefulSettings['selectAccount']>(async (uid) => {

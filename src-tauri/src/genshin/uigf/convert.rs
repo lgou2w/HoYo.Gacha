@@ -1,10 +1,10 @@
 extern crate lazy_static;
 
 use std::collections::HashMap;
-use std::error::Error;
 use lazy_static::lazy_static;
 use super::model::UIGFGachaLogItem;
 use crate::genshin::official::model::{GachaType, GachaItemType, GachaLogItem};
+use crate::utils::ResultExt;
 
 lazy_static! {
   /*
@@ -47,7 +47,7 @@ const GACHA_ITEM_TYPE_CHARACTER: &str = "角色";
 const GACHA_ITEM_TYPE_WEAPON   : &str = "武器";
 
 // Official GachaLogItem -> UIGF GachaLogItem
-fn official_into_uigf(value: &GachaLogItem) -> Result<UIGFGachaLogItem, Box<dyn Error>> {
+fn official_into_uigf(value: &GachaLogItem) -> Result<UIGFGachaLogItem, String> {
   let gacha_type = value.gacha_type as u32;
   let uigf_gacha_type = GACHA_TYPE_UIGF_MAPPINGS
     .get(&gacha_type)
@@ -75,8 +75,8 @@ fn official_into_uigf(value: &GachaLogItem) -> Result<UIGFGachaLogItem, Box<dyn 
 }
 
 // UIGF GachaLogItem -> Official GachaLogItem
-fn uigf_into_official(value: &UIGFGachaLogItem) -> Result<GachaLogItem, Box<dyn Error>> {
-  let gacha_type = value.gacha_type.parse::<u32>()?;
+fn uigf_into_official(value: &UIGFGachaLogItem) -> Result<GachaLogItem, String> {
+  let gacha_type = value.gacha_type.parse::<u32>().map_err_to_string()?;
   let gacha_type = **GACHA_TYPE_MAPPINGS
     .get(&gacha_type)
     .ok_or(format!("Invalid gacha type: {gacha_type}"))?;
@@ -99,11 +99,11 @@ fn uigf_into_official(value: &UIGFGachaLogItem) -> Result<GachaLogItem, Box<dyn 
   })
 }
 
-pub fn convert_to_uigf(official: &[GachaLogItem], sort: bool) -> Result<Vec<UIGFGachaLogItem>, Box<dyn Error>> {
+pub fn convert_to_uigf(official: &[GachaLogItem], sort: bool) -> Result<Vec<UIGFGachaLogItem>, String> {
   let mut result = official
     .iter()
     .map(official_into_uigf)
-    .collect::<Result<Vec<UIGFGachaLogItem>, Box<dyn Error>>>()?;
+    .collect::<Result<Vec<UIGFGachaLogItem>, String>>()?;
 
   if sort {
     result.sort_by(|a, b| a.id.cmp(&b.id));
@@ -112,11 +112,11 @@ pub fn convert_to_uigf(official: &[GachaLogItem], sort: bool) -> Result<Vec<UIGF
   Ok(result)
 }
 
-pub fn convert_to_official(uigf: &[UIGFGachaLogItem], sort: bool) -> Result<Vec<GachaLogItem>, Box<dyn Error>> {
+pub fn convert_to_official(uigf: &[UIGFGachaLogItem], sort: bool) -> Result<Vec<GachaLogItem>, String> {
   let mut result = uigf
     .iter()
     .map(uigf_into_official)
-    .collect::<Result<Vec<GachaLogItem>, Box<dyn Error>>>()?;
+    .collect::<Result<Vec<GachaLogItem>, String>>()?;
 
   if sort {
     result.sort_by(|a, b| a.id.cmp(&b.id));

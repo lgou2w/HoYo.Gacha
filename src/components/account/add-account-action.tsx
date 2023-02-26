@@ -90,8 +90,7 @@ function AddAccountForm (props: AddAccountFormProps) {
     addAccount({
       uid: Number(data.uid),
       displayName: data.displayName,
-      gameDataDir: data.gameDataDir,
-      gachaUrl: null
+      gameDataDir: data.gameDataDir
     })
       .then(() => { props.close?.() })
       .catch((error) => {
