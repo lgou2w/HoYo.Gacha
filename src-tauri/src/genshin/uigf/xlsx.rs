@@ -63,7 +63,7 @@ const FONT: &str = "微软雅黑";
 
 const H_TIME      : &str = "时间";
 const H_NAME      : &str = "名称";
-const H_ITEM_TYPE : &str = "类别";
+const H_ITEM_TYPE : &str = "物品类型";
 const H_RANK_TYPE : &str = "星级";
 const H_GACHA_TYPE: &str = "祈愿类型";
 const H_COUNT     : &str = "总次数";
@@ -82,8 +82,8 @@ fn write_excel_sheet(
     .set_font_name(FONT);
 
   sheet.set_column(0, 0, 22.0, Some(&format_column))?;
-  sheet.set_column(1, 1, 15.0, Some(&format_column))?;
-  sheet.set_column(2, 3, 9.0, Some(&format_column))?;
+  sheet.set_column(1, 2, 15.0, Some(&format_column))?;
+  sheet.set_column(3, 3, 9.0, Some(&format_column))?;
   sheet.set_column(4, 4, 16.0, Some(&format_column))?;
   sheet.set_column(5, 6, 9.0, Some(&format_column))?;
 
