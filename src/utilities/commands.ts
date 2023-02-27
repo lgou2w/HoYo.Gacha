@@ -16,7 +16,7 @@ const Commands = Object.freeze({
   findRecentGachaUrl: declareInvocableCommand<GachaUrl>('cmd_find_recent_gacha_url'),
   crateGachaLogFetcherChannel: declareInvocableCommand<void>('cmd_crate_gacha_log_fetcher_channel'),
   findGachaLogsByUID: declareInvocableCommand<GachaLogItem[]>('cmd_find_gacha_logs_by_uid'),
-  exportGachaLogsByUID: declareInvocableCommand<void>('cmd_export_gacha_logs_by_uid')
+  exportGachaLogsByUID: declareInvocableCommand<string>('cmd_export_gacha_logs_by_uid')
 })
 
 export default Commands

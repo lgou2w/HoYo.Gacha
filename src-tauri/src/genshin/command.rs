@@ -56,8 +56,8 @@ pub async fn cmd_export_gacha_logs_by_uid(
   state: State<'_, CoreManage>,
   uid: u32,
   directory: String,
-  uigf: bool // true = UIGF, false = XLSX
-) -> Result<(), String> {
+  uigf: bool // true = UIGF.J, false = UIGF.W
+) -> Result<String, String> {
   export_gacha_logs(&state, uid, directory, uigf)
     .await
     .map_err_to_string()

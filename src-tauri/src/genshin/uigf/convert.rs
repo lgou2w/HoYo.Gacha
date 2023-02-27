@@ -3,7 +3,13 @@ extern crate lazy_static;
 use std::collections::HashMap;
 use lazy_static::lazy_static;
 use super::model::UIGFGachaLogItem;
-use crate::genshin::official::model::{GachaType, GachaItemType, GachaLogItem};
+use crate::genshin::official::model::{
+  GachaType,
+  GachaItemType,
+  GachaLogItem,
+  GACHA_ITEM_TYPE_CHARACTER,
+  GACHA_ITEM_TYPE_WEAPON
+};
 use crate::utils::ResultExt;
 
 lazy_static! {
@@ -15,7 +21,7 @@ lazy_static! {
    *       400             |       301
    *       302             |       302
    */
-  static ref GACHA_TYPE_UIGF_MAPPINGS: HashMap<u32, String> = {
+  pub static ref GACHA_TYPE_UIGF_MAPPINGS: HashMap<u32, String> = {
     let mut m = HashMap::with_capacity(5);
     m.insert(GachaType::Newbie          as u32, String::from("100"));
     m.insert(GachaType::Permanent       as u32, String::from("200"));
@@ -42,9 +48,6 @@ lazy_static! {
     m
   };
 }
-
-const GACHA_ITEM_TYPE_CHARACTER: &str = "角色";
-const GACHA_ITEM_TYPE_WEAPON   : &str = "武器";
 
 // Official GachaLogItem -> UIGF GachaLogItem
 fn official_into_uigf(value: &GachaLogItem) -> Result<UIGFGachaLogItem, String> {

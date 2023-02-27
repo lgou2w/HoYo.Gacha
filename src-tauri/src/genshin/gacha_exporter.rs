@@ -9,6 +9,7 @@ use tauri::State;
 use super::official::model::GachaLogItem;
 use super::uigf::model::UIGFGachaLog;
 use super::uigf::convert::convert_to_uigf;
+use super::uigf::xlsx::write_to_excel;
 use crate::core::{CoreManage, GachaManageExt};
 
 pub async fn export_gacha_logs(
@@ -16,15 +17,19 @@ pub async fn export_gacha_logs(
   uid: u32,
   directory: String,
   uigf: bool
-) -> Result<(), Box<dyn Error + Send + Sync>> {
+) -> Result<String, Box<dyn Error + Send + Sync>> {
   let gacha_logs = state.find_gacha_logs(uid, None).await?;
   let export_time = Local::now();
   let export_file = combine_export_file(uid, &directory, uigf, &export_time)?;
   if uigf {
-    export_gacha_logs_into_uigf(uid, &gacha_logs, &export_time, export_file)
+    export_gacha_logs_into_uigf(uid, &gacha_logs, &export_time, &export_file)?;
   } else {
-    export_gacha_logs_into_xlsx(&gacha_logs, &export_time, export_file)
+    export_gacha_logs_into_xlsx(&gacha_logs, &export_time, &export_file)?;
   }
+  export_file
+    .into_os_string()
+    .into_string()
+    .map_err(|_| "Invalid file path".into())
 }
 
 fn combine_export_file(
@@ -38,14 +43,10 @@ fn combine_export_file(
     create_dir(&directory)?;
   }
 
-  let (format, extension) = if uigf { ("UIGF", "json") } else { ("XLSX", "xlsx") };
+  let (format, extension) = if uigf { ("UIGF.J", "json") } else { ("UIGF.W", "xlsx") };
   let time = export_time.format("%Y%m%d_%H%M%S").to_string();
-  let name = format!("原神祈愿记录_{}_{}_{}", format, uid, time);
-  Ok(
-    directory
-      .join(name)
-      .with_extension(extension)
-  )
+  let name = format!("原神祈愿记录_{format}_{uid}_{time}.{extension}");
+  Ok(directory.join(name))
 }
 
 fn export_gacha_logs_into_uigf<P: AsRef<Path>>(
@@ -64,8 +65,11 @@ fn export_gacha_logs_into_uigf<P: AsRef<Path>>(
 
 fn export_gacha_logs_into_xlsx<P: AsRef<Path>>(
   gacha_logs: &[GachaLogItem],
+  #[allow(unused)]
   export_time: &DateTime<Local>,
   export_file: P
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
-  todo!()
+  let filename = export_file.as_ref().to_str().ok_or("Invalid file".to_string())?;
+  write_to_excel(gacha_logs, filename)?;
+  Ok(())
 }

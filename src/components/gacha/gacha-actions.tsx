@@ -34,6 +34,8 @@ export default function GachaActions (props: Props) {
         />
         <GachaExtAction
           account={props.account}
+          onSuccess={props.onSuccess}
+          onError={props.onError}
           disabled={props.disabled}
         />
       </Box>
