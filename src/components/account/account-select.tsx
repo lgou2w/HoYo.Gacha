@@ -24,7 +24,7 @@ export default function AccountSelect () {
         <Button color="inherit" endIcon={<KeyboardArrowDownIcon />} sx={{ '&:hover': { bgcolor: 'transparent' } }} disableRipple>
           <Avatar />
           <Box display="inline-flex" flexDirection="column" marginLeft={1} textAlign="left">
-            <Typography component="div" variant="body2" noWrap>
+            <Typography component="div" variant="body2" textTransform="none" noWrap>
               {selectedAccount?.displayName || '旅行者'}
             </Typography>
             <Typography component="div" variant="caption" lineHeight={1}>
