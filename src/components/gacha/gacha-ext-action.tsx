@@ -73,11 +73,12 @@ function GachaExtActionImport (props: Props) {
       </IconButton>
       <Backdrop open={busy} sx={{
         zIndex: (theme) => theme.zIndex.drawer + 1,
-        bgcolor: 'rgba(0, 0, 0, 0.65)'
+        bgcolor: 'rgba(0, 0, 0, 0.65)',
+        color: 'white'
       }}>
         <Box display="flex" flexDirection="column" alignItems="center">
           <CircularProgress color="info" />
-          <Typography variant="h6" color="white" sx={{ marginTop: 2 }}>
+          <Typography variant="h6" sx={{ marginTop: 2 }}>
             正在导入祈愿记录中，请稍候...
           </Typography>
         </Box>

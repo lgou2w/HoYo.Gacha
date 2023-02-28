@@ -45,7 +45,7 @@ export default function GachaPage () {
       ? { severity: 'success', message }
       : undefined
     )
-    if (action === 'gacha-import') {
+    if (action === 'gacha-fetch' || action === 'gacha-import') {
       console.debug('Refetch gacha logs...')
       gachaLogs.refetch()
     }

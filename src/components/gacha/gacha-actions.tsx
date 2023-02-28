@@ -2,13 +2,14 @@ import React from 'react'
 import Box from '@mui/material/Box'
 import { TabsProps } from '@mui/material/Tabs'
 import GachaUrlAction from './gacha-url-action'
+import GachaFetchAction from './gacha-fetch-action'
 import GachaTabsAction from './gacha-tabs-action'
 import GachaExtAction from './gacha-ext-action'
 import { Account } from '@/interfaces/settings'
 
 export type Action =
-  'url-change' | 'url-copy' | 'url-fetch' |
-  'gacha-import' | 'gacha-export'
+  'url-change' | 'url-copy' |
+  'gacha-fetch' | 'gacha-import' | 'gacha-export'
 
 export interface Props {
   account: Account
@@ -22,8 +23,14 @@ export interface Props {
 
 export default function GachaActions (props: Props) {
   return (
-    <Box display="flex" alignItems="center">
+    <Box display="flex" alignItems="stretch">
       <GachaUrlAction
+        account={props.account}
+        onSuccess={props.onSuccess}
+        onError={props.onError}
+        disabled={props.disabled}
+      />
+      <GachaFetchAction
         account={props.account}
         onSuccess={props.onSuccess}
         onError={props.onError}

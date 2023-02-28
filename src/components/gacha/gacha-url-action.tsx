@@ -1,6 +1,5 @@
 import React, { useCallback, useMemo, useState } from 'react'
 import Box from '@mui/material/Box'
-import Stack from '@mui/material/Stack'
 import TextField from '@mui/material/TextField'
 import InputAdornment from '@mui/material/InputAdornment'
 import IconButton from '@mui/material/IconButton'
@@ -8,7 +7,6 @@ import Button from '@mui/material/Button'
 import LinkIcon from '@mui/icons-material/Link'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import AddLinkIcon from '@mui/icons-material/AddLink'
-import CachedIcon from '@mui/icons-material/Cached'
 import { Account } from '@/interfaces/settings'
 import { useStatefulSettings } from '@/hooks/useStatefulSettings'
 import Commands from '@/utilities/commands'
@@ -49,7 +47,7 @@ export default function GachaUrlAction (props: Props) {
         .then(() => { props.onSuccess?.('url-copy', '祈愿链接已复制到剪切板！') })
         .catch((error) => { props.onError?.(error) })
     }
-  }, [gachaUrl])
+  }, [props, gachaUrl])
 
   return (
     <Box display="inline-flex">
@@ -57,7 +55,7 @@ export default function GachaUrlAction (props: Props) {
         label="祈愿链接" placeholder="祈愿链接"
         value={gachaUrl}
         disabled={props.disabled}
-        sx={{ maxWidth: 200 }}
+        sx={{ maxWidth: 210 }}
         InputProps={{
           readOnly: true,
           sx: { paddingX: 1 },
@@ -75,21 +73,14 @@ export default function GachaUrlAction (props: Props) {
           )
         }}
       />
-      <Stack marginLeft={2} spacing={2} direction="row">
-        <Button variant="outlined" color="secondary" size="small"
-          startIcon={<AddLinkIcon />}
-          onClick={handleFetchGachaUrl}
-          disabled={props.disabled || busy}
-        >
-          读取链接
-        </Button>
-        <Button variant="outlined" color="primary" size="small"
-          startIcon={<CachedIcon />}
-          disabled={props.disabled || busy}
-        >
-          更新祈愿
-        </Button>
-      </Stack>
+      <Button variant="outlined" color="secondary" size="small"
+        startIcon={<AddLinkIcon />}
+        onClick={handleFetchGachaUrl}
+        disabled={props.disabled || busy}
+        sx={{ marginLeft: 2 }}
+      >
+        读取链接
+      </Button>
     </Box>
   )
 }

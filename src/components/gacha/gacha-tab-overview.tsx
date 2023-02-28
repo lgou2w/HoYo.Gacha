@@ -114,8 +114,8 @@ function GachaTabOverviewCard (props: GachaTabOverviewCardProps) {
       total,
       goldPity,
       goldSum,
-      goldPercent: total > 0 ? Math.round((goldSum / total) * 10000) / 100 : 0,
-      goldAverage: total > 0 ? Math.ceil(total / goldSum) : 0,
+      goldPercent: goldSum > 0 ? Math.round((goldSum / total) * 10000) / 100 : 0,
+      goldAverage: goldSum > 0 ? Math.ceil(total / goldSum) : 0,
       goldItem: golds[golds.length - 1] || '',
       golds
     }
@@ -154,14 +154,16 @@ function GachaTabOverviewCard (props: GachaTabOverviewCardProps) {
           <Chip label={`已出 ${goldSum} 金`} color="warning" />
         </Box>
         <Box>
-          {!props.aggregated && <Chip label={`最近出金：${goldItem || '无'}`} />}
+          {!props.aggregated && goldItem && <Chip label={`最近出金：${goldItem}`} />}
           <Chip label={`出金率 ${goldPercent}%`} />
           <Chip label={`平均每金 ${goldAverage} 抽`} />
           <Chip label={`平均每金 ${goldAverage * 160} 原石`} />
         </Box>
       </Box>
       <Box marginTop={2} fontSize="0.875rem">
-        <Button variant="text" size="small" onClick={handleOpenClick}>查看历史记录</Button>
+        <Button variant="text" size="small" onClick={handleOpenClick}>
+          {!props.aggregated ? '查看历史记录' : '查看合计记录'}
+        </Button>
         <Collapse in={open}>
           <Box marginTop={2}>
             {golds.join('、') || '无'}

@@ -4,7 +4,7 @@ use tauri::{Window, State};
 use super::official::{GachaType, GachaLogItem};
 use super::gacha_exporter::export_gacha_logs;
 use super::gacha_importer::import_gacha_logs;
-use super::gacha_fetcher::create_gacha_log_fetcher_channel;
+use super::gacha_fetcher::{GachaLogFetcherChannelMessage, create_gacha_log_fetcher_channel};
 use super::gacha_url::{GachaUrl, find_recent_gacha_url_and_validate};
 use super::path_finder::{GameDirectory, find_available_game_directories};
 use crate::core::{CoreManage, GachaManageExt};
@@ -28,13 +28,21 @@ pub async fn cmd_find_recent_gacha_url(
 
 #[tauri::command]
 pub async fn cmd_crate_gacha_log_fetcher_channel(
+  state: State<'_, CoreManage>,
   window: Window,
   channel_name: String,
   gacha_url: String,
-  gacha_types: Option<Vec<GachaType>>
+  gacha_types: Option<Vec<GachaType>>,
+  into_database: Option<bool>
 ) -> Result<(), String> {
+  let into_database = into_database.unwrap_or(false);
   create_gacha_log_fetcher_channel(gacha_url, gacha_types, |message| async {
-    window.emit(&channel_name, message)?;
+    window.emit(&channel_name, &message)?;
+    if into_database {
+      if let GachaLogFetcherChannelMessage::Data(gacha_logs) = message {
+        state.save_gacha_logs(&gacha_logs).await?;
+      }
+    }
     Ok(())
   })
     .await

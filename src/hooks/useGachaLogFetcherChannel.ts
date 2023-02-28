@@ -7,20 +7,17 @@ interface Props {
   channelName: string
   gachaUrl: string
   gachaTypes?: Array<GachaLogItem['gachaType']>
+  intoDatabase?: boolean
 }
 
 // TODO: Performance
 
 export default function useGachaLogFetcherChannel (props: Props) {
-  const [error, setError] = useState<string | undefined>()
   const [status, setStatus] = useState<string | undefined>()
   const [data, setData] = useState<GachaLogItem[]>([])
-  const [busy, setBusy] = useState(false)
 
-  const start = useCallback(async () => {
-    setError(undefined)
+  const start: () => Promise<void> = useCallback(async () => {
     setData([])
-    setBusy(true)
     try {
       const unlisten = await event.listen<
         { status: string } |
@@ -39,21 +36,13 @@ export default function useGachaLogFetcherChannel (props: Props) {
         unlisten()
       }
     } catch (error) {
-      setError(
-        error instanceof Error || typeof error === 'object'
-          ? (error as Error).message
-          : error as string
-      )
-    } finally {
-      setBusy(false)
+      return Promise.reject(error)
     }
-  }, [setError, setStatus, setData, setBusy, props])
+  }, [setStatus, setData, props])
 
   return {
-    error,
     status,
     data,
-    busy,
     start
   }
 }
