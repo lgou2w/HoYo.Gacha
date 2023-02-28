@@ -8,6 +8,8 @@ import ListItemText from '@mui/material/ListItemText'
 import Typography from '@mui/material/Typography'
 import IconButton from '@mui/material/IconButton'
 import Divider from '@mui/material/Divider'
+import Backdrop from '@mui/material/Backdrop'
+import CircularProgress from '@mui/material/CircularProgress'
 import FileUploadIcon from '@mui/icons-material/FileUpload'
 import SaveAltIcon from '@mui/icons-material/SaveAlt'
 import AssistantIcon from '@mui/icons-material/Assistant'
@@ -15,11 +17,12 @@ import ViewColumnIcon from '@mui/icons-material/ViewColumn'
 import { Account } from '@/interfaces/settings'
 import Commands from '@/utilities/commands'
 import { dialog } from '@tauri-apps/api'
+import type { Props as GachaActionsProps } from './gacha-actions'
 
 interface Props {
   account: Account
-  onSuccess?: (message?: string) => void
-  onError?: (error: Error | string) => void
+  onSuccess?: GachaActionsProps['onSuccess']
+  onError?: GachaActionsProps['onError']
   disabled?: boolean
 }
 
@@ -35,13 +38,51 @@ export default function GachaExtAction (props: Props) {
 }
 
 function GachaExtActionImport (props: Props) {
+  const [busy, setBusy] = useState(false)
+  const handleImportGachaLogs = useCallback(async () => {
+    setBusy(true)
+    try {
+      const file = await dialog.open({
+        title: '请选择要导入的祈愿记录文件：',
+        directory: false,
+        multiple: false,
+        filters: [{ name: 'UIGF Gacha Logs', extensions: ['json'] }]
+      })
+      if (typeof file === 'string') {
+        const changes = await Commands.importGachaLogsByUID({
+          uid: props.account.uid,
+          file
+        })
+        props.onSuccess?.('gacha-import', `祈愿记录导入成功：${changes}（忽略重复）`)
+      }
+    } catch (error) {
+      props.onError?.(error as string | Error)
+    } finally {
+      setBusy(false)
+    }
+  }, [props, setBusy])
+
   return (
-    <IconButton
-      disabled={props.disabled}
-      sx={{ bgcolor: (theme) => theme.palette.action.hover }}
-    >
-      <FileUploadIcon />
-    </IconButton>
+    <Box>
+      <IconButton
+        onClick={handleImportGachaLogs}
+        disabled={props.disabled || busy}
+        sx={{ bgcolor: (theme) => theme.palette.action.hover }}
+      >
+        <FileUploadIcon />
+      </IconButton>
+      <Backdrop open={busy} sx={{
+        zIndex: (theme) => theme.zIndex.drawer + 1,
+        bgcolor: 'rgba(0, 0, 0, 0.65)'
+      }}>
+        <Box display="flex" flexDirection="column" alignItems="center">
+          <CircularProgress color="info" />
+          <Typography variant="h6" color="white" sx={{ marginTop: 2 }}>
+            正在导入祈愿记录中，请稍候...
+          </Typography>
+        </Box>
+      </Backdrop>
+    </Box>
   )
 }
 
@@ -71,7 +112,7 @@ function GachaExtActionExport (props: Props) {
           directory,
           uigf
         })
-        props.onSuccess?.('祈愿记录导出成功：' + exportFile)
+        props.onSuccess?.('gacha-export', '祈愿记录导出成功：' + exportFile)
       }
     } catch (error) {
       props.onError?.(error as string | Error)
@@ -81,7 +122,7 @@ function GachaExtActionExport (props: Props) {
   }, [props, setAnchorEl, setBusy])
 
   return (
-    <>
+    <Box>
       <IconButton
         onClick={handleClick}
         disabled={props.disabled || busy}
@@ -108,6 +149,6 @@ function GachaExtActionExport (props: Props) {
           <ListItemText>Excel 工作簿 UIGF.W</ListItemText>
         </MenuItem>
       </Menu>
-    </>
+    </Box>
   )
 }

@@ -3,6 +3,7 @@ extern crate tauri;
 use tauri::{Window, State};
 use super::official::{GachaType, GachaLogItem};
 use super::gacha_exporter::export_gacha_logs;
+use super::gacha_importer::import_gacha_logs;
 use super::gacha_fetcher::create_gacha_log_fetcher_channel;
 use super::gacha_url::{GachaUrl, find_recent_gacha_url_and_validate};
 use super::path_finder::{GameDirectory, find_available_game_directories};
@@ -59,6 +60,17 @@ pub async fn cmd_export_gacha_logs_by_uid(
   uigf: bool // true = UIGF.J, false = UIGF.W
 ) -> Result<String, String> {
   export_gacha_logs(&state, uid, directory, uigf)
+    .await
+    .map_err_to_string()
+}
+
+#[tauri::command]
+pub async fn cmd_import_gacha_logs_by_uid(
+  state: State<'_, CoreManage>,
+  uid: u32,
+  file: String
+) -> Result<u64, String> {
+  import_gacha_logs(&state, uid, file)
     .await
     .map_err_to_string()
 }

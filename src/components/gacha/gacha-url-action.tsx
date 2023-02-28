@@ -13,11 +13,12 @@ import { Account } from '@/interfaces/settings'
 import { useStatefulSettings } from '@/hooks/useStatefulSettings'
 import Commands from '@/utilities/commands'
 import { clipboard } from '@tauri-apps/api'
+import type { Props as GachaActionsProps } from './gacha-actions'
 
 interface Props {
   account: Account
-  onSuccess?: (message?: string) => void
-  onError?: (error: Error | string) => void
+  onSuccess?: GachaActionsProps['onSuccess']
+  onError?: GachaActionsProps['onError']
   disabled?: boolean
 }
 
@@ -34,7 +35,7 @@ export default function GachaUrlAction (props: Props) {
       expectedUid: account.uid
     })
       .then((result) => updateAccount(account.uid, { gachaUrl: result.url }))
-      .then(() => { props.onSuccess?.('祈愿链接获取成功！') })
+      .then(() => { props.onSuccess?.('url-change', '祈愿链接获取成功！') })
       .catch((error) => { props.onError?.(error) })
       .finally(() => { setBusy(false) })
   }, [props, updateAccount, setBusy])
@@ -45,7 +46,7 @@ export default function GachaUrlAction (props: Props) {
     } else {
       clipboard
         .writeText(gachaUrl)
-        .then(() => { props.onSuccess?.('祈愿链接已复制到剪切板！') })
+        .then(() => { props.onSuccess?.('url-copy', '祈愿链接已复制到剪切板！') })
         .catch((error) => { props.onError?.(error) })
     }
   }, [gachaUrl])

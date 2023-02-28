@@ -6,12 +6,16 @@ import GachaTabsAction from './gacha-tabs-action'
 import GachaExtAction from './gacha-ext-action'
 import { Account } from '@/interfaces/settings'
 
-interface Props {
+export type Action =
+  'url-change' | 'url-copy' | 'url-fetch' |
+  'gacha-import' | 'gacha-export'
+
+export interface Props {
   account: Account
   tabs: string[]
   tabIndex: number
   onTabChange?: TabsProps['onChange']
-  onSuccess?: (message?: string) => void
+  onSuccess?: (action: Action, message?: string) => void
   onError?: (error: Error | string) => void
   disabled?: boolean
 }

@@ -16,7 +16,7 @@ pub trait GachaManageExt {
 
   fn save_gacha_logs<'a>(&'a self,
     items: &'a [GachaLogItem]
-  ) -> BoxFuture<'a, Result<(), Box<dyn Error + Send + Sync>>>;
+  ) -> BoxFuture<'a, Result<u64, Box<dyn Error + Send + Sync>>>;
 
   fn find_gacha_logs<'a>(&'a self,
     uid: u32,
@@ -37,13 +37,18 @@ impl GachaManageExt for CoreManage {
 
   fn save_gacha_logs<'a>(&'a self,
     items: &'a [GachaLogItem]
-  ) -> BoxFuture<'a, Result<(), Box<dyn Error + Send + Sync>>> {
+  ) -> BoxFuture<'a, Result<u64, Box<dyn Error + Send + Sync>>> {
     Box::pin(async move {
+      if items.is_empty() {
+        return Ok(0);
+      }
+
       let database = &*self.database.lock().await;
       let mut tx = database.begin().await?;
+      let mut changes = 0;
       for item in items {
         let uid = item.uid.parse::<u32>()?;
-        query(SQL_SAVE_GACHA_LOGS)
+        changes += query(SQL_SAVE_GACHA_LOGS)
           .bind(uid)
           .bind(item.gacha_type as u32)
           .bind(&item.item_id)
@@ -55,10 +60,11 @@ impl GachaManageExt for CoreManage {
           .bind(&item.rank_type)
           .bind(&item.id)
           .execute(&mut tx)
-          .await?;
+          .await?
+          .rows_affected();
       }
       tx.commit().await?;
-      Ok(())
+      Ok(changes)
     })
   }
 

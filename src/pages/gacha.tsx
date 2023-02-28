@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import Box from '@mui/material/Box'
 import Alert from '@mui/material/Alert'
 import Typography from '@mui/material/Typography'
-import GachaActions from '@/components/gacha/gacha-actions'
+import GachaActions, { Props as GachaActionsProps } from '@/components/gacha/gacha-actions'
 import GachaTab from '@/components/gacha/gacha-tab'
 import GachaTabOverview from '@/components/gacha/gacha-tab-overview'
 import { useStatefulSettings } from '@/hooks/useStatefulSettings'
@@ -16,28 +16,14 @@ export default function GachaPage () {
   const [tab, setTab] = useState(0)
   const [alert, setAlert] = useState<{ severity: 'success' | 'error', message: string }>()
 
-  const handleSuccess = useCallback((message?: string) => {
-    setAlert(message
-      ? { severity: 'success', message }
-      : undefined
-    )
-  }, [])
-
-  const handleError = useCallback((error: string | Error) => {
+  const handleError = useCallback<Required<GachaActionsProps>['onError']>((error) => {
     setAlert({
       severity: 'error',
       message: '错误：' + (error instanceof Error || typeof error === 'object'
         ? error.message
         : error)
     })
-  }, [])
-
-  useEffect(() => {
-    if (alert && alert.severity === 'success') {
-      const timeout = window.setTimeout(() => { setAlert(undefined) }, 5000)
-      return () => { window.clearTimeout(timeout) }
-    }
-  }, [alert])
+  }, [setAlert])
 
   const gachaLogs = useQuery({
     queryKey: ['gacha-logs', selectedAccount?.uid],
@@ -53,6 +39,24 @@ export default function GachaPage () {
     refetchOnWindowFocus: false,
     onError: handleError
   })
+
+  const handleSuccess = useCallback<Required<GachaActionsProps>['onSuccess']>((action, message) => {
+    setAlert(message
+      ? { severity: 'success', message }
+      : undefined
+    )
+    if (action === 'gacha-import') {
+      console.debug('Refetch gacha logs...')
+      gachaLogs.refetch()
+    }
+  }, [setAlert, gachaLogs.refetch])
+
+  useEffect(() => {
+    if (alert && alert.severity === 'success') {
+      const timeout = window.setTimeout(() => { setAlert(undefined) }, 5000)
+      return () => { window.clearTimeout(timeout) }
+    }
+  }, [alert])
 
   return (
     <Box className="page page-gacha">
