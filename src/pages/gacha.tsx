@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import Box from '@mui/material/Box'
 import Alert from '@mui/material/Alert'
@@ -6,6 +6,7 @@ import Typography from '@mui/material/Typography'
 import GachaActions, { Props as GachaActionsProps } from '@/components/gacha/gacha-actions'
 import GachaTab from '@/components/gacha/gacha-tab'
 import GachaTabOverview from '@/components/gacha/gacha-tab-overview'
+import { GachaLogItem } from '@/interfaces/models'
 import { useStatefulSettings } from '@/hooks/useStatefulSettings'
 import Commands from '@/utilities/commands'
 
@@ -29,7 +30,7 @@ export default function GachaPage () {
     queryKey: ['gacha-logs', selectedAccount?.uid],
     queryFn: () => {
       if (!selectedAccount) {
-        return []
+        return Promise.resolve([])
       } else {
         console.debug('Fetch gacha logs:', selectedAccount.uid)
         return Commands.findGachaLogsByUID({ uid: selectedAccount.uid })
@@ -40,6 +41,37 @@ export default function GachaPage () {
     onError: handleError
   })
 
+  const {
+    gachaTotal,
+    gachaTypeGroups,
+    gachaFirstTime,
+    gachaLastTime
+  } = useMemo(() => {
+    const data = gachaLogs.data
+    const gachaTypeGroups: Record<GachaLogItem['gachaType'], GachaLogItem[]> = { 100: [], 200: [], 301: [], 302: [], 400: [] }
+    if (!data) {
+      return {
+        gachaTotal: 0,
+        gachaTypeGroups,
+        gachaFirstTime: undefined,
+        gachaLastTime: undefined
+      }
+    } else {
+      data.reduce((acc, value) => {
+        if (!acc[value.gachaType]) acc[value.gachaType] = []
+        acc[value.gachaType].push(value)
+        return acc
+      }, gachaTypeGroups)
+
+      return {
+        gachaTotal: data.length,
+        gachaTypeGroups,
+        gachaFirstTime: data[0]?.time,
+        gachaLastTime: data[data.length - 1]?.time
+      }
+    }
+  }, [gachaLogs])
+
   const handleSuccess = useCallback<Required<GachaActionsProps>['onSuccess']>((action, message) => {
     setAlert(message
       ? { severity: 'success', message }
@@ -49,7 +81,7 @@ export default function GachaPage () {
       console.debug('Refetch gacha logs...')
       gachaLogs.refetch()
     }
-  }, [setAlert, gachaLogs.refetch])
+  }, [setAlert, gachaLogs])
 
   useEffect(() => {
     if (alert && alert.severity === 'success') {
@@ -73,6 +105,7 @@ export default function GachaPage () {
         ? (<>
           <GachaActions
             account={selectedAccount}
+            data={gachaTypeGroups}
             tabs={Tabs}
             tabIndex={tab}
             onTabChange={(_, newValue) => setTab(newValue)}
@@ -84,7 +117,17 @@ export default function GachaPage () {
             {gachaLogs.isFetching && <Typography variant="caption">数据加载中...</Typography>}
             {gachaLogs.data && Tabs.map((label, index) => (
               <GachaTab key={index} value={tab} index={index}>
-                {index === 0 ? <GachaTabOverview data={gachaLogs.data} /> : label}
+                {
+                  index === 0
+                    ? <GachaTabOverview
+                        total={gachaTotal}
+                        data={gachaTypeGroups}
+                        rawData={gachaLogs.data}
+                        firstTime={gachaFirstTime}
+                        lastTime={gachaLastTime}
+                      />
+                    : label
+                }
               </GachaTab>
             ))}
           </Box>

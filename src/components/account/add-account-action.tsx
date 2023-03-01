@@ -38,7 +38,7 @@ export default function AddAccountAction () {
         fullWidth
         persistent
       >
-        <AddAccountForm id={FORM_ID} close={handleCancel} />
+        {open && <AddAccountForm id={FORM_ID} close={handleCancel} />}
       </ConfirmDialog>
     </>
   )
@@ -172,7 +172,7 @@ function AddAccountForm (props: AddAccountFormProps) {
 
 function numericOnly (evt: React.KeyboardEvent<HTMLElement>) {
   const keyCode = evt.which ? evt.which : evt.keyCode
-  if (keyCode > 31 && (keyCode < 48 || keyCode > 57)) {
+  if (keyCode > 31 && (keyCode < 48 || keyCode > 57) && keyCode !== 46) {
     evt.preventDefault()
   }
 }
@@ -184,6 +184,7 @@ function handleGameDataDir (context: UseFormReturn<FormProps>, promise: Promise<
     })
   }).catch((error) => {
     context.setError('gameDataDir', {
+      type: 'manual',
       message: error instanceof Error || typeof error === 'object'
         ? error.message
         : error

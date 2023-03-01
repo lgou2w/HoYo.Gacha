@@ -6,17 +6,18 @@ import { event } from '@tauri-apps/api'
 interface Props {
   channelName: string
   gachaUrl: string
-  gachaTypes?: Array<GachaLogItem['gachaType']>
+  gachaTypesArguments?: Partial<Record<GachaLogItem['gachaType'], string>>
   intoDatabase?: boolean
 }
 
 // TODO: Performance
 
-export default function useGachaLogFetcherChannel (props: Props) {
+export default function useGachaLogFetcherChannel () {
   const [status, setStatus] = useState<string | undefined>()
   const [data, setData] = useState<GachaLogItem[]>([])
 
-  const start: () => Promise<void> = useCallback(async () => {
+  const start: (props: Props) => Promise<void> = useCallback(async (props) => {
+    setStatus(undefined)
     setData([])
     try {
       const unlisten = await event.listen<
@@ -38,7 +39,7 @@ export default function useGachaLogFetcherChannel (props: Props) {
     } catch (error) {
       return Promise.reject(error)
     }
-  }, [setStatus, setData, props])
+  }, [setStatus, setData])
 
   return {
     status,

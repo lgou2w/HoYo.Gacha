@@ -1,12 +1,14 @@
 extern crate form_urlencoded;
+extern crate lazy_static;
 extern crate log;
 extern crate reqwest;
 extern crate tokio;
 extern crate url;
 
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 use std::error::Error;
 use std::future::Future;
+use lazy_static::lazy_static;
 use log::debug;
 use reqwest::{Client, ClientBuilder};
 use reqwest::header::{HeaderMap, HeaderValue};
@@ -36,6 +38,7 @@ impl GachaLogFetcher {
     queries.remove("gacha_type");
     queries.remove("page");
     queries.remove("size");
+    queries.remove("begin_id");
     queries.remove("end_id");
 
     let url = Url::parse_with_params(base_url, queries)?;
@@ -138,12 +141,12 @@ impl GachaLogFetcherChannel {
 
   // TODO: better status msg
 
-  async fn poll(&self, gacha_type: &GachaType, end_id: Option<&str>) -> Result<()> {
-    debug!("Polling gacha {gacha_type:?}({}) EndID ({end_id:?})...", (*gacha_type as u32));
+  async fn poll(&self, gacha_type: &GachaType, last_end_id: Option<&str>) -> Result<()> {
+    debug!("Polling gacha {gacha_type:?}({}) Last EndId ({last_end_id:?})...", (*gacha_type as u32));
     self.sender.send(GachaLogFetcherChannelMessage::Status(format!("开始获取祈愿数据：{gacha_type:?}"))).await?;
     time::sleep(time::Duration::from_secs(3)).await;
 
-    let mut end_id = end_id.unwrap_or("0").to_owned();
+    let mut end_id = String::from("0");
     let mut count: u32 = 0;
     const SLEEP_SECONDS: u8 = 3;
 
@@ -163,10 +166,31 @@ impl GachaLogFetcherChannel {
       if let Some(pagination) = response.data {
         if !pagination.list.is_empty() {
           end_id = pagination.list.last().unwrap().id.clone();
-          debug!("Next end id: {end_id:?}");
-          self.sender.send(GachaLogFetcherChannelMessage::Data(pagination.list)).await?;
-          time::sleep(time::Duration::from_secs(1)).await;
-          continue;
+
+          let mut should_break = false;
+          let data: Vec<GachaLogItem> = if let Some(last) = last_end_id {
+            let mut tmp = Vec::with_capacity(20);
+            for item in pagination.list {
+              if last.cmp(&item.id).is_le() {
+                tmp.push(item);
+              } else {
+                should_break = true;
+              }
+            }
+            tmp
+          } else {
+            pagination.list
+          };
+
+          self.sender.send(GachaLogFetcherChannelMessage::Data(data)).await?;
+
+          if should_break {
+            break;
+          } else {
+            debug!("Next end id: {end_id:?}");
+            time::sleep(time::Duration::from_secs(1)).await;
+            continue;
+          }
         }
       }
 
@@ -178,25 +202,44 @@ impl GachaLogFetcherChannel {
     Ok(())
   }
 
-  pub async fn start(&self, gacha_types: Option<&Vec<GachaType>>) -> Result<()> {
-    debug!("Start fetching gacha types: {gacha_types:?}");
-    for gacha_type in gacha_types.unwrap_or(&vec![
-      GachaType::CharacterEvent,
-      GachaType::CharacterEvent2,
-      GachaType::WeaponEvent,
-      GachaType::Permanent,
-      GachaType::Newbie
-    ]) {
-      self.poll(gacha_type, None).await?;
+  pub async fn start(&self, gacha_types_arguments: Option<&GachaLogFetcherTypesArguments>) -> Result<()> {
+    let override_gacha_types_arguments = match gacha_types_arguments {
+      Some(value) => {
+        if value.is_empty() {
+          &DEFAULT_TYPES_ARGUMENTS
+        } else {
+          value
+        }
+      }
+      None => &DEFAULT_TYPES_ARGUMENTS,
+    };
+
+    debug!("Start fetching gacha types: {gacha_types_arguments:?}");
+    for (gacha_type, end_id) in override_gacha_types_arguments {
+      self.poll(gacha_type, end_id.as_deref()).await?;
     }
     debug!("Fetch done");
     Ok(())
   }
 }
 
+// GachaType to BeginId
+type GachaLogFetcherTypesArguments = BTreeMap<GachaType, Option<String>>;
+
+lazy_static! {
+  static ref DEFAULT_TYPES_ARGUMENTS: GachaLogFetcherTypesArguments = {
+    let mut m = GachaLogFetcherTypesArguments::new();
+    m.insert(GachaType::Newbie        , None);
+    m.insert(GachaType::Permanent     , None);
+    m.insert(GachaType::CharacterEvent, None);
+    m.insert(GachaType::WeaponEvent   , None);
+    m
+  };
+}
+
 pub async fn create_gacha_log_fetcher_channel<F, Fut>(
   gacha_url: String,
-  gacha_types: Option<Vec<GachaType>>,
+  gacha_types_arguments: Option<BTreeMap<GachaType, Option<String>>>,
   receiver: F
 ) -> Result<()>
 where
@@ -205,7 +248,7 @@ where
   let (tx, mut rx) = mpsc::channel(1);
   let done = tokio::spawn(async move {
     GachaLogFetcherChannel::new(&gacha_url, tx)?
-      .start(gacha_types.as_ref())
+      .start(gacha_types_arguments.as_ref())
       .await
   });
 

@@ -89,7 +89,7 @@ function GachaExtActionImport (props: Props) {
 
 function GachaExtActionExport (props: Props) {
   const [busy, setBusy] = useState(false)
-  const [anchorEl, setAnchorEl] = React.useState<HTMLElement | null>(null)
+  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
   const open = Boolean(anchorEl)
 
   const handleClose = () => { setAnchorEl(null) }

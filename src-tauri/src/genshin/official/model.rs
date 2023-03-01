@@ -3,7 +3,7 @@ extern crate serde_json;
 
 use serde::{Serialize, Deserialize};
 
-#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, PartialOrd)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, PartialOrd, Eq, Ord)]
 pub enum GachaType {
   #[serde(rename = "100")]
   Newbie = 100,

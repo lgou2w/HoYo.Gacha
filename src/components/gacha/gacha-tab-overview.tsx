@@ -11,17 +11,17 @@ import dayjs from '@/utilities/dayjs'
 
 const TIME_FORMAT = 'YYYY-MM-DD HH:mm:ss'
 
-export default function GachaTabOverview (props: { data: GachaLogItem[] }) {
-  const { total, groups, firstTime, lastTime } = useMemo(() => {
-    const total = props.data.length
-    const gachaTypeGroups = props.data.reduce((groups, value) => {
-      if (!groups[value.gachaType]) {
-        groups[value.gachaType] = []
-      }
-      groups[value.gachaType].push(value)
-      return groups
-    }, {} as Record<GachaLogItem['gachaType'], GachaLogItem[]>)
+interface Props {
+  total: number
+  data: Record<GachaLogItem['gachaType'], GachaLogItem[]>
+  rawData: GachaLogItem[]
+  firstTime?: string
+  lastTime?: string
+}
 
+export default function GachaTabOverview (props: Props) {
+  const { total, groups, firstTime, lastTime } = useMemo(() => {
+    const gachaTypeGroups = props.data
     const character = [
       ...(gachaTypeGroups['301'] || []),
       ...(gachaTypeGroups['400'] || [])]
@@ -33,9 +33,9 @@ export default function GachaTabOverview (props: { data: GachaLogItem[] }) {
         weapon: gachaTypeGroups['302'] || [],
         permanent: gachaTypeGroups['200'] || []
       },
-      total,
-      firstTime: dayjs(props.data[0]?.time, TIME_FORMAT).format('lll'),
-      lastTime: dayjs(props.data[total - 1]?.time, TIME_FORMAT).format('lll')
+      total: props.total,
+      firstTime: dayjs(props.firstTime, TIME_FORMAT).format('lll'),
+      lastTime: dayjs(props.lastTime, TIME_FORMAT).format('lll')
     }
   }, [props])
 
@@ -43,16 +43,16 @@ export default function GachaTabOverview (props: { data: GachaLogItem[] }) {
     <Stack spacing={2}>
       <Grid spacing={2} container>
         <Grid xs={6} item>
-          <GachaTabOverviewCard category="角色祈愿" data={groups.character} />
+          <GachaTabOverviewCard category="角色活动祈愿" data={groups.character} />
         </Grid>
         <Grid xs={6} item>
-          <GachaTabOverviewCard category="武器祈愿" data={groups.weapon} />
+          <GachaTabOverviewCard category="武器活动祈愿" data={groups.weapon} />
         </Grid>
         <Grid xs={6} item>
           <GachaTabOverviewCard category="常驻祈愿" data={groups.permanent} />
         </Grid>
         <Grid xs={6} item>
-          <GachaTabOverviewCard category="合计" data={props.data} aggregated />
+          <GachaTabOverviewCard category="合计" data={props.rawData} aggregated />
         </Grid>
       </Grid>
       <Box>
@@ -119,7 +119,7 @@ function GachaTabOverviewCard (props: GachaTabOverviewCardProps) {
       goldItem: golds[golds.length - 1] || '',
       golds
     }
-  }, [props])
+  }, [props.data])
 
   const [open, setOpen] = useState(false)
   const handleOpenClick = () => setOpen(!open)

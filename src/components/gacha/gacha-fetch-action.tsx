@@ -6,11 +6,13 @@ import Typography from '@mui/material/Typography'
 import CircularProgress from '@mui/material/CircularProgress'
 import CachedIcon from '@mui/icons-material/Cached'
 import { Account } from '@/interfaces/settings'
+import { GachaLogItem } from '@/interfaces/models'
 import useGachaLogFetcherChannel from '@/hooks/useGachaLogFetcherChannel'
 import type { Props as GachaActionsProps } from './gacha-actions'
 
 interface Props {
   account: Account
+  gachaTypesArguments?: Partial<Record<GachaLogItem['gachaType'], string>>
   onSuccess?: GachaActionsProps['onSuccess']
   onError?: GachaActionsProps['onError']
   disabled?: boolean
@@ -19,18 +21,19 @@ interface Props {
 export default function GachaFetchAction (props: Props) {
   const gachaUrl = useMemo(() => props.account.gachaUrl || '', [props.account.gachaUrl])
   const [busy, setBusy] = useState(false)
-  const { status, start } = useGachaLogFetcherChannel({
-    channelName: 'gacha-logs-fetcher',
-    gachaUrl,
-    intoDatabase: true
-  })
+  const { status, start } = useGachaLogFetcherChannel()
 
   const handleClick = useCallback(() => {
     if (!gachaUrl) {
       props.onError?.('祈愿链接不可用！请先尝试读取链接。')
     } else {
       setBusy(true)
-      start()
+      start({
+        channelName: 'gacha-logs-fetcher',
+        gachaUrl,
+        gachaTypesArguments: props.gachaTypesArguments,
+        intoDatabase: true
+      })
         .then(() => { props.onSuccess?.('gacha-fetch', '祈愿记录更新成功！') })
         .catch((error) => { props.onError?.(error) })
         .finally(() => { setBusy(false) })
@@ -47,7 +50,7 @@ export default function GachaFetchAction (props: Props) {
       >
         更新祈愿
       </Button>
-      <Backdrop open={busy} sx={{
+      {busy && <Backdrop open={busy} sx={{
         zIndex: (theme) => theme.zIndex.drawer + 1,
         bgcolor: 'rgba(0, 0, 0, 0.75)',
         color: 'white'
@@ -61,7 +64,7 @@ export default function GachaFetchAction (props: Props) {
             {status || 'idle'}
           </Typography>
         </Box>
-      </Backdrop>
+      </Backdrop>}
     </Box>
   )
 }

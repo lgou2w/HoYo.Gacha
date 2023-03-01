@@ -29,7 +29,7 @@ export default function IndexPage () {
             <FavoriteIcon color="error" fontSize="inherit" sx={{ marginBottom: -0.3 }} />
             {' by '}
             <Link href="https://github.com/lgou2w" target="_blank" rel="external nofollow">lgou2w</Link>
-            .
+            {'.'}
           </Typography>
         </Box>
       </Box>

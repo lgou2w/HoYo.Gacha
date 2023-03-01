@@ -12,7 +12,7 @@ interface Props {
   persistent?: boolean
   title?: React.ReactNode
   onCancel?: React.MouseEventHandler<HTMLButtonElement>
-  onCofirm?: React.MouseEventHandler<HTMLButtonElement>
+  onConfirm?: React.MouseEventHandler<HTMLButtonElement>
   ContentProps?: DialogContentProps
   CancelButtonProps?: Omit<ButtonProps, 'onClick'>
   ConfirmButtonProps?: Omit<ButtonProps, 'onClick'>
@@ -30,7 +30,7 @@ export default function ConfirmDialog (props: PropsWithChildren<Props>) {
       <DialogContent {...props.ContentProps}>{props.children}</DialogContent>
       <DialogActions>
         <Button onClick={props.onCancel} {...props.CancelButtonProps}>取消</Button>
-        <Button onClick={props.onCofirm} {...props.ConfirmButtonProps}>确认</Button>
+        <Button onClick={props.onConfirm} {...props.ConfirmButtonProps}>确认</Button>
       </DialogActions>
     </Dialog>
   )

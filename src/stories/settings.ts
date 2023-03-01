@@ -76,7 +76,7 @@ export class SettingsStore implements SettingsFn {
     }
 
     const updatedAccount: Account = { ...account, ...updated, uid }
-    const newAccounts = Object.assign(accounts, { [uid]: updatedAccount })
+    const newAccounts = { ...accounts, [uid]: updatedAccount }
     await this.setAccounts(newAccounts)
     return [
       newAccounts,

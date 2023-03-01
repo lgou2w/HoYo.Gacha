@@ -61,7 +61,7 @@ export default function AccountList () {
       ))}
       <ConfirmDialog open={removeDialog} title="确认"
         onCancel={handleCancelRemove}
-        onCofirm={handleConfirmRemove}
+        onConfirm={handleConfirmRemove}
         ConfirmButtonProps={{ color: 'error' }}
       >
         <Typography>
@@ -82,7 +82,7 @@ interface AccountListItemProps {
 
 function AccountListItem (props: AccountListItemProps) {
   const { selectedAccount, selectAccount } = useStatefulSettings()
-  const isSelected = useMemo(() => props.account.uid === selectedAccount?.uid, [props, selectedAccount])
+  const isSelected = useMemo(() => props.account.uid === selectedAccount?.uid, [props.account.uid, selectedAccount?.uid])
 
   return (
     <ListItem className="account-list-item" secondaryAction={

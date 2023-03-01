@@ -57,12 +57,12 @@ interface AccountSelectItemProps {
 
 function AccountSelectItem (props: AccountSelectItemProps) {
   const { selectedAccount, selectAccount } = useStatefulSettings()
-  const isSelected = useMemo(() => props.account.uid === selectedAccount?.uid, [props, selectedAccount])
+  const isSelected = useMemo(() => props.account.uid === selectedAccount?.uid, [props.account, selectedAccount])
 
   const handleClick = useCallback(() => {
     props.onPreClick?.()
     selectAccount(props.account.uid)
-  }, [selectAccount, props])
+  }, [selectAccount, props.account])
 
   return (
     <MenuItem selected={isSelected} onClick={handleClick}>
