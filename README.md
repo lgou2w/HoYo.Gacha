@@ -9,6 +9,9 @@
 
 **无需任何本地代理服务器**。只需读取 `Chromium` [硬盘缓存](DISK-CACHE.md)文件并请求 API 端点。
 
+<br />
+<img src="src-tauri/icons/icon.png" style="width:256px;" />
+
 ## 功能
 
 TODO：Refactoring
