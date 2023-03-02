@@ -10,6 +10,7 @@ import Button, { ButtonTypeMap } from '@mui/material/Button'
 import Typography from '@mui/material/Typography'
 import SettingsIcon from '@mui/icons-material/Settings'
 import { SidebarWidth, SidebarNavs } from '@/components/constants'
+import LogoSrc from '@/assets/images/Logo.png'
 
 export default function AppSidebar () {
   return (
@@ -22,8 +23,8 @@ export default function AppSidebar () {
         boxSizing: 'border-box'
       }
     }}>
-      <Toolbar sx={{ marginX: 'auto' }} disableGutters>
-        LOGO
+      <Toolbar disableGutters>
+        <Logo />
       </Toolbar>
       <Divider />
       <NavList />
@@ -77,3 +78,22 @@ const NavButton = styled(Button, {
     }
   })
 })) as OverridableComponent<ButtonTypeMap<{ activated: boolean }>>
+
+const Logo = styled((props) => (
+  <Box {...props}>
+    <img src={LogoSrc} alt="logo" />
+  </Box>
+))(({ theme }) => ({
+  width: '100%',
+  height: '100%',
+  display: 'flex',
+  justifyContent: 'center',
+  boxSizing: 'border-box',
+  userSelect: 'none',
+  '& img': {
+    maxHeight: 64,
+    width: 'auto',
+    display: 'block',
+    padding: theme.spacing(1, 0)
+  }
+}))
