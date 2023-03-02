@@ -12,7 +12,7 @@ export default function IndexPage () {
           Genshin Gacha
         </Typography>
         <Typography component="span" variant="subtitle1" color="grey.800" marginLeft={2}>
-          用于获取导出原神祈愿记录的工具。
+          管理和分析你的原神祈愿记录。
         </Typography>
         <Box>
           <Typography component="span" variant="body1" color="grey.900" marginLeft={0.5}>

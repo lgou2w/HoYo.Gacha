@@ -1,7 +1,7 @@
 {
   "name": "genshin-gacha",
   "version": "0.2.0",
-  "description": "A tool to get and export Genshin Impact gacha logs",
+  "description": "Manage and analyze your Genshin Impact gacha logs",
   "author": "lgou2w <lgou2w@hotmail.com>",
   "homepage": "https://github.com/lgou2w/genshin-gacha#readme",
   "repository": "https://github.com/lgou2w/genshin-gacha.git",

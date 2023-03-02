@@ -31,7 +31,7 @@
         "icons/icon.ico"
       ],
       "identifier": "com.lgou2w.genshin.gacha",
-      "longDescription": "A tool to get and export Genshin Impact gacha logs",
+      "longDescription": "Manage and analyze your Genshin Impact gacha logs",
       "macOS": {
         "entitlements": null,
         "exceptionDomain": "",
@@ -40,7 +40,7 @@
         "signingIdentity": null
       },
       "resources": [],
-      "shortDescription": "",
+      "shortDescription": "Manage and analyze your Genshin Impact gacha logs",
       "targets": "all",
       "windows": {
         "certificateThumbprint": null,
