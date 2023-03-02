@@ -10,6 +10,7 @@ import IconButton from '@mui/material/IconButton'
 import Divider from '@mui/material/Divider'
 import Backdrop from '@mui/material/Backdrop'
 import CircularProgress from '@mui/material/CircularProgress'
+import Tooltip from '@mui/material/Tooltip'
 import FileUploadIcon from '@mui/icons-material/FileUpload'
 import SaveAltIcon from '@mui/icons-material/SaveAlt'
 import AssistantIcon from '@mui/icons-material/Assistant'
@@ -64,13 +65,15 @@ function GachaExtActionImport (props: Props) {
 
   return (
     <Box>
-      <IconButton
-        onClick={handleImportGachaLogs}
-        disabled={props.disabled || busy}
-        sx={{ bgcolor: (theme) => theme.palette.action.hover }}
-      >
-        <FileUploadIcon />
-      </IconButton>
+      <Tooltip title="导入祈愿" PopperProps={{ modifiers: [{ name: 'offset', options: { offset: [0, -8] } }] }}>
+        <IconButton
+          onClick={handleImportGachaLogs}
+          disabled={props.disabled || busy}
+          sx={{ bgcolor: (theme) => theme.palette.action.hover }}
+        >
+          <FileUploadIcon />
+        </IconButton>
+      </Tooltip>
       <Backdrop open={busy} sx={{
         zIndex: (theme) => theme.zIndex.drawer + 1,
         bgcolor: 'rgba(0, 0, 0, 0.65)',
@@ -124,13 +127,15 @@ function GachaExtActionExport (props: Props) {
 
   return (
     <Box>
-      <IconButton
-        onClick={handleClick}
-        disabled={props.disabled || busy}
-        sx={{ bgcolor: (theme) => theme.palette.action.hover }}
-      >
-        <SaveAltIcon />
-      </IconButton>
+      <Tooltip title="导出祈愿" PopperProps={{ modifiers: [{ name: 'offset', options: { offset: [0, -8] } }] }}>
+        <IconButton
+          onClick={handleClick}
+          disabled={props.disabled || busy}
+          sx={{ bgcolor: (theme) => theme.palette.action.hover }}
+        >
+          <SaveAltIcon />
+        </IconButton>
+      </Tooltip>
       <Menu anchorEl={anchorEl} open={open} onClose={handleClose}
         MenuListProps={{ disablePadding: false }}
         slotProps={{ backdrop: { invisible: false } }}
