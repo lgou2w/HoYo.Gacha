@@ -38,7 +38,7 @@ export default function AddAccountAction () {
         fullWidth
         persistent
       >
-        {open && <AddAccountForm id={FORM_ID} close={handleCancel} />}
+        <AddAccountForm id={FORM_ID} close={handleCancel} />
       </ConfirmDialog>
     </>
   )

@@ -7,6 +7,7 @@ import CircularProgress from '@mui/material/CircularProgress'
 import CachedIcon from '@mui/icons-material/Cached'
 import { Account } from '@/interfaces/settings'
 import { GachaLogItem } from '@/interfaces/models'
+import { useStatefulSettings } from '@/hooks/useStatefulSettings'
 import useGachaLogFetcherChannel from '@/hooks/useGachaLogFetcherChannel'
 import type { Props as GachaActionsProps } from './gacha-actions'
 
@@ -19,6 +20,7 @@ interface Props {
 }
 
 export default function GachaFetchAction (props: Props) {
+  const { updateAccount } = useStatefulSettings()
   const gachaUrl = useMemo(() => props.account.gachaUrl || '', [props.account.gachaUrl])
   const [busy, setBusy] = useState(false)
   const { status, start } = useGachaLogFetcherChannel()
@@ -34,6 +36,7 @@ export default function GachaFetchAction (props: Props) {
         gachaTypesArguments: props.gachaTypesArguments,
         intoDatabase: true
       })
+        .then(() => updateAccount(props.account.uid, { lastGachaUpdated: new Date().toISOString() }))
         .then(() => { props.onSuccess?.('gacha-fetch', '祈愿记录更新成功！') })
         .catch((error) => { props.onError?.(error) })
         .finally(() => { setBusy(false) })

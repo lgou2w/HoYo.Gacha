@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useReducer } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import Box from '@mui/material/Box'
 import Alert from '@mui/material/Alert'
@@ -9,22 +9,39 @@ import GachaTabOverview from '@/components/gacha/gacha-tab-overview'
 import { GachaLogItem } from '@/interfaces/models'
 import { useStatefulSettings } from '@/hooks/useStatefulSettings'
 import Commands from '@/utilities/commands'
+import dayjs from '@/utilities/dayjs'
 
 const Tabs = ['总览', '统计', '数据']
 
 export default function GachaPage () {
   const { selectedAccount } = useStatefulSettings()
-  const [tab, setTab] = useState(0)
-  const [alert, setAlert] = useState<{ severity: 'success' | 'error', message: string }>()
+
+  type Action =
+    | { type: 'setTab', payload: number }
+    | { type: 'setAlert', payload?: { severity: 'success' | 'error', message?: string } }
+    | { type: 'setBusy', payload: boolean }
+
+  const initialState = { tab: 0, alert: undefined, busy: false }
+  const [state, dispatch] = useReducer((state = initialState, action: Action) => {
+    switch (action.type) {
+      case 'setTab': return { ...state, tab: action.payload }
+      case 'setAlert': return { ...state, alert: action.payload }
+      case 'setBusy': return { ...state, busy: action.payload }
+      default: return state
+    }
+  }, initialState)
 
   const handleError = useCallback<Required<GachaActionsProps>['onError']>((error) => {
-    setAlert({
-      severity: 'error',
-      message: '错误：' + (error instanceof Error || typeof error === 'object'
-        ? error.message
-        : error)
+    dispatch({
+      type: 'setAlert',
+      payload: {
+        severity: 'error',
+        message: '错误：' + (error instanceof Error || typeof error === 'object'
+          ? error.message
+          : error)
+      }
     })
-  }, [setAlert])
+  }, [dispatch])
 
   const gachaLogs = useQuery({
     queryKey: ['gacha-logs', selectedAccount?.uid],
@@ -48,7 +65,7 @@ export default function GachaPage () {
     gachaLastTime
   } = useMemo(() => {
     const data = gachaLogs.data
-    const gachaTypeGroups: Record<GachaLogItem['gachaType'], GachaLogItem[]> = { 100: [], 200: [], 301: [], 302: [], 400: [] }
+    let gachaTypeGroups: Record<GachaLogItem['gachaType'], GachaLogItem[]> = { 100: [], 200: [], 301: [], 302: [], 400: [] }
     if (!data) {
       return {
         gachaTotal: 0,
@@ -57,7 +74,7 @@ export default function GachaPage () {
         gachaLastTime: undefined
       }
     } else {
-      data.reduce((acc, value) => {
+      gachaTypeGroups = data.reduce((acc, value) => {
         if (!acc[value.gachaType]) acc[value.gachaType] = []
         acc[value.gachaType].push(value)
         return acc
@@ -73,32 +90,37 @@ export default function GachaPage () {
   }, [gachaLogs])
 
   const handleSuccess = useCallback<Required<GachaActionsProps>['onSuccess']>((action, message) => {
-    setAlert(message
-      ? { severity: 'success', message }
-      : undefined
-    )
+    dispatch({
+      type: 'setAlert',
+      payload: message ? { severity: 'success', message } : undefined
+    })
     if (action === 'gacha-fetch' || action === 'gacha-import') {
       console.debug('Refetch gacha logs...')
-      gachaLogs.refetch()
+      dispatch({ type: 'setBusy', payload: true })
+      gachaLogs
+        .refetch()
+        .finally(() => dispatch({ type: 'setBusy', payload: false }))
     }
-  }, [setAlert, gachaLogs])
+  }, [dispatch, gachaLogs])
 
   useEffect(() => {
-    if (alert && alert.severity === 'success') {
-      const timeout = window.setTimeout(() => { setAlert(undefined) }, 5000)
+    if (state.alert) {
+      const timeout = window.setTimeout(() => {
+        dispatch({ type: 'setAlert', payload: undefined })
+      }, state.alert.severity === 'error' ? 10_000 : 5_000)
       return () => { window.clearTimeout(timeout) }
     }
-  }, [alert])
+  }, [state.alert])
 
   return (
     <Box className="page page-gacha">
-      {alert && (
+      {state.alert && (
         <Alert
-          severity={alert.severity}
-          onClose={() => setAlert(undefined)}
+          severity={state.alert.severity}
+          onClose={() => dispatch({ type: 'setAlert', payload: undefined })}
           sx={{ marginBottom: 2 }}
         >
-          {alert.message}
+          {state.alert.message}
         </Alert>
       )}
       {selectedAccount
@@ -107,16 +129,26 @@ export default function GachaPage () {
             account={selectedAccount}
             data={gachaTypeGroups}
             tabs={Tabs}
-            tabIndex={tab}
-            onTabChange={(_, newValue) => setTab(newValue)}
+            tabIndex={state.tab}
+            onTabChange={(_, newValue) => dispatch({ type: 'setTab', payload: newValue })}
             onSuccess={handleSuccess}
             onError={handleError}
-            disabled={!selectedAccount}
+            disabled={state.busy}
           />
-          <Box marginTop={2}>
+          <Box marginY={1}>
+            <Typography variant="subtitle2" color="grey.600">
+              <Typography component="span" variant="inherit">最近祈愿记录更新日期：</Typography>
+              <Typography component="span" variant="inherit">
+                {selectedAccount.lastGachaUpdated
+                  ? dayjs(selectedAccount.lastGachaUpdated).format('LLLL')
+                  : '无'}
+              </Typography>
+            </Typography>
+          </Box>
+          <Box>
             {gachaLogs.isFetching && <Typography variant="caption">数据加载中...</Typography>}
             {gachaLogs.data && Tabs.map((label, index) => (
-              <GachaTab key={index} value={tab} index={index}>
+              <GachaTab key={index} value={state.tab} index={index}>
                 {
                   index === 0
                     ? <GachaTabOverview

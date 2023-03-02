@@ -169,7 +169,7 @@ impl GachaLogFetcherChannel {
 
           let mut should_break = false;
           let data: Vec<GachaLogItem> = if let Some(last) = last_end_id {
-            let mut tmp = Vec::with_capacity(20);
+            let mut tmp = Vec::with_capacity(pagination.list.len());
             for item in pagination.list {
               if last.cmp(&item.id).is_le() {
                 tmp.push(item);

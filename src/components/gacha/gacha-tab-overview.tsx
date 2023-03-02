@@ -125,7 +125,7 @@ function GachaTabOverviewCard (props: GachaTabOverviewCardProps) {
   const handleOpenClick = () => setOpen(!open)
 
   return (
-    <Box position="relative" padding={2} border={2} borderRadius={2} borderColor="grey.300" bgcolor="grey.100">
+    <Box position="relative" padding={2} paddingBottom={1} border={2} borderRadius={2} borderColor="grey.300" bgcolor="grey.100">
       <Box position="absolute" top={0} right={0} bgcolor={props.aggregated ? 'warning.light' : 'success.light'}
         borderLeft={2} borderBottom={2} borderColor="grey.300" sx={{
           borderBottomLeftRadius: 12,
@@ -165,7 +165,7 @@ function GachaTabOverviewCard (props: GachaTabOverviewCardProps) {
           {!props.aggregated ? '查看历史记录' : '查看合计记录'}
         </Button>
         <Collapse in={open}>
-          <Box marginTop={2}>
+          <Box marginY={1}>
             {golds.join('、') || '无'}
           </Box>
         </Collapse>

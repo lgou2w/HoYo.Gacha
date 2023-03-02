@@ -57,7 +57,7 @@ interface AccountSelectItemProps {
 
 function AccountSelectItem (props: AccountSelectItemProps) {
   const { selectedAccount, selectAccount } = useStatefulSettings()
-  const isSelected = useMemo(() => props.account.uid === selectedAccount?.uid, [props.account, selectedAccount])
+  const isSelected = useMemo(() => props.account.uid === selectedAccount?.uid, [props.account.uid, selectedAccount?.uid])
 
   const handleClick = useCallback(() => {
     props.onPreClick?.()

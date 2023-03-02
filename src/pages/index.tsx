@@ -19,7 +19,7 @@ export default function IndexPage () {
             {`v${__APP_VERSION__}`}
           </Typography>
           <Typography component="span" variant="body2" color="grey.800" marginLeft={1}>
-            {' Made with '}
+            {'Made with '}
             <Link href="https://tauri.app" target="_blank" rel="external nofollow">Tauri</Link>
             {', '}
             <Link href="https://reactjs.org" target="_blank" rel="external nofollow">React</Link>

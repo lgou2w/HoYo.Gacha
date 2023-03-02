@@ -3,7 +3,7 @@ export interface Account {
   displayName: string | null
   gameDataDir: string
   gachaUrl?: string | null
-  lastUpdated?: string | null
+  lastGachaUpdated?: string | null
 }
 
 export type Accounts = Record<number, Account>
