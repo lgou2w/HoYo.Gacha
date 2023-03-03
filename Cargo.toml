@@ -1,13 +1,11 @@
 [workspace]
 members = [
-  "disk_cache",
-  "genshin",
-  "gacha",
-  "cli"
+  "src-tauri"
 ]
 
 [profile.release]
-opt-level = 'z'
-lto = true
+panic = "abort"
 codegen-units = 1
-panic = 'abort'
+lto = true
+opt-level = "s"
+strip = true

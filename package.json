@@ -1,0 +1,59 @@
+{
+  "name": "genshin-gacha",
+  "version": "0.2.0",
+  "description": "Manage and analyze your Genshin Impact gacha logs",
+  "author": "lgou2w <lgou2w@hotmail.com>",
+  "homepage": "https://github.com/lgou2w/genshin-gacha#readme",
+  "repository": "https://github.com/lgou2w/genshin-gacha.git",
+  "license": "MIT OR Apache-2.0",
+  "private": "true",
+  "type": "module",
+  "engines": {
+    "node": ">=16.0.0",
+    "pnpm": ">=7.0.0"
+  },
+  "scripts": {
+    "tauri": "tauri",
+    "dev": "cross-env NODE_ENV=development vite",
+    "build": "cross-env NODE_ENV=production tsc && vite build",
+    "lint": "eslint --ext .ts,.tsx --ignore-path .gitignore .",
+    "lint:fix": "eslint --fix --ext .ts,.tsx --ignore-path .gitignore ."
+  },
+  "dependencies": {
+    "@emotion/react": "^11.10.6",
+    "@emotion/styled": "^11.10.6",
+    "@mui/icons-material": "^5.11.11",
+    "@mui/material": "^5.11.11",
+    "@mui/system": "^5.11.11",
+    "@mui/x-date-pickers": "^5.0.20",
+    "@tanstack/react-query": "^4.24.10",
+    "@tanstack/react-query-devtools": "^4.24.12",
+    "@tauri-apps/api": "^1.2.0",
+    "dayjs": "^1.11.7",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-hook-form": "^7.43.3",
+    "react-hook-form-mui": "^5.15.1",
+    "react-router-dom": "^6.8.2",
+    "tauri-plugin-store-api": "github:tauri-apps/tauri-plugin-store"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.21.0",
+    "@tauri-apps/cli": "^1.2.3",
+    "@types/node": "^18.14.3",
+    "@types/react": "^18.0.28",
+    "@types/react-dom": "^18.0.11",
+    "@typescript-eslint/eslint-plugin": "^5.54.0",
+    "@typescript-eslint/parser": "^5.54.0",
+    "@vitejs/plugin-react": "^3.1.0",
+    "cross-env": "^7.0.3",
+    "eslint": "^8.35.0",
+    "eslint-config-standard": "^17.0.0",
+    "eslint-plugin-import": "^2.27.5",
+    "eslint-plugin-n": "^15.6.1",
+    "eslint-plugin-promise": "^6.1.1",
+    "eslint-plugin-react": "^7.32.2",
+    "typescript": "^4.9.5",
+    "vite": "^4.1.4"
+  }
+}

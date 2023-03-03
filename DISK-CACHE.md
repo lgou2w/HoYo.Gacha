@@ -191,8 +191,8 @@ Every piece of data stored by the disk cache has a given “cache address”. Th
 
 请参考本仓库内的源代码实现：
 
-- 硬盘缓存：[disk_cache/src/](disk_cache/src/)
-- 获取祈愿链接：[gacha/src/url.rs](gacha/src/url.rs)
+- 硬盘缓存：[disk_cache/src/](https://github.com/lgou2w/genshin-gacha/tree/0.1.4/disk_cache/src)
+- 获取祈愿链接：[gacha/src/url.rs](https://github.com/lgou2w/genshin-gacha/tree/0.1.4/gacha/src/url.rs)
 
 ### Node.js
 
