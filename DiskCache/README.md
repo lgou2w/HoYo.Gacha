@@ -48,7 +48,7 @@
 
 ### 了解硬盘缓存文件结构
 
-![disk-cache-files.png](assets/disk-cache-files.png)
+![disk-cache-files.png](files.png)
 
 This diagram shows a disk cache with 7 files on disk: the index file, 5 block-files and one separate file. data_1 and data_4 are chained together so they store blocks of the same size (256 bytes), while data_2 stores blocks of 1KB and data_3 stores blocks of 4 KB. The depicted entry has its key stored outside the EntryStore structure, and given that it uses two blocks, it must be between one and two kilobytes. This entry also has two data streams, one for the HTTP headers (less than 256 bytes) and another one for the actual payload (more than 16 KB so it lives on a dedicated file). All blue arrows indicate that a cache address is used to locate another piece of data.
 
@@ -125,7 +125,7 @@ Every piece of data stored by the disk cache has a given “cache address”. Th
 - `0x8000002A`：外部文件 `f_00002A`
 - `0xA0010003`：块文件号 1（data_1），初始块号 3，长度为 1 个块。
 
-详细的状态获取可以查看：[disk_cache/src/addr.rs](disk_cache/src/addr.rs)
+详细的状态获取可以查看：[disk_cache/addr.rs](../src-tauri/src/disk_cache/addr.rs)
 
 ### 数据块文件
 
@@ -191,8 +191,8 @@ Every piece of data stored by the disk cache has a given “cache address”. Th
 
 请参考本仓库内的源代码实现：
 
-- 硬盘缓存：[disk_cache/src/](https://github.com/lgou2w/genshin-gacha/tree/0.1.4/disk_cache/src)
-- 获取祈愿链接：[gacha/src/url.rs](https://github.com/lgou2w/genshin-gacha/tree/0.1.4/gacha/src/url.rs)
+- 硬盘缓存：[disk_cache](../src-tauri/src/disk_cache)
+- 获取祈愿链接：[genshin/gacha_url.rs](../src-tauri/src/genshin/gacha_url.rs)
 
 ### Node.js
 
