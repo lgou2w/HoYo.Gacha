@@ -154,7 +154,6 @@ export default function GachaPage () {
                     ? <GachaTabOverview
                         total={gachaTotal}
                         data={gachaTypeGroups}
-                        rawData={gachaLogs.data}
                         firstTime={gachaFirstTime}
                         lastTime={gachaLastTime}
                       />
