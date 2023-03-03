@@ -24,4 +24,21 @@ TODO：Refactoring
 
 ## 协议
 
-MIT OR Apache-2.0
+MIT OR Apache-2.0 仅供个人非商业使用授权
+
+### 部分资源文件
+
+---
+
+[个人非商用授权](https://www.hanyi.com.cn/faq-doc-1) - 北京汉仪创新科技股份有限公司 版权所有
+
+- [src/assets/汉仪文黑-85W.ttf](src/assets/%E6%B1%89%E4%BB%AA%E6%96%87%E9%BB%91-85W.ttf)
+
+---
+
+©miHoYo | 上海米哈游影铁科技有限公司 版权所有
+
+- [src/assets/images/Logo.png](src/assets/images/Logo.png)
+- [src/assets/images/UI_AvatarIcon_PlayerGirl.png](src/assets/images/UI_AvatarIcon_PlayerGirl.png)
+- [src/assets/images/UI_AvatarIcon_PlayerBoy.png](src/assets/images/UI_AvatarIcon_PlayerBoy.png)
+- [src-tauri/icons/*](src-tauri/icons/)
