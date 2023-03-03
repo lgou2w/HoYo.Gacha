@@ -1,7 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useReducer } from 'react'
 import { useQuery } from '@tanstack/react-query'
+import { Link } from 'react-router-dom'
 import Box from '@mui/material/Box'
 import Alert from '@mui/material/Alert'
+import Button from '@mui/material/Button'
 import Typography from '@mui/material/Typography'
 import GachaActions, { Props as GachaActionsProps } from '@/components/gacha/gacha-actions'
 import GachaTab from '@/components/gacha/gacha-tab'
@@ -163,9 +165,14 @@ export default function GachaPage () {
             ))}
           </Box>
           </>)
-        : (<Typography variant="h6" color="error">
-            No account selected!
-          </Typography>)
+        : (<>
+            <Typography variant="h6" color="error">
+              还没有任何可用账号。请先添加一个账号！
+            </Typography>
+            <Button component={Link} to="/account" variant="outlined">
+              账号管理
+            </Button>
+          </>)
       }
     </Box>
   )
