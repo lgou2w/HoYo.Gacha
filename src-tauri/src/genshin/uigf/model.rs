@@ -9,7 +9,9 @@ use serde::{Serialize, Deserialize};
 
 /* UIGF : https://uigf.org/standards/UIGF.html */
 
-pub const UIGF_VERSION: &str = "v2.2";
+pub const UIGF_VERSION      : &str = "v2.2";
+pub const EXPORT_APP        : &str = "com.lgou2w.genshin.gacha";
+pub const EXPORT_APP_VERSION: &str = env!("CARGO_PKG_VERSION");
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UIGFGachaLogInfo {
@@ -53,8 +55,8 @@ impl UIGFGachaLog {
         lang,
         export_time,
         export_timestamp,
-        export_app: env!("CARGO_PKG_NAME").into(),
-        export_app_version: env!("CARGO_PKG_VERSION").into(),
+        export_app: EXPORT_APP.into(),
+        export_app_version: EXPORT_APP_VERSION.into(),
         uigf_version: UIGF_VERSION.into()
       },
       list
