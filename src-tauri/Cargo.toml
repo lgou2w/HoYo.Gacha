@@ -28,7 +28,7 @@ reqwest = { version = "0.11.14", features = ["json"] }
 serde = { version = "1.0.152", features = ["derive"] }
 serde_json = "1.0.93"
 sqlx = { version = "0.6.2", features = ["runtime-tokio-native-tls", "sqlite"] }
-tauri = { version = "1", features = ["clipboard-all", "dialog-all"] }
+tauri = { version = "1", features = ["clipboard-all", "dialog-all", "shell-all"] }
 tauri-plugin-store = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "dev" }
 tokio = { version = "1.25.0", features = ["full"] }
 url = "2.3.1"
