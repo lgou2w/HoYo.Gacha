@@ -64,11 +64,13 @@ export default function AccountList () {
         onConfirm={handleConfirmRemove}
         ConfirmButtonProps={{ color: 'error' }}
       >
-        <Typography>
-          删除该账号：
-          <Typography color="red" variant="button">{accountRef?.current?.uid}</Typography>
-        </Typography>
-        <Typography variant="subtitle2">包括该账号已有的数据！</Typography>
+        <Box>
+          <Typography component="span">确认删除该账号：</Typography>
+          <Typography component="span" color="red" variant="subtitle1" letterSpacing={0.8}>
+            {accountRef?.current?.uid}
+          </Typography>
+        </Box>
+        <Typography>该操作不会清空此账号下已保存的祈愿数据！</Typography>
       </ConfirmDialog>
     </List>
   )
