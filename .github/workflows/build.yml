@@ -46,14 +46,11 @@ jobs:
           node-version: 16
           cache: pnpm
 
-      - name: Install app dependencies and build
-        run: |
-          pnpm install
-          pnpm build
+      - name: Install app dependencies
+        run: pnpm install
 
       - name: Build Tauri app
-        run: |
-          pnpm tauri build
+        run: pnpm tauri build
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
