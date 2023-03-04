@@ -71,14 +71,14 @@ fn official_into_uigf(value: &GachaLogItem) -> Result<UIGFGachaLogItem, String> 
     lang: Some(value.lang.clone()),
     name: value.name.clone(),
     rank_type: Some(value.rank_type.clone()),
-    time: Some(value.time.clone()),
+    time: value.time.clone(),
     uid: Some(value.uid.clone()),
     uigf_gacha_type: uigf_gacha_type.into()
   })
 }
 
 // UIGF GachaLogItem -> Official GachaLogItem
-fn uigf_into_official(value: &UIGFGachaLogItem) -> Result<GachaLogItem, String> {
+fn uigf_into_official(value: &UIGFGachaLogItem, owned_uid: u32, lang: &str) -> Result<GachaLogItem, String> {
   let gacha_type = value.gacha_type.parse::<u32>().map_err_to_string()?;
   let gacha_type = **GACHA_TYPE_MAPPINGS
     .get(&gacha_type)
@@ -89,15 +89,15 @@ fn uigf_into_official(value: &UIGFGachaLogItem) -> Result<GachaLogItem, String> 
     .ok_or(format!("Invalid gacha item type: {}", value.item_type))?;
 
   Ok(GachaLogItem {
-    uid: value.uid.clone().ok_or("Missing field: uid")?,
+    uid: value.uid.clone().unwrap_or(owned_uid.to_string()),
     gacha_type,
     item_id: value.item_id.clone().unwrap_or("".into()),
     count: value.count.clone().unwrap_or("1".into()),
-    time: value.time.clone().ok_or("Missing field: time")?,
+    time: value.time.clone(),
     name: value.name.clone(),
-    lang: value.lang.clone().ok_or("Missing field: lang")?,
+    lang: value.lang.clone().unwrap_or(lang.into()),
     item_type,
-    rank_type: value.rank_type.clone().ok_or("Missing field: rank_type")?,
+    rank_type: value.rank_type.clone().ok_or("祈愿记录项缺少字段：`rank_type`")?, // TODO
     id: value.id.clone()
   })
 }
@@ -115,10 +115,15 @@ pub fn convert_to_uigf(official: &[GachaLogItem], sort: bool) -> Result<Vec<UIGF
   Ok(result)
 }
 
-pub fn convert_to_official(uigf: &[UIGFGachaLogItem], sort: bool) -> Result<Vec<GachaLogItem>, String> {
+pub fn convert_to_official(
+  uigf: &[UIGFGachaLogItem],
+  sort: bool,
+  owned_uid: u32,
+  lang: &str
+) -> Result<Vec<GachaLogItem>, String> {
   let mut result = uigf
     .iter()
-    .map(uigf_into_official)
+    .map(|v| uigf_into_official(v, owned_uid, lang))
     .collect::<Result<Vec<GachaLogItem>, String>>()?;
 
   if sort {

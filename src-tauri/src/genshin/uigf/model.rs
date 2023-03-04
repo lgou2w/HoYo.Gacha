@@ -9,7 +9,7 @@ use serde::{Serialize, Deserialize};
 
 /* UIGF : https://uigf.org/standards/UIGF.html */
 
-pub const UIGF_VERSION      : &str = "v2.2";
+pub const UIGF_VERSION      : &str = "v2.3";
 pub const EXPORT_APP        : &str = "com.lgou2w.genshin.gacha";
 pub const EXPORT_APP_VERSION: &str = env!("CARGO_PKG_VERSION");
 
@@ -17,10 +17,10 @@ pub const EXPORT_APP_VERSION: &str = env!("CARGO_PKG_VERSION");
 pub struct UIGFGachaLogInfo {
   pub uid: String,
   pub lang: String,
-  pub export_time: String,
+  pub export_time: Option<String>,
   pub export_timestamp: Option<i64>,
-  pub export_app: String,
-  pub export_app_version: String,
+  pub export_app: Option<String>,
+  pub export_app_version: Option<String>,
   pub uigf_version: String
 }
 
@@ -34,7 +34,7 @@ pub struct UIGFGachaLogItem {
   pub lang: Option<String>,
   pub name: String,
   pub rank_type: Option<String>,
-  pub time: Option<String>,
+  pub time: String,
   pub uid: Option<String>,
   pub uigf_gacha_type: String
 }
@@ -48,15 +48,15 @@ pub struct UIGFGachaLog {
 impl UIGFGachaLog {
   pub fn new(uid: u32, lang: String, time: &DateTime<Local>, list: Vec<UIGFGachaLogItem>) -> Self {
     let export_time = time.format("%Y-%m-%d %H:%M:%S").to_string();
-    let export_timestamp = Some(time.timestamp());
+    let export_timestamp = time.timestamp();
     Self {
       info: UIGFGachaLogInfo {
         uid: uid.to_string(),
         lang,
-        export_time,
-        export_timestamp,
-        export_app: EXPORT_APP.into(),
-        export_app_version: EXPORT_APP_VERSION.into(),
+        export_time: Some(export_time),
+        export_timestamp: Some(export_timestamp),
+        export_app: Some(EXPORT_APP.into()),
+        export_app_version: Some(EXPORT_APP_VERSION.into()),
         uigf_version: UIGF_VERSION.into()
       },
       list
