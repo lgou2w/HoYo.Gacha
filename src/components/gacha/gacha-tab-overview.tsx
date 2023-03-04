@@ -96,13 +96,15 @@ function GachaTabOverviewCard (props: GachaTabOverviewCardProps) {
   const { total, goldPity, goldSum, goldPercent, goldAverage, goldItem, golds } = useMemo(() => {
     let golds: string[] = []
     let goldPity = 0
+    let goldPitySum = 0
     let goldSum = 0
     let total = 0
 
     if (Array.isArray(props.data)) {
       total = props.data.length
       const result = computeGachaGolds(props.data)
-      golds = result.golds.map((v) => v.value)
+      golds = result.golds.map((v) => `${v.name}（${v.pity}）`)
+      goldPitySum = result.golds.reduce((pv, cv) => pv + cv.pity, 0)
       goldPity = result.pity
       goldSum = result.sum
     } else {
@@ -111,10 +113,11 @@ function GachaTabOverviewCard (props: GachaTabOverviewCardProps) {
       const weaponResult = computeGachaGolds(props.data.weapon)
       const permanentResult = computeGachaGolds(props.data.permanent)
       const allGolds = [...characterResult.golds, ...weaponResult.golds, ...permanentResult.golds]
+      goldPitySum = allGolds.reduce((pv, cv) => pv + cv.pity, 0)
       goldSum = characterResult.sum + weaponResult.sum + permanentResult.sum
       golds = allGolds
         .sort((a, b) => a.id.localeCompare(b.id))
-        .map((v) => v.value)
+        .map((v) => `${v.name}（${v.pity}）`)
     }
 
     return {
@@ -122,7 +125,7 @@ function GachaTabOverviewCard (props: GachaTabOverviewCardProps) {
       goldPity,
       goldSum,
       goldPercent: goldSum > 0 ? Math.round((goldSum / total) * 10000) / 100 : 0,
-      goldAverage: goldSum > 0 ? Math.ceil(total / goldSum) : 0,
+      goldAverage: goldSum > 0 ? Math.ceil(Math.round((goldPitySum / goldSum) * 100) / 100) : 0,
       goldItem: golds[golds.length - 1] || '',
       golds
     }
@@ -182,14 +185,14 @@ function GachaTabOverviewCard (props: GachaTabOverviewCardProps) {
 }
 
 function computeGachaGolds (data: GachaLogItem[]) {
-  const golds: Array<{ id: string, value: string }> = []
+  const golds: Array<{ id: string, name: string, pity: number }> = []
   let pity = 0
   let sum = 0
   for (const item of data) {
     const isGold = item.rankType === '5'
     pity += 1
     if (isGold) {
-      golds.push({ id: item.id, value: `${item.name}（${pity}）` })
+      golds.push({ id: item.id, name: item.name, pity })
       sum += 1
       pity = 0
     }
