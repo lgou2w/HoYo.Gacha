@@ -40,6 +40,12 @@ jobs:
           node-version: 16
           cache: pnpm
 
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 7
+          run_install: false
+
       - name: Install app dependencies and build
         run: |
           pnpm install
