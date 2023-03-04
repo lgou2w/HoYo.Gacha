@@ -1,0 +1,59 @@
+name: Build
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - build_name: Windows
+            platform: windows-latest
+
+    name: ${{ matrix.build_name }}
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+
+      - name: Setup Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: './src-tauri -> target'
+
+      - name: Install Node and setup cache
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          cache: pnpm
+
+      - name: Install app dependencies and build
+        run: |
+          pnpm install
+          pnpm build
+
+      - name: Build Tauri app
+        run: |
+          pnpm tauri build
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          retention-days: 3
+          name: ${{ matrix.build_name }}
+          path: |
+            target/release/*.exe
+            target/release/bundle/mis/*.msi
