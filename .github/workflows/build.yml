@@ -59,4 +59,4 @@ jobs:
           name: ${{ matrix.build_name }}
           path: |
             target/release/*.exe
-            target/release/bundle/mis/*.msi
+            target/release/bundle/msi/*.msi
