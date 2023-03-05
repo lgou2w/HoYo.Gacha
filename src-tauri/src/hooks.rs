@@ -10,6 +10,8 @@ type Setup = Box<dyn FnOnce(&mut App<tauri::Wry>) -> Result<(), Box<dyn Error>> 
 
 pub fn get_setup() -> Setup {
   Box::new(|app| {
+    #[cfg(debug_assertions)]
+    app.get_window("main").unwrap().open_devtools();
     setup_manage(app)?;
     Ok(())
   })
