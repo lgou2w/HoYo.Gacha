@@ -19,6 +19,15 @@ const theme = createTheme({
 }, zhCN)
 
 export default function App () {
+  // HACK: Disable context menu in production
+  React.useEffect(() => {
+    if (import.meta.env.PROD) {
+      const listener = (evt: Event) => evt.preventDefault()
+      document.addEventListener('contextmenu', listener)
+      return () => { document.removeEventListener('contextmenu', listener) }
+    }
+  }, [])
+
   return (
     <ThemeProvider theme={theme}>
       <Box sx={{ display: 'flex' }}>
