@@ -126,7 +126,7 @@ function GachaTabOverviewCard (props: GachaTabOverviewCardProps) {
       goldSum,
       goldPercent: goldSum > 0 ? Math.round((goldSum / total) * 10000) / 100 : 0,
       goldAverage: goldSum > 0 ? Math.ceil(Math.round((goldPitySum / goldSum) * 100) / 100) : 0,
-      goldItem: golds[golds.length - 1] || '',
+      goldItem: golds[golds.length - 1] || '无',
       golds
     }
   }, [props.data])
