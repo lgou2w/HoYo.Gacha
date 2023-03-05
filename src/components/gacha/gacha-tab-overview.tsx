@@ -7,6 +7,7 @@ import Chip from '@mui/material/Chip'
 import Button from '@mui/material/Button'
 import Collapse from '@mui/material/Collapse'
 import { GachaLogItem } from '@/interfaces/models'
+import { getGenshinIconUrl } from '@/interfaces/genshin-icons'
 import dayjs from '@/utilities/dayjs'
 
 const TIME_FORMAT = 'YYYY-MM-DD HH:mm:ss'
@@ -39,8 +40,8 @@ export default function GachaTabOverview (props: Props) {
   }, [props])
 
   return (
-    <Stack spacing={2}>
-      <Grid spacing={2} container>
+    <Stack spacing={3}>
+      <Grid spacing={3} container>
         <Grid xs={6} item>
           <GachaTabOverviewCard category="角色活动祈愿" data={groups.character} />
         </Grid>
@@ -91,22 +92,28 @@ interface GachaTabOverviewCardProps {
   data: GachaLogItem[] | { character: GachaLogItem[]; weapon: GachaLogItem[], permanent: GachaLogItem[] }
 }
 
+type GoldMetadata = { id: string, name: string, pity: number, iconUrl?: string }
+
 function GachaTabOverviewCard (props: GachaTabOverviewCardProps) {
   const aggregated = !Array.isArray(props.data) && typeof props.data === 'object'
-  const { total, goldPity, goldSum, goldPercent, goldAverage, goldItem, golds } = useMemo(() => {
-    let golds: string[] = []
+  const { total, goldPity, goldSum, goldPercent, goldAverage, goldItem, golds, firstTime, lastTime } = useMemo(() => {
+    let golds: GoldMetadata[] = []
     let goldPity = 0
     let goldPitySum = 0
     let goldSum = 0
     let total = 0
+    let firstTime: string | undefined
+    let lastTime: string | undefined
 
     if (Array.isArray(props.data)) {
       total = props.data.length
       const result = computeGachaGolds(props.data)
-      golds = result.golds.map((v) => `${v.name}（${v.pity}）`)
+      golds = result.golds
       goldPitySum = result.golds.reduce((pv, cv) => pv + cv.pity, 0)
       goldPity = result.pity
       goldSum = result.sum
+      firstTime = props.data[0]?.time
+      lastTime = props.data[props.data.length - 1]?.time
     } else {
       total = props.data.character.length + props.data.weapon.length + props.data.permanent.length
       const characterResult = computeGachaGolds(props.data.character)
@@ -115,9 +122,7 @@ function GachaTabOverviewCard (props: GachaTabOverviewCardProps) {
       const allGolds = [...characterResult.golds, ...weaponResult.golds, ...permanentResult.golds]
       goldPitySum = allGolds.reduce((pv, cv) => pv + cv.pity, 0)
       goldSum = characterResult.sum + weaponResult.sum + permanentResult.sum
-      golds = allGolds
-        .sort((a, b) => a.id.localeCompare(b.id))
-        .map((v) => `${v.name}（${v.pity}）`)
+      golds = allGolds.sort((a, b) => a.id.localeCompare(b.id))
     }
 
     return {
@@ -126,16 +131,22 @@ function GachaTabOverviewCard (props: GachaTabOverviewCardProps) {
       goldSum,
       goldPercent: goldSum > 0 ? Math.round((goldSum / total) * 10000) / 100 : 0,
       goldAverage: goldSum > 0 ? Math.ceil(Math.round((goldPitySum / goldSum) * 100) / 100) : 0,
-      goldItem: golds[golds.length - 1] || '无',
-      golds
+      goldItem: golds[golds.length - 1] as GoldMetadata | undefined,
+      golds,
+      firstTime,
+      lastTime
     }
   }, [props.data])
 
   const [open, setOpen] = useState(false)
-  const handleOpenClick = () => setOpen(!open)
+  const handleOpenClick = () => {
+    if (goldSum > 0) {
+      setOpen(!open)
+    }
+  }
 
   return (
-    <Box position="relative" padding={2} paddingBottom={1} border={2} borderRadius={2} borderColor="grey.300" bgcolor="grey.100">
+    <Box position="relative" height="100%" padding={2} paddingBottom={1} border={2} borderRadius={2} borderColor="grey.300" bgcolor="grey.100">
       <Box position="absolute" top={0} right={0} bgcolor={aggregated ? 'warning.light' : 'success.light'}
         borderLeft={2} borderBottom={2} borderColor="grey.300" sx={{
           borderBottomLeftRadius: 12,
@@ -146,8 +157,13 @@ function GachaTabOverviewCard (props: GachaTabOverviewCardProps) {
           {props.category}
         </Typography>
       </Box>
-      <Box display="flex" alignItems="center">
+      <Box display="flex" flexDirection="column">
         <Typography component="div" variant="h4">{props.category}</Typography>
+        <Typography component="div" variant="caption" color="grey.600" marginLeft={1} marginTop={1} visibility={aggregated ? 'hidden' : 'visible'}>
+          {dayjs(firstTime, TIME_FORMAT).format('YYYY.MM.DD')}
+          {' - '}
+          {dayjs(lastTime, TIME_FORMAT).format('YYYY.MM.DD')}
+        </Typography>
       </Box>
       <Box sx={{
         marginTop: 2,
@@ -164,8 +180,10 @@ function GachaTabOverviewCard (props: GachaTabOverviewCardProps) {
           <Chip label={`已出 ${goldSum} 金`} color="warning" />
         </Box>
         <Box>
-          <Chip label={`最近出金：${goldItem}`} />
+          <Chip label={`最近出金：${goldItem ? `${goldItem.name}（${goldItem.pity}）` : '无'}`} />
           <Chip label={`出金率 ${goldPercent}%`} />
+        </Box>
+        <Box>
           <Chip label={`平均每金 ${goldAverage} 抽`} />
           <Chip label={`平均每金 ${goldAverage * 160} 原石`} />
         </Box>
@@ -175,8 +193,31 @@ function GachaTabOverviewCard (props: GachaTabOverviewCardProps) {
           {!aggregated ? '查看历史记录' : '查看合计记录'}
         </Button>
         <Collapse in={open}>
-          <Box marginY={1}>
-            {golds.join('、') || '无'}
+          <Box marginY={1} display="flex" flexWrap="wrap" sx={{
+            '& .MuiBox-root': {
+              display: 'inline-flex',
+              flexDirection: 'column',
+              flexWrap: 'wrap',
+              border: '1px solid',
+              borderColor: 'grey.400',
+              backgroundColor: 'grey.300',
+              margin: '0.5rem 0.35rem 0 0'
+            },
+            '& .MuiBox-root img': { width: 48 },
+            '& .MuiBox-root .MuiTypography-root': {
+              textAlign: 'center',
+              fontSize: '0.75rem',
+              lineHeight: '1rem',
+              borderTop: '1px solid',
+              borderColor: 'grey.400'
+            }
+          }}>
+            {golds.map((item) => (
+              <Box key={item.id}>
+                <img src={item.iconUrl} alt={item.name} title={item.name} />
+                <Typography>{item.pity}</Typography>
+              </Box>
+            ))}
           </Box>
         </Collapse>
       </Box>
@@ -185,14 +226,19 @@ function GachaTabOverviewCard (props: GachaTabOverviewCardProps) {
 }
 
 function computeGachaGolds (data: GachaLogItem[]) {
-  const golds: Array<{ id: string, name: string, pity: number }> = []
+  const golds: Array<GoldMetadata> = []
   let pity = 0
   let sum = 0
   for (const item of data) {
     const isGold = item.rankType === '5'
     pity += 1
     if (isGold) {
-      golds.push({ id: item.id, name: item.name, pity })
+      golds.push({
+        id: item.id,
+        name: item.name,
+        pity,
+        iconUrl: getGenshinIconUrl(item.name, item.itemType === '武器')
+      })
       sum += 1
       pity = 0
     }
