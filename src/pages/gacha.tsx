@@ -137,7 +137,7 @@ export default function GachaPage () {
             onError={handleError}
             disabled={state.busy}
           />
-          <Box marginY={1}>
+          <Box marginY={2}>
             <Typography variant="subtitle2" color="grey.600">
               <Typography component="span" variant="inherit">最近祈愿记录更新日期：</Typography>
               <Typography component="span" variant="inherit">

@@ -7,7 +7,7 @@ export default function AppContent (props: PropsWithChildren) {
   return (
     <Box component="main" sx={{ flexGrow: 1, height: '100vh' }}>
       <AppNavbar />
-      <Container maxWidth={false} sx={{ padding: 2 }} disableGutters>
+      <Container maxWidth={false} sx={{ padding: 3 }} disableGutters>
         {props.children}
       </Container>
     </Box>
