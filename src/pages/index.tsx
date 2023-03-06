@@ -1,12 +1,13 @@
 import React from 'react'
+import Page from '@/components/page'
 import Box from '@mui/material/Box'
 import Typography from '@mui/material/Typography'
-import Link from '@mui/material/Link'
 import FavoriteIcon from '@mui/icons-material/Favorite'
+import ExternalLink from '@/components/common/external-link'
 
-export default function IndexPage () {
+export default function PageHome () {
   return (
-    <Box className="page page-index">
+    <Page>
       <Box>
         <Typography component="span" variant="h5" color="primary">
           Genshin Gacha
@@ -20,19 +21,19 @@ export default function IndexPage () {
           </Typography>
           <Typography component="span" variant="body2" color="grey.800" marginLeft={1}>
             {'Made with '}
-            <Link href="https://tauri.app" target="_blank" rel="external nofollow">Tauri</Link>
+            <ExternalLink href="https://tauri.app">Tauri</ExternalLink>
             {', '}
-            <Link href="https://reactjs.org" target="_blank" rel="external nofollow">React</Link>
+            <ExternalLink href="https://reactjs.org">React</ExternalLink>
             {', '}
-            <Link href="https://rust-lang.org" target="_blank" rel="external nofollow">Rust</Link>
+            <ExternalLink href="https://rust-lang.org">Rust</ExternalLink>
             {' and '}
             <FavoriteIcon color="error" fontSize="inherit" sx={{ marginBottom: -0.3 }} />
             {' by '}
-            <Link href="https://github.com/lgou2w" target="_blank" rel="external nofollow">lgou2w</Link>
+            <ExternalLink href="https://github.com/lgou2w">lgou2w</ExternalLink>
             {'.'}
           </Typography>
         </Box>
       </Box>
-    </Box>
+    </Page>
   )
 }

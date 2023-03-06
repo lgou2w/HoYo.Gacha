@@ -5,7 +5,7 @@ import DialogContent, { DialogContentProps } from '@mui/material/DialogContent'
 import DialogActions from '@mui/material/DialogActions'
 import Button, { ButtonProps } from '@mui/material/Button'
 
-interface Props {
+export interface ConfirmDialogProps {
   open: boolean
   maxWidth?: DialogProps['maxWidth']
   fullWidth?: boolean
@@ -18,7 +18,7 @@ interface Props {
   ConfirmButtonProps?: Omit<ButtonProps, 'onClick'>
 }
 
-export default function ConfirmDialog (props: PropsWithChildren<Props>) {
+export default function ConfirmDialog (props: PropsWithChildren<ConfirmDialogProps>) {
   return (
     <Dialog open={props.open}
       onClose={!props.persistent ? props.onCancel : undefined}

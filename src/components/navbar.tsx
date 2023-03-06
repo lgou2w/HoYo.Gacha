@@ -4,7 +4,7 @@ import AppBar from '@mui/material/AppBar'
 import Toolbar from '@mui/material/Toolbar'
 import Typography from '@mui/material/Typography'
 import { MainTitle, NavbarRouteTitles, SidebarWidth } from '@/components/constants'
-import AccountSelect from '@/components/account/account-select'
+import AccountSelect from '@/components/account/select'
 
 export default function AppNavbar () {
   const location = useLocation()
@@ -17,7 +17,7 @@ export default function AppNavbar () {
         borderBottom: 1,
         borderColor: (theme) => theme.palette.divider
       }}>
-        <Toolbar sx={{ paddingX: 2 }} disableGutters>
+        <Toolbar sx={{ paddingX: 3 }} disableGutters>
           <Typography component="h2" variant="h6" sx={{ flexGrow: 1 }} noWrap>
             {routeTitle} · {MainTitle}
           </Typography>

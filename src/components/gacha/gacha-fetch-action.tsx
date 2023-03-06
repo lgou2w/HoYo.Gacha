@@ -7,7 +7,7 @@ import CircularProgress from '@mui/material/CircularProgress'
 import CachedIcon from '@mui/icons-material/Cached'
 import { Account } from '@/interfaces/settings'
 import { GachaLogItem } from '@/interfaces/models'
-import { useStatefulSettings } from '@/hooks/useStatefulSettings'
+import useStatefulSettings from '@/hooks/useStatefulSettings'
 import useGachaLogFetcherChannel from '@/hooks/useGachaLogFetcherChannel'
 import type { Props as GachaActionsProps } from './gacha-actions'
 

@@ -9,13 +9,13 @@ import GachaActions, { Props as GachaActionsProps } from '@/components/gacha/gac
 import GachaTab from '@/components/gacha/gacha-tab'
 import GachaTabOverview from '@/components/gacha/gacha-tab-overview'
 import { GachaLogItem } from '@/interfaces/models'
-import { useStatefulSettings } from '@/hooks/useStatefulSettings'
+import useStatefulSettings from '@/hooks/useStatefulSettings'
 import Commands from '@/utilities/commands'
 import dayjs from '@/utilities/dayjs'
 
 const Tabs = ['总览', '统计', '数据']
 
-export default function GachaPage () {
+export default function PageGacha () {
   const { selectedAccount } = useStatefulSettings()
 
   type Action =
