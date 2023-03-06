@@ -9,6 +9,7 @@ import Collapse from '@mui/material/Collapse'
 import { GachaLogItem } from '@/interfaces/models'
 import { getGenshinIconUrl } from '@/interfaces/genshin-icons'
 import dayjs from '@/utilities/dayjs'
+import UIRarity5Background from '@/assets/images/UI_Rarity_5_Background.png'
 
 const TIME_FORMAT = 'YYYY-MM-DD HH:mm:ss'
 
@@ -52,7 +53,7 @@ export default function GachaTabOverview (props: Props) {
           <GachaTabOverviewCard category="常驻祈愿" data={groups.permanent} />
         </Grid>
         <Grid xs={6} item>
-          <GachaTabOverviewCard category="合计" data={groups} />
+          <GachaTabOverviewCard category="祈愿记录" data={groups} />
         </Grid>
       </Grid>
       <Box>
@@ -198,18 +199,14 @@ function GachaTabOverviewCard (props: GachaTabOverviewCardProps) {
               display: 'inline-flex',
               flexDirection: 'column',
               flexWrap: 'wrap',
-              border: '1px solid',
-              borderColor: 'grey.400',
-              backgroundColor: 'grey.300',
-              margin: '0.5rem 0.35rem 0 0'
+              background: `url(${UIRarity5Background}) no-repeat 0 0/cover`,
+              margin: '0.5rem 0.65rem 0 0'
             },
-            '& .MuiBox-root img': { width: 48 },
+            '& .MuiBox-root img': { width: 74, height: 'auto' },
             '& .MuiBox-root .MuiTypography-root': {
               textAlign: 'center',
               fontSize: '0.75rem',
-              lineHeight: '1rem',
-              borderTop: '1px solid',
-              borderColor: 'grey.400'
+              lineHeight: '1rem'
             }
           }}>
             {golds.map((item) => (
