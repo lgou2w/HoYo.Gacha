@@ -5,51 +5,49 @@ import Backdrop from '@mui/material/Backdrop'
 import Typography from '@mui/material/Typography'
 import CircularProgress from '@mui/material/CircularProgress'
 import CachedIcon from '@mui/icons-material/Cached'
-import { Account } from '@/interfaces/settings'
+import { Account, SettingsFn } from '@/interfaces/settings'
 import { GachaLogItem } from '@/interfaces/models'
-import useStatefulSettings from '@/hooks/useStatefulSettings'
+import { Actions, GachaActionsCallback } from './types'
 import useGachaLogFetcherChannel from '@/hooks/useGachaLogFetcherChannel'
-import type { Props as GachaActionsProps } from './gacha-actions'
 
-interface Props {
+export interface GachaActionFetchProps extends GachaActionsCallback {
   account: Account
-  gachaTypesArguments?: Partial<Record<GachaLogItem['gachaType'], string>>
-  onSuccess?: GachaActionsProps['onSuccess']
-  onError?: GachaActionsProps['onError']
-  disabled?: boolean
+  updateAccount: SettingsFn['updateAccount']
+  fetcherChannelTypesArguments?: Partial<Record<GachaLogItem['gachaType'], string>>
 }
 
-export default function GachaFetchAction (props: Props) {
-  const { updateAccount } = useStatefulSettings()
+export default function GachaActionFetch (props: GachaActionFetchProps) {
   const gachaUrl = useMemo(() => props.account.gachaUrl || '', [props.account.gachaUrl])
   const [busy, setBusy] = useState(false)
   const { status, start } = useGachaLogFetcherChannel()
 
   const handleClick = useCallback(() => {
     if (!gachaUrl) {
-      props.onError?.('祈愿链接不可用！请先尝试读取链接。')
+      props.onAction?.('祈愿链接不可用！请先尝试读取链接。')
     } else {
       setBusy(true)
       start({
         channelName: 'gacha-logs-fetcher',
         gachaUrl,
-        gachaTypesArguments: props.gachaTypesArguments,
+        gachaTypesArguments: props.fetcherChannelTypesArguments,
         intoDatabase: true
       })
-        .then(() => updateAccount(props.account.uid, { lastGachaUpdated: new Date().toISOString() }))
-        .then(() => { props.onSuccess?.('gacha-fetch', '祈愿记录更新成功！') })
-        .catch((error) => { props.onError?.(error) })
+        .then(() => props.updateAccount(props.account.uid, { lastGachaUpdated: new Date().toISOString() }))
+        .then(() => { props.onAction?.(null, Actions.GachaFetch, '祈愿记录更新成功！') })
+        .catch((error) => { props.onAction?.(error) })
         .finally(() => { setBusy(false) })
     }
   }, [props, setBusy, gachaUrl])
 
   return (
     <Box display="inline-flex">
-      <Button variant="outlined" color="primary" size="small"
+      <Button
+        variant="outlined"
+        color="primary"
+        size="small"
         startIcon={<CachedIcon />}
         onClick={handleClick}
-        disabled={props.disabled || busy}
-        sx={{ marginLeft: 2 }}
+        disabled={busy}
       >
         更新祈愿
       </Button>

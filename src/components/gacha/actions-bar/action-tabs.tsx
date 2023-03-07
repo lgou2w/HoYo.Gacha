@@ -4,32 +4,29 @@ import Tabs, { TabsProps } from '@mui/material/Tabs'
 import Tab from '@mui/material/Tab'
 import { styled, alpha } from '@mui/material/styles'
 
-interface Props {
+export interface GachaActionTabsProps {
   tabs: string[]
   value: number
   onChange?: TabsProps['onChange']
-  disabled?: boolean
 }
 
-export default function GachaTabsAction (props: Props) {
+export default function GachaActionTabs (props: GachaActionTabsProps) {
   return (
     <Box display="inline-flex" alignItems="center">
-      <Tabs value={props.value} onChange={props.onChange} disabled={props.disabled}
-        sx={{
-          minHeight: 0,
-          borderRadius: 2,
-          bgcolor: (theme) => theme.palette.action.hover
-        }}
-      >
+      <Tabs value={props.value} onChange={props.onChange} sx={{
+        minHeight: 0,
+        borderRadius: 2,
+        bgcolor: (theme) => theme.palette.action.hover
+      }}>
         {props.tabs.map((label, i) => (
-          <GachaTabsActionTab key={i} label={label} disabled={props.disabled} />
+          <GachaActionTabsItem key={i} label={label} />
         ))}
       </Tabs>
     </Box>
   )
 }
 
-const GachaTabsActionTab = styled((props: { label: string, disabled?: boolean }) => (
+const GachaActionTabsItem = styled((props: { label: string }) => (
   <Tab {...props} />
 ))(({ theme }) => ({
   minWidth: 0,

@@ -18,27 +18,22 @@ import ViewColumnIcon from '@mui/icons-material/ViewColumn'
 import { Account } from '@/interfaces/settings'
 import Commands from '@/utilities/commands'
 import { dialog } from '@tauri-apps/api'
-import type { Props as GachaActionsProps } from './gacha-actions'
+import { Actions, GachaActionsCallback } from './types'
 
-interface Props {
+export interface GachaActionExtProps extends GachaActionsCallback {
   account: Account
-  onSuccess?: GachaActionsProps['onSuccess']
-  onError?: GachaActionsProps['onError']
-  disabled?: boolean
 }
 
-export default function GachaExtAction (props: Props) {
+export default function GachaActionExt (props: GachaActionExtProps) {
   return (
-    <Box display="inline-flex" marginLeft={2}>
-      <Stack spacing={1} direction="row">
-        <GachaExtActionImport {...props} />
-        <GachaExtActionExport {...props} />
-      </Stack>
-    </Box>
+    <Stack direction="row" spacing={1}>
+      <GachaExtActionImport {...props} />
+      <GachaExtActionExport {...props} />
+    </Stack>
   )
 }
 
-function GachaExtActionImport (props: Props) {
+function GachaExtActionImport (props: GachaActionExtProps) {
   const [busy, setBusy] = useState(false)
   const handleImportGachaLogs = useCallback(async () => {
     setBusy(true)
@@ -50,14 +45,11 @@ function GachaExtActionImport (props: Props) {
         filters: [{ name: 'UIGF Gacha Logs', extensions: ['json'] }]
       })
       if (typeof file === 'string') {
-        const changes = await Commands.importGachaLogsByUID({
-          uid: props.account.uid,
-          file
-        })
-        props.onSuccess?.('gacha-import', `祈愿记录导入成功：${changes}（忽略重复）`)
+        const changes = await Commands.importGachaLogsByUID({ uid: props.account.uid, file })
+        props.onAction?.(null, Actions.GachaImport, `祈愿记录导入成功：${changes}（忽略重复）`)
       }
     } catch (error) {
-      props.onError?.(error as string | Error)
+      props.onAction?.(error as string | Error)
     } finally {
       setBusy(false)
     }
@@ -66,11 +58,9 @@ function GachaExtActionImport (props: Props) {
   return (
     <Box>
       <Tooltip title="导入祈愿" PopperProps={{ modifiers: [{ name: 'offset', options: { offset: [0, -8] } }] }}>
-        <IconButton
-          onClick={handleImportGachaLogs}
-          disabled={props.disabled || busy}
-          sx={{ bgcolor: (theme) => theme.palette.action.hover }}
-        >
+        <IconButton onClick={handleImportGachaLogs} disabled={busy} sx={{
+          bgcolor: (theme) => theme.palette.action.hover
+        }}>
           <FileUploadIcon />
         </IconButton>
       </Tooltip>
@@ -90,7 +80,7 @@ function GachaExtActionImport (props: Props) {
   )
 }
 
-function GachaExtActionExport (props: Props) {
+function GachaExtActionExport (props: GachaActionExtProps) {
   const [busy, setBusy] = useState(false)
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
   const open = Boolean(anchorEl)
@@ -111,15 +101,11 @@ function GachaExtActionExport (props: Props) {
         multiple: false
       })
       if (typeof directory === 'string') {
-        const exportFile = await Commands.exportGachaLogsByUID({
-          uid: props.account.uid,
-          directory,
-          uigf
-        })
-        props.onSuccess?.('gacha-export', '祈愿记录导出成功：' + exportFile)
+        const exportFile = await Commands.exportGachaLogsByUID({ uid: props.account.uid, directory, uigf })
+        props.onAction?.(null, Actions.GachaExport, '祈愿记录导出成功：' + exportFile)
       }
     } catch (error) {
-      props.onError?.(error as string | Error)
+      props.onAction?.(error as string | Error)
     } finally {
       setBusy(false)
     }
@@ -128,11 +114,9 @@ function GachaExtActionExport (props: Props) {
   return (
     <Box>
       <Tooltip title="导出祈愿" PopperProps={{ modifiers: [{ name: 'offset', options: { offset: [0, -8] } }] }}>
-        <IconButton
-          onClick={handleClick}
-          disabled={props.disabled || busy}
-          sx={{ bgcolor: (theme) => theme.palette.action.hover }}
-        >
+        <IconButton onClick={handleClick} disabled={busy} sx={{
+          bgcolor: (theme) => theme.palette.action.hover
+        }}>
           <SaveAltIcon />
         </IconButton>
       </Tooltip>
