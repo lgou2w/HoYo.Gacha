@@ -148,7 +148,7 @@ function computeGoldenGachaLogsMetadata (data: GachaLogItem[]): GoldenGachaLogsM
     const isGold = item.rankType === '5'
     pity += 1
     if (isGold) {
-      values.push(Object.assign(item, { usedPity: pity }))
+      values.push(Object.assign({ usedPity: pity }, item))
       sum += 1
       usedPitySum += pity
       pity = 0
