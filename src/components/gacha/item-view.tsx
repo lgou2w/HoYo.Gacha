@@ -31,16 +31,19 @@ const GachaItemViewCls = 'gacha-item-view'
 const GachaItemViewSx: SxProps<Theme> = {
   display: 'flex',
   flexDirection: 'column',
-  backgroundRepeat: 'no-repeat',
-  backgroundSize: 'cover',
-  backgroundPosition: 'center',
   border: 1,
   borderColor: 'grey.300',
   borderRadius: 1,
-  '&[data-rank="3"]': { backgroundImage: `url(${UIRarity3Background})` },
-  '&[data-rank="4"]': { backgroundImage: `url(${UIRarity4Background})` },
-  '&[data-rank="5"]': { backgroundImage: `url(${UIRarity5Background})` },
-  '& > img': { height: 'auto' },
+  bgcolor: 'rgb(233, 229, 220)',
+  '& > img': {
+    height: 'auto',
+    backgroundRepeat: 'no-repeat',
+    backgroundSize: 'cover',
+    backgroundPosition: 'cover'
+  },
+  '&[data-rank="3"] > img': { backgroundImage: `url(${UIRarity3Background})` },
+  '&[data-rank="4"] > img': { backgroundImage: `url(${UIRarity4Background})` },
+  '&[data-rank="5"] > img': { backgroundImage: `url(${UIRarity5Background})` },
   '& > .MuiTypography-root': {
     fontSize: '0.75rem',
     textAlign: 'center',
