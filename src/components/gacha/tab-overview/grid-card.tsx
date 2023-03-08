@@ -56,9 +56,10 @@ export default function GachaTabOverviewGridCard (props: GachaTabOverviewGridCar
             name={item.name}
             contentText={item.usedPity}
             isEquip={item.itemType === '武器'}
-            rank={5} size={74}
+            rank={5} size={GachaItemViewSize}
           />
         ))}
+        {!golden.values.length && <Typography color="grey.700">无历史记录</Typography>}
       </Stack>
     </Stack>
   )
@@ -72,6 +73,7 @@ const CategoryTitles: Record<GachaTabOverviewGridCardProps['category'], string> 
   aggregated: '合计'
 }
 
+const GachaItemViewSize = 74
 const GachaTabOverviewGridCardCls = 'gacha-tab-overview-grid-card'
 const GachaTabOverviewGridCardSx: SxProps<Theme> = {
   gap: 2,
@@ -82,6 +84,7 @@ const GachaTabOverviewGridCardSx: SxProps<Theme> = {
   borderRadius: 2,
   borderColor: 'grey.300',
   bgcolor: 'grey.100',
+  userSelect: 'none',
   [`& .${GachaTabOverviewGridCardCls}-category`]: {
     position: 'absolute',
     top: 0,
@@ -107,9 +110,15 @@ const GachaTabOverviewGridCardSx: SxProps<Theme> = {
     gap: 1,
     flexDirection: 'row',
     flexWrap: 'wrap',
-    '&::after': {
-      content: '""',
-      flex: 'auto'
+    maxHeight: `calc((${GachaItemViewSize}px + 1rem) * 3 + 3 * 0.5rem)`,
+    overflowY: 'auto',
+    paddingRight: 1,
+    '&::-webkit-scrollbar': { width: '0.25rem' },
+    '&::-webkit-scrollbar-thumb': { bgcolor: 'grey.400', borderRadius: 10 },
+    '&::-webkit-scrollbar-track': { bgcolor: 'grey.300', borderRadius: 10 },
+    '&.collapsed': {
+      maxHeight: 'unset',
+      overflowY: 'unset'
     }
   }
 }
