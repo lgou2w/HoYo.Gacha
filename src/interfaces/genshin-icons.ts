@@ -69,7 +69,7 @@ export const GenshinCharacterIcons: GenshinIcons = {
     流浪者: 'UI_AvatarIcon_Wanderer',
     珐露珊: 'UI_AvatarIcon_Faruzan',
     瑶瑶: 'UI_AvatarIcon_Yaoyao',
-    艾尔海森: 'UI_AvatarIcon_Alhaitham', // TODO: 404 not found
+    艾尔海森: 'UI_AvatarIcon_Alhatham', // HACK: Alhaitham -> Alhatham
     迪希雅: 'UI_AvatarIcon_Dehya',
     米卡: 'UI_AvatarIcon_Mika'
   }
