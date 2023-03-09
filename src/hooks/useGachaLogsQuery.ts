@@ -39,7 +39,10 @@ export interface GoldenGachaLogsMetadata extends GachaLogsMetadata {
   nextPity: number
 }
 
+export type NamedGachaLogsCategory = 'newbie' | 'permanent' | 'character' | 'weapon' | 'aggregated'
 export interface NamedGachaLogs {
+  category: NamedGachaLogsCategory
+  categoryTitle: string
   total: number
   firstTime?: string
   lastTime?: string
@@ -56,13 +59,7 @@ export interface GroupedGachaLogs {
   firstTime?: string
   lastTime?: string
   values: Record<GachaLogItem['gachaType'], GachaLogItem[]>
-  namedValues: {
-    newbie: NamedGachaLogs
-    permanent: NamedGachaLogs
-    character: NamedGachaLogs
-    weapon: NamedGachaLogs
-    aggregated: NamedGachaLogs
-  }
+  namedValues: Record<NamedGachaLogsCategory, NamedGachaLogs>
   fetcherChannelTypeArguments: Partial<Record<GachaLogItem['gachaType'], string>>
 }
 
@@ -77,13 +74,13 @@ function computeGrouped (data: GachaLogItem[]): GroupedGachaLogs {
   }, valuesAcc)
 
   const namedValues: GroupedGachaLogs['namedValues'] = {
-    newbie: computeGroupedNamed(Array.from(values[100])),
-    permanent: computeGroupedNamed(Array.from(values[200])),
-    character: computeGroupedNamed(Array.from(values[301])
+    newbie: computeGroupedNamed('newbie', Array.from(values[100])),
+    permanent: computeGroupedNamed('permanent', Array.from(values[200])),
+    character: computeGroupedNamed('character', Array.from(values[301])
       .concat(values[400])
       .sort((a, b) => a.id.localeCompare(b.id))),
-    weapon: computeGroupedNamed(Array.from(values[302])),
-    aggregated: computeGroupedNamed(data)
+    weapon: computeGroupedNamed('weapon', Array.from(values[302])),
+    aggregated: computeGroupedNamed('aggregated', data)
   }
 
   const lastCharacterId = values[301][values[301].length - 1]?.id as string | undefined
@@ -110,13 +107,23 @@ function computeGrouped (data: GachaLogItem[]): GroupedGachaLogs {
   }
 }
 
-function computeGroupedNamed (data: GachaLogItem[]): NamedGachaLogs {
+const CategoryTitles: Record<NamedGachaLogsCategory, string> = {
+  newbie: '新手祈愿',
+  character: '角色活动祈愿',
+  weapon: '武器活动祈愿',
+  permanent: '常驻祈愿',
+  aggregated: '合计'
+}
+
+function computeGroupedNamed (category: NamedGachaLogsCategory, data: GachaLogItem[]): NamedGachaLogs {
   const total = data.length
   const blue = computeGachaLogsMetadata(total, data.filter(item => item.rankType === '3'))
   const purple = computeGachaLogsMetadata(total, data.filter(item => item.rankType === '4'))
   const golden = computeGoldenGachaLogsMetadata(data)
 
   return {
+    category,
+    categoryTitle: CategoryTitles[category],
     total,
     firstTime: data[0]?.time,
     lastTime: data[data.length - 1]?.time,

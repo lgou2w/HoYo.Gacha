@@ -14,16 +14,16 @@ export default function GachaTabOverviewGridCards (props: GachaTabOverviewGridCa
     <Box>
       <Grid spacing={3} container>
         <Grid xs={6} item>
-          <GachaTabOverviewGridCard category={'character'} value={character} />
+          <GachaTabOverviewGridCard value={character} />
         </Grid>
         <Grid xs={6} item>
-          <GachaTabOverviewGridCard category={'weapon'} value={weapon} />
+          <GachaTabOverviewGridCard value={weapon} />
         </Grid>
         <Grid xs={6} item>
-          <GachaTabOverviewGridCard category={'permanent'} value={permanent} />
+          <GachaTabOverviewGridCard value={permanent} />
         </Grid>
         <Grid xs={6} item>
-          <GachaTabOverviewGridCard category={'aggregated'} value={aggregated} />
+          <GachaTabOverviewGridCard value={aggregated} />
         </Grid>
       </Grid>
     </Box>

@@ -4,30 +4,25 @@ import Box from '@mui/material/Box'
 import Stack from '@mui/material/Stack'
 import Typography from '@mui/material/Typography'
 import Chip from '@mui/material/Chip'
-import { GroupedGachaLogs, NamedGachaLogs } from '@/hooks/useGachaLogsQuery'
+import { NamedGachaLogs } from '@/hooks/useGachaLogsQuery'
 import dayjs from '@/utilities/dayjs'
 
 export interface GachaTabOverviewGridCardProps {
-  category: keyof GroupedGachaLogs['namedValues']
   value: NamedGachaLogs
 }
 
 export default function GachaTabOverviewGridCard (props: GachaTabOverviewGridCardProps) {
-  const { category, value: { total, firstTime, lastTime, metadata: { golden } } } = props
+  const { value: { category, categoryTitle, total, firstTime, lastTime, metadata: { golden } } } = props
   const lastGoldenItem = golden.values[golden.values.length - 1]
   const lastGoldenItemName = lastGoldenItem ? `${lastGoldenItem.name}（${lastGoldenItem.usedPity}）` : '无'
 
   return (
     <Stack className={GachaTabOverviewGridCardCls} sx={GachaTabOverviewGridCardSx}>
       <Box className={`${GachaTabOverviewGridCardCls}-category`} data-aggregated={category === 'aggregated'}>
-        <Typography component="div" variant="body2">
-          {CategoryTitles[category]}
-        </Typography>
+        <Typography component="div" variant="body2">{categoryTitle}</Typography>
       </Box>
       <Box>
-        <Typography component="div" variant="h4">
-          {CategoryTitles[category]}
-        </Typography>
+        <Typography component="div" variant="h4">{categoryTitle}</Typography>
         <Typography component="div" variant="caption">
           {dayjs(firstTime).format('YYYY.MM.DD')}
           {' - '}
@@ -51,14 +46,6 @@ export default function GachaTabOverviewGridCard (props: GachaTabOverviewGridCar
       </Stack>
     </Stack>
   )
-}
-
-const CategoryTitles: Record<GachaTabOverviewGridCardProps['category'], string> = {
-  newbie: '新手祈愿',
-  character: '角色活动祈愿',
-  weapon: '武器活动祈愿',
-  permanent: '常驻祈愿',
-  aggregated: '合计'
 }
 
 const GachaTabOverviewGridCardCls = 'gacha-tab-overview-grid-card'
