@@ -58,11 +58,11 @@
     "windows": [
       {
         "fullscreen": false,
-        "height": 960,
+        "height": 864,
         "resizable": true,
         "center": true,
         "title": "Genshin Gacha",
-        "width": 1280
+        "width": 1152
       }
     ]
   }
