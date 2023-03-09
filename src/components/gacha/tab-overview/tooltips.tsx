@@ -13,7 +13,7 @@ export default function GachaTabOverviewTooltips (props: GachaTabOverviewTooltip
   return (
     <Box>
       <Typography>
-        {'· 共计祈愿 '}
+        {'❖ 共计祈愿 '}
         <Typography component="span" color="primary">
           {props.total}
         </Typography>
@@ -35,7 +35,7 @@ export default function GachaTabOverviewTooltips (props: GachaTabOverviewTooltip
         {' 元。'}
       </Typography>
       <Typography>
-        {'· 祈愿记录日期覆盖范围：'}
+        {'❖ 祈愿记录日期覆盖范围：'}
         <Typography component="span" color="secondary">
           {dayjs(props.firstTime).format('lll')}
         </Typography>
@@ -46,7 +46,7 @@ export default function GachaTabOverviewTooltips (props: GachaTabOverviewTooltip
         {'。'}
       </Typography>
       <Typography>
-        {'· 因官方设定，最新数据存在约一小时的延迟。'}
+        {'❖ 因官方设定，最新数据存在约一小时的延迟。'}
         {'如遇到新池高峰期延迟可能更久。具体时间请以游戏内数据为准。'}
       </Typography>
     </Box>
