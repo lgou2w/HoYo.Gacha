@@ -33,7 +33,7 @@ export default function PageGacha () {
     onError: handleError
   })
 
-  const handleAction = useCallback<GachaActionsCallback['onAction']>((error, message, action) => {
+  const handleAction = useCallback<GachaActionsCallback['onAction']>((error, action, message) => {
     if (error) return handleError(error)
     if (message) {
       setAlert({ severity: 'success', message })
