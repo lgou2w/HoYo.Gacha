@@ -81,7 +81,7 @@ export default function PageGacha () {
       {query.isLoading && <Typography variant="body2">数据加载中...</Typography>}
       {query.data && {
         0: <GachaTabOverview account={selectedAccount} data={query.data} />,
-        1: <GachaTabData />,
+        1: <GachaTabData data={query.data} />,
         2: <GachaTabChart />
       }[tab]}
     </Page>
