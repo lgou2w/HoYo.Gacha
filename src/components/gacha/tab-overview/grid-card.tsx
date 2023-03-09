@@ -4,7 +4,6 @@ import Box from '@mui/material/Box'
 import Stack from '@mui/material/Stack'
 import Typography from '@mui/material/Typography'
 import Chip from '@mui/material/Chip'
-import GachaItemView from '@/components/gacha/item-view'
 import { GroupedGachaLogs, NamedGachaLogs } from '@/hooks/useGachaLogsQuery'
 import dayjs from '@/utilities/dayjs'
 
@@ -16,6 +15,7 @@ export interface GachaTabOverviewGridCardProps {
 export default function GachaTabOverviewGridCard (props: GachaTabOverviewGridCardProps) {
   const { category, value: { total, firstTime, lastTime, metadata: { golden } } } = props
   const lastGoldenItem = golden.values[golden.values.length - 1]
+  const lastGoldenItemName = lastGoldenItem ? `${lastGoldenItem.name}（${lastGoldenItem.usedPity}）` : '无'
 
   return (
     <Stack className={GachaTabOverviewGridCardCls} sx={GachaTabOverviewGridCardSx}>
@@ -41,25 +41,13 @@ export default function GachaTabOverviewGridCard (props: GachaTabOverviewGridCar
           <Chip label={`已出 ${golden.sum} 金`} color="warning" />
         </Stack>
         <Stack>
-          <Chip label={`最近出金：${lastGoldenItem ? `${lastGoldenItem.name}（${lastGoldenItem.usedPity}）` : '无'}`} />
+          <Chip label={`最近出金：${lastGoldenItemName}`} />
           <Chip label={`出金率 ${golden.sumPercentage}%`} />
         </Stack>
         <Stack>
           <Chip label={`平均每金 ${golden.sumAverage} 抽`} />
           <Chip label={`平均每金 ${golden.sumAverage * 160} 原石`} />
         </Stack>
-      </Stack>
-      <Stack className={`${GachaTabOverviewGridCardCls}-items`}>
-        {golden.values.map((item) => (
-          <GachaItemView
-            key={item.id}
-            name={item.name}
-            contentText={item.usedPity}
-            isEquip={item.itemType === '武器'}
-            rank={5} size={GachaItemViewSize}
-          />
-        ))}
-        {!golden.values.length && <Typography color="grey.700">无历史记录</Typography>}
       </Stack>
     </Stack>
   )
@@ -73,7 +61,6 @@ const CategoryTitles: Record<GachaTabOverviewGridCardProps['category'], string> 
   aggregated: '合计'
 }
 
-const GachaItemViewSize = 74
 const GachaTabOverviewGridCardCls = 'gacha-tab-overview-grid-card'
 const GachaTabOverviewGridCardSx: SxProps<Theme> = {
   gap: 2,
@@ -105,20 +92,5 @@ const GachaTabOverviewGridCardSx: SxProps<Theme> = {
     fontSize: '1rem',
     '& > .MuiStack-root': { flexDirection: 'row', gap: 1 },
     '& > .MuiStack-root > .MuiChip-root': { fontSize: 'inherit' }
-  },
-  [`& .${GachaTabOverviewGridCardCls}-items`]: {
-    gap: 1,
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    maxHeight: `calc((${GachaItemViewSize}px + 1rem) * 3 + 3 * 0.5rem)`,
-    overflowY: 'auto',
-    paddingRight: 1,
-    '&::-webkit-scrollbar': { width: '0.25rem' },
-    '&::-webkit-scrollbar-thumb': { bgcolor: 'grey.400', borderRadius: 10 },
-    '&::-webkit-scrollbar-track': { bgcolor: 'grey.300', borderRadius: 10 },
-    '&.collapsed': {
-      maxHeight: 'unset',
-      overflowY: 'unset'
-    }
   }
 }
