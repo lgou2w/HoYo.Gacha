@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { GachaLogItem } from '@/interfaces/models'
+import { PermanentGoldens } from '@/interfaces/genshin-icons'
 import Commands from '@/utilities/commands'
 
 export interface UseGachaLogsQueryOptions {
@@ -34,8 +35,9 @@ export interface GachaLogsMetadata {
 }
 
 export interface GoldenGachaLogsMetadata extends GachaLogsMetadata {
-  values: Array<GachaLogItem & { usedPity: number }>
+  values: Array<GachaLogItem & { usedPity: number, restricted?: true }>
   sumAverage: number
+  sumRestricted: number
   nextPity: number
 }
 
@@ -151,14 +153,19 @@ function computeGoldenGachaLogsMetadata (data: GachaLogItem[]): GoldenGachaLogsM
   let sum = 0
   let pity = 0
   let usedPitySum = 0
+  let sumRestricted = 0
   for (const item of data) {
     const isGold = item.rankType === '5'
     pity += 1
     if (isGold) {
-      values.push(Object.assign({ usedPity: pity }, item))
+      const restricted = !PermanentGoldens.includes(item.name) ? true : undefined
+      values.push(Object.assign({ usedPity: pity, restricted }, item) as GoldenGachaLogsMetadata['values'][number])
       sum += 1
       usedPitySum += pity
       pity = 0
+      if (restricted) {
+        sumRestricted += 1
+      }
     }
   }
 
@@ -171,6 +178,7 @@ function computeGoldenGachaLogsMetadata (data: GachaLogItem[]): GoldenGachaLogsM
     sum,
     sumPercentage,
     sumAverage,
+    sumRestricted,
     nextPity: pity
   }
 }
