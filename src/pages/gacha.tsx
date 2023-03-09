@@ -69,7 +69,7 @@ export default function PageGacha () {
           fetcherChannelTypesArguments: query.data?.fetcherChannelTypeArguments
         }}
         tabsProps={{
-          tabs: ['总览', '统计', '数据'],
+          tabs: ['总览', '数据', '统计'],
           value: tab,
           onChange: (_, newValue) => setTab(newValue)
         }}
@@ -81,8 +81,8 @@ export default function PageGacha () {
       {query.isLoading && <Typography variant="body2">数据加载中...</Typography>}
       {query.data && {
         0: <GachaTabOverview account={selectedAccount} data={query.data} />,
-        1: <GachaTabChart />,
-        2: <GachaTabData />
+        1: <GachaTabData />,
+        2: <GachaTabChart />
       }[tab]}
     </Page>
   )
