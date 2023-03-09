@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState } from 'react'
-import Box from '@mui/material/Box'
+import Stack from '@mui/material/Stack'
 import TextField from '@mui/material/TextField'
 import InputAdornment from '@mui/material/InputAdornment'
 import IconButton from '@mui/material/IconButton'
@@ -8,19 +8,16 @@ import LinkIcon from '@mui/icons-material/Link'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import AddLinkIcon from '@mui/icons-material/AddLink'
 import { Account } from '@/interfaces/settings'
-import { useStatefulSettings } from '@/hooks/useStatefulSettings'
+import useStatefulSettings from '@/hooks/useStatefulSettings'
 import Commands from '@/utilities/commands'
 import { clipboard } from '@tauri-apps/api'
-import type { Props as GachaActionsProps } from './gacha-actions'
+import { Actions, GachaActionsCallback } from './types'
 
-interface Props {
+export interface GachaActionUrlProps extends GachaActionsCallback {
   account: Account
-  onSuccess?: GachaActionsProps['onSuccess']
-  onError?: GachaActionsProps['onError']
-  disabled?: boolean
 }
 
-export default function GachaUrlAction (props: Props) {
+export default function GachaActionUrl (props: GachaActionUrlProps) {
   const { updateAccount } = useStatefulSettings()
   const [busy, setBusy] = useState(false)
   const gachaUrl = useMemo(() => props.account.gachaUrl || '', [props])
@@ -33,28 +30,27 @@ export default function GachaUrlAction (props: Props) {
       expectedUid: account.uid
     })
       .then((result) => updateAccount(account.uid, { gachaUrl: result.url }))
-      .then(() => { props.onSuccess?.('url-change', '祈愿链接获取成功！') })
-      .catch((error) => { props.onError?.(error) })
+      .then(() => { props.onAction?.(null, Actions.UrlChange, '祈愿链接获取成功！') })
+      .catch((error) => { props.onAction?.(error) })
       .finally(() => { setBusy(false) })
   }, [props, updateAccount, setBusy])
 
   const handleCopyGachaUrl = useCallback(() => {
     if (!gachaUrl) {
-      props.onError?.('祈愿链接不可用！请先尝试读取链接。')
+      props.onAction?.('祈愿链接不可用！请先尝试读取链接。')
     } else {
       clipboard
         .writeText(gachaUrl)
-        .then(() => { props.onSuccess?.('url-copy', '祈愿链接已复制到剪切板！') })
-        .catch((error) => { props.onError?.(error) })
+        .then(() => { props.onAction?.(null, Actions.UrlCopy, '祈愿链接已复制到剪切板！') })
+        .catch((error) => { props.onAction?.(error) })
     }
   }, [props, gachaUrl])
 
   return (
-    <Box display="inline-flex">
+    <Stack flexDirection="row" gap={2}>
       <TextField variant="outlined" size="small"
         label="祈愿链接" placeholder="祈愿链接"
         value={gachaUrl}
-        disabled={props.disabled}
         sx={{ maxWidth: 210 }}
         InputProps={{
           readOnly: true,
@@ -66,21 +62,23 @@ export default function GachaUrlAction (props: Props) {
           ),
           endAdornment: (
             <InputAdornment position="end">
-              <IconButton size="small" onClick={handleCopyGachaUrl} disabled={props.disabled || busy}>
+              <IconButton size="small" onClick={handleCopyGachaUrl} disabled={busy}>
                 <ContentCopyIcon fontSize="small" />
               </IconButton>
             </InputAdornment>
           )
         }}
       />
-      <Button variant="outlined" color="secondary" size="small"
+      <Button
+        variant="outlined"
+        color="secondary"
+        size="small"
         startIcon={<AddLinkIcon />}
         onClick={handleFetchGachaUrl}
-        disabled={props.disabled || busy}
-        sx={{ marginLeft: 2 }}
+        disabled={busy}
       >
         读取链接
       </Button>
-    </Box>
+    </Stack>
   )
 }

@@ -69,7 +69,7 @@ export const GenshinCharacterIcons: GenshinIcons = {
     流浪者: 'UI_AvatarIcon_Wanderer',
     珐露珊: 'UI_AvatarIcon_Faruzan',
     瑶瑶: 'UI_AvatarIcon_Yaoyao',
-    艾尔海森: 'UI_AvatarIcon_Alhaitham', // TODO: 404 not found
+    艾尔海森: 'UI_AvatarIcon_Alhatham', // HACK: Alhaitham -> Alhatham
     迪希雅: 'UI_AvatarIcon_Dehya',
     米卡: 'UI_AvatarIcon_Mika'
   }
@@ -244,3 +244,9 @@ export function getGenshinIconUrl (name: string, isEquip: boolean): string | und
   if (!icon) return undefined
   return `https://upload-bbs.mihoyo.com/game_record/genshin/${ref.namespace}/${icon}.png`
 }
+
+export const PermanentGoldens: string[] = [
+  '琴', '迪卢克', '七七', '莫娜', '刻晴', '提纳里', '迪希雅',
+  '风鹰剑', '天空之刃', '天空之傲', '狼的末路', '天空之脊',
+  '和璞鸢', '天空之卷', '四风原典', '天空之翼', '阿莫斯之弓'
+]

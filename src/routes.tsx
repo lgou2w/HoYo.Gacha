@@ -2,16 +2,16 @@
 
 import React from 'react'
 import { Routes, Route, RouteProps } from 'react-router-dom'
-import IndexPage from '@/pages/index'
-import AccountPage from '@/pages/account'
-import GachaPage from '@/pages/gacha'
-import SettingPage from '@/pages/setting'
+import PageIndex from '@/pages/index'
+import PageAccount from '@/pages/account'
+import PageGacha from '@/pages/gacha'
+import PageSetting from '@/pages/setting'
 
 const routes: RouteProps[] = [
-  { path: '/'       , element: <IndexPage />   },
-  { path: '/account', element: <AccountPage /> },
-  { path: '/gacha'  , element: <GachaPage />   },
-  { path: '/setting', element: <SettingPage /> }
+  { path: '/'       , element: <PageIndex />   },
+  { path: '/account', element: <PageAccount /> },
+  { path: '/gacha'  , element: <PageGacha />   },
+  { path: '/setting', element: <PageSetting /> }
 ]
 
 export default function AppRoutes () {

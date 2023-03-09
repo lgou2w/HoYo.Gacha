@@ -10,7 +10,7 @@ import GpsFixedIcon from '@mui/icons-material/GpsFixed'
 import PanToolAltIcon from '@mui/icons-material/PanToolAlt'
 import ConfirmDialog from '@/components/common/confirm-dialog'
 import { FormContainer, TextFieldElement, SubmitHandler, UseFormReturn, useForm } from 'react-hook-form-mui'
-import { useStatefulSettings } from '@/hooks/useStatefulSettings'
+import useStatefulSettings from '@/hooks/useStatefulSettings'
 import Commands from '@/utilities/commands'
 import { dialog } from '@tauri-apps/api'
 
@@ -22,7 +22,7 @@ interface FormProps {
 
 const FORM_ID = 'form-add-account'
 
-export default function AddAccountAction () {
+export default function AccountActionAdd () {
   const [open, setOpen] = useState(false)
   const handleClick = () => { setOpen(true) }
   const handleCancel = () => { setOpen(false) }
@@ -38,18 +38,18 @@ export default function AddAccountAction () {
         fullWidth
         persistent
       >
-        <AddAccountForm id={FORM_ID} close={handleCancel} />
+        <AccountAddForm id={FORM_ID} close={handleCancel} />
       </ConfirmDialog>
     </>
   )
 }
 
-interface AddAccountFormProps {
+interface AccountAddFormProps {
   id: string
   close?: () => void
 }
 
-function AddAccountForm (props: AddAccountFormProps) {
+function AccountAddForm (props: AccountAddFormProps) {
   const { addAccount } = useStatefulSettings()
   const context = useForm<FormProps>()
 

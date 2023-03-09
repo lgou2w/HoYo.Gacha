@@ -41,4 +41,7 @@ MIT OR Apache-2.0 仅供个人非商业使用授权
 - [src/assets/images/Logo.png](src/assets/images/Logo.png)
 - [src/assets/images/UI_AvatarIcon_PlayerGirl.png](src/assets/images/UI_AvatarIcon_PlayerGirl.png)
 - [src/assets/images/UI_AvatarIcon_PlayerBoy.png](src/assets/images/UI_AvatarIcon_PlayerBoy.png)
+- [src/assets/images/UI_Rarity_3_Background.png](src/assets/images/UI_Rarity_3_Background.png)
+- [src/assets/images/UI_Rarity_4_Background.png](src/assets/images/UI_Rarity_4_Background.png)
+- [src/assets/images/UI_Rarity_5_Background.png](src/assets/images/UI_Rarity_5_Background.png)
 - [src-tauri/icons/*](src-tauri/icons/)

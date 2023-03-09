@@ -109,7 +109,7 @@ export const StatefulSettingsProvider = (props: PropsWithChildren) => {
   )
 }
 
-export function useStatefulSettings () {
+export default function useStatefulSettings () {
   const data = useContext(StatefulSettingsContext)
   if (!data) {
     throw new Error('Invalid stateful settings context')
