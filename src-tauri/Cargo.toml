@@ -25,8 +25,8 @@ futures-core = { version = "0.3.26", default-features = false }
 lazy_static = "1.4.0"
 log = "0.4.17"
 reqwest = { version = "0.11.14", features = ["json"] }
-serde = { version = "1.0.152", features = ["derive"] }
-serde_json = "1.0.93"
+serde = { version = "1.0.154", features = ["derive"] }
+serde_json = "1.0.94"
 sqlx = { version = "0.6.2", features = ["runtime-tokio-native-tls", "sqlite"] }
 tauri = { version = "1", features = ["clipboard-all", "dialog-all", "shell-all"] }
 tauri-plugin-store = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "dev" }
