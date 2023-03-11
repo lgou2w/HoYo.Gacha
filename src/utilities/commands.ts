@@ -1,5 +1,5 @@
 import { invoke } from '@tauri-apps/api'
-import { GameDirectory, GachaUrl, GachaLogItem } from '@/interfaces/models'
+import { GameDirectory, GachaUrl, GachaLogItem, EnkaNetworkPlayerInfo } from '@/interfaces/models'
 
 interface InvocableCommand<R = unknown> {
   (args?: Record<string, unknown> | undefined): R extends Promise<unknown> ? R : Promise<R>
@@ -17,7 +17,8 @@ const Commands = Object.freeze({
   crateGachaLogFetcherChannel: declareInvocableCommand<void>('cmd_crate_gacha_log_fetcher_channel'),
   findGachaLogsByUID: declareInvocableCommand<GachaLogItem[]>('cmd_find_gacha_logs_by_uid'),
   exportGachaLogsByUID: declareInvocableCommand<string>('cmd_export_gacha_logs_by_uid'),
-  importGachaLogsByUID: declareInvocableCommand<number>('cmd_import_gacha_logs_by_uid')
+  importGachaLogsByUID: declareInvocableCommand<number>('cmd_import_gacha_logs_by_uid'),
+  thirdPartyEnkaNetworkFetchPlayerInfo: declareInvocableCommand<EnkaNetworkPlayerInfo>('cmd_third_party_enka_network_fetch_player_info')
 })
 
 export default Commands

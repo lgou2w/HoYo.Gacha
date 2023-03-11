@@ -10,6 +10,7 @@ extern crate tauri_plugin_store;
 mod disk_cache;
 mod core;
 mod genshin;
+mod third_party;
 mod errors;
 mod hooks;
 mod commands;

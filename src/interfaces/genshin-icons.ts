@@ -1,79 +1,87 @@
 export type GenshinIcons = {
   namespace: string
-  icons: Record<string, string>
+  icons: Record<string, [string, number] | string>
 }
 
 export const GenshinCharacterIcons: GenshinIcons = {
   namespace: 'character_icon',
   icons: {
-    神里绫华: 'UI_AvatarIcon_Ayaka',
-    琴: 'UI_AvatarIcon_Qin',
-    空: 'UI_AvatarIcon_PlayerBoy',
-    丽莎: 'UI_AvatarIcon_Lisa',
-    荧: 'UI_AvatarIcon_PlayerGirl',
-    芭芭拉: 'UI_AvatarIcon_Barbara',
-    凯亚: 'UI_AvatarIcon_Kaeya',
-    迪卢克: 'UI_AvatarIcon_Diluc',
-    雷泽: 'UI_AvatarIcon_Razor',
-    安柏: 'UI_AvatarIcon_Ambor',
-    温迪: 'UI_AvatarIcon_Venti',
-    香菱: 'UI_AvatarIcon_Xiangling',
-    北斗: 'UI_AvatarIcon_Beidou',
-    行秋: 'UI_AvatarIcon_Xingqiu',
-    魈: 'UI_AvatarIcon_Xiao',
-    凝光: 'UI_AvatarIcon_Ningguang',
-    可莉: 'UI_AvatarIcon_Klee',
-    钟离: 'UI_AvatarIcon_Zhongli',
-    菲谢尔: 'UI_AvatarIcon_Fischl',
-    班尼特: 'UI_AvatarIcon_Bennett',
-    达达利亚: 'UI_AvatarIcon_Tartaglia',
-    诺艾尔: 'UI_AvatarIcon_Noel',
-    七七: 'UI_AvatarIcon_Qiqi',
-    重云: 'UI_AvatarIcon_Chongyun',
-    甘雨: 'UI_AvatarIcon_Ganyu',
-    阿贝多: 'UI_AvatarIcon_Albedo',
-    迪奥娜: 'UI_AvatarIcon_Diona',
-    莫娜: 'UI_AvatarIcon_Mona',
-    刻晴: 'UI_AvatarIcon_Keqing',
-    砂糖: 'UI_AvatarIcon_Sucrose',
-    辛焱: 'UI_AvatarIcon_Xinyan',
-    罗莎莉亚: 'UI_AvatarIcon_Rosaria',
-    胡桃: 'UI_AvatarIcon_Hutao',
-    枫原万叶: 'UI_AvatarIcon_Kazuha',
-    烟绯: 'UI_AvatarIcon_Feiyan',
-    宵宫: 'UI_AvatarIcon_Yoimiya',
-    托马: 'UI_AvatarIcon_Tohma',
-    优菈: 'UI_AvatarIcon_Eula',
-    雷电将军: 'UI_AvatarIcon_Shougun',
-    早柚: 'UI_AvatarIcon_Sayu',
-    珊瑚宫心海: 'UI_AvatarIcon_Kokomi',
-    五郎: 'UI_AvatarIcon_Gorou',
-    九条裟罗: 'UI_AvatarIcon_Sara',
-    荒泷一斗: 'UI_AvatarIcon_Itto',
-    八重神子: 'UI_AvatarIcon_Yae',
-    鹿野院平藏: 'UI_AvatarIcon_Heizo',
-    夜兰: 'UI_AvatarIcon_Yelan',
-    埃洛伊: 'UI_AvatarIcon_Aloy',
-    申鹤: 'UI_AvatarIcon_Shenhe',
-    云堇: 'UI_AvatarIcon_Yunjin',
-    久岐忍: 'UI_AvatarIcon_Shinobu',
-    神里绫人: 'UI_AvatarIcon_Ayato',
-    柯莱: 'UI_AvatarIcon_Collei',
-    多莉: 'UI_AvatarIcon_Dori',
-    提纳里: 'UI_AvatarIcon_Tighnari',
-    妮露: 'UI_AvatarIcon_Nilou',
-    赛诺: 'UI_AvatarIcon_Cyno',
-    坎蒂丝: 'UI_AvatarIcon_Candace',
-    纳西妲: 'UI_AvatarIcon_Nahida',
-    莱依拉: 'UI_AvatarIcon_Layla',
-    流浪者: 'UI_AvatarIcon_Wanderer',
-    珐露珊: 'UI_AvatarIcon_Faruzan',
-    瑶瑶: 'UI_AvatarIcon_Yaoyao',
-    艾尔海森: 'UI_AvatarIcon_Alhatham', // HACK: Alhaitham -> Alhatham
-    迪希雅: 'UI_AvatarIcon_Dehya',
-    米卡: 'UI_AvatarIcon_Mika'
+    神里绫华: ['UI_AvatarIcon_Ayaka', 10000002],
+    琴: ['UI_AvatarIcon_Qin', 10000003],
+    空: ['UI_AvatarIcon_PlayerBoy', 10000005],
+    丽莎: ['UI_AvatarIcon_Lisa', 10000006],
+    荧: ['UI_AvatarIcon_PlayerGirl', 10000007],
+    芭芭拉: ['UI_AvatarIcon_Barbara', 10000014],
+    凯亚: ['UI_AvatarIcon_Kaeya', 10000015],
+    迪卢克: ['UI_AvatarIcon_Diluc', 10000016],
+    雷泽: ['UI_AvatarIcon_Razor', 10000020],
+    安柏: ['UI_AvatarIcon_Ambor', 10000021],
+    温迪: ['UI_AvatarIcon_Venti', 10000022],
+    香菱: ['UI_AvatarIcon_Xiangling', 10000023],
+    北斗: ['UI_AvatarIcon_Beidou', 10000024],
+    行秋: ['UI_AvatarIcon_Xingqiu', 10000025],
+    魈: ['UI_AvatarIcon_Xiao', 10000026],
+    凝光: ['UI_AvatarIcon_Ningguang', 10000027],
+    可莉: ['UI_AvatarIcon_Klee', 10000029],
+    钟离: ['UI_AvatarIcon_Zhongli', 10000030],
+    菲谢尔: ['UI_AvatarIcon_Fischl', 10000031],
+    班尼特: ['UI_AvatarIcon_Bennett', 10000032],
+    达达利亚: ['UI_AvatarIcon_Tartaglia', 10000033],
+    诺艾尔: ['UI_AvatarIcon_Noel', 10000034],
+    七七: ['UI_AvatarIcon_Qiqi', 10000035],
+    重云: ['UI_AvatarIcon_Chongyun', 10000036],
+    甘雨: ['UI_AvatarIcon_Ganyu', 10000037],
+    阿贝多: ['UI_AvatarIcon_Albedo', 10000038],
+    迪奥娜: ['UI_AvatarIcon_Diona', 10000039],
+    莫娜: ['UI_AvatarIcon_Mona', 10000041],
+    刻晴: ['UI_AvatarIcon_Keqing', 10000042],
+    砂糖: ['UI_AvatarIcon_Sucrose', 10000043],
+    辛焱: ['UI_AvatarIcon_Xinyan', 10000044],
+    罗莎莉亚: ['UI_AvatarIcon_Rosaria', 10000045],
+    胡桃: ['UI_AvatarIcon_Hutao', 10000046],
+    枫原万叶: ['UI_AvatarIcon_Kazuha', 10000047],
+    烟绯: ['UI_AvatarIcon_Feiyan', 10000048],
+    宵宫: ['UI_AvatarIcon_Yoimiya', 10000049],
+    托马: ['UI_AvatarIcon_Tohma', 10000050],
+    优菈: ['UI_AvatarIcon_Eula', 10000051],
+    雷电将军: ['UI_AvatarIcon_Shougun', 10000052],
+    早柚: ['UI_AvatarIcon_Sayu', 10000053],
+    珊瑚宫心海: ['UI_AvatarIcon_Kokomi', 10000054],
+    五郎: ['UI_AvatarIcon_Gorou', 10000055],
+    九条裟罗: ['UI_AvatarIcon_Sara', 10000056],
+    荒泷一斗: ['UI_AvatarIcon_Itto', 10000057],
+    八重神子: ['UI_AvatarIcon_Yae', 10000058],
+    鹿野院平藏: ['UI_AvatarIcon_Heizo', 10000059],
+    夜兰: ['UI_AvatarIcon_Yelan', 10000060],
+    埃洛伊: ['UI_AvatarIcon_Aloy', 10000062],
+    申鹤: ['UI_AvatarIcon_Shenhe', 10000063],
+    云堇: ['UI_AvatarIcon_Yunjin', 10000064],
+    久岐忍: ['UI_AvatarIcon_Shinobu', 10000065],
+    神里绫人: ['UI_AvatarIcon_Ayato', 10000066],
+    柯莱: ['UI_AvatarIcon_Collei', 10000067],
+    多莉: ['UI_AvatarIcon_Dori', 10000068],
+    提纳里: ['UI_AvatarIcon_Tighnari', 10000069],
+    妮露: ['UI_AvatarIcon_Nilou', 10000070],
+    赛诺: ['UI_AvatarIcon_Cyno', 10000071],
+    坎蒂丝: ['UI_AvatarIcon_Candace', 10000072],
+    纳西妲: ['UI_AvatarIcon_Nahida', 10000073],
+    莱依拉: ['UI_AvatarIcon_Layla', 10000074],
+    流浪者: ['UI_AvatarIcon_Wanderer', 10000075],
+    珐露珊: ['UI_AvatarIcon_Faruzan', 10000076],
+    瑶瑶: ['UI_AvatarIcon_Yaoyao', 10000077],
+    艾尔海森: ['UI_AvatarIcon_Alhatham', 10000078], // HACK: Alhaitham -> Alhatham
+    迪希雅: ['UI_AvatarIcon_Dehya', 10000079],
+    米卡: ['UI_AvatarIcon_Mika', 10000080]
   }
 }
+
+const GenshinCharacterIconsIdMappings: Record<number, string> = Object
+  .entries(GenshinCharacterIcons.icons)
+  .reduce((acc, [name, value]) => {
+    if (Array.isArray(value)) {
+      acc[value[1]] = name
+    } return acc
+  }, {} as Record<number, string>)
 
 export const GenshinEquipIcons: GenshinIcons = {
   namespace: 'equip',
@@ -242,7 +250,13 @@ export function getGenshinIconUrl (name: string, isEquip: boolean): string | und
   const ref = isEquip ? GenshinEquipIcons : GenshinCharacterIcons
   const icon = ref.icons[name]
   if (!icon) return undefined
-  return `https://upload-bbs.mihoyo.com/game_record/genshin/${ref.namespace}/${icon}.png`
+  const filename = Array.isArray(icon) ? icon[0] : icon
+  return `https://upload-bbs.mihoyo.com/game_record/genshin/${ref.namespace}/${filename}.png`
+}
+
+export function getGenshinAvatarIconUrlById (id: number): string | undefined {
+  const name = GenshinCharacterIconsIdMappings[id]
+  return name ? getGenshinIconUrl(name, false) : undefined
 }
 
 export const PermanentGoldens: string[] = [

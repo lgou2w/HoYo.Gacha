@@ -4,7 +4,6 @@ import Button from '@mui/material/Button'
 import InputAdornment from '@mui/material/InputAdornment'
 import AddIcon from '@mui/icons-material/Add'
 import PermIdentityIcon from '@mui/icons-material/PermIdentity'
-import LabelIcon from '@mui/icons-material/LabelOutlined'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import GpsFixedIcon from '@mui/icons-material/GpsFixed'
 import PanToolAltIcon from '@mui/icons-material/PanToolAlt'
@@ -16,7 +15,6 @@ import { dialog } from '@tauri-apps/api'
 
 interface FormProps {
   uid: string
-  displayName: string
   gameDataDir: string
 }
 
@@ -50,7 +48,7 @@ interface AccountAddFormProps {
 }
 
 function AccountAddForm (props: AccountAddFormProps) {
-  const { addAccount } = useStatefulSettings()
+  const { accounts, addAccount } = useStatefulSettings()
   const context = useForm<FormProps>()
 
   const handleGameDataDirAutoFind = useCallback(() => {
@@ -87,16 +85,33 @@ function AccountAddForm (props: AccountAddFormProps) {
   }, [context])
 
   const handleSubmit = useCallback<SubmitHandler<FormProps>>((data) => {
-    addAccount({
-      uid: Number(data.uid),
-      displayName: data.displayName,
-      gameDataDir: data.gameDataDir
-    })
-      .then(() => { props.close?.() })
-      .catch((error) => {
-        context.setError('uid', { message: error })
-      })
-  }, [props])
+    const uid = Number(data.uid)
+    if (accounts[uid]) {
+      context.setError('uid', { message: '该账号已存在！' })
+      return
+    }
+
+    // TODO: optimize
+    (async () => {
+      try {
+        const playerInfo = await Commands.thirdPartyEnkaNetworkFetchPlayerInfo({ uid })
+        await addAccount({
+          uid,
+          level: playerInfo.level,
+          avatarId: playerInfo.profilePicture.avatarId,
+          displayName: playerInfo.nickname,
+          gameDataDir: data.gameDataDir
+        })
+        props.close?.()
+      } catch (error) {
+        context.setError('uid', {
+          message: error instanceof Error || typeof error === 'object'
+            ? (error as Error).message
+            : error as string
+        })
+      }
+    })()
+  }, [accounts, props.close])
 
   return (
     <FormContainer formContext={context} onSuccess={handleSubmit} FormProps={{
@@ -121,18 +136,6 @@ function AccountAddForm (props: AccountAddFormProps) {
         }}
         fullWidth
         required
-      />
-      <TextFieldElement name="displayName" type="text"
-        label="昵称" placeholder="用于显示的自定义昵称"
-        variant="filled" size="small" margin="dense"
-        InputProps={{
-          startAdornment: (
-            <InputAdornment position="start">
-              <LabelIcon />
-            </InputAdornment>
-          )
-        }}
-        fullWidth
       />
       <TextFieldElement name="gameDataDir" label="目录" type="text"
         placeholder={'游戏数据目录的完整路径\n例如：D:/Genshin Impact/Genshin Impact Game/YuanShen_Data'}

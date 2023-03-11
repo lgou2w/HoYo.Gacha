@@ -1,6 +1,8 @@
 export interface Account {
   uid: number
-  displayName: string | null
+  level: number
+  avatarId?: number | null
+  displayName?: string | null
   gameDataDir: string
   gachaUrl?: string | null
   lastGachaUpdated?: string | null

@@ -8,7 +8,7 @@ import Typography from '@mui/material/Typography'
 import IconButton from '@mui/material/IconButton'
 import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
-import Avatar from '@/components/common/avatar'
+import AccountAvatar from '@/components/account/avatar'
 import { Account, SettingsFn } from '@/interfaces/settings'
 
 export interface AccountListItemProps {
@@ -52,16 +52,24 @@ function AccountListItemContent (props: AccountListItemProps) {
   return (
     <ListItemButton onClick={() => selectAccount(account.uid)} selected={selected}>
       <ListItemAvatar>
-        <Avatar />
+        <AccountAvatar avatarId={account.avatarId || undefined} />
       </ListItemAvatar>
+
       <ListItemText
-        primary={account.displayName || '旅行者'}
-        primaryTypographyProps={{ noWrap: true, color: selected ? 'primary' : 'default' }}
+        primary={<>
+          {/* TODO: optimize */}
+          {/* {account.level && <Typography component="span">Lv.{account.level}·</Typography>} */}
+          <Typography component="span" bgcolor={selected ? 'primary.light' : 'success.light'} color="white" borderRadius={4} paddingX={1}>
+            <Typography variant="caption">Lv.{account.level}</Typography>
+          </Typography>
+          <Typography component="span" marginLeft={0.5}>{account.displayName || '旅行者'}</Typography>
+        </>}
+        primaryTypographyProps={{ component: 'div', noWrap: true, color: selected ? 'primary' : 'default' }}
         secondary={account.uid}
         secondaryTypographyProps={{ color: selected ? 'primary' : 'default' }}
-        sx={{ maxWidth: 120 }}
+        sx={{ maxWidth: 200 }}
       />
-      <Typography component="div" width={400} variant="caption" color="grey.600" noWrap>
+      <Typography component="div" width={500} variant="caption" color="grey.600" noWrap>
         {account.gameDataDir}
       </Typography>
     </ListItemButton>
