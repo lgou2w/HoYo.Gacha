@@ -6,40 +6,40 @@ import ListItemAvatar from '@mui/material/ListItemAvatar'
 import ListItemText from '@mui/material/ListItemText'
 import Typography from '@mui/material/Typography'
 import IconButton from '@mui/material/IconButton'
-import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
 import AccountAvatar from '@/components/account/avatar'
 import { Account, SettingsFn } from '@/interfaces/settings'
+import { getNameCardUrl } from '@/interfaces/enka-network'
 
 export interface AccountListItemProps {
-  className?: string
   account: Account
   selected: boolean
   selectAccount: SettingsFn['selectAccount']
-  onPreEdit?: React.MouseEventHandler<HTMLButtonElement>
   onPreRemove?: React.MouseEventHandler<HTMLButtonElement>
+  showNameCard?: boolean
 }
 
 export default function AccountListItem (props: AccountListItemProps) {
-  const { className, ...rest } = props
+  const nameCardUrl = props.showNameCard &&
+    props.account.nameCardId &&
+    getNameCardUrl(props.account.nameCardId)
+
   return (
     <ListItem
-      className={className}
-      secondaryAction={<AccountListItemAction {...rest} />}
-      disablePadding
+      secondaryAction={<AccountListItemAction {...props} />}
+      data-name-card={nameCardUrl ? 'true' : undefined}
+      data-name-card-id={props.account.nameCardId}
+      sx={nameCardUrl ? { backgroundImage: `url(${nameCardUrl})` } : undefined}
     >
-      <AccountListItemContent {...rest} />
+      <AccountListItemContent {...props} />
     </ListItem>
   )
 }
 
 function AccountListItemAction (props: AccountListItemProps) {
-  const { account, onPreEdit, onPreRemove } = props
+  const { account, onPreRemove } = props
   return (
     <Stack flexDirection="row" gap={1}>
-      <IconButton size="small" color="default" value={account.uid} onClick={onPreEdit}>
-        <EditIcon />
-      </IconButton>
       <IconButton size="small" color="error" value={account.uid} onClick={onPreRemove}>
         <DeleteIcon />
       </IconButton>
@@ -54,7 +54,6 @@ function AccountListItemContent (props: AccountListItemProps) {
       <ListItemAvatar>
         <AccountAvatar avatarId={account.avatarId || undefined} />
       </ListItemAvatar>
-
       <ListItemText
         primary={<>
           {/* TODO: optimize */}
@@ -62,15 +61,17 @@ function AccountListItemContent (props: AccountListItemProps) {
           <Typography component="span" bgcolor={selected ? 'primary.light' : 'success.light'} color="white" borderRadius={4} paddingX={1}>
             <Typography variant="caption">Lv.{account.level}</Typography>
           </Typography>
-          <Typography component="span" marginLeft={0.5}>{account.displayName || '旅行者'}</Typography>
+          <Typography component="span" marginLeft={0.5} color="inherit">
+            {account.displayName || '旅行者'}
+          </Typography>
         </>}
         primaryTypographyProps={{ component: 'div', noWrap: true, color: selected ? 'primary' : 'default' }}
         secondary={account.uid}
         secondaryTypographyProps={{ color: selected ? 'primary' : 'default' }}
-        sx={{ maxWidth: 200 }}
+        sx={{ maxWidth: 180 }}
       />
-      <Typography component="div" width={500} variant="caption" color="grey.600" noWrap>
-        {account.gameDataDir}
+      <Typography component="div" maxWidth={400} variant="body2" color="grey.600" noWrap>
+        {account.signature}
       </Typography>
     </ListItemButton>
   )

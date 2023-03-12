@@ -100,6 +100,8 @@ function AccountAddForm (props: AccountAddFormProps) {
           level: playerInfo.level,
           avatarId: playerInfo.profilePicture.avatarId,
           displayName: playerInfo.nickname,
+          signature: playerInfo.signature,
+          nameCardId: playerInfo.nameCardId,
           gameDataDir: data.gameDataDir
         })
         props.close?.()

@@ -28,13 +28,13 @@ export default function AccountList () {
   return (
     <List className={AccountListCls} sx={AccountListSx} disablePadding>
       {Object.values(accounts).map((account) => (
-        <AccountListItem className={AccountListItemCls}
+        <AccountListItem
           key={account.uid}
           account={account}
           selected={selectedAccount?.uid === account.uid}
           selectAccount={selectAccount}
-          // onPreEdit={handlePreEdit}
           onPreRemove={handlePreRemove}
+          showNameCard
         />
       ))}
       <AccountListRemoveDialog
@@ -48,15 +48,21 @@ export default function AccountList () {
 }
 
 const AccountListCls = 'account-list'
-const AccountListItemCls = `${AccountListCls}-item`
 const AccountListSx: SxProps<Theme> = {
-  [`& .${AccountListItemCls}`]: {
-    paddingX: 0,
-    borderBottom: 1,
-    borderColor: (theme) => theme.palette.divider,
-    '&:first-of-type': {
-      borderTop: 1,
-      borderColor: (theme) => theme.palette.divider
+  '& .MuiListItem-root': {
+    padding: 0,
+    bgcolor: 'grey.100',
+    marginBottom: 1,
+    borderTopRightRadius: 99,
+    borderBottomRightRadius: 99,
+    '& >:first-of-type': {
+      borderTopRightRadius: 99,
+      borderBottomRightRadius: 99
+    },
+    '&[data-name-card="true"]': {
+      backgroundSize: 'contain',
+      backgroundPosition: 'right',
+      backgroundRepeat: 'no-repeat'
     }
   }
 }
