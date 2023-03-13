@@ -23,7 +23,7 @@ export default function AccountSelectMenu (props: AccountSelectMenuProps) {
   return (
     <Menu open={open} onClose={onClose} anchorEl={anchorEl}
       anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-      MenuListProps={{ sx: { width: 100 } }}
+      MenuListProps={{ sx: { maxWidth: 120 } }}
     >
       {Object.values(accounts).map((account) => (
         <AccountSelectMenuItem

@@ -20,16 +20,14 @@ export default function AccountSelect () {
         <Button color="inherit" endIcon={<KeyboardArrowDownIcon />} sx={{ '&:hover': { bgcolor: 'transparent' } }} disableRipple>
           <AccountAvatar avatarId={selectedAccount?.avatarId || undefined} />
           <Box display="inline-flex" flexDirection="column" marginLeft={1} textAlign="left">
-            {/* TODO: optimize */}
             <Box>
               <Typography component="span" bgcolor="primary.light" color="white" borderRadius={4} paddingX={1}>
                 <Typography variant="caption">Lv.{selectedAccount?.level || 0}</Typography>
               </Typography>
-              <Typography component="span" marginLeft={0.5} textTransform="none" noWrap>{selectedAccount?.displayName || '旅行者'}</Typography>
+              <Typography component="span" marginLeft={0.5} textTransform="none" noWrap>
+                {selectedAccount?.displayName || '旅行者'}
+              </Typography>
             </Box>
-            {/* <Typography component="div" variant="body2" textTransform="none" noWrap>
-              {selectedAccount?.displayName || '旅行者'}
-            </Typography> */}
             <Typography component="div" variant="caption" lineHeight={1}>
               {selectedAccount?.uid || 'NULL UID'}
             </Typography>
