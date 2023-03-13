@@ -25,3 +25,18 @@ export interface GachaLogItem {
   rankType: string
   id: string
 }
+
+/** See: src-tauri/src/third_party/enka_network.rs */
+export interface EnkaNetworkPlayerInfo {
+  nickname: string,
+  level: number
+  signature?: string
+  worldLevel?: number
+  nameCardId: number
+  finishAchievementNum: number
+  towerFloorIndex?: number
+  towerLevelIndex?: number
+  showAvatarInfoList?: Array<{ avatarId: number, level: number }>
+  showNameCardInfoList?: number[]
+  profilePicture: { avatarId: number }
+}

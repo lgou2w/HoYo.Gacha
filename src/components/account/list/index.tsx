@@ -1,18 +1,41 @@
 import React, { useCallback, useRef, useState } from 'react'
-import { SxProps, Theme } from '@mui/material/styles'
 import List from '@mui/material/List'
+import Alert from '@mui/material/Alert'
 import AccountListItem, { AccountListItemProps } from './item'
 import AccountListRemoveDialog, { AccountListRemoveDialogProps } from './remove-dialog'
 import { Account } from '@/interfaces/settings'
 import useStatefulSettings from '@/hooks/useStatefulSettings'
+import Commands from '@/utilities/commands'
 
 export default function AccountList () {
-  const { accounts, selectedAccount, selectAccount, removeAccount } = useStatefulSettings()
+  const { accounts, selectedAccount, selectAccount, updateAccount, removeAccount } = useStatefulSettings()
   const [removeDialog, setRemoveDialog] = useState(false)
+  const [error, setError] = useState<string | undefined>()
   const accountRef = useRef<Account>()
+  const listRef = React.createRef<HTMLUListElement>()
+
+  const handlePreRefresh = useCallback<Required<AccountListItemProps>['onPreRefresh']>((event) => {
+    if (!listRef.current) return
+    const list = listRef.current
+    list.style.pointerEvents = 'none'
+    list.style.opacity = '0.5'
+    const uid = Number(event.currentTarget.value)
+    Commands.thirdPartyEnkaNetworkFetchPlayerInfo({ uid })
+      .then((playerInfo) => updateAccount(uid, {
+        level: playerInfo.level,
+        avatarId: playerInfo.profilePicture.avatarId,
+        displayName: playerInfo.nickname,
+        signature: playerInfo.signature,
+        nameCardId: playerInfo.nameCardId
+      }))
+      .catch((error) => { setError(error) })
+      .finally(() => {
+        list.style.pointerEvents = 'auto'
+        list.style.opacity = '1'
+      })
+  }, [listRef, updateAccount, setError])
 
   const handlePreRemove = useCallback<Required<AccountListItemProps>['onPreRemove']>((event) => {
-    event.preventDefault()
     const uid = Number(event.currentTarget.value)
     accountRef.current = accounts[uid]
     setRemoveDialog(true)
@@ -26,37 +49,27 @@ export default function AccountList () {
   }, [accountRef, removeAccount, setRemoveDialog])
 
   return (
-    <List className={AccountListCls} sx={AccountListSx} disablePadding>
-      {Object.values(accounts).map((account) => (
-        <AccountListItem className={AccountListItemCls}
-          key={account.uid}
-          account={account}
-          selected={selectedAccount?.uid === account.uid}
-          selectAccount={selectAccount}
-          // onPreEdit={handlePreEdit}
-          onPreRemove={handlePreRemove}
+    <>
+      {error && <Alert severity="error" onClose={() => setError(undefined)}>{error}</Alert>}
+      <List component="ul" ref={listRef} disablePadding>
+        {Object.values(accounts).map((account) => (
+          <AccountListItem
+            key={account.uid}
+            account={account}
+            selected={selectedAccount?.uid === account.uid}
+            onSelect={() => selectAccount(account.uid)}
+            onPreRefresh={handlePreRefresh}
+            onPreRemove={handlePreRemove}
+            showNameCard
+          />
+        ))}
+        <AccountListRemoveDialog
+          open={removeDialog}
+          accountRef={accountRef}
+          onCancel={() => setRemoveDialog(false)}
+          onConfirm={handleConfirmRemove}
         />
-      ))}
-      <AccountListRemoveDialog
-        open={removeDialog}
-        accountRef={accountRef}
-        onCancel={() => setRemoveDialog(false)}
-        onConfirm={handleConfirmRemove}
-      />
-    </List>
+      </List>
+    </>
   )
-}
-
-const AccountListCls = 'account-list'
-const AccountListItemCls = `${AccountListCls}-item`
-const AccountListSx: SxProps<Theme> = {
-  [`& .${AccountListItemCls}`]: {
-    paddingX: 0,
-    borderBottom: 1,
-    borderColor: (theme) => theme.palette.divider,
-    '&:first-of-type': {
-      borderTop: 1,
-      borderColor: (theme) => theme.palette.divider
-    }
-  }
 }
