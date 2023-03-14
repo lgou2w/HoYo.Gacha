@@ -13,10 +13,12 @@ const UninitializedFn = async () => { throw new Error('Uninitialized') }
 const Default: StatefulSettings = {
   accounts: {},
   selectedAccount: null,
+  showNameCard: null,
   addAccount: UninitializedFn,
   removeAccount: UninitializedFn,
   updateAccount: UninitializedFn,
-  selectAccount: UninitializedFn
+  selectAccount: UninitializedFn,
+  toggleShowNameCard: UninitializedFn
 }
 
 const StatefulSettingsContext =
@@ -26,6 +28,7 @@ export const StatefulSettingsProvider = (props: PropsWithChildren) => {
   const store = useMemo(() => new SettingsStore(), [])
   const [accounts, setAccounts] = useState<Accounts>({})
   const [selectedAccount, setSelectedAccount] = useState<Account | null>(null)
+  const [showNameCard, setShowNameCard] = useState<boolean | null>(null)
 
   const addAccount = useCallback<StatefulSettings['addAccount']>(async (account) => {
     const newAccounts = await store.addAccount(account)
@@ -63,6 +66,13 @@ export const StatefulSettingsProvider = (props: PropsWithChildren) => {
     } return selected
   }, [store, setSelectedAccount])
 
+  const toggleShowNameCard = useCallback<StatefulSettings['toggleShowNameCard']>(async () => {
+    const newShowNameCard = await store.toggleShowNameCard()
+    console.debug('Show name card:', newShowNameCard)
+    setShowNameCard(newShowNameCard)
+    return newShowNameCard
+  }, [store, setShowNameCard])
+
   const reload = useCallback(() => {
     console.debug('Loading settings...')
     store
@@ -71,11 +81,12 @@ export const StatefulSettingsProvider = (props: PropsWithChildren) => {
         console.debug('Settings:', settings)
         setAccounts(settings.accounts)
         setSelectedAccount(settings.selectedAccount)
+        setShowNameCard(!!settings.showNameCard)
       })
       .catch((error) => {
         console.error('Failed to load settings:', error)
       })
-  }, [store, setAccounts, setSelectedAccount])
+  }, [store, setAccounts, setSelectedAccount, setShowNameCard])
 
   useEffect(() => { reload() }, [])
 
@@ -94,10 +105,12 @@ export const StatefulSettingsProvider = (props: PropsWithChildren) => {
   const value = {
     accounts,
     selectedAccount,
+    showNameCard,
     addAccount,
     removeAccount,
     updateAccount,
     selectAccount,
+    toggleShowNameCard,
     __debug__clear_accounts,
     __debug__reload_accounts
   }

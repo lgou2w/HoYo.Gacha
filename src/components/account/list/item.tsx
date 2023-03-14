@@ -20,7 +20,7 @@ export interface AccountListItemProps {
   onSelect?: React.MouseEventHandler<HTMLButtonElement>
   onPreRefresh?: React.MouseEventHandler<HTMLButtonElement>
   onPreRemove?: React.MouseEventHandler<HTMLButtonElement>
-  showNameCard?: boolean
+  showNameCard?: boolean | null
 }
 
 export default function AccountListItem (props: AccountListItemProps) {

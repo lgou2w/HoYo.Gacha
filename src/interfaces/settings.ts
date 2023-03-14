@@ -15,6 +15,7 @@ export type Accounts = Record<number, Account>
 export interface Settings {
   readonly accounts: Accounts
   readonly selectedAccount: Account | null
+  readonly showNameCard?: boolean | null
 }
 
 export interface SettingsFn {
@@ -22,4 +23,5 @@ export interface SettingsFn {
   removeAccount (uid: Account['uid']): Promise<[Accounts, Account]>
   updateAccount (uid: Account['uid'], updated: Partial<Omit<Account, 'uid'>>): Promise<[Accounts, Account]>
   selectAccount (uid: Account['uid']): Promise<Account | null>
+  toggleShowNameCard (): Promise<boolean>
 }

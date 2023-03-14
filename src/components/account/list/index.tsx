@@ -8,7 +8,7 @@ import useStatefulSettings from '@/hooks/useStatefulSettings'
 import Commands from '@/utilities/commands'
 
 export default function AccountList () {
-  const { accounts, selectedAccount, selectAccount, updateAccount, removeAccount } = useStatefulSettings()
+  const { accounts, selectedAccount, showNameCard, selectAccount, updateAccount, removeAccount } = useStatefulSettings()
   const [removeDialog, setRemoveDialog] = useState(false)
   const [error, setError] = useState<string | undefined>()
   const accountRef = useRef<Account>()
@@ -60,7 +60,7 @@ export default function AccountList () {
             onSelect={() => selectAccount(account.uid)}
             onPreRefresh={handlePreRefresh}
             onPreRemove={handlePreRemove}
-            showNameCard
+            showNameCard={showNameCard}
           />
         ))}
         <AccountListRemoveDialog
