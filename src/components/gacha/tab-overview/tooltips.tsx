@@ -10,16 +10,17 @@ export interface GachaTabOverviewTooltipsProps {
 }
 
 export default function GachaTabOverviewTooltips (props: GachaTabOverviewTooltipsProps) {
+  const { total, firstTime, lastTime } = props
   return (
     <Box>
       <Typography>
         {'❖ 共计祈愿 '}
         <Typography component="span" color="primary">
-          {props.total}
+          {total}
         </Typography>
         {' 次，总价值 '}
         <Typography component="span" color="warning.light">
-          {props.total * 160}
+          {total * 160}
         </Typography>
         {' 原石。'}
         {'折合现金大约'}
@@ -29,7 +30,7 @@ export default function GachaTabOverviewTooltips (props: GachaTabOverviewTooltip
             textDecoration: 'underline dotted',
             textUnderlineOffset: '4px'
           }}>
-            {Math.floor(props.total * 160 / 8080) * 648}
+            {Math.floor(total * 160 / 8080) * 648}
           </Typography>
         </Typography>
         {' 元。'}
@@ -37,11 +38,11 @@ export default function GachaTabOverviewTooltips (props: GachaTabOverviewTooltip
       <Typography>
         {'❖ 祈愿记录日期覆盖范围：'}
         <Typography component="span" color="secondary">
-          {dayjs(props.firstTime).format('lll')}
+          {dayjs(firstTime).format('lll')}
         </Typography>
         {' ~ '}
         <Typography component="span" color="secondary">
-        {dayjs(props.firstTime).format('lll')}
+        {dayjs(lastTime).format('lll')}
         </Typography>
         {'。'}
       </Typography>
