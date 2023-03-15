@@ -4,6 +4,8 @@ import Typography from '@mui/material/Typography'
 import Button from '@mui/material/Button'
 import ExternalLink from '@/components/common/external-link'
 
+// TODO: Version check
+
 export default function SettingSectionAbout () {
   return (
     <Stack gap={2}>
@@ -12,7 +14,7 @@ export default function SettingSectionAbout () {
         <Typography component="p" variant="body2">
           {`当前版本：v${__APP_VERSION__}`}
           &nbsp;&nbsp;
-          <Button size="small">检查更新</Button>
+          <Button size="small" disabled>检查更新</Button>
           <br />
           {'开源地址：'}
           <ExternalLink href="https://github.com/lgou2w/genshin-gacha" />
