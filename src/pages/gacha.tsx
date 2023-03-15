@@ -14,7 +14,7 @@ import useStatefulSettings from '@/hooks/useStatefulSettings'
 import useGachaLogsQuery from '@/hooks/useGachaLogsQuery'
 
 export default function PageGacha () {
-  const { selectedAccount, updateAccount } = useStatefulSettings()
+  const { accounts, selectedAccount, updateAccount } = useStatefulSettings()
   const [alert, setAlert] = useState<GachaAlertProps['data']>(undefined)
   const [tab, setTab] = useState(0)
 
@@ -46,7 +46,12 @@ export default function PageGacha () {
   if (!selectedAccount) {
     return (
       <Page>
-        <GachaAlert data={{ severity: 'error', message: '还没有任何可用账号。请先添加一个账号！' }} />
+        <GachaAlert data={{
+          severity: 'error',
+          message: Object.keys(accounts).length > 0
+            ? '当前没有选中的账号。请先选择一个账号！'
+            : '还没有任何可用账号。请先添加一个账号！'
+        }}/>
         <Box>
           <Button component={Link} to="/account" variant="outlined">账号管理</Button>
         </Box>
