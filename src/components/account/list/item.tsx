@@ -1,5 +1,6 @@
 import React from 'react'
 import { SxProps, Theme } from '@mui/material/styles'
+import Box from '@mui/material/Box'
 import Stack from '@mui/material/Stack'
 import ListItem from '@mui/material/ListItem'
 import ListItemButton from '@mui/material/ListItemButton'
@@ -10,6 +11,7 @@ import IconButton from '@mui/material/IconButton'
 import Tooltip from '@mui/material/Tooltip'
 import SyncIcon from '@mui/icons-material/Sync'
 import DeleteIcon from '@mui/icons-material/Delete'
+import CommentIcon from '@mui/icons-material/Comment'
 import AccountAvatar from '@/components/account/avatar'
 import { Account } from '@/interfaces/settings'
 import { getNameCardUrl } from '@/interfaces/enka-network'
@@ -20,7 +22,7 @@ export interface AccountListItemProps {
   onSelect?: React.MouseEventHandler<HTMLButtonElement>
   onPreRefresh?: React.MouseEventHandler<HTMLButtonElement>
   onPreRemove?: React.MouseEventHandler<HTMLButtonElement>
-  showNameCard?: boolean | null
+  enkaNetwork?: boolean | null
 }
 
 export default function AccountListItem (props: AccountListItemProps) {
@@ -37,7 +39,7 @@ export default function AccountListItem (props: AccountListItemProps) {
 
 function AccountListItemContent (props: AccountListItemProps) {
   const { account, selected, onSelect } = props
-  const nameCardUrl = props.showNameCard &&
+  const nameCardUrl = props.enkaNetwork &&
     props.account.nameCardId &&
     getNameCardUrl(props.account.nameCardId)
 
@@ -63,7 +65,7 @@ function AccountListItemContent (props: AccountListItemProps) {
             borderRadius={4}
             paddingX={1}
           >
-            <Typography variant="caption">Lv.{account.level}</Typography>
+            <Typography variant="caption">Lv.{account.level || '?'}</Typography>
           </Typography>
           <Typography component="span" marginLeft={0.5} color="inherit">
             {account.displayName || '旅行者'}
@@ -74,27 +76,45 @@ function AccountListItemContent (props: AccountListItemProps) {
         secondaryTypographyProps={{ color: selected ? 'primary' : 'default' }}
         sx={{ maxWidth: 180 }}
       />
-      <Typography component="div" maxWidth={400} variant="body2" color="grey.600" noWrap>
-        {account.signature}
+      <Typography
+        component="div"
+        maxWidth={400}
+        variant="body2"
+        color="grey.600"
+        display="inline-flex"
+        alignItems="center"
+        noWrap
+      >
+        {account.signature && <>
+          <CommentIcon fontSize="inherit" sx={{ marginRight: 1 }} />
+          {account.signature}
+        </>}
       </Typography>
     </ListItemButton>
   )
 }
 
 function AccountListItemActionRefresh (props: AccountListItemProps) {
-  const { account, onPreRefresh } = props
+  const { account, onPreRefresh, enkaNetwork } = props
 
   return (
-    <Tooltip title="同步账号数据" PopperProps={{ modifiers: [{ name: 'offset', options: { offset: [0, -8] } }] }}>
-      <IconButton
-        sx={{ alignSelf: 'start', marginY: 'auto' }}
-        size="small"
-        color="default"
-        value={account.uid}
-        onClick={onPreRefresh}
-      >
-        <SyncIcon />
-      </IconButton>
+    <Tooltip
+      title={!enkaNetwork ? '启用 Enka.Network 服务时可用\n详细信息另见：设置 - 账号' : '从 Enka.Network 服务同步账号数据'}
+      slotProps={{ tooltip: { sx: { whiteSpace: 'break-spaces' } } }}
+      PopperProps={{ modifiers: [{ name: 'offset', options: { offset: [0, -8] } }] }}
+      placement="bottom-end"
+    >
+      <Box sx={{ alignSelf: 'start', marginY: 'auto', cursor: 'not-allowed' }}>
+        <IconButton
+          size="small"
+          color="default"
+          value={account.uid}
+          onClick={onPreRefresh}
+          disabled={!enkaNetwork}
+        >
+          <SyncIcon />
+        </IconButton>
+      </Box>
     </Tooltip>
   )
 }

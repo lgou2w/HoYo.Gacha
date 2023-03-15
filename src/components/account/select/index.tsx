@@ -22,7 +22,7 @@ export default function AccountSelect () {
           <Box display="inline-flex" flexDirection="column" marginLeft={1} textAlign="left">
             <Box>
               <Typography component="span" bgcolor="primary.light" color="white" borderRadius={4} paddingX={1}>
-                <Typography variant="caption">Lv.{selectedAccount?.level || 0}</Typography>
+                <Typography variant="caption">Lv.{selectedAccount?.level || '?'}</Typography>
               </Typography>
               <Typography component="span" marginLeft={0.5} textTransform="none" noWrap>
                 {selectedAccount?.displayName || '旅行者'}

@@ -3,7 +3,7 @@ import { Store } from 'tauri-plugin-store-api'
 
 const KEY_ACCOUNTS = 'accounts'
 const KEY_SELECTED_ACCOUNT = 'selectedAccount'
-const KEY_SHOW_NAME_CARD = 'showNameCard'
+const KEY_ENKA_NETWORK = 'enkaNetwork'
 const ERR_ACCOUNT_EXISTED = '账号已存在！'
 const ERR_ACCOUNT_NOT_FOUND = '账号未存在！'
 
@@ -26,20 +26,20 @@ export class SettingsStore implements SettingsFn {
     await this.store.set(KEY_SELECTED_ACCOUNT, uid)
   }
 
-  private async getShowNameCard (): Promise<boolean | null> {
-    return await this.store.get<boolean>(KEY_SHOW_NAME_CARD)
+  private async getEnkaNetwork (): Promise<boolean | null> {
+    return await this.store.get<boolean>(KEY_ENKA_NETWORK)
   }
 
   async loadSettings (): Promise<Settings> {
     const accounts = await this.getAccounts() || {}
     const selectedAccount = await this.getSelectedAccount()
-    const showNameCard = await this.getShowNameCard()
+    const enkaNetwork = await this.getEnkaNetwork()
     return {
       accounts,
       selectedAccount: selectedAccount
         ? accounts[selectedAccount]
         : null,
-      showNameCard
+      enkaNetwork
     }
   }
 
@@ -104,10 +104,10 @@ export class SettingsStore implements SettingsFn {
     }
   }
 
-  async toggleShowNameCard (): Promise<boolean> {
-    const showNameCard = await this.getShowNameCard()
-    const newShowNameCard = !showNameCard
-    await this.store.set(KEY_SHOW_NAME_CARD, newShowNameCard)
-    return newShowNameCard
+  async toggleEnkaNetwork (): Promise<boolean> {
+    const enkaNetwork = await this.getEnkaNetwork()
+    const newEnkaNetwork = !enkaNetwork
+    await this.store.set(KEY_ENKA_NETWORK, newEnkaNetwork)
+    return newEnkaNetwork
   }
 }

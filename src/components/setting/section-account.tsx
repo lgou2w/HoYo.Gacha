@@ -8,24 +8,29 @@ import ExternalLink from '@/components/common/external-link'
 import useStatefulSettings from '@/hooks/useStatefulSettings'
 
 export default function SettingSectionAccount () {
-  const { showNameCard, toggleShowNameCard } = useStatefulSettings()
+  const { enkaNetwork, toggleEnkaNetwork } = useStatefulSettings()
   return (
     <Stack gap={2}>
       <Stack gap={1}>
-        <Typography component="h3" variant="body1">名片</Typography>
+        <Typography component="h3" variant="body1">
+          {'第三方 '}
+          <ExternalLink href="https://Enka.Network">Enka.Network</ExternalLink>
+          {' 服务'}
+        </Typography>
         <Typography component="p" variant="body2">
-          {'当启用名片展示，账号页面下数据项会额外从网络加载名片图片。'}
+          {'当启用此服务表明你同意从网络获取你的账号基础信息。'}
           <br />
-          {'该图片资源来源于第三方 '}
-          <ExternalLink href="https://Enka.Network" />
-          {' 网站。'}
-          {'启用它会消耗额外的网络数据流量。'}
+          {'这些数据包含昵称、头像、冒险等阶、签名、名片、角色展示信息等。'}
+          <br />
+          <Typography component="span" variant="body2" color="error.main">
+            注意：在获取你的账号基础信息同时，数据也可能会被此第三方服务收集。
+          </Typography>
         </Typography>
         <Box>
           <FormControlLabel
-            label="启用名片展示"
+            label="启用服务"
             slotProps={{ typography: { variant: 'button', sx: { userSelect: 'none' } } }}
-            control={<Switch checked={!!showNameCard} onChange={toggleShowNameCard} />}
+            control={<Switch checked={!!enkaNetwork} onChange={toggleEnkaNetwork} color="success" />}
           />
         </Box>
       </Stack>

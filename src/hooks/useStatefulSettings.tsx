@@ -13,12 +13,12 @@ const UninitializedFn = async () => { throw new Error('Uninitialized') }
 const Default: StatefulSettings = {
   accounts: {},
   selectedAccount: null,
-  showNameCard: null,
+  enkaNetwork: null,
   addAccount: UninitializedFn,
   removeAccount: UninitializedFn,
   updateAccount: UninitializedFn,
   selectAccount: UninitializedFn,
-  toggleShowNameCard: UninitializedFn
+  toggleEnkaNetwork: UninitializedFn
 }
 
 const StatefulSettingsContext =
@@ -28,7 +28,7 @@ export const StatefulSettingsProvider = (props: PropsWithChildren) => {
   const store = useMemo(() => new SettingsStore(), [])
   const [accounts, setAccounts] = useState<Accounts>({})
   const [selectedAccount, setSelectedAccount] = useState<Account | null>(null)
-  const [showNameCard, setShowNameCard] = useState<boolean | null>(null)
+  const [enkaNetwork, setEnkaNetwork] = useState<boolean | null>(null)
 
   const addAccount = useCallback<StatefulSettings['addAccount']>(async (account) => {
     const newAccounts = await store.addAccount(account)
@@ -66,12 +66,12 @@ export const StatefulSettingsProvider = (props: PropsWithChildren) => {
     } return selected
   }, [store, setSelectedAccount])
 
-  const toggleShowNameCard = useCallback<StatefulSettings['toggleShowNameCard']>(async () => {
-    const newShowNameCard = await store.toggleShowNameCard()
-    console.debug('Show name card:', newShowNameCard)
-    setShowNameCard(newShowNameCard)
-    return newShowNameCard
-  }, [store, setShowNameCard])
+  const toggleEnkaNetwork = useCallback<StatefulSettings['toggleEnkaNetwork']>(async () => {
+    const newEnkaNetwork = await store.toggleEnkaNetwork()
+    console.debug('Enka.Network:', newEnkaNetwork)
+    setEnkaNetwork(newEnkaNetwork)
+    return newEnkaNetwork
+  }, [store, setEnkaNetwork])
 
   const reload = useCallback(() => {
     console.debug('Loading settings...')
@@ -81,12 +81,12 @@ export const StatefulSettingsProvider = (props: PropsWithChildren) => {
         console.debug('Settings:', settings)
         setAccounts(settings.accounts)
         setSelectedAccount(settings.selectedAccount)
-        setShowNameCard(!!settings.showNameCard)
+        setEnkaNetwork(!!settings.enkaNetwork)
       })
       .catch((error) => {
         console.error('Failed to load settings:', error)
       })
-  }, [store, setAccounts, setSelectedAccount, setShowNameCard])
+  }, [store, setAccounts, setSelectedAccount, setEnkaNetwork])
 
   useEffect(() => { reload() }, [])
 
@@ -105,12 +105,12 @@ export const StatefulSettingsProvider = (props: PropsWithChildren) => {
   const value = {
     accounts,
     selectedAccount,
-    showNameCard,
+    enkaNetwork,
     addAccount,
     removeAccount,
     updateAccount,
     selectAccount,
-    toggleShowNameCard,
+    toggleEnkaNetwork,
     __debug__clear_accounts,
     __debug__reload_accounts
   }

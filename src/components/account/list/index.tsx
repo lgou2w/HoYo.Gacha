@@ -8,7 +8,7 @@ import useStatefulSettings from '@/hooks/useStatefulSettings'
 import Commands from '@/utilities/commands'
 
 export default function AccountList () {
-  const { accounts, selectedAccount, showNameCard, selectAccount, updateAccount, removeAccount } = useStatefulSettings()
+  const { accounts, selectedAccount, enkaNetwork, selectAccount, updateAccount, removeAccount } = useStatefulSettings()
   const [removeDialog, setRemoveDialog] = useState(false)
   const [error, setError] = useState<string | undefined>()
   const accountRef = useRef<Account>()
@@ -16,6 +16,7 @@ export default function AccountList () {
 
   const handlePreRefresh = useCallback<Required<AccountListItemProps>['onPreRefresh']>((event) => {
     if (!listRef.current) return
+    if (!enkaNetwork) return
     const list = listRef.current
     list.style.pointerEvents = 'none'
     list.style.opacity = '0.5'
@@ -33,7 +34,7 @@ export default function AccountList () {
         list.style.pointerEvents = 'auto'
         list.style.opacity = '1'
       })
-  }, [listRef, updateAccount, setError])
+  }, [listRef, updateAccount, setError, enkaNetwork])
 
   const handlePreRemove = useCallback<Required<AccountListItemProps>['onPreRemove']>((event) => {
     const uid = Number(event.currentTarget.value)
@@ -60,7 +61,7 @@ export default function AccountList () {
             onSelect={() => selectAccount(account.uid)}
             onPreRefresh={handlePreRefresh}
             onPreRemove={handlePreRemove}
-            showNameCard={showNameCard}
+            enkaNetwork={enkaNetwork}
           />
         ))}
         <AccountListRemoveDialog

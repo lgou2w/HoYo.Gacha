@@ -9,6 +9,7 @@ import GpsFixedIcon from '@mui/icons-material/GpsFixed'
 import PanToolAltIcon from '@mui/icons-material/PanToolAlt'
 import ConfirmDialog from '@/components/common/confirm-dialog'
 import { FormContainer, TextFieldElement, SubmitHandler, UseFormReturn, useForm } from 'react-hook-form-mui'
+import { Account } from '@/interfaces/settings'
 import useStatefulSettings from '@/hooks/useStatefulSettings'
 import Commands from '@/utilities/commands'
 import { dialog } from '@tauri-apps/api'
@@ -22,6 +23,7 @@ const FORM_ID = 'form-add-account'
 
 export default function AccountActionAdd () {
   const [open, setOpen] = useState(false)
+  const [busy, setBusy] = useState(false)
   const handleClick = () => { setOpen(true) }
   const handleCancel = () => { setOpen(false) }
   return (
@@ -30,13 +32,13 @@ export default function AccountActionAdd () {
       <ConfirmDialog open={open} title="添加账号"
         onCancel={handleCancel}
         ContentProps={{ dividers: true }}
-        CancelButtonProps={{ color: 'error' }}
-        ConfirmButtonProps={{ type: 'submit', form: FORM_ID }}
+        CancelButtonProps={{ color: 'error', disabled: busy }}
+        ConfirmButtonProps={{ type: 'submit', form: FORM_ID, disabled: busy }}
         maxWidth="xs"
         fullWidth
         persistent
       >
-        <AccountAddForm id={FORM_ID} close={handleCancel} />
+        <AccountAddForm id={FORM_ID} close={handleCancel} busy={busy} setBusy={setBusy} />
       </ConfirmDialog>
     </>
   )
@@ -44,11 +46,13 @@ export default function AccountActionAdd () {
 
 interface AccountAddFormProps {
   id: string
+  busy: boolean
+  setBusy: (busy: boolean) => void
   close?: () => void
 }
 
 function AccountAddForm (props: AccountAddFormProps) {
-  const { accounts, addAccount } = useStatefulSettings()
+  const { accounts, enkaNetwork, addAccount } = useStatefulSettings()
   const context = useForm<FormProps>()
 
   const handleGameDataDirAutoFind = useCallback(() => {
@@ -86,16 +90,20 @@ function AccountAddForm (props: AccountAddFormProps) {
 
   const handleSubmit = useCallback<SubmitHandler<FormProps>>((data) => {
     const uid = Number(data.uid)
+    if (uid < 1_0000_0000) {
+      context.setError('uid', { message: '请输入正确的 UID 值！' })
+      return
+    }
     if (accounts[uid]) {
       context.setError('uid', { message: '该账号已存在！' })
       return
     }
 
-    // TODO: optimize
-    (async () => {
-      try {
-        const playerInfo = await Commands.thirdPartyEnkaNetworkFetchPlayerInfo({ uid })
-        await addAccount({
+    props.setBusy(true)
+    const accountPromise = enkaNetwork
+      ? Commands
+        .thirdPartyEnkaNetworkFetchPlayerInfo({ uid })
+        .then((playerInfo) => ({
           uid,
           level: playerInfo.level,
           avatarId: playerInfo.profilePicture.avatarId,
@@ -103,17 +111,21 @@ function AccountAddForm (props: AccountAddFormProps) {
           signature: playerInfo.signature,
           nameCardId: playerInfo.nameCardId,
           gameDataDir: data.gameDataDir
-        })
-        props.close?.()
-      } catch (error) {
+        } as Account))
+      : Promise.resolve({ uid, gameDataDir: data.gameDataDir } as Account)
+
+    accountPromise
+      .then((account) => addAccount(account))
+      .then(() => props.close?.())
+      .catch((error) => {
         context.setError('uid', {
           message: error instanceof Error || typeof error === 'object'
             ? (error as Error).message
             : error as string
         })
-      }
-    })()
-  }, [accounts, props.close])
+      })
+      .finally(() => props.setBusy(false))
+  }, [accounts, enkaNetwork, addAccount, props])
 
   return (
     <FormContainer formContext={context} onSuccess={handleSubmit} FormProps={{
@@ -136,6 +148,7 @@ function AccountAddForm (props: AccountAddFormProps) {
             </InputAdornment>
           )
         }}
+        disabled={props.busy}
         fullWidth
         required
       />
@@ -151,6 +164,7 @@ function AccountAddForm (props: AccountAddFormProps) {
             </InputAdornment>
           )
         }}
+        disabled={props.busy}
         minRows={2}
         multiline
         fullWidth
@@ -161,12 +175,14 @@ function AccountAddForm (props: AccountAddFormProps) {
           startIcon={<GpsFixedIcon />}
           sx={{ marginRight: 1 }}
           onClick={handleGameDataDirAutoFind}
+          disabled={props.busy}
         >
           自动查找
         </Button>
         <Button variant="outlined" size="small" color="success"
           startIcon={<PanToolAltIcon />}
           onClick={handleGameDataDirManualOpen}
+          disabled={props.busy}
         >
           手动选择
         </Button>
