@@ -104,7 +104,7 @@ function AccountListItemActionRefresh (props: AccountListItemProps) {
       PopperProps={{ modifiers: [{ name: 'offset', options: { offset: [0, -8] } }] }}
       placement="bottom-end"
     >
-      <Box sx={{ alignSelf: 'start', marginY: 'auto', cursor: 'not-allowed' }}>
+      <Box sx={{ alignSelf: 'start', marginY: 'auto', cursor: !enkaNetwork ? 'not-allowed' : 'default' }}>
         <IconButton
           size="small"
           color="default"
