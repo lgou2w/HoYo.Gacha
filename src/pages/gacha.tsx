@@ -87,7 +87,7 @@ export default function PageGacha () {
       {query.data && {
         0: <GachaTabOverview account={selectedAccount} data={query.data} />,
         1: <GachaTabData data={query.data} />,
-        2: <GachaTabChart />
+        2: <GachaTabChart data={query.data} />
       }[tab]}
     </Page>
   )
