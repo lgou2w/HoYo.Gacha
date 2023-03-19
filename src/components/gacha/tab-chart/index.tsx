@@ -1,10 +1,18 @@
 import React from 'react'
-import Box from '@mui/material/Box'
+import Stack from '@mui/material/Stack'
+import GachaTabChartCalendar from './chart-calendar'
+import GachaTabChartPie from './chart-pie'
+import { GroupedGachaLogs } from '@/hooks/useGachaLogsQuery'
 
-export interface GachaTabChartProps {}
+export interface GachaTabChartProps {
+  data: GroupedGachaLogs
+}
 
 export default function GachaTabChart (props: GachaTabChartProps) {
   return (
-    <Box>Chart</Box>
+    <Stack gap={2}>
+      <GachaTabChartCalendar data={props.data} />
+      <GachaTabChartPie data={props.data} />
+    </Stack>
   )
 }
