@@ -52,11 +52,17 @@ jobs:
       - name: Build Tauri app
         run: pnpm tauri build
 
+      - name: Get version information
+        id: extract_version
+        run: |
+          echo "version=$(pnpm pkg get version | tr -d \")" >> $GITHUB_OUTPUT
+          echo "commit=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
         with:
           retention-days: 3
-          name: ${{ matrix.build_name }}
+          name: ${{ github.event.repository.name }}-${{ steps.extract_version.outputs.version }}-${{ steps.extract_version.outputs.commit }}-${{ matrix.build_name }}
           path: |
             target/release/*.exe
             target/release/bundle/msi/*.msi
