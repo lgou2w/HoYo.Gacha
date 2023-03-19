@@ -8,6 +8,7 @@ specifiers:
   '@mui/material': ^5.11.13
   '@mui/system': ^5.11.13
   '@mui/x-date-pickers': ^5.0.20
+  '@nivo/calendar': ^0.80.0
   '@nivo/core': ^0.80.0
   '@nivo/pie': ^0.80.0
   '@nivo/tooltip': ^0.80.0
@@ -46,6 +47,7 @@ dependencies:
   '@mui/material': 5.11.13_xqeqsl5kvjjtyxwyi3jhw3yuli
   '@mui/system': 5.11.13_d2lgyfpecxdc2bsiwyag5wf7ti
   '@mui/x-date-pickers': 5.0.20_7ymirhm2rbfblsj3duwoeptz7u
+  '@nivo/calendar': 0.80.0_6zomopewppbkd5eeu2nbbcio3i
   '@nivo/core': 0.80.0_g5kln477lwx3caqucf3exzf3du
   '@nivo/pie': 0.80.0_6zomopewppbkd5eeu2nbbcio3i
   '@nivo/tooltip': 0.80.0_wyuiu3ihipn7hpncy62nqhyrji
@@ -1009,6 +1011,25 @@ packages:
       - react-dom
     dev: false
 
+  /@nivo/calendar/0.80.0_6zomopewppbkd5eeu2nbbcio3i:
+    resolution: {integrity: sha512-UfBnfzdQs9tZz/APH8DqYnGBraqovyUr6S5zxKI0T+LX5RV9p7uEcz1mBIlbvwFudMWuuXBB6Jc7pqmwnn2ZpQ==}
+    peerDependencies:
+      '@nivo/core': 0.80.0
+      react: '>= 16.14.0 < 19.0.0'
+    dependencies:
+      '@nivo/core': 0.80.0_g5kln477lwx3caqucf3exzf3du
+      '@nivo/legends': 0.80.0_lqef3llyjlhcb4sprl3jwpzupa
+      '@nivo/tooltip': 0.80.0_wyuiu3ihipn7hpncy62nqhyrji
+      d3-scale: 3.3.0
+      d3-time: 1.1.0
+      d3-time-format: 3.0.0
+      lodash: 4.17.21
+      react: 18.2.0
+    transitivePeerDependencies:
+      - prop-types
+      - react-dom
+    dev: false
+
   /@nivo/colors/0.80.0_lqef3llyjlhcb4sprl3jwpzupa:
     resolution: {integrity: sha512-T695Zr411FU4RPo7WDINOAn8f79DPP10SFJmDdEqELE+cbzYVTpXqLGZ7JMv88ko7EOf9qxLQgcBqY69rp9tHQ==}
     peerDependencies:
@@ -1825,6 +1846,10 @@ packages:
     resolution: {integrity: sha512-UXJh6EKsHBTjopVqZBhFysQcoXSv/5yLONZvkQ5Kk3qbwiUYkdX17Xa1PT6U1ZWXGGfB1ey5L8dKMlFq2DO0Ag==}
     dependencies:
       d3-time: 2.1.1
+    dev: false
+
+  /d3-time/1.1.0:
+    resolution: {integrity: sha512-Xh0isrZ5rPYYdqhAVk8VLnMEidhz5aP7htAADH6MfzgmmicPkTo8LhkLxci61/lCB7n7UmE3bN0leRt+qvkLxA==}
     dev: false
 
   /d3-time/2.1.1:

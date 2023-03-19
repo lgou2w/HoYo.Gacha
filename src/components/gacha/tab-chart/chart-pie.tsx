@@ -71,10 +71,7 @@ export default function GachaTabChartPie (props: GachaTabChartPieProps) {
 const PieProps: Partial<PieSvgProps<unknown>> = {
   theme: {
     fontFamily: 'inherit',
-    fontSize: 14,
-    tooltip: {
-      basic: { fontSize: 12 }
-    }
+    fontSize: 14
   },
   margin: { top: 36, right: 36, bottom: 60, left: 36 },
   fill: [{ id: 'lines', match: '*' }],
@@ -102,7 +99,6 @@ const PieProps: Partial<PieSvgProps<unknown>> = {
     }
   ],
   activeOuterRadiusOffset: 4,
-  // arcLabelsTextColor: { from: 'color', modifiers: [['darker', 2]] },
   arcLinkLabelsColor: { from: 'color' },
   arcLinkLabelsThickness: 2,
   borderColor: { from: 'color' },

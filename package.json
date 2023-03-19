@@ -28,6 +28,7 @@
     "@mui/material": "^5.11.13",
     "@mui/system": "^5.11.13",
     "@mui/x-date-pickers": "^5.0.20",
+    "@nivo/calendar": "^0.80.0",
     "@nivo/core": "^0.80.0",
     "@nivo/pie": "^0.80.0",
     "@nivo/tooltip": "^0.80.0",
