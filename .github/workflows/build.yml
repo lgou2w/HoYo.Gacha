@@ -46,23 +46,32 @@ jobs:
           node-version: 18
           cache: pnpm
 
+      - name: Get version information
+        id: extract_version
+        run: |
+          version=$(pnpm pkg get version | tr -d \")
+          commit=$(git rev-parse --short HEAD)
+          if git rev-parse --verify "refs/tags/$version" >/dev/null 2>&1; then
+            suffix=-
+          else
+            suffix=-Beta
+          fi
+          echo "version=$version" >> $GITHUB_OUTPUT
+          echo "suffix=$suffix" >> $GITHUB_OUTPUT
+          echo "commit=$commit" >> $GITHUB_OUTPUT
+          echo "combined=$version$suffix-$commit" >> $GITHUB_OUTPUT
+
       - name: Install app dependencies
         run: pnpm install
 
       - name: Build Tauri app
         run: pnpm tauri build
 
-      - name: Get version information
-        id: extract_version
-        run: |
-          echo "version=$(pnpm pkg get version | tr -d \")" >> $GITHUB_OUTPUT
-          echo "commit=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
-
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
         with:
           retention-days: 3
-          name: ${{ github.event.repository.name }}-${{ steps.extract_version.outputs.version }}-${{ steps.extract_version.outputs.commit }}-${{ matrix.build_name }}
+          name: ${{ github.event.repository.name }}-${{ steps.extract_version.outputs.combined }}-${{ matrix.build_name }}
           path: |
             target/release/*.exe
             target/release/bundle/msi/*.msi
