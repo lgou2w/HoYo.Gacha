@@ -1,5 +1,11 @@
 {
   "editor.tabSize": 2,
   "rust-analyzer.check.command": "clippy",
-  "typescript.tsdk": "node_modules\\typescript\\lib"
+  "typescript.tsdk": "node_modules\\typescript\\lib",
+  "json.schemas": [
+    {
+      "fileMatch": ["/src-tauri/tauri.conf.json"],
+      "url": "https://esm.sh/@tauri-apps/cli/schema.json"
+    }
+  ]
 }
