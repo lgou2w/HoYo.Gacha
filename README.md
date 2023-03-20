@@ -39,7 +39,7 @@ TODO：Refactoring
 
 ## 协议
 
-MIT OR Apache-2.0 **仅供个人非商业使用授权**
+MIT OR Apache-2.0 **仅供个人学习交流使用。请勿用于任何商业或违法违规用途。**
 
 ### 部分资源文件
 
