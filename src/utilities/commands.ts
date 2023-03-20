@@ -18,7 +18,9 @@ const Commands = Object.freeze({
   findGachaLogsByUID: declareInvocableCommand<GachaLogItem[]>('cmd_find_gacha_logs_by_uid'),
   exportGachaLogsByUID: declareInvocableCommand<string>('cmd_export_gacha_logs_by_uid'),
   importGachaLogsByUID: declareInvocableCommand<number>('cmd_import_gacha_logs_by_uid'),
-  thirdPartyEnkaNetworkFetchPlayerInfo: declareInvocableCommand<EnkaNetworkPlayerInfo>('cmd_third_party_enka_network_fetch_player_info')
+  thirdPartyEnkaNetworkFetchPlayerInfo: declareInvocableCommand<EnkaNetworkPlayerInfo>('cmd_third_party_enka_network_fetch_player_info'),
+  open: declareInvocableCommand<void>('cmd_open'),
+  openAppDataDir: declareInvocableCommand<void>('cmd_open_app_data_dir')
 })
 
 export default Commands

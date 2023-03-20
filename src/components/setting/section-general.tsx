@@ -4,13 +4,12 @@ import Stack from '@mui/material/Stack'
 import Typography from '@mui/material/Typography'
 import Button from '@mui/material/Button'
 import StorageIcon from '@mui/icons-material/Storage'
-import { path, shell } from '@tauri-apps/api'
+import Commands from '@/utilities/commands'
 
 export default function SettingSectionGeneral () {
   const handleOpenDataDir = useCallback(() => {
-    path
-      .appDataDir()
-      .then((dataDir) => shell.open(dataDir))
+    Commands
+      .openAppDataDir()
       .catch(console.error)
   }, [])
 

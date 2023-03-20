@@ -14,8 +14,7 @@
       "all": false,
       "clipboard": { "all": true },
       "dialog": { "all": true },
-      "path": { "all": true },
-      "shell": { "all": true }
+      "path": { "all": true }
     },
     "bundle": {
       "active": true,
