@@ -5,7 +5,7 @@ import AvatarAether from '@/assets/images/UI_AvatarIcon_PlayerBoy.png'
 import { getGenshinAvatarIconUrlById } from '@/interfaces/genshin-icons'
 
 export interface AccountAvatarProps {
-  avatarId?: number
+  avatarId?: number | null
   width?: string | number
   height?: string | number
 }

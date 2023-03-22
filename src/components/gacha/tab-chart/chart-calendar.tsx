@@ -32,7 +32,7 @@ export default function GachaTabChartCalendar (props: GachaTabChartCalendarProps
 
   return (
     <Stack gap={2}>
-      <Typography variant="h6" gutterBottom>❖ 日历</Typography>
+      <Typography variant="h6" gutterBottom>❖ 祈愿日历</Typography>
       <Box position="relative" width="100%" height={200} sx={{ overflowX: 'clip', overflowY: 'visible' }}>
         <Stack position="absolute" fontSize={14} lineHeight="16px" gap="0.6px" left={8}>
           {['周日', '周一', '周二', '周三', '周四', '周五', '周六'].map((text, index) => (

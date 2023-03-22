@@ -13,24 +13,35 @@ export interface ConfirmDialogProps {
   title?: React.ReactNode
   onCancel?: React.MouseEventHandler<HTMLButtonElement>
   onConfirm?: React.MouseEventHandler<HTMLButtonElement>
+  PaperProps?: DialogProps['PaperProps']
   ContentProps?: DialogContentProps
   CancelButtonProps?: Omit<ButtonProps, 'onClick'>
   ConfirmButtonProps?: Omit<ButtonProps, 'onClick'>
 }
 
 export default function ConfirmDialog (props: PropsWithChildren<ConfirmDialogProps>) {
+  const {
+    open, persistent, maxWidth, fullWidth, title, onCancel, onConfirm,
+    PaperProps, ContentProps, CancelButtonProps, ConfirmButtonProps,
+    children
+  } = props
+
+  const { children: CancelButtonNode, ...restCancelButtonProps } = CancelButtonProps || {}
+  const { children: ConfirmButtonNode, ...restConfirmButtonProps } = ConfirmButtonProps || {}
+
   return (
-    <Dialog open={props.open}
-      onClose={!props.persistent ? props.onCancel : undefined}
-      maxWidth={props.maxWidth}
-      fullWidth={props.fullWidth}
+    <Dialog open={open}
+      onClose={!persistent ? onCancel : undefined}
+      maxWidth={maxWidth}
+      fullWidth={fullWidth}
+      PaperProps={PaperProps}
       disableEscapeKeyDown
     >
-      <DialogTitle>{props.title}</DialogTitle>
-      <DialogContent {...props.ContentProps}>{props.children}</DialogContent>
+      <DialogTitle>{title}</DialogTitle>
+      <DialogContent {...ContentProps}>{children}</DialogContent>
       <DialogActions>
-        <Button onClick={props.onCancel} {...props.CancelButtonProps}>取消</Button>
-        <Button onClick={props.onConfirm} {...props.ConfirmButtonProps}>确认</Button>
+        <Button onClick={onCancel} {...restCancelButtonProps}>{CancelButtonNode || '取消'}</Button>
+        <Button onClick={onConfirm} {...restConfirmButtonProps}>{ConfirmButtonNode || '确认'}</Button>
       </DialogActions>
     </Dialog>
   )

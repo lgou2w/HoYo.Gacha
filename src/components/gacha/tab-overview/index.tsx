@@ -10,22 +10,23 @@ import dayjs from '@/utilities/dayjs'
 export interface GachaTabOverviewProps {
   account: Account
   data: GroupedGachaLogs
+  shared?: boolean
 }
 
 export default function GachaTabOverview (props: GachaTabOverviewProps) {
-  const { account, data: { namedValues, total, firstTime, lastTime } } = props
+  const { account, data: { namedValues, total, firstTime, lastTime }, shared } = props
   return (
     <Stack gap={2}>
-      <Typography variant="subtitle2" color="grey.600">
+      {!shared && <Typography variant="subtitle2" color="grey.600">
         <Typography component="span" variant="inherit">最近祈愿记录更新日期：</Typography>
         <Typography component="span" variant="inherit">
           {account.lastGachaUpdated
             ? dayjs(account.lastGachaUpdated).format('llll')
             : '无'}
         </Typography>
-      </Typography>
+      </Typography>}
       <GachaTabOverviewGridCards values={namedValues} />
-      <GachaTabOverviewTooltips total={total} firstTime={firstTime} lastTime={lastTime} />
+      <GachaTabOverviewTooltips total={total} firstTime={firstTime} lastTime={lastTime} shared />
     </Stack>
   )
 }

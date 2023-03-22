@@ -16,6 +16,7 @@ specifiers:
   '@tanstack/react-query-devtools': ^4.27.0
   '@tauri-apps/api': ^1.2.0
   '@tauri-apps/cli': ^1.2.3
+  '@types/dom-to-image': ^2.6.4
   '@types/node': ^18.15.3
   '@types/react': ^18.0.28
   '@types/react-dom': ^18.0.11
@@ -24,6 +25,7 @@ specifiers:
   '@vitejs/plugin-react': ^3.1.0
   cross-env: ^7.0.3
   dayjs: ^1.11.7
+  dom-to-image: ^2.6.0
   eslint: ^8.36.0
   eslint-config-standard: ^17.0.0
   eslint-plugin-import: ^2.27.5
@@ -55,6 +57,7 @@ dependencies:
   '@tanstack/react-query-devtools': 4.27.0_afol4acuzfd3u4ta37ddqdpntu
   '@tauri-apps/api': 1.2.0
   dayjs: 1.11.7
+  dom-to-image: 2.6.0
   prop-types: 15.8.1
   react: 18.2.0
   react-dom: 18.2.0_react@18.2.0
@@ -66,6 +69,7 @@ dependencies:
 devDependencies:
   '@babel/core': 7.21.3
   '@tauri-apps/cli': 1.2.3
+  '@types/dom-to-image': 2.6.4
   '@types/node': 18.15.3
   '@types/react': 18.0.28
   '@types/react-dom': 18.0.11
@@ -1351,6 +1355,10 @@ packages:
       '@tauri-apps/cli-win32-x64-msvc': 1.2.3
     dev: true
 
+  /@types/dom-to-image/2.6.4:
+    resolution: {integrity: sha512-UddUdGF1qulrSDulkz3K2Ypq527MR6ixlgAzqLbxSiQ0icx0XDlIV+h4+edmjq/1dqn0KgN0xGSe1kI9t+vGuw==}
+    dev: true
+
   /@types/json-schema/7.0.11:
     resolution: {integrity: sha512-wOuvG1SN4Us4rez+tylwwwCV1psiNVOkJeM3AUWUNWg/jDQY2+HE/444y5gc+jBmRqASOm2Oeh5c1axHobwRKQ==}
     dev: true
@@ -1923,6 +1931,10 @@ packages:
     dependencies:
       '@babel/runtime': 7.21.0
       csstype: 3.1.1
+    dev: false
+
+  /dom-to-image/2.6.0:
+    resolution: {integrity: sha512-Dt0QdaHmLpjURjU7Tnu3AgYSF2LuOmksSGsUcE6ItvJoCWTBEmiMXcqBdNSAm9+QbbwD7JMoVsuuKX6ZVQv1qA==}
     dev: false
 
   /electron-to-chromium/1.4.333:

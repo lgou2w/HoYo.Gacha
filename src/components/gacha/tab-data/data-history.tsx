@@ -15,7 +15,7 @@ export default function GachaTabDataHistory (props: GachaTabDataHistoryProps) {
   const { values: { character, weapon, permanent } } = props
   return (
     <Box className={GachaTabDataHistoryCls} sx={GachaTabDataHistorySx}>
-      <Typography variant="h6" gutterBottom>❖ 五星历史记录</Typography>
+      <Typography variant="h6" gutterBottom>❖ 五星历史</Typography>
       <Stack flexDirection="column" gap={2}>
         <GachaTabDataHistoryList data={character} />
         <GachaTabDataHistoryList data={weapon} />

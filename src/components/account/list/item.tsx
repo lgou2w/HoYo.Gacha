@@ -18,7 +18,7 @@ import { getNameCardUrl } from '@/interfaces/enka-network'
 
 export interface AccountListItemProps {
   account: Account
-  selected: boolean
+  selected?: boolean
   onSelect?: React.MouseEventHandler<HTMLButtonElement>
   onPreRefresh?: React.MouseEventHandler<HTMLButtonElement>
   onPreRemove?: React.MouseEventHandler<HTMLButtonElement>
@@ -37,7 +37,7 @@ export default function AccountListItem (props: AccountListItemProps) {
   )
 }
 
-function AccountListItemContent (props: AccountListItemProps) {
+export function AccountListItemContent (props: AccountListItemProps) {
   const { account, selected, onSelect } = props
   const nameCardUrl = props.enkaNetwork &&
     props.account.nameCardId &&
@@ -71,9 +71,15 @@ function AccountListItemContent (props: AccountListItemProps) {
             {account.displayName || '旅行者'}
           </Typography>
         </>}
-        primaryTypographyProps={{ component: 'div', noWrap: true, color: selected ? 'primary' : 'default' }}
+        primaryTypographyProps={{ component: 'div', noWrap: true, color: selected ? 'primary' : 'inherit' }}
         secondary={account.uid}
-        secondaryTypographyProps={{ color: selected ? 'primary' : 'default' }}
+        secondaryTypographyProps={{
+          color: selected ? 'primary' : 'inherit',
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore
+          'data-uid': String(account.uid),
+          'data-uid-with-mask': String(account.uid).substring(0, 3).padEnd(11, '*')
+        }}
         sx={{ maxWidth: 180 }}
       />
       <Typography

@@ -62,33 +62,41 @@ export default function PageGacha () {
   return (
     <Page>
       <GachaAlert data={alert} onClose={() => setAlert(undefined)} />
-      <GachaActionsBar
-        urlProps={{
-          account: selectedAccount,
-          onAction: handleAction
-        }}
-        fetchProps={{
-          account: selectedAccount,
-          onAction: handleAction,
-          updateAccount,
-          fetcherChannelTypesArguments: query.data?.fetcherChannelTypeArguments
-        }}
-        tabsProps={{
-          tabs: ['总览', '数据', '统计'],
-          value: tab,
-          onChange: (_, newValue) => setTab(newValue)
-        }}
-        extProps={{
-          account: selectedAccount,
-          onAction: handleAction
-        }}
-      />
       {query.isLoading && <Typography variant="body2">数据加载中...</Typography>}
-      {query.data && {
-        0: <GachaTabOverview account={selectedAccount} data={query.data} />,
-        1: <GachaTabData data={query.data} />,
-        2: <GachaTabChart data={query.data} />
-      }[tab]}
+      {query.data && (
+        <>
+        <GachaActionsBar
+          urlProps={{
+            account: selectedAccount,
+            onAction: handleAction
+          }}
+          fetchProps={{
+            account: selectedAccount,
+            onAction: handleAction,
+            updateAccount,
+            fetcherChannelTypesArguments: query.data.fetcherChannelTypeArguments
+          }}
+          tabsProps={{
+            tabs: ['总览', '数据', '统计'],
+            value: tab,
+            onChange: (_, newValue) => setTab(newValue)
+          }}
+          extProps={{
+            account: selectedAccount,
+            onAction: handleAction
+          }}
+          extShareProps={{
+            account: selectedAccount,
+            data: query.data
+          }}
+        />
+        {{
+          0: <GachaTabOverview account={selectedAccount} data={query.data} />,
+          1: <GachaTabData data={query.data} />,
+          2: <GachaTabChart data={query.data} />
+        }[tab]}
+        </>
+      )}
     </Page>
   )
 }

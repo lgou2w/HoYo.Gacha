@@ -23,7 +23,7 @@ export default function GachaTabChartPie (props: GachaTabChartPieProps) {
 
   return (
     <Stack gap={2}>
-      <Typography variant="h6" gutterBottom>❖ 饼图</Typography>
+      <Typography variant="h6" gutterBottom>❖ 多维饼图</Typography>
       <Grid container>
         <Grid sm={4} item>
           <Box width="100%" height={256}>

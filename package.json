@@ -36,6 +36,7 @@
     "@tanstack/react-query-devtools": "^4.27.0",
     "@tauri-apps/api": "^1.2.0",
     "dayjs": "^1.11.7",
+    "dom-to-image": "^2.6.0",
     "prop-types": "^15.8.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
@@ -47,6 +48,7 @@
   "devDependencies": {
     "@babel/core": "^7.21.3",
     "@tauri-apps/cli": "^1.2.3",
+    "@types/dom-to-image": "^2.6.4",
     "@types/node": "^18.15.3",
     "@types/react": "^18.0.28",
     "@types/react-dom": "^18.0.11",
