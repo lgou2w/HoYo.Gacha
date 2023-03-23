@@ -51,13 +51,20 @@ export default function GachaActionExtShare (props: GachaActionExtShareProps) {
         return navigator.clipboard.write([item])
       })
       .then(() => { setAlert({ severity: 'success', message: '祈愿分享已复制到剪切板！' }) })
-      .catch((err) => { setAlert({ severity: 'error', message: err }) })
+      .catch((err) => {
+        let message: string = err?.message || err
+        if (err instanceof DOMException && /focus/i.test(message)) {
+          message = '复制到剪切板失败！请在点击“创建分享”后确保应用窗口处于焦点状态。'
+        }
+        setAlert({ severity: 'error', message })
+      })
       .finally(() => { setBusy(false) })
   }, [elRef, setBusy, setAlert])
 
   useEffect(() => {
     if (alert) {
-      const timer = setTimeout(() => { setAlert(undefined) }, 5000)
+      const ms = alert.severity === 'error' ? 10000 : 5000
+      const timer = setTimeout(() => { setAlert(undefined) }, ms)
       return () => { clearTimeout(timer) }
     }
   }, [alert, setAlert])
