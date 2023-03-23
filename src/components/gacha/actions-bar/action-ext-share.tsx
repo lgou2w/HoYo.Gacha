@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import Box from '@mui/material/Box'
 import Stack from '@mui/material/Stack'
 import Typography from '@mui/material/Typography'
@@ -6,7 +6,9 @@ import IconButton from '@mui/material/IconButton'
 import Tooltip from '@mui/material/Tooltip'
 import FormControlLabel from '@mui/material/FormControlLabel'
 import Switch from '@mui/material/Switch'
+import Alert from '@mui/material/Alert'
 import AddAPhotoIcon from '@mui/icons-material/AddAPhoto'
+import ExternalLink from '@/components/common/external-link'
 import ConfirmDialog from '@/components/common/confirm-dialog'
 import { AccountListItemContent } from '@/components/account/list/item'
 import GachaTabOverview from '@/components/gacha/tab-overview'
@@ -15,6 +17,7 @@ import GachaTabChart from '@/components/gacha/tab-chart'
 import { Account } from '@/interfaces/settings'
 import { GroupedGachaLogs } from '@/hooks/useGachaLogsQuery'
 import useStatefulSettings from '@/hooks/useStatefulSettings'
+import dayjs from '@/utilities/dayjs'
 import DomToImage from 'dom-to-image'
 
 export interface GachaActionExtShareProps {
@@ -28,6 +31,7 @@ export default function GachaActionExtShare (props: GachaActionExtShareProps) {
   const [open, setOpen] = useState(false)
   const [busy, setBusy] = useState(false)
   const [hiddenUid, setHiddenUid] = useState(false)
+  const [alert, setAlert] = useState<{ severity: 'success' | 'error', message: string } | undefined>()
   const elRef = React.createRef<HTMLDivElement>()
   const handleClick = () => { setOpen(true) }
   const handleCancel = () => { setOpen(false) }
@@ -46,16 +50,17 @@ export default function GachaActionExtShare (props: GachaActionExtShareProps) {
         const item = new ClipboardItem({ 'image/png': blob })
         return navigator.clipboard.write([item])
       })
-      .then(() => {
-        // TODO: alert
-        console.log('ok')
-      })
-      .catch((err) => {
-        // TODO: error handling
-        console.error(err)
-      })
+      .then(() => { setAlert({ severity: 'success', message: '祈愿分享已复制到剪切板！' }) })
+      .catch((err) => { setAlert({ severity: 'error', message: err }) })
       .finally(() => { setBusy(false) })
-  }, [elRef, setBusy])
+  }, [elRef, setBusy, setAlert])
+
+  useEffect(() => {
+    if (alert) {
+      const timer = setTimeout(() => { setAlert(undefined) }, 5000)
+      return () => { clearTimeout(timer) }
+    }
+  }, [alert, setAlert])
 
   return (
     <Box>
@@ -70,6 +75,11 @@ export default function GachaActionExtShare (props: GachaActionExtShareProps) {
         title={
           <Stack flexDirection="row" alignItems="center">
             <Typography variant="h6">分享祈愿</Typography>
+            {alert && <Alert
+              severity={alert.severity}
+              onClose={() => setAlert(undefined)}
+              sx={{ marginLeft: 4 }}
+            >{alert.message}</Alert>}
             <Box marginLeft="auto">
               <FormControlLabel
                 label="隐藏 UID"
@@ -124,6 +134,11 @@ export default function GachaActionExtShare (props: GachaActionExtShareProps) {
           <GachaTabOverview account={account} data={data} shared />
           <GachaTabData data={data} />
           <GachaTabChart data={data} />
+          <Box textAlign="right" fontSize="0.5rem">
+            <Typography variant="inherit">祈愿分享生成于：{dayjs().format('llll')}</Typography>
+            <ExternalLink href="https://github.com/lgou2w/genshin-gacha" />
+            <Typography variant="inherit">Powered by Genshin Gacha v{__APP_VERSION__}</Typography>
+          </Box>
         </Stack>
       </ConfirmDialog>
     </Box>
