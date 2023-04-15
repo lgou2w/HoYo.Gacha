@@ -54,7 +54,11 @@ export const StatefulSettingsProvider = (props: PropsWithChildren) => {
     const [newAccounts, updatedAccount] = await store.updateAccount(uid, updated)
     console.debug('Account has been updated:', updatedAccount)
     setAccounts(newAccounts)
-    setSelectedAccount(updatedAccount)
+    setSelectedAccount((prev) => (
+      prev && prev.uid === updatedAccount.uid
+        ? updatedAccount
+        : prev
+    ))
     return [newAccounts, updatedAccount]
   }, [store, setAccounts, setSelectedAccount])
 
