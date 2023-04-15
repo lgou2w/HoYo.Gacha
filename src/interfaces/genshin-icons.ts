@@ -71,7 +71,9 @@ export const GenshinCharacterIcons: GenshinIcons = {
     瑶瑶: ['UI_AvatarIcon_Yaoyao', 10000077],
     艾尔海森: ['UI_AvatarIcon_Alhatham', 10000078], // HACK: Alhaitham -> Alhatham
     迪希雅: ['UI_AvatarIcon_Dehya', 10000079],
-    米卡: ['UI_AvatarIcon_Mika', 10000080]
+    米卡: ['UI_AvatarIcon_Mika', 10000080],
+    卡维: ['UI_AvatarIcon_Kaveh', 10000081],
+    白术: ['UI_AvatarIcon_Baizhuer', 10000082]
   }
 }
 
@@ -210,6 +212,7 @@ export const GenshinEquipIcons: GenshinIcons = {
     神乐之真意: 'UI_EquipIcon_Catalyst_Narukami',
     千夜浮梦: 'UI_EquipIcon_Catalyst_Ayus',
     图莱杜拉的回忆: 'UI_EquipIcon_Catalyst_Alaya',
+    碧落之珑: 'UI_EquipIcon_Catalyst_Morax',
     猎弓: 'UI_EquipIcon_Bow_Hunters',
     历练的猎弓: 'UI_EquipIcon_Bow_Old',
     鸦羽弓: 'UI_EquipIcon_Bow_Crowfeather',

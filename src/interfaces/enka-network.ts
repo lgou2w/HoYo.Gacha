@@ -148,7 +148,14 @@ export const NameCards: Record<number, string> = {
   210151: 'UI_NameCardPic_Xm3_Alpha',
   210152: 'UI_NameCardPic_Dehya_Alpha',
   210153: 'UI_NameCardPic_Mika_Alpha',
-  210154: 'UI_NameCardPic_Bp22_P_Alpha'
+  210154: 'UI_NameCardPic_Bp22_P_Alpha',
+  210155: 'UI_NameCardPic_Baizhuer_Alpha',
+  210156: 'UI_NameCardPic_Kaveh_Alpha',
+  210157: 'UI_NameCardPic_Xm4_Alpha',
+  210158: 'UI_NameCardPic_Tzz7_Alpha',
+  210159: 'UI_NameCardPic_Vasara_Alpha',
+  210160: 'UI_NameCardPic_OfferingPari_Alpha',
+  210161: 'UI_NameCardPic_Bp23_Alpha'
 }
 
 export function getNameCardUrl (id: number): string | undefined {
