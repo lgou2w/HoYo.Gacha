@@ -3,7 +3,7 @@ import { GenshinGachaRecord, StarRailGachaRecord } from '@/interfaces/gacha'
 
 export enum GachaFacet {
   Genshin = 'genshin',
-  StarRail = 'starrail'
+  StarRail = 'star_rail'
 }
 
 export async function findGachaRecords (

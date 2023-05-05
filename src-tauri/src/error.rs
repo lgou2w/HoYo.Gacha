@@ -32,7 +32,7 @@ pub enum Error {
   },
 
   #[allow(unused)]
-  #[error("Invalid Gacha Url")]
+  #[error("Gacha record fetcher channel send error")]
   GachaRecordFetcherChannelSend
 }
 
