@@ -6,8 +6,8 @@
     "distDir": "../dist"
   },
   "package": {
-    "productName": "Genshin Gacha",
-    "version": "0.2.0"
+    "productName": "HoYo.Gacha",
+    "version": "0.3.0"
   },
   "tauri": {
     "allowlist": {
@@ -31,8 +31,8 @@
         "icons/icon.icns",
         "icons/icon.ico"
       ],
-      "identifier": "com.lgou2w.genshin.gacha",
-      "longDescription": "Manage and analyze your Genshin Impact gacha logs",
+      "identifier": "com.lgou2w.hoyo.gacha",
+      "longDescription": "An unofficial tool for managing and analyzing your miHoYo gacha records",
       "macOS": {
         "entitlements": null,
         "exceptionDomain": "",
@@ -41,7 +41,7 @@
         "signingIdentity": null
       },
       "resources": [],
-      "shortDescription": "Manage and analyze your Genshin Impact gacha logs",
+      "shortDescription": "An unofficial tool for managing and analyzing your miHoYo gacha records",
       "targets": "all",
       "windows": {
         "certificateThumbprint": null,
@@ -64,7 +64,7 @@
         "height": 864,
         "resizable": true,
         "center": true,
-        "title": "Genshin Gacha",
+        "title": "HoYo.Gacha",
         "width": 1152
       }
     ]

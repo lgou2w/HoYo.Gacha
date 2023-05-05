@@ -1,6 +1,11 @@
 {
   "editor.tabSize": 2,
   "rust-analyzer.check.command": "clippy",
+  "rust-analyzer.diagnostics.enable": true,
+  "rust-analyzer.showUnlinkedFileNotification": false,
+  "rust-analyzer.linkedProjects": [
+    "src-tauri\\Cargo.toml"
+  ],
   "typescript.tsdk": "node_modules\\typescript\\lib",
   "json.schemas": [
     {

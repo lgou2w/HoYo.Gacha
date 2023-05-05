@@ -3,25 +3,23 @@
   windows_subsystem = "windows"
 )]
 
-extern crate env_logger;
 extern crate tauri;
-extern crate tauri_plugin_store;
+extern crate tracing;
+extern crate tracing_subscriber;
 
 mod disk_cache;
-mod core;
-mod genshin;
-mod third_party;
-mod errors;
-mod hooks;
-mod commands;
-mod utils;
+mod constants;
+mod error;
+mod gacha;
+mod storage;
 
 fn main() {
-  env_logger::init();
+  tracing_subscriber::fmt()
+    .with_max_level(tracing::Level::TRACE)
+    .init();
+
   tauri::Builder::default()
-    .plugin(tauri_plugin_store::Builder::default().build())
-    .setup(hooks::get_setup())
-    .invoke_handler(commands::get_handlers())
+    .plugin(storage::GachaStoragePluginBuilder::new().build())
     .run(tauri::generate_context!())
     .expect("error while running tauri application")
 }
