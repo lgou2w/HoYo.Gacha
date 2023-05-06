@@ -34,13 +34,14 @@ impl GameDataDirectoryFinder for GenshinGacha {
 
     const INTERNATIONAL_OUTPUT_LOG : &str = "Genshin Impact/output_log.txt";
     const INTERNATIONAL_DIR_KEYWORD: &str = "/GenshinImpact_Data/";
-    const CHINESE_OUTPUT_LOG       : &str = "原神/output_log.txt";
-    const CHINESE_DIR_KEYWORD      : &str = "/YuanShen_Data/";
 
     let mut output_log = mihoyo_dir.join(INTERNATIONAL_OUTPUT_LOG);
     if let Some(directory) = lookup_path_line_from_keyword(&output_log, INTERNATIONAL_DIR_KEYWORD)? {
       directories.push(directory);
     }
+
+    const CHINESE_OUTPUT_LOG       : &str = "原神/output_log.txt";
+    const CHINESE_DIR_KEYWORD      : &str = "/YuanShen_Data/";
 
     output_log = mihoyo_dir.join(CHINESE_OUTPUT_LOG);
     if let Some(directory) = lookup_path_line_from_keyword(&output_log, CHINESE_DIR_KEYWORD)? {

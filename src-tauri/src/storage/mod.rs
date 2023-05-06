@@ -1,10 +1,11 @@
 pub mod entity_genshin_gacha_record_legacy;
 pub mod entity_genshin_gacha_record;
 pub mod entity_starrail_gacha_record;
+pub mod entity_account;
 
-mod gacha;
+mod impl_storage;
 mod legacy_migration;
-pub(super) mod utilities;
+mod utilities;
 
-pub use gacha::*;
+pub use impl_storage::*;
 pub use legacy_migration::legacy_migration;

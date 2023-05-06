@@ -19,7 +19,13 @@ fn main() {
     .init();
 
   tauri::Builder::default()
-    .plugin(storage::GachaStoragePluginBuilder::new().build())
+    .plugin(storage::StoragePluginBuilder::new().build())
+    .setup(|app| {
+      use tauri::Manager;
+      #[cfg(debug_assertions)]
+      app.get_window("main").unwrap().open_devtools();
+      Ok(())
+    })
     .run(tauri::generate_context!())
     .expect("error while running tauri application")
 }

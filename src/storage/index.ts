@@ -3,7 +3,7 @@ import { GenshinGachaRecord, StarRailGachaRecord } from '@/interfaces/gacha'
 
 export enum GachaFacet {
   Genshin = 'genshin',
-  StarRail = 'star_rail'
+  StarRail = 'starrail'
 }
 
 export async function findGachaRecords (
@@ -24,7 +24,7 @@ export async function findGachaRecords (
   gachaType?: string,
   limit?: number
 ): Promise<Array<GenshinGachaRecord | StarRailGachaRecord>> {
-  return invoke(`plugin:storage-gacha|find_${facet}_gacha_records`, {
+  return invoke(`plugin:storage|find_${facet}_gacha_records`, {
     uid,
     gachaType,
     limit
@@ -46,8 +46,15 @@ export async function saveGachaRecords (
   uid: string,
   records: Array<GenshinGachaRecord | StarRailGachaRecord>
 ): Promise<number> {
-  return invoke(`plugin:storage-gacha|save_${facet}_gacha_records`, {
+  return invoke(`plugin:storage|save_${facet}_gacha_records`, {
     uid,
     records
   })
 }
+
+const Storage = Object.freeze({
+  findGachaRecords,
+  saveGachaRecords
+})
+
+export default Storage

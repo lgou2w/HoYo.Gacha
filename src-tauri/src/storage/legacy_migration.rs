@@ -9,13 +9,18 @@ use sea_orm::{ConnectOptions, Database, EntityTrait, TransactionTrait};
 use sea_orm::entity::ActiveValue;
 use sea_orm::sea_query::OnConflict;
 use tracing::debug;
-use super::entity_genshin_gacha_record_legacy::Entity as GenshinGachaRecordLegacyEntity;
-use super::entity_genshin_gacha_record_legacy::Model as GenshinGachaRecordLegacyModel;
-use super::entity_genshin_gacha_record::ActiveModel as GenshinGachaRecordActiveModel;
-use super::entity_genshin_gacha_record::Column as GenshinGachaRecordColumn;
-use super::entity_genshin_gacha_record::Entity as GenshinGachaRecordEntity;
-use super::GachaStorage;
+use super::entity_genshin_gacha_record_legacy::{
+  Entity as GenshinGachaRecordLegacyEntity,
+  Model as GenshinGachaRecordLegacyModel
+};
+use super::entity_genshin_gacha_record::{
+  ActiveModel as GenshinGachaRecordActiveModel,
+  Column as GenshinGachaRecordColumn,
+  Entity as GenshinGachaRecordEntity
+};
+use super::Storage;
 
+#[allow(unused)]
 pub async fn legacy_migration<P: AsRef<Path>>(
   legacy_database: P,
   destination_database: P
@@ -31,7 +36,7 @@ pub async fn legacy_migration<P: AsRef<Path>>(
     Database::connect(opts).await?
   };
 
-  let destination = GachaStorage::new_with_database_file(destination_database.as_ref()).await?;
+  let destination = Storage::new_with_database_file(destination_database.as_ref()).await?;
   destination.initialize().await?;
 
   debug!("Transaction started...");

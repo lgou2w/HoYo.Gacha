@@ -184,6 +184,18 @@ pub(super) fn lookup_mihoyo_dir() -> PathBuf {
   }
 }
 
+pub(super) fn lookup_cognosphere_dir() -> PathBuf {
+  if cfg!(windows) {
+    const VAR: &str = "USERPROFILE";
+    const SUBDIR: &str = "AppData/LocalLow/Cognosphere";
+    let user_profile = std::env::var(VAR).unwrap();
+    Path::new(&user_profile).join(SUBDIR)
+  } else {
+    // TODO: Other platforms
+    todo!()
+  }
+}
+
 pub(super) fn lookup_path_line_from_keyword<P: AsRef<Path>>(
   path: P,
   keyword: &str

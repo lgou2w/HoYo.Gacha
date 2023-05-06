@@ -18,6 +18,7 @@ use super::{
   GachaRecordFetcher,
   GachaRecordFetcherChannel,
   lookup_mihoyo_dir,
+  lookup_cognosphere_dir,
   lookup_path_line_from_keyword,
   lookup_gacha_urls_from_endpoint,
   fetch_gacha_records
@@ -30,13 +31,22 @@ pub struct StarRailGacha;
 
 impl GameDataDirectoryFinder for StarRailGacha {
   fn find_game_data_directories(&self) -> Result<Vec<PathBuf>> {
+    let cognosphere_dir = lookup_cognosphere_dir();
     let mihoyo_dir = lookup_mihoyo_dir();
     let mut directories = Vec::new();
+
+    const INTERNATIONAL_PLAYER_LOG : &str = "/Star Rail/Player.log";
+    const INTERNATIONAL_DIR_KEYWORD: &str = "/StarRail_Data/";
+
+    let mut player_log = cognosphere_dir.join(INTERNATIONAL_PLAYER_LOG);
+    if let Some(directory) = lookup_path_line_from_keyword(player_log, INTERNATIONAL_DIR_KEYWORD)? {
+      directories.push(directory);
+    }
 
     const CHINESE_PLAYER_LOG       : &str = "崩坏：星穹铁道/Player.log";
     const CHINESE_DIR_KEYWORD      : &str = "/StarRail_Data/";
 
-    let player_log = mihoyo_dir.join(CHINESE_PLAYER_LOG);
+    player_log = mihoyo_dir.join(CHINESE_PLAYER_LOG);
     if let Some(directory) = lookup_path_line_from_keyword(player_log, CHINESE_DIR_KEYWORD)? {
       directories.push(directory);
     }

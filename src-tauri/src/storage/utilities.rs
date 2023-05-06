@@ -1,7 +1,9 @@
 extern crate sea_orm;
+extern crate sqlx_core;
 
-use sea_orm::{ConnectionTrait, DatabaseConnection, DbBackend, DbErr, EntityTrait, Schema, StatementBuilder};
+use sea_orm::{ConnectionTrait, DatabaseConnection, DbBackend, DbErr, EntityTrait, RuntimeErr, Schema, StatementBuilder};
 use sea_orm::sea_query::{IndexCreateStatement, TableCreateStatement};
+use sqlx_core::error::Error as SqlxError;
 
 pub fn create_table_statement<E>(
   entity: E
@@ -46,4 +48,17 @@ where S: StatementBuilder {
     execute_statement(database, statement).await?;
   }
   Ok(())
+}
+
+#[allow(clippy::collapsible_match)]
+pub fn is_constraint_unique_err(err: &DbErr) -> bool {
+  match err {
+    DbErr::Exec(RuntimeErr::SqlxError(error)) => match error {
+      SqlxError::Database(db_err) => db_err
+        .code()
+        .as_deref() == Some("2067"),
+      _ => false,
+    }
+    _ => false,
+  }
 }

@@ -8,25 +8,27 @@ use std::path::{Path, PathBuf};
 use futures::TryStreamExt;
 use paste::paste;
 use sea_orm::{
-  ActiveValue,
+  ActiveModelTrait,
   ColumnTrait,
   ConnectOptions,
   Database,
   DatabaseConnection,
+  DeriveIden,
   EntityTrait,
   QueryFilter,
   QueryOrder,
   QuerySelect,
   QueryTrait,
   TransactionTrait,
+  TryIntoModel
 };
-use sea_orm::sea_query::{Condition, OnConflict};
+use sea_orm::sea_query::{Condition, OnConflict, Index};
 use tauri::Runtime;
 use tauri::async_runtime::block_on;
 use tauri::plugin::{Builder as TauriPluginBuilder, TauriPlugin};
 use tracing::debug;
 use crate::constants::DATABASE;
-use crate::error::Result;
+use crate::error::{Error, Result};
 use crate::gacha::{GenshinGachaRecord, StarRailGachaRecord};
 use super::entity_genshin_gacha_record::{
   ActiveModel as GenshinGachaRecordActiveModel,
@@ -40,20 +42,29 @@ use super::entity_starrail_gacha_record::{
   Entity as StarRailGachaRecordEntity,
   Model as StarRailGachaRecordModel
 };
+use super::entity_account::{
+  AccountFacet,
+  AccountProperties,
+  ActiveModel as AccountActiveModel,
+  Column as AccountColumn,
+  Entity as AccountEntity,
+  Model as AccountModel
+};
 use super::utilities::{
   create_table_statement,
   create_index_statements,
-  execute_statements
+  execute_statements,
+  is_constraint_unique_err
 };
 
-/// Gacha Storage
+/// Storage
 
-pub struct GachaStorage {
+pub struct Storage {
   pub database_file: PathBuf,
   pub database: DatabaseConnection
 }
 
-impl GachaStorage {
+impl Storage {
   pub async fn new() -> Result<Self> {
     let database_file = PathBuf::from(DATABASE);
     Self::new_with_database_file(database_file).await
@@ -63,11 +74,11 @@ impl GachaStorage {
     let database_file = database_file.as_ref();
     let url = format!("sqlite://{}?mode=rwc", database_file.display());
 
-    debug!("Create gacha storage with database: {url}");
-    debug!("Connecting to gacha storage...");
+    debug!("Create storage with database: {url}");
+    debug!("Connecting to storage...");
     let options = ConnectOptions::new(url);
     let database = Database::connect(options).await?;
-    debug!("Gacha storage connected");
+    debug!("Storage connected");
 
     Ok(Self {
       database_file: database_file.to_path_buf(),
@@ -76,30 +87,97 @@ impl GachaStorage {
   }
 
   pub async fn initialize(&self) -> Result<()> {
-    debug!("Initializing gacha storage...");
+    debug!("Initializing storage...");
 
     {
       debug!("Creating tables...");
       let statement1 = create_table_statement(GenshinGachaRecordEntity);
       let statement2 = create_table_statement(StarRailGachaRecordEntity);
-      execute_statements(&self.database, &[statement1, statement2]).await?;
+      let statement3 = create_table_statement(AccountEntity);
+      execute_statements(&self.database, &[
+        statement1,
+        statement2,
+        statement3
+      ]).await?;
     }
 
     {
       debug!("Creating indexes...");
       let statement1 = create_index_statements(GenshinGachaRecordEntity);
       let statement2 = create_index_statements(StarRailGachaRecordEntity);
+      let statement3 = create_index_statements(AccountEntity);
+
+      // Account: facet + uid constraint
+      let statement4 = Index::create()
+        .name(&format!(
+          "idx-{}-{}-{}",
+          AccountEntity.to_string(),
+          AccountColumn::Facet.to_string(),
+          AccountColumn::Uid.to_string()
+        ))
+        .table(AccountEntity)
+        .col(AccountColumn::Facet)
+        .col(AccountColumn::Uid)
+        .unique()
+        .if_not_exists()
+        .to_owned();
+
       let mut statements = statement1;
       statements.extend(statement2);
+      statements.extend(statement3);
+      statements.push(statement4);
       execute_statements(&self.database, &statements).await?;
     }
 
-    debug!("Gacha storage initialized");
+    debug!("Storage initialized");
     Ok(())
+  }
+
+  pub async fn upsert_account(&self, active: AccountActiveModel) -> Result<AccountModel> {
+    debug!("Upsert account...: {active:?}");
+    let model = active.save(&self.database)
+      .await
+      .map_err(|err| {
+        if is_constraint_unique_err(&err) {
+          Error::AccountAlreadyExists
+        } else {
+          Error::from(err)
+        }
+      })?;
+
+    Ok(model.try_into_model()?)
+  }
+
+  pub async fn find_accounts(&self) -> Result<Vec<AccountModel>> {
+    debug!("Find accounts...");
+    Ok(AccountEntity::find()
+      .all(&self.database)
+      .await?)
+  }
+
+  pub async fn try_find_account(&self,
+    facet: &AccountFacet,
+    uid: &str
+  ) -> Result<Option<AccountModel>> {
+    debug!("Find account...: facet={facet:?}, uid={uid:?}");
+    Ok(AccountEntity::find()
+      .filter(AccountColumn::Facet.eq(facet.clone()))
+      .filter(AccountColumn::Uid.eq(uid))
+      .one(&self.database)
+      .await?)
+  }
+
+  pub async fn find_account(&self,
+    facet: &AccountFacet,
+    uid: &str
+  ) -> Result<AccountModel> {
+    self.try_find_account(facet, uid)
+      .await?
+      .ok_or(Error::AccountNotFound)
   }
 }
 
-macro_rules! impl_curd {
+macro_rules! impl_gacha_records_curd {
   ($struct: ident, $name: tt, $record: ident, $active_model: ident, $entity: ident, $column: ident) => {
     paste! {
       impl $struct {
@@ -159,98 +237,26 @@ macro_rules! impl_curd {
   }
 }
 
-impl_curd!(GachaStorage, genshin, GenshinGachaRecord,
+impl_gacha_records_curd!(Storage, genshin, GenshinGachaRecord,
   GenshinGachaRecordActiveModel,
   GenshinGachaRecordEntity,
   GenshinGachaRecordColumn
 );
 
-impl_curd!(GachaStorage, star_rail, StarRailGachaRecord,
+impl_gacha_records_curd!(Storage, starrail, StarRailGachaRecord,
   StarRailGachaRecordActiveModel,
   StarRailGachaRecordEntity,
   StarRailGachaRecordColumn
 );
 
-/// Gacha ext
-
-impl From<GenshinGachaRecord> for GenshinGachaRecordActiveModel {
-  fn from(value: GenshinGachaRecord) -> Self {
-    Self {
-      id: ActiveValue::set(value.id),
-      uid: ActiveValue::set(value.uid),
-      gacha_type: ActiveValue::set(value.gacha_type),
-      item_id: ActiveValue::set(value.item_id),
-      count: ActiveValue::set(value.count),
-      time: ActiveValue::set(value.time),
-      name: ActiveValue::set(value.name),
-      lang: ActiveValue::set(value.lang),
-      item_type: ActiveValue::set(value.item_type),
-      rank_type: ActiveValue::set(value.rank_type)
-    }
-  }
-}
-
-impl From<GenshinGachaRecordModel> for GenshinGachaRecord {
-  fn from(value: GenshinGachaRecordModel) -> Self {
-    Self {
-      id: value.id,
-      uid: value.uid,
-      gacha_type: value.gacha_type,
-      item_id: value.item_id,
-      count: value.count,
-      time: value.time,
-      name: value.name,
-      lang: value.lang,
-      item_type: value.item_type,
-      rank_type: value.rank_type
-    }
-  }
-}
-
-impl From<StarRailGachaRecord> for StarRailGachaRecordActiveModel {
-  fn from(value: StarRailGachaRecord) -> Self {
-    Self {
-      id: ActiveValue::set(value.id),
-      uid: ActiveValue::set(value.uid),
-      gacha_id: ActiveValue::set(value.gacha_id),
-      gacha_type: ActiveValue::set(value.gacha_type),
-      item_id: ActiveValue::set(value.item_id),
-      count: ActiveValue::set(value.count),
-      time: ActiveValue::set(value.time),
-      name: ActiveValue::set(value.name),
-      lang: ActiveValue::set(value.lang),
-      item_type: ActiveValue::set(value.item_type),
-      rank_type: ActiveValue::set(value.rank_type)
-    }
-  }
-}
-
-impl From<StarRailGachaRecordModel> for StarRailGachaRecord {
-  fn from(value: StarRailGachaRecordModel) -> Self {
-    Self {
-      id: value.id,
-      uid: value.uid,
-      gacha_id: value.gacha_id,
-      gacha_type: value.gacha_type,
-      item_id: value.item_id,
-      count: value.count,
-      time: value.time,
-      name: value.name,
-      lang: value.lang,
-      item_type: value.item_type,
-      rank_type: value.rank_type
-    }
-  }
-}
-
 /// Tauri commands
 
-macro_rules! impl_tauri_command {
+macro_rules! impl_gacha_records_tauri_command {
   ($name: tt, $record: ident) => {
     paste! {
       #[tauri::command]
       async fn [<find_ $name _gacha_records>](
-        storage: tauri::State<'_, GachaStorage>,
+        storage: tauri::State<'_, Storage>,
         uid: String,
         gacha_type: Option<String>,
         limit: Option<u64>
@@ -263,7 +269,7 @@ macro_rules! impl_tauri_command {
 
       #[tauri::command]
       async fn [<save_ $name _gacha_records>](
-        storage: tauri::State<'_, GachaStorage>,
+        storage: tauri::State<'_, Storage>,
         records: Vec<$record>
       ) -> std::result::Result<u64, String> {
         storage
@@ -275,18 +281,18 @@ macro_rules! impl_tauri_command {
   };
 }
 
-impl_tauri_command!(genshin, GenshinGachaRecord);
-impl_tauri_command!(star_rail, StarRailGachaRecord);
+impl_gacha_records_tauri_command!(genshin, GenshinGachaRecord);
+impl_gacha_records_tauri_command!(starrail, StarRailGachaRecord);
 
 /// Tauri plugin
 
 #[derive(Default)]
-pub struct GachaStoragePluginBuilder {
+pub struct StoragePluginBuilder {
   database_file: Option<PathBuf>
 }
 
-impl GachaStoragePluginBuilder {
-  const PLUGIN_NAME: &str = "storage-gacha";
+impl StoragePluginBuilder {
+  const PLUGIN_NAME: &str = "storage";
 
   pub fn new() -> Self {
     Self::default()
@@ -301,12 +307,12 @@ impl GachaStoragePluginBuilder {
   pub fn build<R: Runtime>(self) -> TauriPlugin<R> {
     TauriPluginBuilder::new(Self::PLUGIN_NAME)
       .setup(move |app_handle| {
-        debug!("Setup gacha storage plugin...");
-        let storage: Result<GachaStorage> = block_on(async move {
+        debug!("Setup storage plugin...");
+        let storage: Result<Storage> = block_on(async move {
           let storage = if let Some(database_file) = self.database_file {
-            GachaStorage::new_with_database_file(database_file).await?
+            Storage::new_with_database_file(database_file).await?
           } else {
-            GachaStorage::new().await?
+            Storage::new().await?
           };
           storage.initialize().await?;
           Ok(storage)
@@ -320,8 +326,8 @@ impl GachaStoragePluginBuilder {
       .invoke_handler(tauri::generate_handler![
         find_genshin_gacha_records,
         save_genshin_gacha_records,
-        find_star_rail_gacha_records,
-        save_star_rail_gacha_records
+        find_starrail_gacha_records,
+        save_starrail_gacha_records
       ])
       .build()
   }

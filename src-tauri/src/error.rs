@@ -33,7 +33,13 @@ pub enum Error {
 
   #[allow(unused)]
   #[error("Gacha record fetcher channel send error")]
-  GachaRecordFetcherChannelSend
+  GachaRecordFetcherChannelSend,
+
+  #[error("Account already exists")]
+  AccountAlreadyExists,
+
+  #[error("Account not found")]
+  AccountNotFound,
 }
 
 pub type Result<T> = std::result::Result<T, Error>;
