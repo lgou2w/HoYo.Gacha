@@ -43,7 +43,6 @@ MIT OR Apache-2.0 **仅供个人学习交流使用。请勿用于任何商业或
 [个人非商用授权](https://www.hanyi.com.cn/faq-doc-1) - 北京汉仪创新科技股份有限公司 版权所有
 
 * [src/assets/汉仪文黑-85W.ttf](src/assets/%E6%B1%89%E4%BB%AA%E6%96%87%E9%BB%91-85W.ttf)
-* [src/assets/汉仪旗黑-55S.ttf](src/assets/%E6%B1%89%E4%BB%AA%E6%97%97%E9%BB%91-55S.ttf)
 
 ©miHoYo | 上海米哈游影铁科技有限公司 版权所有
 

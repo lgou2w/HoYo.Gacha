@@ -12,7 +12,7 @@ import '@/assets/global.css'
 const client = new QueryClient()
 const theme = createTheme({
   typography: {
-    fontFamily: '汉仪旗黑-55S'
+    fontFamily: '汉仪文黑-85W'
   }
 }, zhCN)
 
