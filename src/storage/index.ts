@@ -1,30 +1,72 @@
 import { invoke } from '@tauri-apps/api'
+import { AccountFacet, Account } from '@/interfaces/account'
 import { GenshinGachaRecord, StarRailGachaRecord } from '@/interfaces/gacha'
 
-export enum GachaFacet {
-  Genshin = 'genshin',
-  StarRail = 'starrail'
+type AccountUid = Account['uid']
+type GachaType = GenshinGachaRecord['gachaType'] | StarRailGachaRecord['gachaType']
+
+const invokeProxy: typeof invoke = import.meta.env.DEV
+  ? (...args) => {
+      console.debug('invoke', ...args)
+      return invoke(...args)
+    }
+  : invoke
+
+export async function upsertAccount (
+  active: Partial<Account>
+): Promise<Account> {
+  return invokeProxy('plugin:storage|upsert_account', {
+    active
+  })
+}
+
+export async function findAccounts (
+  facet?: AccountFacet
+): Promise<Array<Account>> {
+  return invokeProxy('plugin:storage|find_accounts', {
+    facet
+  })
+}
+
+export async function findAccount (
+  facet: AccountFacet,
+  uid: AccountUid
+): Promise<Account | never> {
+  return invokeProxy('plugin:storage|find_account', {
+    facet,
+    uid
+  })
+}
+
+export async function removeAccount (
+  facet: AccountFacet,
+  uid: AccountUid
+): Promise<number> {
+  return invokeProxy('plugin:storage|remove_account', {
+    facet,
+    uid
+  })
 }
 
 export async function findGachaRecords (
-  facet: GachaFacet.Genshin,
-  uid: string,
-  gachaType?: string,
+  facet: AccountFacet.Genshin,
+  uid: AccountUid,
+  gachaType?: GachaType,
   limit?: number
 ): Promise<Array<GenshinGachaRecord>>
 export async function findGachaRecords (
-  facet: GachaFacet.StarRail,
-  uid: string,
-  gachaType?: string,
+  facet: AccountFacet.StarRail,
+  uid: AccountUid,
+  gachaType?: GachaType,
   limit?: number
 ): Promise<Array<StarRailGachaRecord>>
 export async function findGachaRecords (
-  facet: GachaFacet,
-  uid: string,
-  gachaType?: string,
+  facet: AccountFacet,
+  uid: AccountUid,
+  gachaType?: GachaType,
   limit?: number
 ): Promise<Array<GenshinGachaRecord | StarRailGachaRecord>> {
-  return invoke(`plugin:storage|find_${facet}_gacha_records`, {
+  return invokeProxy(`plugin:storage|find_${facet}_gacha_records`, {
     uid,
     gachaType,
     limit
@@ -32,27 +74,31 @@ export async function findGachaRecords (
 }
 
 export async function saveGachaRecords (
-  facet: GachaFacet.Genshin,
-  uid: string,
+  facet: AccountFacet.Genshin,
+  uid: AccountUid,
   records: Array<GenshinGachaRecord>
 ): Promise<number>
 export async function saveGachaRecords (
-  facet: GachaFacet.StarRail,
-  uid: string,
+  facet: AccountFacet.StarRail,
+  uid: AccountUid,
   records: Array<StarRailGachaRecord>
 ): Promise<number>
 export async function saveGachaRecords (
-  facet: GachaFacet,
-  uid: string,
+  facet: AccountFacet,
+  uid: AccountUid,
   records: Array<GenshinGachaRecord | StarRailGachaRecord>
 ): Promise<number> {
-  return invoke(`plugin:storage|save_${facet}_gacha_records`, {
+  return invokeProxy(`plugin:storage|save_${facet}_gacha_records`, {
     uid,
     records
   })
 }
 
 const Storage = Object.freeze({
+  upsertAccount,
+  findAccounts,
+  findAccount,
+  removeAccount,
   findGachaRecords,
   saveGachaRecords
 })

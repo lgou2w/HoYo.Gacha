@@ -67,6 +67,7 @@ impl GachaUrlFinder for GenshinGacha {
 /// Gacha Record
 
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
 pub struct GenshinGachaRecord {
   pub id: String,
   pub uid: String,

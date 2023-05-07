@@ -70,6 +70,7 @@ impl GachaUrlFinder for StarRailGacha {
 /// Gacha Record
 
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
 pub struct StarRailGachaRecord {
   pub id: String,
   pub uid: String,

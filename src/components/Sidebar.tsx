@@ -12,11 +12,12 @@ import Typography from '@mui/material/Typography'
 import HomeIcon from '@mui/icons-material/Home'
 import StarIcon from '@mui/icons-material/Star'
 import DirectionsSubwayIcon from '@mui/icons-material/DirectionsSubway'
+import SettingsIcon from '@mui/icons-material/Settings'
 import LogoSrc from '@/assets/images/Logo.png'
 
-const SidebarWidth = '100px'
+const SidebarWidth = '96px'
 
-export default function AppSidebar () {
+export default function Sidebar () {
   return (
     <Drawer variant="permanent" sx={{
       width: SidebarWidth,
@@ -36,28 +37,39 @@ export default function AppSidebar () {
   )
 }
 
-const Navs = [
+type Nav = { title: string, href: string, icon?: React.ReactNode }
+
+const Navs: Nav[] = [
   { title: '主页', href: '/', icon: <HomeIcon /> },
   { title: '祈愿', href: '/genshin', icon: <StarIcon /> },
   { title: '跃迁', href: '/starrail', icon: <DirectionsSubwayIcon /> }
 ]
 
+const NavSetting: Nav =
+  { title: '设置', href: '/setting', icon: <SettingsIcon /> }
+
 function NavList () {
   return (
-    <Box component={Stack} direction="column" spacing={1}>
-      {Navs.map((nav, i) => (
-        <NavListItem key={i} {...nav} />
-      ))}
+    <Box display="flex" flexDirection="column" height="100%" padding={1.5}>
+      <Stack direction="column" spacing={2}>
+        {Navs.map((nav, i) => (
+          <NavListItem key={i} {...nav} />
+        ))}
+      </Stack>
+      <Box marginTop="auto">
+        <NavListItem {...NavSetting} />
+      </Box>
     </Box>
   )
 }
 
-function NavListItem ({ title, href, icon }: typeof Navs[number]) {
+function NavListItem (props: Nav) {
+  const { title, href, icon } = props
   const location = useLocation()
   return (
     <NavListItemButton component={Link} to={href} activated={location.pathname === href} fullWidth>
       {icon}
-      <Typography variant="body1" fontWeight="bold">
+      <Typography>
         {title}
       </Typography>
     </NavListItemButton>
@@ -75,9 +87,9 @@ const NavListItemButton = styled(Button, {
   '& .MuiSvgIcon-root': { fontSize: '2rem' },
   ...(activated && {
     color: theme.palette.primary.main,
-    bgcolor: alpha(theme.palette.primary.main, theme.palette.action.hoverOpacity + 0.05),
+    backgroundColor: alpha(theme.palette.primary.main, theme.palette.action.hoverOpacity + 0.05),
     '&:hover': {
-      bgcolor: alpha(theme.palette.primary.main, theme.palette.action.hoverOpacity + 0.05)
+      backgroundColor: alpha(theme.palette.primary.main, theme.palette.action.hoverOpacity + 0.05)
     }
   })
 })) as OverridableComponent<ButtonTypeMap<{ activated: boolean }>>

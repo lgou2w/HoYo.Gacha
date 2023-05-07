@@ -9,6 +9,7 @@ use futures::TryStreamExt;
 use paste::paste;
 use sea_orm::{
   ActiveModelTrait,
+  ActiveValue,
   ColumnTrait,
   ConnectOptions,
   Database,
@@ -33,18 +34,15 @@ use crate::gacha::{GenshinGachaRecord, StarRailGachaRecord};
 use super::entity_genshin_gacha_record::{
   ActiveModel as GenshinGachaRecordActiveModel,
   Column as GenshinGachaRecordColumn,
-  Entity as GenshinGachaRecordEntity,
-  Model as GenshinGachaRecordModel
+  Entity as GenshinGachaRecordEntity
 };
 use super::entity_starrail_gacha_record::{
   ActiveModel as StarRailGachaRecordActiveModel,
   Column as StarRailGachaRecordColumn,
-  Entity as StarRailGachaRecordEntity,
-  Model as StarRailGachaRecordModel
+  Entity as StarRailGachaRecordEntity
 };
 use super::entity_account::{
   AccountFacet,
-  AccountProperties,
   ActiveModel as AccountActiveModel,
   Column as AccountColumn,
   Entity as AccountEntity,
@@ -148,11 +146,21 @@ impl Storage {
     Ok(model.try_into_model()?)
   }
 
-  pub async fn find_accounts(&self) -> Result<Vec<AccountModel>> {
+  pub async fn find_accounts(&self,
+    facet: Option<&AccountFacet>
+  ) -> Result<Vec<AccountModel>> {
     debug!("Find accounts...");
-    Ok(AccountEntity::find()
+
+    let result = if let Some(facet) = facet {
+      AccountEntity::find()
+        .filter(AccountColumn::Facet.eq(facet.clone()))
+    } else {
+      AccountEntity::find()
+    }
       .all(&self.database)
-      .await?)
+      .await?;
+
+    Ok(result)
   }
 
   pub async fn try_find_account(&self,
@@ -174,6 +182,23 @@ impl Storage {
     self.try_find_account(facet, uid)
       .await?
       .ok_or(Error::AccountNotFound)
+  }
+
+  pub async fn remove_account(&self,
+    facet: &AccountFacet,
+    uid: &str
+  ) -> Result<u64> {
+    debug!("Remove account...: facet={facet:?}, uid={uid:?}");
+
+    let result = AccountEntity::delete(AccountActiveModel {
+      facet: ActiveValue::Set(facet.clone()),
+      uid: ActiveValue::Set(uid.to_owned()),
+      ..Default::default()
+    })
+      .exec(&self.database)
+      .await?;
+
+    Ok(result.rows_affected)
   }
 }
 
@@ -251,6 +276,52 @@ impl_gacha_records_curd!(Storage, starrail, StarRailGachaRecord,
 
 /// Tauri commands
 
+#[tauri::command]
+async fn upsert_account(
+  storage: tauri::State<'_, Storage>,
+  active: AccountModel
+) -> std::result::Result<AccountModel, String> {
+  storage
+    .upsert_account(AccountActiveModel::from(active))
+    .await
+    .map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+async fn find_accounts(
+  storage: tauri::State<'_, Storage>,
+  facet: Option<AccountFacet>
+) -> std::result::Result<Vec<AccountModel>, String> {
+  storage
+    .find_accounts(facet.as_ref())
+    .await
+    .map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+async fn find_account(
+  storage: tauri::State<'_, Storage>,
+  facet: AccountFacet,
+  uid: String
+) -> std::result::Result<AccountModel, String> {
+  storage
+    .find_account(&facet, &uid)
+    .await
+    .map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+async fn remove_account(
+  storage: tauri::State<'_, Storage>,
+  facet: AccountFacet,
+  uid: String
+) -> std::result::Result<u64, String> {
+  storage
+    .remove_account(&facet, &uid)
+    .await
+    .map_err(|e| e.to_string())
+}
+
 macro_rules! impl_gacha_records_tauri_command {
   ($name: tt, $record: ident) => {
     paste! {
@@ -324,6 +395,10 @@ impl StoragePluginBuilder {
         Ok(())
       })
       .invoke_handler(tauri::generate_handler![
+        upsert_account,
+        find_accounts,
+        find_account,
+        remove_account,
         find_genshin_gacha_records,
         save_genshin_gacha_records,
         find_starrail_gacha_records,
