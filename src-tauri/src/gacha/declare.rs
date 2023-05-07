@@ -120,6 +120,7 @@ pub trait GachaRecordFetcherChannel<T: GachaRecord + Sized + Serialize + Send + 
         sender.send(GachaRecordFetcherChannelFragment::Sleeping)
           .await
           .map_err(|_| Error::GachaRecordFetcherChannelSend)?;
+        tokio::time::sleep(tokio::time::Duration::from_secs(SLEEPING)).await;
       }
 
       sender.send(GachaRecordFetcherChannelFragment::Pagination(pagination))
