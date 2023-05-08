@@ -295,11 +295,11 @@ pub(super) struct GachaResponse<T> {
 pub(super) async fn fetch_gacha_records<T: Sized + DeserializeOwned>(
   reqwest: &Reqwest,
   gacha_url: &GachaUrl,
-  gacha_type: impl Into<String> + Send,
-  end_id: impl Into<String> + Send,
+  gacha_type: &str,
+  end_id: &str,
   endpoint: &str
 ) -> Result<GachaResponse<T>> {
-  let endpoint_start = gacha_url.find(endpoint).ok_or(Error::InvalidGachaUrl)?;
+  let endpoint_start = gacha_url.find(endpoint).ok_or(Error::IllegalGachaUrl)?;
   let base_url = &gacha_url[0..endpoint_start + endpoint.len()];
   let query_str = &gacha_url[endpoint_start + endpoint.len()..];
 
@@ -312,13 +312,14 @@ pub(super) async fn fetch_gacha_records<T: Sized + DeserializeOwned>(
   queries.remove("begin_id");
   queries.remove("end_id");
 
-  let mut url = Url::parse_with_params(base_url, queries)?;
+  let mut url = Url::parse_with_params(base_url, queries)
+    .map_err(|_| Error::IllegalGachaUrl)?;
   url
     .query_pairs_mut()
-    .append_pair("gacha_type", &gacha_type.into())
+    .append_pair("gacha_type", gacha_type)
     .append_pair("page", "1")
     .append_pair("size", "20")
-    .append_pair("end_id", &end_id.into());
+    .append_pair("end_id", end_id);
 
   let response: GachaResponse<T> = reqwest
     .get(url)
@@ -328,7 +329,7 @@ pub(super) async fn fetch_gacha_records<T: Sized + DeserializeOwned>(
     .await?;
 
   if response.retcode != 0 {
-    Err(Error::Retcode {
+    Err(Error::GachaRecordRetcode {
       retcode: response.retcode,
       message: response.message
     })
