@@ -5,7 +5,7 @@ import ErrorPage from '@/ErrorPage'
 import Root from '@/routes/root'
 import Index from '@/routes/index'
 import Genshin, { loader as genshinLoader } from '@/routes/genshin'
-import StarRail from '@/routes/starrail'
+import StarRail, { loader as starrailLoader } from '@/routes/starrail'
 import Setting from '@/routes/setting'
 
 const router = createBrowserRouter([
@@ -22,8 +22,8 @@ const router = createBrowserRouter([
       },
       {
         path: '/starrail',
-        element: <StarRail />
-        // TODO: loader: starRailLoader(queryClient)
+        element: <StarRail />,
+        loader: starrailLoader(queryClient)
       },
       {
         path: '/setting',

@@ -1,10 +1,11 @@
 import React from 'react'
+import Layout from '@/components/Layout'
 import Typography from '@mui/material/Typography'
 
 export default function Setting () {
   return (
-    <React.Fragment>
+    <Layout title="设置">
       <Typography variant="h5">Setting</Typography>
-    </React.Fragment>
+    </Layout>
   )
 }

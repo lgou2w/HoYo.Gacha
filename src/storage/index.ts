@@ -2,11 +2,10 @@ import { invoke } from '@tauri-apps/api'
 import { AccountFacet, Account } from '@/interfaces/account'
 import { GenshinGachaRecord, StarRailGachaRecord } from '@/interfaces/gacha'
 
-type AccountUid = Account['uid']
+export type AccountUid = Account['uid']
+export type CreateAccountPayload = Omit<Account, 'id'>
 
-type CreateAccountPayload = Omit<Account, 'id'>
-
-type FindGachaRecordsPayload = {
+export type FindGachaRecordsPayload = {
   uid: AccountUid
   gachaType?: GenshinGachaRecord['gachaType'] | StarRailGachaRecord['gachaType']
   limit?: number

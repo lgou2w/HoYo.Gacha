@@ -15,7 +15,7 @@ import DirectionsSubwayIcon from '@mui/icons-material/DirectionsSubway'
 import SettingsIcon from '@mui/icons-material/Settings'
 import LogoSrc from '@/assets/images/Logo.png'
 
-const SidebarWidth = '96px'
+export const SidebarWidth = '96px'
 
 export default function Sidebar () {
   return (
