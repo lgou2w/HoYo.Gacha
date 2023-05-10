@@ -9,7 +9,7 @@ export const loader = createStatefulAccountLoader(AccountFacet.StarRail)
 
 export default withStatefulAccount(AccountFacet.StarRail, function StarRail () {
   return (
-    <Layout title="跃迁 · 崩坏：星穹铁道" navbar={<AccountMenu facet={AccountFacet.StarRail} />}>
+    <Layout title="跃迁 · 崩坏：星穹铁道" navbar={<AccountMenu />}>
       <Typography variant="h5">Honkai: Star Rail</Typography>
     </Layout>
   )

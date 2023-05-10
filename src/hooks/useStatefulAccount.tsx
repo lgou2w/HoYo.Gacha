@@ -3,7 +3,7 @@ import { produce } from 'immer'
 import { LoaderFunction } from 'react-router-dom'
 import { QueryClient, QueryKey, UseQueryOptions, useQuery, useQueryClient } from '@tanstack/react-query'
 import { AccountFacet, Account } from '@/interfaces/account'
-import Storage, { AccountUid, CreateAccountPayload } from '@/storage'
+import PluginStorage, { AccountUid, CreateAccountPayload } from '@/utilities/plugin-storage'
 
 export interface StatefulAccount {
   readonly facet: AccountFacet
@@ -29,8 +29,8 @@ const LocalStorageSelectedAccountUid = Object.freeze({
 
 const statefulAccountQueryFn: UseQueryOptions<StatefulAccount>['queryFn'] = async (context) => {
   const [, facet] = context.queryKey as [string, AccountFacet]
-  const accounts = (await Storage
-    .findAccounts(facet as AccountFacet))
+  const accounts = (await PluginStorage
+    .findAccounts(facet))
     .reduce((acc, account) => {
       acc[account.uid] = account
       return acc
@@ -125,7 +125,7 @@ export function useCreateAccountFn () {
 
   return React.useCallback(async (payload: Omit<CreateAccountPayload, 'facet'>) => {
     const selectedAccountUid = statefulAccount.selectedAccountUid
-    const account = await Storage.createAccount({ ...payload, facet: statefulAccount.facet })
+    const account = await PluginStorage.createAccount({ ...payload, facet: statefulAccount.facet })
 
     if (!selectedAccountUid) LocalStorageSelectedAccountUid.set(statefulAccount.facet, account.uid)
     queryClient.setQueryData<StatefulAccount>([QueryPrefix, statefulAccount.facet], (prev) => {

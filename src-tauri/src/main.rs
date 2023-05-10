@@ -20,6 +20,7 @@ fn main() {
 
   tauri::Builder::default()
     .plugin(storage::StoragePluginBuilder::new().build())
+    .plugin(gacha::GachaPluginBuilder::new().build())
     .setup(|app| {
       use tauri::Manager;
       #[cfg(debug_assertions)]
