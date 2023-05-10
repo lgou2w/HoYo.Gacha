@@ -48,10 +48,10 @@ pub type Result<T> = std::result::Result<T, Error>;
 
 /// Native error to JavaScript error
 
-macro_rules! impl_error_identifies {
+macro_rules! impl_error_identifiers {
   ($( $variant: ident => $ident: ident ),*) => {
     impl Error {
-      pub fn identify(&self) -> &'static str {
+      pub fn identifier(&self) -> &'static str {
         match self {
           $(Error::$variant { .. } => stringify!($ident),)*
           _ => "INTERNAL_CRATE",
@@ -61,7 +61,7 @@ macro_rules! impl_error_identifies {
   };
 }
 
-impl_error_identifies! {
+impl_error_identifiers! {
   IllegalGachaUrl               => ILLEGAL_GACHA_URL,
   GachaRecordRetcode            => GACHA_RECORD_RETCODE,
   GachaRecordFetcherChannelSend => GACHA_RECORD_FETCHER_CHANNEL_SEND,
@@ -74,7 +74,7 @@ impl serde::Serialize for Error {
   where S: serde::Serializer {
     use serde::ser::SerializeStruct;
     let mut state = serializer.serialize_struct("Error", 2)?;
-    state.serialize_field("identify", &self.identify())?;
+    state.serialize_field("identifier", &self.identifier())?;
     state.serialize_field("message", &self.to_string())?;
     state.end()
   }
