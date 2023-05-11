@@ -1,7 +1,7 @@
 import React from 'react'
 import { produce } from 'immer'
 import { LoaderFunction } from 'react-router-dom'
-import { QueryClient, QueryKey, UseQueryOptions, useQuery, useQueryClient } from '@tanstack/react-query'
+import { QueryClient, QueryKey, FetchQueryOptions, useQuery, useQueryClient } from '@tanstack/react-query'
 import { AccountFacet, Account } from '@/interfaces/account'
 import PluginStorage, { AccountUid, CreateAccountPayload } from '@/utilities/plugin-storage'
 
@@ -27,7 +27,7 @@ const LocalStorageSelectedAccountUid = Object.freeze({
   remove (facet: AccountFacet) { localStorage.removeItem(`${QueryPrefix}:${facet}:${SelectedAccountUidKey}`) }
 })
 
-const statefulAccountQueryFn: UseQueryOptions<StatefulAccount>['queryFn'] = async (context) => {
+const statefulAccountQueryFn: FetchQueryOptions<StatefulAccount>['queryFn'] = async (context) => {
   const [, facet] = context.queryKey as [string, AccountFacet]
   const accounts = (await PluginStorage
     .findAccounts(facet))
@@ -50,12 +50,11 @@ const statefulAccountQueryFn: UseQueryOptions<StatefulAccount>['queryFn'] = asyn
   } as StatefulAccount
 }
 
-function createQuery (facet: AccountFacet): UseQueryOptions<StatefulAccount> & { queryKey: QueryKey } {
+function createQuery (facet: AccountFacet): FetchQueryOptions<StatefulAccount> & { queryKey: QueryKey } {
   return {
     queryKey: [QueryPrefix, facet],
     queryFn: statefulAccountQueryFn,
-    staleTime: Infinity,
-    refetchOnWindowFocus: false
+    staleTime: Infinity
   }
 }
 
@@ -75,12 +74,18 @@ export function createStatefulAccountLoader (
 
 /// Hook
 
-export const withStatefulAccount = (facet: AccountFacet, Wrapped: React.ComponentType) => {
+export const withStatefulAccount = (
+  facet: AccountFacet,
+  Wrapped: React.ComponentType<{
+    facet: AccountFacet,
+    selectedAccountUid: Account['uid'] | null
+  }>
+) => {
   return function withStatefulAccountHOC () {
     const statefulAccount = useStatefulAccountQuery(facet)
     return (
       <StatefulAccountContext.Provider value={statefulAccount.data}>
-        <Wrapped />
+        <Wrapped facet={facet} selectedAccountUid={statefulAccount.data?.selectedAccountUid ?? null} />
       </StatefulAccountContext.Provider>
     )
   }
@@ -88,7 +93,10 @@ export const withStatefulAccount = (facet: AccountFacet, Wrapped: React.Componen
 
 export function useStatefulAccountQuery (facet: AccountFacet) {
   const query = createQuery(facet)
-  return useQuery<StatefulAccount>(query)
+  return useQuery({
+    ...query,
+    refetchOnWindowFocus: false
+  })
 }
 
 export function useStatefulAccountContext () {
