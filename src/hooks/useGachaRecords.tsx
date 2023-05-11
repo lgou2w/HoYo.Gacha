@@ -161,31 +161,37 @@ function computeGachaRecords (
 const KnownGenshinGachaTypes: Record<GenshinGachaRecord['gacha_type'], NamedGachaRecords['category']> = {
   100: 'newbie',
   200: 'permanent',
-  301: 'character',
+  301: 'character', // include 400
   302: 'weapon'
 }
 
 const KnownStarRailGachaTypes: Record<StarRailGachaRecord['gacha_type'], NamedGachaRecords['category']> = {
-  1: 'newbie',
-  2: 'permanent',
+  2: 'newbie',
+  1: 'permanent',
   11: 'character',
   12: 'weapon'
 }
 
-// TODO: Genshin Impact and Honkai: Star Rail Permanent Golden Names
-const KnownGenshinPermanentGoldenNames: GenshinGachaRecord['name'][] = []
-const KnownStarRailPermanentGoldenNames: StarRailGachaRecord['name'][] = []
-
 const isRankTypeOfBlue = (record: GachaRecord) => record.rank_type === '3'
 const isRankTypeOfPurple = (record: GachaRecord) => record.rank_type === '4'
 const isRankTypeOfGolden = (record: GachaRecord) => record.rank_type === '5'
+const sortGachaRecordById = (a: GachaRecord, b: GachaRecord) => a.id.localeCompare(b.id)
 
-function calculateSumPercentage (total: number, sum: number): number {
-  return sum > 0 ? Math.round(sum / total * 10000) / 100 : 0
-}
-
-function calculateSumAverage (total: number, sum: number): number {
-  return sum > 0 ? Math.ceil(Math.round(sum / total * 100) / 100) : 0
+function concatNamedGachaRecordsValues (
+  facet: AccountFacet,
+  values: GachaRecords['values'],
+  gachaType: GachaRecord['gacha_type'],
+  category: NamedGachaRecords['category']
+): GachaRecord[] {
+  const data = values[gachaType] || []
+  if (facet === AccountFacet.Genshin && category === 'character') {
+    // HACK: Genshin Impact: 301 and 400 are the character gacha type
+    return Array.from(data)
+      .concat(values['400'])
+      .sort(sortGachaRecordById)
+  } else {
+    return Array.from(data)
+  }
 }
 
 function computeNamedGachaRecords (
@@ -193,19 +199,17 @@ function computeNamedGachaRecords (
   values: GachaRecords['values']
 ): GachaRecords['namedValues'] {
   const categories = facet === AccountFacet.Genshin ? KnownGenshinGachaTypes : KnownStarRailGachaTypes
-  const knownPermanentGoldenNames = facet === AccountFacet.Genshin ? KnownGenshinPermanentGoldenNames : KnownStarRailPermanentGoldenNames
-
   return Object
     .entries(categories)
     .reduce((acc, [gachaType, category]) => {
-      const data = Array.from(values[gachaType] || []) // copy
+      const data = concatNamedGachaRecordsValues(facet, values, gachaType, category)
       const total = data.length
       const firstTime = data[0]?.time
       const lastTime = data[total - 1]?.time
       const metadata: NamedGachaRecords['metadata'] = {
         blue: computeGachaRecordsMetadata(total, data.filter(isRankTypeOfBlue)),
         purple: computeGachaRecordsMetadata(total, data.filter(isRankTypeOfPurple)),
-        golden: computeGoldenGachaRecordsMetadata(data, knownPermanentGoldenNames)
+        golden: computeGoldenGachaRecordsMetadata(facet, data)
       }
 
       acc[category] = {
@@ -231,20 +235,20 @@ function computeAggregatedGachaRecords (
   const { newbie, permanent, character, weapon } = namedValues
 
   const blueSum = newbie.metadata.blue.sum + permanent.metadata.blue.sum + character.metadata.blue.sum + weapon.metadata.blue.sum
-  const blueSumPercentage = calculateSumPercentage(total, blueSum)
+  const blueSumPercentage = blueSum > 0 ? Math.round(blueSum / total * 10000) / 100 : 0
   const blueValues = data.filter(isRankTypeOfBlue)
 
   const purpleSum = newbie.metadata.purple.sum + permanent.metadata.purple.sum + character.metadata.purple.sum + weapon.metadata.purple.sum
-  const purpleSumPercentage = calculateSumPercentage(total, purpleSum)
+  const purpleSumPercentage = purpleSum > 0 ? Math.round(purpleSum / total * 10000) / 100 : 0
   const purpleValues = data.filter(isRankTypeOfPurple)
 
   const goldenSum = newbie.metadata.golden.sum + permanent.metadata.golden.sum + character.metadata.golden.sum + weapon.metadata.golden.sum
-  const goldenSumPercentage = calculateSumPercentage(total, goldenSum)
+  const goldenSumPercentage = goldenSum > 0 ? Math.round(goldenSum / total * 10000) / 100 : 0
   const goldenValues = Array.from(newbie.metadata.golden.values)
-    .concat(permanent.metadata.golden.values)
-    .concat(character.metadata.golden.values)
-    .concat(weapon.metadata.golden.values)
-    .sort((a, b) => a.id.localeCompare(b.id)) // sort by id asc
+    .concat(Array.from(permanent.metadata.golden.values))
+    .concat(Array.from(character.metadata.golden.values))
+    .concat(Array.from(weapon.metadata.golden.values))
+    .sort(sortGachaRecordById)
 
   const { goldenSumRestricted, goldenUsedPitySum } = goldenValues.reduce((acc, record) => {
     if (record.restricted) {
@@ -257,7 +261,7 @@ function computeAggregatedGachaRecords (
     goldenUsedPitySum: 0
   })
 
-  const goldenSumAverage = calculateSumAverage(goldenSum, goldenUsedPitySum)
+  const goldenSumAverage = goldenSum > 0 ? Math.ceil(Math.round(goldenUsedPitySum / goldenSum * 100) / 100) : 0
 
   return {
     total,
@@ -292,7 +296,7 @@ function computeGachaRecordsMetadata (
   values: GachaRecord[]
 ): GachaRecordsMetadata {
   const sum = values.length
-  const sumPercentage = calculateSumPercentage(total, sum)
+  const sumPercentage = sum > 0 ? Math.round(sum / total * 10000) / 100 : 0
   return {
     values,
     sum,
@@ -301,8 +305,8 @@ function computeGachaRecordsMetadata (
 }
 
 function computeGoldenGachaRecordsMetadata (
-  values: GachaRecord[],
-  knownPermanentGoldenNames: GachaRecord['name'][]
+  facet: AccountFacet,
+  values: GachaRecord[]
 ): GoldenGachaRecordsMetadata {
   const result: GoldenGachaRecordsMetadata['values'] = []
 
@@ -316,7 +320,7 @@ function computeGoldenGachaRecordsMetadata (
     pity += 1
 
     if (isGolden) {
-      const restricted = !knownPermanentGoldenNames.includes(record.name) ? true : undefined
+      const restricted = isRestrictedGolden(facet, record)
       const rest = Object.assign({ usedPity: pity, restricted }, record) as GoldenGachaRecordsMetadata['values'][number]
       result.push(rest)
 
@@ -330,8 +334,8 @@ function computeGoldenGachaRecordsMetadata (
   }
 
   const total = values.length
-  const sumPercentage = calculateSumPercentage(total, sum)
-  const sumAverage = calculateSumAverage(sum, usedPitySum)
+  const sumPercentage = sum > 0 ? Math.round(sum / total * 10000) / 100 : 0
+  const sumAverage = sum > 0 ? Math.ceil(Math.round(usedPitySum / sum * 100) / 100) : 0
 
   return {
     values: result,
@@ -341,4 +345,12 @@ function computeGoldenGachaRecordsMetadata (
     sumRestricted,
     nextPity: pity
   }
+}
+
+function isRestrictedGolden (
+  facet: AccountFacet,
+  record: GachaRecord
+): boolean {
+  // TODO: Genshin Impact and Honkai: Star Rail restricted golden
+  return false
 }
