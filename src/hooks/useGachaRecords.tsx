@@ -74,7 +74,7 @@ function createQuery (
     queryKey: [QueryPrefix, facet, uid],
     queryFn: gachaRecordsQueryFn,
     staleTime: Infinity
-    // cacheTime: Infinity // TODO: GachaRecords infinite cache time?
+    // cacheTime: Infinity // TODO: GachaRecords infinity cache time?
   }
 }
 
@@ -180,11 +180,11 @@ const isRankTypeOfBlue = (record: GachaRecord) => record.rank_type === '3'
 const isRankTypeOfPurple = (record: GachaRecord) => record.rank_type === '4'
 const isRankTypeOfGolden = (record: GachaRecord) => record.rank_type === '5'
 
-function calcaulateSumPercentage (total: number, sum: number): number {
+function calculateSumPercentage (total: number, sum: number): number {
   return sum > 0 ? Math.round(sum / total * 10000) / 100 : 0
 }
 
-function calcaulateSumAverage (total: number, sum: number): number {
+function calculateSumAverage (total: number, sum: number): number {
   return sum > 0 ? Math.ceil(Math.round(sum / total * 100) / 100) : 0
 }
 
@@ -231,15 +231,15 @@ function computeAggregatedGachaRecords (
   const { newbie, permanent, character, weapon } = namedValues
 
   const blueSum = newbie.metadata.blue.sum + permanent.metadata.blue.sum + character.metadata.blue.sum + weapon.metadata.blue.sum
-  const blueSumPercentage = calcaulateSumPercentage(total, blueSum)
+  const blueSumPercentage = calculateSumPercentage(total, blueSum)
   const blueValues = data.filter(isRankTypeOfBlue)
 
   const purpleSum = newbie.metadata.purple.sum + permanent.metadata.purple.sum + character.metadata.purple.sum + weapon.metadata.purple.sum
-  const purpleSumPercentage = calcaulateSumPercentage(total, purpleSum)
+  const purpleSumPercentage = calculateSumPercentage(total, purpleSum)
   const purpleValues = data.filter(isRankTypeOfPurple)
 
   const goldenSum = newbie.metadata.golden.sum + permanent.metadata.golden.sum + character.metadata.golden.sum + weapon.metadata.golden.sum
-  const goldenSumPercentage = calcaulateSumPercentage(total, goldenSum)
+  const goldenSumPercentage = calculateSumPercentage(total, goldenSum)
   const goldenValues = Array.from(newbie.metadata.golden.values)
     .concat(permanent.metadata.golden.values)
     .concat(character.metadata.golden.values)
@@ -257,7 +257,7 @@ function computeAggregatedGachaRecords (
     goldenUsedPitySum: 0
   })
 
-  const goldenSumAverage = calcaulateSumAverage(goldenSum, goldenUsedPitySum)
+  const goldenSumAverage = calculateSumAverage(goldenSum, goldenUsedPitySum)
 
   return {
     total,
@@ -292,7 +292,7 @@ function computeGachaRecordsMetadata (
   values: GachaRecord[]
 ): GachaRecordsMetadata {
   const sum = values.length
-  const sumPercentage = calcaulateSumPercentage(total, sum)
+  const sumPercentage = calculateSumPercentage(total, sum)
   return {
     values,
     sum,
@@ -330,8 +330,8 @@ function computeGoldenGachaRecordsMetadata (
   }
 
   const total = values.length
-  const sumPercentage = calcaulateSumPercentage(total, sum)
-  const sumAverage = calcaulateSumAverage(sum, usedPitySum)
+  const sumPercentage = calculateSumPercentage(total, sum)
+  const sumAverage = calculateSumAverage(sum, usedPitySum)
 
   return {
     values: result,
