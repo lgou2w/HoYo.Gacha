@@ -6,7 +6,7 @@
     "distDir": "../dist"
   },
   "package": {
-    "productName": "HoYo.Gacha",
+    "productName": "HoYo_Gacha",
     "version": "0.3.0"
   },
   "tauri": {
