@@ -16,7 +16,9 @@ use super::{
   GachaUrlFinder,
   GachaRecord,
   GachaRecordFetcher,
-  GachaRecordFetcherChannel,
+  GachaRecordFetcherChannel
+};
+use super::utilities::{
   lookup_mihoyo_dir,
   lookup_cognosphere_dir,
   lookup_path_line_from_keyword,
@@ -35,6 +37,7 @@ impl GameDataDirectoryFinder for StarRailGacha {
     let mihoyo_dir = lookup_mihoyo_dir();
     let mut directories = Vec::new();
 
+    // TODO: Untested
     const INTERNATIONAL_PLAYER_LOG : &str = "/Star Rail/Player.log";
     const INTERNATIONAL_DIR_KEYWORD: &str = "/StarRail_Data/";
 

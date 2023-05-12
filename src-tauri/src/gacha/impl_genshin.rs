@@ -15,7 +15,9 @@ use super::{
   GachaUrlFinder,
   GachaRecord,
   GachaRecordFetcher,
-  GachaRecordFetcherChannel,
+  GachaRecordFetcherChannel
+};
+use super::utilities::{
   lookup_mihoyo_dir,
   lookup_path_line_from_keyword,
   lookup_gacha_urls_from_endpoint,
@@ -32,6 +34,7 @@ impl GameDataDirectoryFinder for GenshinGacha {
     let mihoyo_dir = lookup_mihoyo_dir();
     let mut directories = Vec::new();
 
+    // TODO: Untested
     const INTERNATIONAL_OUTPUT_LOG : &str = "Genshin Impact/output_log.txt";
     const INTERNATIONAL_DIR_KEYWORD: &str = "/GenshinImpact_Data/";
 

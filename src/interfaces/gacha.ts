@@ -4,7 +4,7 @@
 export interface GenshinGachaRecord {
   id: string
   uid: string
-  gacha_type: string // 100 | 200 | 201 | 301
+  gacha_type: string // 100 | 200 | 301 | 302 | 400
   itemId: string     // always empty
   count: string      // always 1
   time: string

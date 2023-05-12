@@ -2,6 +2,7 @@ extern crate anyhow;
 extern crate reqwest;
 extern crate sea_orm;
 extern crate serde;
+extern crate tauri;
 extern crate thiserror;
 
 #[derive(Debug, thiserror::Error)]
@@ -20,6 +21,9 @@ pub enum Error {
   #[error(transparent)]
   Db(#[from] sea_orm::error::DbErr),
 
+  #[error(transparent)]
+  Tauri(#[from] tauri::Error),
+
   // Gacha
 
   #[error("Illegal Gacha Url")]
@@ -34,6 +38,10 @@ pub enum Error {
   #[allow(unused)]
   #[error("Gacha record fetcher channel send error")]
   GachaRecordFetcherChannelSend,
+
+  #[allow(unused)]
+  #[error("Gacha record fetcher channel join error")]
+  GachaRecordFetcherChannelJoin,
 
   // Account
 

@@ -74,7 +74,9 @@ impl Storage {
 
     debug!("Create storage with database: {url}");
     debug!("Connecting to storage...");
-    let options = ConnectOptions::new(url);
+    let mut options = ConnectOptions::new(url);
+    options.sqlx_logging_level(tracing::log::LevelFilter::Trace);
+
     let database = Database::connect(options).await?;
     debug!("Storage connected");
 

@@ -15,7 +15,7 @@ export interface GachaRecords {
   readonly uid: Account['uid']
   readonly values: Record<GachaRecord['gacha_type'], GachaRecord[]>
   readonly namedValues: Record<NamedGachaRecords['category'], NamedGachaRecords>
-  readonly aggregatedValues: Omit<NamedGachaRecords, 'category'>
+  readonly aggregatedValues: Omit<NamedGachaRecords, 'category' | 'gachaType' | 'lastEndId'>
   readonly total: number
   readonly firstTime?: GachaRecord['time']
   readonly lastTime?: GachaRecord['time']
@@ -23,6 +23,8 @@ export interface GachaRecords {
 
 export interface NamedGachaRecords {
   category: 'newbie' | 'permanent' | 'character' | 'weapon'
+  gachaType: GachaRecord['gacha_type']
+  lastEndId?: GachaRecord['id']
   values: GachaRecord[]
   total: number
   firstTime?: GachaRecord['time']
@@ -101,12 +103,7 @@ export function GachaRecordsContextProvider (props: React.PropsWithChildren<{
 }
 
 export function useGachaRecordsContext () {
-  const context = React.useContext(GachaRecordsContext)
-  if (!context) {
-    throw new Error('useGachaRecordsContext must be used within a GachaRecordsContext.Provider')
-  } else {
-    return context
-  }
+  return React.useContext(GachaRecordsContext)
 }
 
 /// Hook Fn
@@ -116,13 +113,14 @@ export function useRefetchGachaRecordsFn () {
   const gachaRecords = useGachaRecordsContext()
 
   return React.useCallback(async () => {
+    if (!gachaRecords) return
     const { facet, uid } = gachaRecords
     const query = createQuery(facet, uid)
     await queryClient.refetchQueries({
       queryKey: query.queryKey,
       exact: true
     })
-  }, [queryClient, gachaRecords.facet, gachaRecords.uid])
+  }, [queryClient, gachaRecords])
 }
 
 /// Private Compute Fn
@@ -204,6 +202,7 @@ function computeNamedGachaRecords (
     .reduce((acc, [gachaType, category]) => {
       const data = concatNamedGachaRecordsValues(facet, values, gachaType, category)
       const total = data.length
+      const lastEndId = data[total - 1]?.id
       const firstTime = data[0]?.time
       const lastTime = data[total - 1]?.time
       const metadata: NamedGachaRecords['metadata'] = {
@@ -214,6 +213,8 @@ function computeNamedGachaRecords (
 
       acc[category] = {
         category,
+        gachaType,
+        lastEndId,
         total,
         firstTime,
         lastTime,

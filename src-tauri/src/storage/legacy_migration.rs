@@ -32,7 +32,8 @@ pub async fn legacy_migration<P: AsRef<Path>>(
   let legacy_database = {
     let url = format!("sqlite://{}?mode=ro", legacy_database.as_ref().display());
     debug!("Connecting to legacy database: {}", url);
-    let opts = ConnectOptions::new(url);
+    let mut opts = ConnectOptions::new(url);
+    opts.sqlx_logging_level(tracing::log::LevelFilter::Trace);
     Database::connect(opts).await?
   };
 

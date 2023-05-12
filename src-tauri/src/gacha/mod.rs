@@ -1,4 +1,5 @@
 mod declare;
+mod utilities;
 mod impl_genshin;
 mod impl_starrail;
 mod plugin;
