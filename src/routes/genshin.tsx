@@ -5,6 +5,7 @@ import { GachaRecordsContextProvider } from '@/hooks/useGachaRecords'
 import Layout from '@/components/Layout'
 import AccountMenu from '@/components/account/AccountMenu'
 import GachaRecordsFetcher from '@/components/gacha/GachaRecordsFetcher'
+import GachaRecordsOverview from '@/components/gacha/GachaRecordsOverview'
 import Typography from '@mui/material/Typography'
 
 export const loader = createStatefulAccountLoader(AccountFacet.Genshin)
@@ -15,6 +16,7 @@ export default withStatefulAccount(AccountFacet.Genshin, function Genshin ({ fac
       <GachaRecordsContextProvider facet={facet} uid={selectedAccountUid}>
         <Typography variant="h5">Genshin Impact</Typography>
         <GachaRecordsFetcher />
+        <GachaRecordsOverview />
       </GachaRecordsContextProvider>
     </Layout>
   )
