@@ -13,7 +13,7 @@ type GachaRecord = GenshinGachaRecord | StarRailGachaRecord
 export interface GachaRecords {
   readonly facet: AccountFacet
   readonly uid: Account['uid']
-  readonly values: Record<GachaRecord['gacha_type'], GachaRecord[]>
+  readonly values: Partial<Record<GachaRecord['gacha_type'], GachaRecord[]>>
   readonly namedValues: Record<NamedGachaRecords['category'], NamedGachaRecords>
   readonly aggregatedValues: Omit<NamedGachaRecords, 'category' | 'gachaType' | 'lastEndId'>
   readonly total: number
@@ -107,10 +107,12 @@ function computeGachaRecords (
   const firstTime = data[0]?.time
   const lastTime = data[total - 1]?.time
   const values = data.reduce((acc, record) => {
-    if (!acc[record.gacha_type]) {
-      acc[record.gacha_type] = []
+    const ref = acc[record.gacha_type]
+    if (!ref) {
+      acc[record.gacha_type] = [record]
+    } else {
+      ref.push(record)
     }
-    acc[record.gacha_type].push(record)
     return acc
   }, {} as GachaRecords['values'])
 
@@ -158,7 +160,7 @@ function concatNamedGachaRecordsValues (
   if (facet === AccountFacet.Genshin && category === 'character') {
     // HACK: Genshin Impact: 301 and 400 are the character gacha type
     return Array.from(data)
-      .concat(values['400'])
+      .concat(values['400'] || [])
       .sort(sortGachaRecordById)
   } else {
     return Array.from(data)
