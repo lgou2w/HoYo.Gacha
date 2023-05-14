@@ -16,10 +16,12 @@
 
 ### 🚧 正在开发和重构中... 🚧
 
-- [ ] 支持 **`原神`** 和 **`崩坏：星穹铁道`** 游戏抽卡记录。
-- [ ] 管理游戏的多个账号。
-- [ ] 获取游戏的抽卡链接。
-- [ ] 获取抽卡记录并保存到本地数据库文件。
+> 开发者测试版：[releases](https://github.com/lgou2w/HoYo.Gacha/releases)
+
+- [x] 支持 **`原神`** 和 **`崩坏：星穹铁道`** 游戏抽卡记录。
+- [x] 管理游戏的多个账号。
+- [x] 获取游戏的抽卡链接。
+- [x] 获取抽卡记录并保存到本地数据库文件。
 - [ ] 实现 `UIGF` 统一可交换祈愿记录标准。
 - [ ] 开发中...
 
@@ -48,6 +50,6 @@ MIT OR Apache-2.0 **仅供个人学习交流使用。请勿用于任何商业或
 ©miHoYo | 上海米哈游影铁科技有限公司 版权所有
 
 * [src/assets/images/Logo.png](src/assets/images/Logo.png)
-* [src/assets/images/genshin](src/assets/images/genshin)
-* [src/assets/images/starrail](src/assets/images/starrail)
+* [src/assets/images/genshin/*](src/assets/images/genshin)
+* [src/assets/images/starrail/*](src/assets/images/starrail)
 * [src-tauri/icons/*](src-tauri/icons/)
