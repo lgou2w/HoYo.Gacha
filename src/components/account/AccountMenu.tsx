@@ -26,7 +26,7 @@ export default function AccountMenu () {
       <Button onClick={openDrawer}>
         <AccountAvatar facet={facet} />
         <Stack direction="column" marginX={1} textAlign="left">
-          <Typography variant="body2" gutterBottom>
+          <Typography variant="body2" textTransform="none" gutterBottom>
             {displayName}
           </Typography>
           <Typography variant="caption" lineHeight={1} textTransform="none">

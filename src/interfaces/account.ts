@@ -8,7 +8,8 @@ export enum AccountFacet {
 }
 
 export interface KnownAccountProperties {
-  displayName: string | null
+  displayName?: string | null
+  lastGachaUpdated?: string | null
   [key: string]: unknown
 }
 
@@ -36,4 +37,16 @@ export function resolveAccountDisplayName (facet: AccountFacet, account: Account
         ? '开拓者'
         : 'NULL'
   )
+}
+
+// TODO: i18n
+export function resolveCurrency (facet: AccountFacet): { currency: string, action: string } {
+  switch (facet) {
+    case AccountFacet.Genshin:
+      return { currency: '原石', action: '祈愿' }
+    case AccountFacet.StarRail:
+      return { currency: '星琼', action: '跃迁' }
+    default:
+      throw new Error(`Unknown account facet: ${facet}`)
+  }
 }

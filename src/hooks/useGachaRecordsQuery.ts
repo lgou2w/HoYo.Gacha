@@ -49,11 +49,6 @@ export interface GoldenGachaRecordsMetadata extends GachaRecordsMetadata {
   nextPity: number
 }
 
-export const GachaRecordsContext =
-  React.createContext<GachaRecords | undefined>(undefined)
-
-GachaRecordsContext.displayName = 'GachaRecordsContext'
-
 /// Query
 
 const QueryPrefix = 'gachaRecords'
@@ -90,37 +85,15 @@ export function useGachaRecordsQuery (facet: AccountFacet, uid: Account['uid'] |
 
 /// Hook
 
-export function GachaRecordsContextProvider (props: React.PropsWithChildren<{
-  facet: AccountFacet,
-  uid: Account['uid'] | null
-}>) {
-  const gachaRecords = useGachaRecordsQuery(props.facet, props.uid)
-  return (
-    <GachaRecordsContext.Provider value={gachaRecords.data ?? undefined}>
-      {props.children}
-    </GachaRecordsContext.Provider>
-  )
-}
-
-export function useGachaRecordsContext () {
-  return React.useContext(GachaRecordsContext)
-}
-
-/// Hook Fn
-
 export function useRefetchGachaRecordsFn () {
   const queryClient = useQueryClient()
-  const gachaRecords = useGachaRecordsContext()
-
-  return React.useCallback(async () => {
-    if (!gachaRecords) return
-    const { facet, uid } = gachaRecords
+  return React.useCallback(async (facet: AccountFacet, uid: Account['uid']) => {
     const query = createQuery(facet, uid)
     await queryClient.refetchQueries({
       queryKey: query.queryKey,
       exact: true
     })
-  }, [queryClient, gachaRecords])
+  }, [queryClient])
 }
 
 /// Private Compute Fn

@@ -3,6 +3,7 @@ extern crate reqwest;
 extern crate sea_orm;
 extern crate serde;
 extern crate tauri;
+extern crate time;
 extern crate thiserror;
 
 #[derive(Debug, thiserror::Error)]
@@ -24,12 +25,18 @@ pub enum Error {
   #[error(transparent)]
   Tauri(#[from] tauri::Error),
 
+  #[error(transparent)]
+  Time(#[from] time::Error),
+
   // Gacha
 
   #[error("Illegal Gacha Url")]
   IllegalGachaUrl,
 
-  #[error("Gacha record response: {message:?} ({retcode:?})")]
+  #[error("Vacant Gacha Url")]
+  VacantGachaUrl,
+
+  #[error("Gacha record response: {retcode:?} {message:?}")]
   GachaRecordRetcode {
     retcode: i32,
     message: String
@@ -71,8 +78,10 @@ macro_rules! impl_error_identifiers {
 
 impl_error_identifiers! {
   IllegalGachaUrl               => ILLEGAL_GACHA_URL,
+  VacantGachaUrl                => VACANT_GACHA_URL,
   GachaRecordRetcode            => GACHA_RECORD_RETCODE,
   GachaRecordFetcherChannelSend => GACHA_RECORD_FETCHER_CHANNEL_SEND,
+  GachaRecordFetcherChannelJoin => GACHA_RECORD_FETCHER_CHANNEL_JOIN,
   AccountAlreadyExists          => ACCOUNT_ALREADY_EXISTS,
   AccountNotFound               => ACCOUNT_NOT_FOUND
 }

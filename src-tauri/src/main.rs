@@ -16,6 +16,7 @@ mod storage;
 fn main() {
   tracing_subscriber::fmt()
     .with_max_level(tracing::Level::DEBUG)
+    .with_env_filter("hoyo_gacha=debug,hyper=warn") // TODO: production
     .init();
 
   tauri::Builder::default()

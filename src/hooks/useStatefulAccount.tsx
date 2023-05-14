@@ -77,15 +77,20 @@ export function createStatefulAccountLoader (
 export const withStatefulAccount = (
   facet: AccountFacet,
   Wrapped: React.ComponentType<{
-    facet: AccountFacet,
-    selectedAccountUid: Account['uid'] | null
+    facet: AccountFacet
+    accounts: StatefulAccount['accounts'] | null
+    selectedAccountUid: StatefulAccount['selectedAccountUid'] | null
   }>
 ) => {
   return function withStatefulAccountHOC () {
     const statefulAccount = useStatefulAccountQuery(facet)
     return (
       <StatefulAccountContext.Provider value={statefulAccount.data}>
-        <Wrapped facet={facet} selectedAccountUid={statefulAccount.data?.selectedAccountUid ?? null} />
+        <Wrapped
+          facet={facet}
+          accounts={statefulAccount.data?.accounts ?? null}
+          selectedAccountUid={statefulAccount.data?.selectedAccountUid ?? null}
+        />
       </StatefulAccountContext.Provider>
     )
   }
@@ -144,3 +149,23 @@ export function useCreateAccountFn () {
     })
   }, [queryClient, statefulAccount])
 }
+
+function createUseUpdateAccountFn<Args extends unknown[]> (caller: (...args: Args) => Promise<Account>) {
+  return function () {
+    const queryClient = useQueryClient()
+    const statefulAccount = useStatefulAccountContext()
+
+    return React.useCallback(async (...args: Args) => {
+      const account = await caller(...args)
+      queryClient.setQueryData<StatefulAccount>([QueryPrefix, statefulAccount.facet], (prev) => {
+        return prev && produce(prev, (draft) => {
+          draft.accounts[account.uid] = account
+        })
+      })
+    }, [queryClient, statefulAccount])
+  }
+}
+
+export const useUpdateAccountGameDataDirFn = createUseUpdateAccountFn(PluginStorage.updateAccountGameDataDir)
+export const useUpdateAccountGachaUrlFn = createUseUpdateAccountFn(PluginStorage.updateAccountGachaUrl)
+export const useUpdateAccountPropertiesFn = createUseUpdateAccountFn(PluginStorage.updateAccountProperties)

@@ -6,9 +6,12 @@ export async function findGameDataDirectories (facet: AccountFacet): Promise<str
   return invoke('plugin:gacha|find_game_data_directories', { facet })
 }
 
-// TODO: temp test code
-export async function findGachaUrlOfLatest (facet: AccountFacet, gameDataDir: string): Promise<string> {
-  return invoke('plugin:gacha|find_gacha_url_of_latest', { facet, gameDataDir })
+export async function findGachaUrl (
+  facet: AccountFacet,
+  uid: Account['uid'],
+  gameDataDir: string
+): Promise<string> {
+  return invoke('plugin:gacha|find_gacha_url', { facet, uid, gameDataDir })
 }
 
 export async function pullAllGachaRecords (
@@ -33,7 +36,7 @@ export async function pullAllGachaRecords (
 
 const PluginGacha = Object.freeze({
   findGameDataDirectories,
-  findGachaUrlOfLatest,
+  findGachaUrl,
   pullAllGachaRecords
 })
 

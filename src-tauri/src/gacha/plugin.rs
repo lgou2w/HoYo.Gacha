@@ -10,13 +10,15 @@ use crate::storage::entity_account::AccountFacet;
 use super::{
   GameDataDirectoryFinder,
   GachaUrlFinder,
-  GachaUrl,
   GenshinGacha,
   StarRailGacha,
   GachaRecordFetcherChannelFragment,
   create_fetcher_channel,
 };
-use super::utilities::create_default_reqwest;
+use super::utilities::{
+  create_default_reqwest,
+  find_gacha_url_and_validate_consistency,
+};
 
 /// Tauri commands
 
@@ -30,18 +32,24 @@ async fn find_game_data_directories(
   }
 }
 
-// TODO: temp test code
 #[tauri::command]
-async fn find_gacha_url_of_latest(
+async fn find_gacha_url(
   facet: AccountFacet,
+  uid: String,
   game_data_dir: PathBuf
-) -> Result<Option<String>> {
-  let gacha_urls = match facet {
-    AccountFacet::Genshin => GenshinGacha.find_gacha_urls(game_data_dir),
-    AccountFacet::StarRail => StarRailGacha.find_gacha_urls(game_data_dir)
-  }?;
+) -> Result<String> {
+  let gacha_url = match facet {
+    AccountFacet::Genshin => {
+      let gacha_urls = GenshinGacha.find_gacha_urls(game_data_dir)?;
+      find_gacha_url_and_validate_consistency(&GenshinGacha, &facet, &uid, &gacha_urls).await?
+    },
+    AccountFacet::StarRail => {
+      let gacha_urls = StarRailGacha.find_gacha_urls(game_data_dir)?;
+      find_gacha_url_and_validate_consistency(&StarRailGacha, &facet, &uid, &gacha_urls).await?
+    }
+  };
 
-  Ok(gacha_urls.first().map(|gacha_url| gacha_url.to_string()))
+  Ok(gacha_url.to_string())
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -56,7 +64,6 @@ async fn pull_all_gacha_records(
   event_channel: String,
   save_to_storage: Option<bool>
 ) -> Result<()> {
-  let gacha_url = GachaUrl::from(gacha_url);
   let reqwest = create_default_reqwest()?;
   let save_to_storage = save_to_storage.unwrap_or(false);
 
@@ -118,7 +125,7 @@ impl GachaPluginBuilder {
     TauriPluginBuilder::new(Self::PLUGIN_NAME)
       .invoke_handler(tauri::generate_handler![
         find_game_data_directories,
-        find_gacha_url_of_latest,
+        find_gacha_url,
         pull_all_gacha_records
       ])
       .build()

@@ -122,19 +122,32 @@ impl GachaRecordFetcher for StarRailGacha {
 
   async fn fetch_gacha_records(&self,
     reqwest: &Reqwest,
-    gacha_url: &GachaUrl,
-    gacha_type: &str,
-    end_id: &str
+    gacha_url: &str,
+    gacha_type: Option<&str>,
+    end_id: Option<&str>
   ) -> Result<Option<Vec<Self::Target>>> {
     let response = fetch_gacha_records::<StarRailGachaRecordPagination>(
       reqwest,
+      ENDPOINT,
       gacha_url,
       gacha_type,
-      end_id,
-      ENDPOINT
+      end_id
     ).await?;
 
     Ok(response.data.map(|pagination| pagination.list))
+  }
+
+  async fn fetch_gacha_records_any_uid(&self,
+    reqwest: &Reqwest,
+    gacha_url: &str
+  ) -> Result<Option<String>> {
+    let result = self.fetch_gacha_records(reqwest, gacha_url, None, None).await?;
+    Ok(result
+      .and_then(|gacha_records| {
+        gacha_records
+          .first()
+          .map(|record| record.uid.clone())
+      }))
   }
 }
 
