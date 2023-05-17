@@ -11,7 +11,7 @@ import Divider from '@mui/material/Divider'
 
 export default function GachaAnalysisHistory () {
   const { facet, gachaRecords } = useGachaLayoutContext()
-  const { namedValues: { character, weapon, permanent } } = gachaRecords
+  const { namedValues: { character, weapon, permanent, newbie } } = gachaRecords
 
   return (
     <Box>
@@ -20,6 +20,9 @@ export default function GachaAnalysisHistory () {
         <GachaAnalysisHistoryList facet={facet} value={character} />
         <GachaAnalysisHistoryList facet={facet} value={weapon} />
         <GachaAnalysisHistoryList facet={facet} value={permanent} />
+        {newbie.metadata.golden.sum > 0 && (
+          <GachaAnalysisHistoryList facet={facet} value={newbie} />
+        )}
       </Stack>
     </Box>
   )
@@ -36,7 +39,7 @@ function GachaAnalysisHistoryList ({ facet, value }: {
       <Box className={`${GachaAnalysisHistoryListCls}-title`}>
         <Typography variant="body1">{categoryTitle}</Typography>
         <Typography variant="body2">
-          {category !== 'permanent'
+          {category !== 'permanent' && category !== 'newbie'
             ? `${golden.sumRestricted} + ${golden.sum - golden.sumRestricted}`
             : golden.sum
           }
