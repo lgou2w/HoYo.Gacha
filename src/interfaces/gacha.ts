@@ -5,7 +5,7 @@ export interface GenshinGachaRecord {
   id: string
   uid: string
   gacha_type: string // 100 | 200 | 301 | 302 | 400
-  itemId: string     // always empty
+  item_id: string    // always empty
   count: string      // always 1
   time: string
   name: string
@@ -20,7 +20,7 @@ export interface StarRailGachaRecord {
   uid: string
   gacha_id: string
   gacha_type: string // 1 | 2 | 11 | 12
-  itemId: string
+  item_id: string
   count: string      // always 1
   time: string
   name: string
