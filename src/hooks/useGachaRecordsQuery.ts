@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { QueryKey, FetchQueryOptions, useQuery, useQueryClient } from '@tanstack/react-query'
-import { AccountFacet, Account } from '@/interfaces/account'
+import { AccountFacet, Account, resolveCurrency } from '@/interfaces/account'
 import { GenshinGachaRecord, StarRailGachaRecord } from '@/interfaces/gacha'
 import PluginStorage from '@/utilities/plugin-storage'
 
@@ -15,7 +15,7 @@ export interface GachaRecords {
   readonly uid: Account['uid']
   readonly values: Partial<Record<GachaRecord['gacha_type'], GachaRecord[]>>
   readonly namedValues: Record<NamedGachaRecords['category'], NamedGachaRecords>
-  readonly aggregatedValues: Omit<NamedGachaRecords, 'category' | 'gachaType' | 'lastEndId'>
+  readonly aggregatedValues: Omit<NamedGachaRecords, 'category' | 'categoryTitle' | 'gachaType' | 'lastEndId'>
   readonly total: number
   readonly firstTime?: GachaRecord['time']
   readonly lastTime?: GachaRecord['time']
@@ -23,6 +23,7 @@ export interface GachaRecords {
 
 export interface NamedGachaRecords {
   category: 'newbie' | 'permanent' | 'character' | 'weapon'
+  categoryTitle: string
   gachaType: GachaRecord['gacha_type']
   lastEndId?: GachaRecord['id']
   values: GachaRecord[]
@@ -145,6 +146,21 @@ const KnownStarRailGachaTypes: Record<StarRailGachaRecord['gacha_type'], NamedGa
   12: 'weapon'
 }
 
+const KnownCategoryTitles: Record<AccountFacet, Record<NamedGachaRecords['category'], string>> = {
+  [AccountFacet.Genshin]: {
+    character: '角色活动',
+    weapon: '武器活动',
+    permanent: '常驻',
+    newbie: '新手'
+  },
+  [AccountFacet.StarRail]: {
+    character: '角色活动',
+    weapon: '光锥活动',
+    permanent: '常驻',
+    newbie: '新手'
+  }
+}
+
 const isRankTypeOfBlue = (record: GachaRecord) => record.rank_type === '3'
 const isRankTypeOfPurple = (record: GachaRecord) => record.rank_type === '4'
 const isRankTypeOfGolden = (record: GachaRecord) => record.rank_type === '5'
@@ -172,9 +188,12 @@ function computeNamedGachaRecords (
   values: GachaRecords['values']
 ): GachaRecords['namedValues'] {
   const categories = facet === AccountFacet.Genshin ? KnownGenshinGachaTypes : KnownStarRailGachaTypes
+  const { action: currencyAction } = resolveCurrency(facet)
+
   return Object
     .entries(categories)
     .reduce((acc, [gachaType, category]) => {
+      const categoryTitle = KnownCategoryTitles[facet][category] + currencyAction
       const data = concatNamedGachaRecordsValues(facet, values, gachaType, category)
       const total = data.length
       const lastEndId = data[total - 1]?.id
@@ -188,6 +207,7 @@ function computeNamedGachaRecords (
 
       acc[category] = {
         category,
+        categoryTitle,
         gachaType,
         lastEndId,
         total,
@@ -327,6 +347,26 @@ function isRestrictedGolden (
   facet: AccountFacet,
   record: GachaRecord
 ): boolean {
-  // TODO: Genshin Impact and Honkai: Star Rail restricted golden
-  return false
+  switch (facet) {
+    case AccountFacet.Genshin:
+      return !KnownGenshinPermanentGoldenNames.includes(record.name)
+    case AccountFacet.StarRail:
+      return !KnownStarRailPermanentGoldenItemIds.includes(record.item_id)
+    default:
+      throw new Error(`Unknown facet: ${facet}`)
+  }
 }
+
+// TODO: Genshin Impact and Honkai: Star Rail restricted golden
+//   Temporary use of embedded resources
+
+const KnownGenshinPermanentGoldenNames: string[] = [
+  '琴', '迪卢克', '七七', '莫娜', '刻晴', '提纳里', '迪希雅',
+  '风鹰剑', '天空之刃', '天空之傲', '狼的末路', '天空之脊',
+  '和璞鸢', '天空之卷', '四风原典', '天空之翼', '阿莫斯之弓'
+]
+
+const KnownStarRailPermanentGoldenItemIds: string[] = [
+  '1003', '1004', '1101', '1104', '1107', '1209', '1211',
+  '23000', '23002', '23003', '23004', '23005', '23012', '23013'
+]

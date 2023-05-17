@@ -34,36 +34,15 @@ export default function GachaOverviewGrid () {
   )
 }
 
-const KnownCategoryTitles: Record<AccountFacet, Record<NamedGachaRecords['category'] | 'aggregated', string>> = {
-  [AccountFacet.Genshin]: {
-    character: '角色活动',
-    weapon: '武器活动',
-    permanent: '常驻',
-    newbie: '新手',
-    aggregated: '合计'
-  },
-  [AccountFacet.StarRail]: {
-    character: '角色活动',
-    weapon: '光锥活动',
-    permanent: '常驻',
-    newbie: '新手',
-    aggregated: '合计'
-  }
-}
-
 function GachaOverviewGridCard ({ facet, value, newbie }: {
   facet: AccountFacet
   value: NamedGachaRecords | GachaRecords['aggregatedValues']
   newbie?: NamedGachaRecords
 }) {
   const { total, firstTime, lastTime, metadata: { golden } } = value
-  const { currency, action } = resolveCurrency(facet)
-
+  const { currency } = resolveCurrency(facet)
   const category = 'category' in value ? value.category : 'aggregated'
-  let categoryTitle = KnownCategoryTitles[facet][category]
-  if (category !== 'aggregated') {
-    categoryTitle += action
-  }
+  const categoryTitle = 'categoryTitle' in value ? value.categoryTitle : '合计'
 
   const lastGolden = golden.values[golden.values.length - 1]
   const lastGoldenName = lastGolden ? `${lastGolden.name}（${lastGolden.usedPity}）` : '无'
