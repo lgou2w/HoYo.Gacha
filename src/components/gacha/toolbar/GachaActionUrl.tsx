@@ -1,5 +1,6 @@
 import React from 'react'
 import { useImmer } from 'use-immer'
+import { clipboard } from '@tauri-apps/api'
 import { resolveCurrency } from '@/interfaces/account'
 import { useUpdateAccountGachaUrlFn } from '@/hooks/useStatefulAccount'
 import { useGachaLayoutContext } from '@/components/gacha/GachaLayoutContext'
@@ -8,8 +9,10 @@ import Stack from '@mui/material/Stack'
 import TextField from '@mui/material/TextField'
 import InputAdornment from '@mui/material/InputAdornment'
 import Button from '@mui/material/Button'
+import IconButton from '@mui/material/IconButton'
 import LinkIcon from '@mui/icons-material/Link'
 import AddLinkIcon from '@mui/icons-material/AddLink'
+import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 
 export default function GachaActionUrl () {
   const { selectedAccount, alert } = useGachaLayoutContext()
@@ -41,18 +44,38 @@ export default function GachaActionUrl () {
     }
   }, [selectedAccount, alert, updateAccountGachaUrl, produceState])
 
+  const handleCopyGachaUrl = React.useCallback(async () => {
+    if (!selectedAccount.gachaUrl) {
+      alert('链接不可用！请先尝试读取链接。')
+    } else {
+      try {
+        await clipboard.writeText(selectedAccount.gachaUrl)
+        alert(null, '链接已复制到剪切板！')
+      } catch (e) {
+        alert(e)
+      }
+    }
+  }, [selectedAccount, alert])
+
   return (
     <Stack direction="row" gap={2}>
       <TextField variant="outlined" size="small"
         label={`${action}链接`} placeholder={`${action}链接`}
         value={selectedAccount.gachaUrl || ''}
-        sx={{ maxWidth: 180 }}
+        sx={{ maxWidth: 200 }}
         InputProps={{
           readOnly: true,
           sx: { paddingX: 1 },
           startAdornment: (
             <InputAdornment position="start">
               <LinkIcon />
+            </InputAdornment>
+          ),
+          endAdornment: (
+            <InputAdornment position="end">
+              <IconButton size="small" onClick={handleCopyGachaUrl} disabled={busy}>
+                <ContentCopyIcon fontSize="small" />
+              </IconButton>
             </InputAdornment>
           )
         }}
