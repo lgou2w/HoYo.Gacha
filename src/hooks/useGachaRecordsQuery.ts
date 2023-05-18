@@ -13,6 +13,7 @@ type GachaRecord = GenshinGachaRecord | StarRailGachaRecord
 export interface GachaRecords {
   readonly facet: AccountFacet
   readonly uid: Account['uid']
+  readonly gachaTypeToCategoryMappings: Record<GachaRecord['gacha_type'], NamedGachaRecords['category']>
   readonly values: Partial<Record<GachaRecord['gacha_type'], GachaRecord[]>>
   readonly namedValues: Record<NamedGachaRecords['category'], NamedGachaRecords>
   readonly aggregatedValues: Omit<NamedGachaRecords, 'category' | 'categoryTitle' | 'gachaType' | 'lastEndId'>
@@ -119,11 +120,18 @@ function computeGachaRecords (
 
   const namedValues = computeNamedGachaRecords(facet, values)
   const aggregatedValues = computeAggregatedGachaRecords(facet, data, namedValues)
+  const gachaTypeToCategoryMappings = Object
+    .values(namedValues)
+    .reduce((acc, prev) => {
+      acc[prev.gachaType] = prev.category
+      return acc
+    }, {} as GachaRecords['gachaTypeToCategoryMappings'])
 
   return {
     facet,
     uid,
     total,
+    gachaTypeToCategoryMappings,
     values,
     namedValues,
     aggregatedValues,

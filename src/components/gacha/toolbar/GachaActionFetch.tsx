@@ -2,7 +2,7 @@ import React from 'react'
 import { useImmer } from 'use-immer'
 import { resolveCurrency } from '@/interfaces/account'
 import { useUpdateAccountPropertiesFn } from '@/hooks/useStatefulAccount'
-import { useRefetchGachaRecordsFn } from '@/hooks/useGachaRecordsQuery'
+import { GachaRecords, useRefetchGachaRecordsFn } from '@/hooks/useGachaRecordsQuery'
 import { useGachaLayoutContext } from '@/components/gacha/GachaLayoutContext'
 import useGachaRecordsFetcher from '@/hooks/useGachaRecordsFetcher'
 import Box from '@mui/material/Box'
@@ -84,10 +84,37 @@ export default function GachaActionFetch () {
             {`正在获取${action}记录中，请稍候...`}
           </Typography>
           <Typography variant="body1" sx={{ marginTop: 1 }}>
-            {JSON.stringify(currentFragment)}
+            {stringifyFragment(gachaRecords, currentFragment)}
           </Typography>
         </Box>
       </Backdrop>}
     </Box>
   )
+}
+
+function stringifyFragment (
+  gachaRecords: GachaRecords,
+  fragment: ReturnType<typeof useGachaRecordsFetcher>['currentFragment']
+): string {
+  if (fragment === 'idle') {
+    return '空闲中...'
+  } else if (fragment === 'sleeping') {
+    return '等待中...'
+  } else if (fragment === 'finished') {
+    return '完成！'
+  } else if ('ready' in fragment) {
+    const gachaType = fragment.ready
+    const category = gachaRecords.gachaTypeToCategoryMappings[gachaType]
+    const categoryTitle = gachaRecords.namedValues[category].categoryTitle
+    return `开始获取数据：${categoryTitle}`
+  } else if ('pagination' in fragment) {
+    const pagination = fragment.pagination
+    return `获取第 ${pagination} 页数据...`
+  } else if ('data' in fragment) {
+    const data = fragment.data
+    return `获取到 ${data.length} 条新数据...`
+  } else {
+    // Should never reach here
+    return `Unknown fragment: ${JSON.stringify(fragment)}`
+  }
 }
