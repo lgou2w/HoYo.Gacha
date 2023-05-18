@@ -23,12 +23,13 @@
 - [x] 获取游戏的抽卡链接。
 - [x] 获取抽卡记录并保存到本地数据库文件。
 - [ ] 实现 `UIGF` 统一可交换祈愿记录标准。
-- [ ] 导出为 Json、Excel、图片文件。
+- [ ] 支持导入导出为 Json、Excel 文件。
+- [ ] 支持创建图片分享。
 - [ ] 开发中...
 
 ## 硬盘缓存
 
-**关于从 `Chromium Disk Cache` 硬盘缓存获取祈愿链接的实现原理请参考：[硬盘缓存](DiskCache/README.md)**
+**关于从 `Chromium Disk Cache` 硬盘缓存获取抽卡链接的实现原理请参考：[硬盘缓存](DiskCache/README.md)**
 
 ## 特别感谢
 
