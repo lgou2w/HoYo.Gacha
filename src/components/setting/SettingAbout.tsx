@@ -30,13 +30,13 @@ export default function SettingAbout () {
           &nbsp;
           {'一个非官方的工具，用于管理和分析你的 miHoYo 抽卡记录。'}
           {'使用 '}
-          <Link href="https://tauri.app" rel="noreferrer">Tauri</Link>
+          <Link href="https://tauri.app" target="_blank" rel="noreferrer">Tauri</Link>
           {'、'}
-          <Link href="https://reactjs.org" rel="noreferrer">React</Link>
+          <Link href="https://reactjs.org" target="_blank" rel="noreferrer">React</Link>
           {'、'}
-          <Link href="https://rust-lang.org" rel="noreferrer">Rust</Link>
+          <Link href="https://rust-lang.org" target="_blank" rel="noreferrer">Rust</Link>
           {' 和 '}
-          <Link href="https://mui.com" rel="noreferrer">MUI</Link>
+          <Link href="https://mui.com" target="_blank" rel="noreferrer">MUI</Link>
           {' 框架开发。'}
           <br />
           {'本软件不会收集任何用户数据。所产生的数据（包括但不限于使用数据、抽卡数据、账号信息等）均保存在用户本地。'}
