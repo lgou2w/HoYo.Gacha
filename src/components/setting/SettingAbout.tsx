@@ -1,28 +1,19 @@
 import React from 'react'
-import { useQuery } from '@tanstack/react-query'
+import Version from '@/components/common/Version'
 import Stack from '@mui/material/Stack'
 import Typography from '@mui/material/Typography'
 import Button from '@mui/material/Button'
 import Link from '@mui/material/Link'
-import invoke from '@/utilities/invoke'
 
 // TODO: Version check
 
 export default function SettingAbout () {
-  const version = useQuery({
-    queryKey: ['get_version'],
-    queryFn: async () => invoke<string>('get_version'),
-    staleTime: Infinity,
-    cacheTime: Infinity,
-    refetchOnWindowFocus: false
-  })
-
   return (
     <Stack gap={2}>
       <Stack gap={1}>
         <Typography component="h3" variant="body1">版本</Typography>
         <Typography component="p" variant="body2">
-          {`当前版本：v${version.data || __APP_VERSION__}`}
+          <Version variant="inherit" format={(ver) => `当前版本：v${ver}`} />
           &nbsp;&nbsp;
           <Button size="small" disabled>检查更新</Button>
           <br />
