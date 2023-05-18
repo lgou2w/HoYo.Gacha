@@ -240,8 +240,12 @@ where
   debug!("Local datetime: {}", local_datetime);
   debug!("Total gacha urls: {}", valid_gacha_urls.len());
 
+  fn combine_key(facet: &AccountFacet, uid: &str, gacha_url: &GachaUrl) -> String {
+    format!("{}-{}-{}", facet, uid, gacha_url.addr)
+  }
+
   for (counter, gacha_url) in valid_gacha_urls.into_iter().enumerate() {
-    let key = &format!("{}-{}-{}", facet, uid, gacha_url.addr);
+    let key = combine_key(facet, uid, gacha_url);
     debug!("Validate gacha url with key: {}", key);
 
     // Hit cache
@@ -271,10 +275,15 @@ where
       },
       Err(err) => return Err(err),
       Ok(gacha_url_uid) => {
-        if gacha_url_uid.as_deref() == Some(uid) {
-          // Cache the result
+        // Always cache the result
+        if let Some(gacha_url_uid) = gacha_url_uid.as_deref() {
+          let key = combine_key(facet, gacha_url_uid, gacha_url);
           debug!("Cache gacha url: key={}, url={}", key, gacha_url.value);
           cached.insert(key.to_owned(), gacha_url.clone());
+        }
+
+        // Consistency check
+        if gacha_url_uid.as_deref() == Some(uid) {
           return Ok(gacha_url.clone());
         } else {
           debug!("Gacha url uid mismatch: expected={}, actual={}", uid, gacha_url_uid.unwrap_or_default());
