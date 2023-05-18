@@ -175,3 +175,25 @@ function createUseUpdateAccountFn<Args extends unknown[]> (caller: (...args: Arg
 export const useUpdateAccountGameDataDirFn = createUseUpdateAccountFn(PluginStorage.updateAccountGameDataDir)
 export const useUpdateAccountGachaUrlFn = createUseUpdateAccountFn(PluginStorage.updateAccountGachaUrl)
 export const useUpdateAccountPropertiesFn = createUseUpdateAccountFn(PluginStorage.updateAccountProperties)
+
+export function useDeleteAccountFn () {
+  const queryClient = useQueryClient()
+  const statefulAccount = useStatefulAccountContext()
+
+  return React.useCallback(async (uid: AccountUid) => {
+    await PluginStorage.deleteAccount(statefulAccount.facet, uid)
+    queryClient.setQueryData<StatefulAccount>([QueryPrefix, statefulAccount.facet], (prev) => {
+      return prev && produce(prev, (draft) => {
+        delete draft.accounts[uid]
+        if (statefulAccount.selectedAccountUid === uid) {
+          draft.selectedAccountUid = Object.keys(draft.accounts)[0] ?? null
+        }
+        if (!draft.selectedAccountUid) {
+          LocalStorageSelectedAccountUid.remove(statefulAccount.facet)
+        } else {
+          LocalStorageSelectedAccountUid.set(statefulAccount.facet, draft.selectedAccountUid)
+        }
+      })
+    })
+  }, [queryClient, statefulAccount])
+}

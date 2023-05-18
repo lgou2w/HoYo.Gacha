@@ -53,7 +53,7 @@ export default function AccountMenuDrawer (props: AccountMenuDrawerProps) {
         <List dense disablePadding>
           {Object.values(accounts).map((account) => (
             <ListItem key={account.uid} divider disablePadding secondaryAction={
-              <IconButton onClick={onClickEditAccount}>
+              <IconButton value={account.uid} onClick={onClickEditAccount}>
                 <EditIcon fontSize="small" />
               </IconButton>
             }>

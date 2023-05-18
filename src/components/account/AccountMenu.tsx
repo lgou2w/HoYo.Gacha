@@ -1,9 +1,10 @@
 import React from 'react'
+import { useImmer } from 'use-immer'
 import { resolveAccountDisplayName } from '@/interfaces/account'
 import { useStatefulAccountContext } from '@/hooks/useStatefulAccount'
 import AccountAvatar from '@/components/account/AccountAvatar'
 import AccountMenuDrawer from '@/components/account/AccountMenuDrawer'
-import AccountMenuDialog from '@/components/account/AccountMenuDialog'
+import AccountMenuDialog, { AccountMenuDialogProps } from '@/components/account/AccountMenuDialog'
 import Stack from '@mui/material/Stack'
 import Button from '@mui/material/Button'
 import Typography from '@mui/material/Typography'
@@ -12,18 +13,17 @@ export default function AccountMenu () {
   const { facet, accounts, selectedAccountUid } = useStatefulAccountContext()
   const selectedAccount = selectedAccountUid ? accounts[selectedAccountUid] : null
   const displayName = resolveAccountDisplayName(facet, selectedAccount)
-
-  // TODO: immer
-  const [drawer, setDrawer] = React.useState(false)
-  const [dialog, setDialog] = React.useState(false)
-  const openDrawer = () => setDrawer(true)
-  const closeDrawer = () => setDrawer(false)
-  const openDialog = () => setDialog(true)
-  const closeDialog = () => setDialog(false)
+  const [{ drawer, dialog }, produceState] = useImmer({
+    drawer: false,
+    dialog: {
+      open: false,
+      editAccountUid: undefined as AccountMenuDialogProps['editAccountUid']
+    }
+  })
 
   return (
     <React.Fragment>
-      <Button onClick={openDrawer}>
+      <Button onClick={() => produceState((draft) => { draft.drawer = true })}>
         <AccountAvatar facet={facet} />
         <Stack direction="column" marginX={1} textAlign="left">
           <Typography variant="body2" textTransform="none" gutterBottom>
@@ -39,15 +39,26 @@ export default function AccountMenu () {
         open={drawer}
         accounts={accounts}
         selectedAccountUid={selectedAccountUid}
-        onClose={closeDrawer}
-        onClickAddAccount={openDialog}
-        // TODO: onClickEditAccount={openDialog}
+        onClose={() => produceState((draft) => { draft.drawer = false })}
+        onClickAddAccount={() => {
+          produceState((draft) => {
+            draft.dialog = { open: true, editAccountUid: undefined }
+          })
+        }}
+        onClickEditAccount={(evt) => {
+          const editAccountUid = evt.currentTarget.value
+          produceState((draft) => {
+            draft.dialog = { open: true, editAccountUid }
+          })
+        }}
       />
       <AccountMenuDialog
-        open={dialog}
+        mode={dialog.editAccountUid ? 'edit' : 'add'}
+        open={dialog.open}
         facet={facet}
         accounts={accounts}
-        onClose={closeDialog}
+        editAccountUid={dialog.editAccountUid}
+        onClose={() => produceState((draft) => { draft.dialog.open = false })}
       />
     </React.Fragment>
   )

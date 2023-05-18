@@ -2,7 +2,12 @@ import React from 'react'
 import { dialog } from '@tauri-apps/api'
 import { useForm, SubmitHandler } from 'react-hook-form'
 import { Account, AccountFacet } from '@/interfaces/account'
-import { useCreateAccountFn } from '@/hooks/useStatefulAccount'
+import {
+  useCreateAccountFn,
+  useUpdateAccountGameDataDirFn,
+  useUpdateAccountPropertiesFn,
+  useDeleteAccountFn
+} from '@/hooks/useStatefulAccount'
 import PluginGacha from '@/utilities/plugin-gacha'
 import Dialog from '@mui/material/Dialog'
 import DialogTitle from '@mui/material/DialogTitle'
@@ -12,32 +17,80 @@ import Stack from '@mui/material/Stack'
 import TextField from '@mui/material/TextField'
 import InputAdornment from '@mui/material/InputAdornment'
 import Button from '@mui/material/Button'
+import IconButton from '@mui/material/IconButton'
+import Tooltip from '@mui/material/Tooltip'
+import Box from '@mui/material/Box'
+import Typography from '@mui/material/Typography'
 import PermIdentityIcon from '@mui/icons-material/PermIdentity'
 import LabelIcon from '@mui/icons-material/Label'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import GpsFixedIcon from '@mui/icons-material/GpsFixed'
 import PanToolAltIcon from '@mui/icons-material/PanToolAlt'
+import DeleteIcon from '@mui/icons-material/Delete'
 
 export interface AccountMenuDialogProps {
+  mode: 'add' | 'edit'
   open: boolean
   facet: AccountFacet
   accounts: Record<Account['uid'], Account>
+  editAccountUid?: Account['uid']
   onClose?: () => void
 }
 
 export default function AccountMenuDialog (props: AccountMenuDialogProps) {
-  const { open, facet, accounts, onClose } = props
+  const { mode, open, facet, accounts, editAccountUid, onClose } = props
   const [busy, setBusy] = React.useState(false)
-  const id = 'account-menu-dialog-form'
+  const deleteAccount = useDeleteAccountFn()
+  const handleDeleteAccount = React.useCallback(async () => {
+    if (editAccountUid) {
+      setBusy(true)
+      try {
+        await deleteAccount(editAccountUid)
+        onClose?.()
+      } catch (e) {
+        // TODO: handle error
+        console.error(e)
+      } finally {
+        setBusy(false)
+      }
+    }
+  }, [editAccountUid, setBusy, deleteAccount, onClose])
 
+  const id = 'account-menu-dialog-form'
   return (
     <Dialog open={open} maxWidth="xs" fullWidth>
-      <DialogTitle>添加账号</DialogTitle>
+      <DialogTitle display="flex" alignItems="center">
+        {mode === 'add' ? '添加账号' : '编辑账号'}
+        {mode === 'edit' && (
+          <Tooltip
+            placement="left"
+            title={(
+              <React.Fragment>
+                <Typography variant="body1">删除该账号</Typography>
+                <Typography variant="caption">注：不会清空该账号已存储的数据。</Typography>
+              </React.Fragment>
+            )}
+            arrow
+          >
+            <Box marginLeft="auto">
+              <IconButton
+                color="error"
+                onClick={handleDeleteAccount}
+                disabled={busy}
+              >
+                <DeleteIcon />
+              </IconButton>
+            </Box>
+          </Tooltip>
+        )}
+      </DialogTitle>
       <DialogContent dividers>
         <AccountMenuDialogForm
           id={id}
+          mode={mode}
           facet={facet}
           accounts={accounts}
+          editAccountUid={editAccountUid}
           busy={busy}
           setBusy={setBusy}
           onSuccess={onClose}
@@ -59,17 +112,33 @@ interface IFormInput {
 
 interface AccountMenuDialogFormProps {
   id: string
+  mode: AccountMenuDialogProps['mode']
   facet: AccountMenuDialogProps['facet']
   accounts: AccountMenuDialogProps['accounts']
+  editAccountUid?: AccountMenuDialogProps['editAccountUid']
   busy: boolean
   setBusy: React.Dispatch<React.SetStateAction<boolean>>
   onSuccess?: () => void
 }
 
 function AccountMenuDialogForm (props: AccountMenuDialogFormProps) {
-  const { id, facet, accounts, busy, setBusy, onSuccess } = props
-  const { register, setValue, setError, formState: { errors }, handleSubmit } = useForm<IFormInput>()
+  const { mode, id, facet, accounts, editAccountUid, busy, setBusy, onSuccess } = props
+
+  const editAccount = editAccountUid ? accounts[editAccountUid] : null
+  const { register, setValue, setError, formState: { errors }, handleSubmit } = useForm<IFormInput>({
+    values: editAccount
+      ? {
+          uid: editAccount.uid,
+          gameDataDir: editAccount.gameDataDir,
+          displayName: editAccount.properties?.displayName ?? undefined
+        }
+      : undefined
+  })
+
+  const isEdit = mode === 'edit'
   const createAccount = useCreateAccountFn()
+  const updateAccountProperties = useUpdateAccountPropertiesFn()
+  const updateAccountGameDataDir = useUpdateAccountGameDataDirFn()
 
   const handleGameDataDirAutoFind = React.useCallback(() => {
     PluginGacha.findGameDataDirectories(facet).then((value) => {
@@ -107,15 +176,10 @@ function AccountMenuDialogForm (props: AccountMenuDialogFormProps) {
     })
   }, [setValue, setError])
 
-  const onSubmit = React.useCallback<SubmitHandler<IFormInput>>((data) => {
-    const uid = Number(data.uid)
-    if (uid < 1_0000_0000) {
-      setError('uid', { message: '请输入正确的 UID 值！' })
-      return
-    }
+  const handleCreateAccount = React.useCallback(async (uid: number, data: IFormInput) => {
     if (accounts[uid]) {
       setError('uid', { message: '该账号 UID 已存在！' })
-      return
+      return Promise.resolve()
     }
 
     // TODO: Account properties customization
@@ -123,23 +187,47 @@ function AccountMenuDialogForm (props: AccountMenuDialogFormProps) {
       ? { displayName: data.displayName }
       : null
 
-    setBusy(true)
-    createAccount({
+    await createAccount({
       uid: String(uid),
       gameDataDir: data.gameDataDir,
       gachaUrl: null,
       properties
     })
-      .then(() => { onSuccess?.() })
-      .catch((error) => {
-        setError('uid', {
-          message: error instanceof Error || typeof error === 'object'
-            ? error.message
-            : error
-        })
+  }, [accounts, setError, createAccount])
+
+  const handleUpdateAccount = React.useCallback(async (uid: number, data: IFormInput) => {
+    // TODO: Optimize to once update
+    const editAccount = accounts[uid]
+    await updateAccountGameDataDir(facet, editAccount.uid, data.gameDataDir)
+    await updateAccountProperties(facet, editAccount.uid, {
+      ...editAccount.properties,
+      displayName: data.displayName ?? null
+    })
+  }, [accounts, updateAccountProperties, updateAccountGameDataDir])
+
+  const onSubmit = React.useCallback<SubmitHandler<IFormInput>>(async (data) => {
+    const uid = Number(data.uid)
+    if (uid < 1_0000_0000) {
+      setError('uid', { message: '请输入正确的 UID 值！' })
+      return
+    }
+
+    setBusy(true)
+    try {
+      !isEdit
+        ? await handleCreateAccount(uid, data)
+        : await handleUpdateAccount(uid, data)
+      onSuccess?.()
+    } catch (e) {
+      setError('uid', {
+        message: e instanceof Error || typeof e === 'object'
+          ? (e as Error).message
+          : String(e)
       })
-      .finally(() => { setBusy(false) })
-  }, [accounts, setError, setBusy, createAccount])
+    } finally {
+      setBusy(false)
+    }
+  }, [setBusy, onSuccess, setError, isEdit, handleCreateAccount, handleUpdateAccount])
 
   return (
     <form id={id} onSubmit={handleSubmit(onSubmit)} autoComplete="off" noValidate>
@@ -147,7 +235,7 @@ function AccountMenuDialogForm (props: AccountMenuDialogFormProps) {
         label="UID" placeholder="账号 UID"
         variant="filled" size="small" margin="dense"
         fullWidth required
-        disabled={busy}
+        disabled={isEdit || busy}
         error={!!errors.uid}
         helperText={errors.uid?.message}
         InputProps={{
@@ -183,9 +271,9 @@ function AccountMenuDialogForm (props: AccountMenuDialogFormProps) {
       />
       <TextField
         name="gameDataDir" label="游戏数据文件夹" type="text"
-        placeholder={'游戏数据文件夹的完整路径\n例如：' + FacetGameDataDirExamples[facet]}
+        placeholder={'例如：' + FacetGameDataDirExamples[facet]}
         variant="filled" size="small" margin="dense"
-        minRows={2} multiline fullWidth required
+        fullWidth required
         disabled={busy}
         error={!!errors.gameDataDir}
         helperText={errors.gameDataDir?.message}
