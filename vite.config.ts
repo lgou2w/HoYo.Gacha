@@ -37,7 +37,8 @@ export default defineConfig({
     __APP_VERSION__: `"${process.env.npm_package_version}"`,
     __APP_DESCRIPTION__: `"${process.env.npm_package_description}"`,
     __APP_AUTHOR__: `"${process.env.npm_package_author}"`,
-    __APP_HOMEPAGE__: `"${process.env.npm_package_homepage}"`
+    __APP_HOMEPAGE__: `"${process.env.npm_package_homepage}"`,
+    __APP_REPOSITORY__: `"${process.env.npm_package_repository}"`
   },
   resolve: {
     extensions: ['.js', '.jsx', '.ts', '.tsx'],

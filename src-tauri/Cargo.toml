@@ -13,6 +13,7 @@ build = "build.rs"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [build-dependencies]
+shadow-rs = "0.21.0"
 tauri-build = { version = "1", features = [] }
 
 [dependencies]
@@ -27,6 +28,7 @@ reqwest = { version = "0.11.18", features = ["json"] }
 sea-orm = { version = "0.11.3", features = ["sqlx-sqlite", "runtime-tokio", "macros", "runtime-tokio-native-tls"], default-features = false }
 serde = { version = "1.0.163", features = ["derive"] }
 serde_json = "1.0.96"
+shadow-rs = "0.21.0"
 sqlx-core = "0.6.3"
 tauri = { version = "1.3.0", features = ["clipboard-all", "dialog-all", "path-all", "shell-all"] }
 thiserror = "1.0.40"

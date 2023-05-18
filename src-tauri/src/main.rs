@@ -12,6 +12,7 @@ mod constants;
 mod error;
 mod gacha;
 mod storage;
+mod commands;
 
 fn main() {
   tracing_subscriber::fmt()
@@ -28,6 +29,7 @@ fn main() {
       app.get_window("main").unwrap().open_devtools();
       Ok(())
     })
+    .invoke_handler(commands::get_handlers())
     .run(tauri::generate_context!())
     .expect("error while running tauri application")
 }
