@@ -40,7 +40,13 @@ const statefulAccountQueryFn: FetchQueryOptions<StatefulAccount>['queryFn'] = as
   if (selectedAccountUid && !accounts[selectedAccountUid]) {
     console.warn(`LocalStorage contains invalid ${SelectedAccountUidKey} ${selectedAccountUid} for ${facet} facet.`)
     LocalStorageSelectedAccountUid.remove(facet as AccountFacet)
-    selectedAccountUid = null
+
+    // HACK: Auto-select first valid account
+    selectedAccountUid = Object.keys(accounts)[0] ?? null
+    if (selectedAccountUid) {
+      console.warn(`Auto-selecting first account ${selectedAccountUid} for ${facet} facet.`)
+      LocalStorageSelectedAccountUid.set(facet, selectedAccountUid)
+    }
   }
 
   return {
