@@ -198,10 +198,14 @@ pub(super) async fn fetch_gacha_records<T: Sized + DeserializeOwned>(
     .await?;
 
   if response.retcode != 0 {
-    Err(Error::GachaRecordRetcode {
-      retcode: response.retcode,
-      message: response.message
-    })
+    if response.retcode == -101 {
+      Err(Error::TimeoutdGachaUrl)
+    } else {
+      Err(Error::GachaRecordRetcode {
+        retcode: response.retcode,
+        message: response.message
+      })
+    }
   } else {
     Ok(response)
   }

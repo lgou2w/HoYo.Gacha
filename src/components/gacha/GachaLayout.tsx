@@ -90,5 +90,6 @@ export default function GachaLayout () {
 
 const KnownErrorIdentifiers: Record<string, string> = {
   ILLEGAL_GACHA_URL: '无效的抽卡链接！',
-  VACANT_GACHA_URL: '未找到有效的抽卡链接。请尝试在游戏内打开抽卡历史记录界面！'
+  VACANT_GACHA_URL: '未找到有效的抽卡链接。请尝试在游戏内打开抽卡历史记录界面！',
+  TIMEOUTD_GACHA_URL: '抽卡链接已经过期失效。请重新在游戏内打开抽卡历史记录界面！'
 }
