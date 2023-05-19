@@ -40,6 +40,8 @@ export default function GachaActionImport () {
         setBusy(false)
         alert(null, `祈愿记录导入成功：${changes}（忽略重复）`)
         await refetchGachaRecords(selectedAccount.facet, selectedAccount.uid)
+      } else {
+        setBusy(false)
       }
     } catch (e) {
       alert(e)
