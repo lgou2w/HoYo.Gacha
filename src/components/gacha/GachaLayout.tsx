@@ -52,11 +52,19 @@ export default function GachaLayout () {
       gachaRecords,
       alert (error, message) {
         const severity = error ? 'error' : 'success'
-        message = error
-          ? error instanceof Error || typeof error === 'object'
-            ? KnownErrorIdentifiers[(error as { identifier: string }).identifier] || (error as Error).message
-            : String(error)
-          : message
+        if (error && (error instanceof Error || typeof error === 'object')) {
+          const msg = (error as { message: string }).message
+          const identifier = (error as { identifier?: string }).identifier
+          let knownMessage = identifier ? KnownErrorIdentifiers[identifier] : undefined
+          let index: number
+          if (knownMessage && (index = msg.indexOf(':')) !== -1) {
+            knownMessage += msg.substring(index + 1)
+          }
+          message = knownMessage || msg
+        } else if (error) {
+          message = String(error)
+        }
+
         produceState((draft) => {
           draft.alert = message
             ? { severity, message }
@@ -71,6 +79,7 @@ export default function GachaLayout () {
         </Alert>
       }
       <GachaToolbar
+        facet={facet}
         ActionTabsProps={{
           tabs: ['概览', '分析', '统计'],
           value: tab,
@@ -91,5 +100,7 @@ export default function GachaLayout () {
 const KnownErrorIdentifiers: Record<string, string> = {
   ILLEGAL_GACHA_URL: '无效的抽卡链接！',
   VACANT_GACHA_URL: '未找到有效的抽卡链接。请尝试在游戏内打开抽卡历史记录界面！',
-  TIMEOUTD_GACHA_URL: '抽卡链接已经过期失效。请重新在游戏内打开抽卡历史记录界面！'
+  TIMEOUTD_GACHA_URL: '抽卡链接已经过期失效。请重新在游戏内打开抽卡历史记录界面！',
+  UIGF_MISMATCHED_UID: '待导入的 UIGF 数据 UID 与当前账号不匹配！',
+  UIGF_INVALID_FIELD: '待导入的 UIGF 数据中存在无效的字段！'
 }

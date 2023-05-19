@@ -2,6 +2,7 @@ extern crate anyhow;
 extern crate reqwest;
 extern crate sea_orm;
 extern crate serde;
+extern crate serde_json;
 extern crate tauri;
 extern crate time;
 extern crate thiserror;
@@ -23,10 +24,18 @@ pub enum Error {
   Db(#[from] sea_orm::error::DbErr),
 
   #[error(transparent)]
+  SerdeJson(#[from] serde_json::Error),
+
+  #[error(transparent)]
   Tauri(#[from] tauri::Error),
 
   #[error(transparent)]
   Time(#[from] time::Error),
+
+  // Specific
+
+  #[error("Unsupported Operation")]
+  UnsupportedOperation,
 
   // Gacha
 
@@ -52,6 +61,14 @@ pub enum Error {
   #[allow(unused)]
   #[error("Gacha record fetcher channel join error")]
   GachaRecordFetcherChannelJoin,
+
+  // UIGF
+
+  #[error("UIGF Mismatched UID: expected {expected:?}, actual {actual:?}")]
+  UIGFMismatchedUID { expected: String, actual: String },
+
+  #[error("UIGF invalid field: {0:?}")]
+  UIGFInvalidField(String),
 
   // Account
 
@@ -80,12 +97,15 @@ macro_rules! impl_error_identifiers {
 }
 
 impl_error_identifiers! {
+  UnsupportedOperation          => UNSUPPORTED_OPERATION,
   IllegalGachaUrl               => ILLEGAL_GACHA_URL,
   VacantGachaUrl                => VACANT_GACHA_URL,
   TimeoutdGachaUrl              => TIMEOUTD_GACHA_URL,
   GachaRecordRetcode            => GACHA_RECORD_RETCODE,
   GachaRecordFetcherChannelSend => GACHA_RECORD_FETCHER_CHANNEL_SEND,
   GachaRecordFetcherChannelJoin => GACHA_RECORD_FETCHER_CHANNEL_JOIN,
+  UIGFMismatchedUID             => UIGF_MISMATCHED_UID,
+  UIGFInvalidField              => UIGF_INVALID_FIELD,
   AccountAlreadyExists          => ACCOUNT_ALREADY_EXISTS,
   AccountNotFound               => ACCOUNT_NOT_FOUND
 }

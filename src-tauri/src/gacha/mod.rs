@@ -4,6 +4,8 @@ mod impl_genshin;
 mod impl_starrail;
 mod plugin;
 
+pub mod uigf;
+
 pub use declare::*;
 pub use impl_genshin::*;
 pub use impl_starrail::*;
