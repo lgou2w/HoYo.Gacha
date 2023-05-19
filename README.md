@@ -16,13 +16,14 @@
 
 ### 🚧 正在开发和重构中... 🚧
 
-> 开发者测试版：[releases](https://github.com/lgou2w/HoYo.Gacha/releases)
+**开发者测试版：[releases](https://github.com/lgou2w/HoYo.Gacha/releases)**
 
 - [x] 支持 **`原神`** 和 **`崩坏：星穹铁道`** 游戏抽卡记录。
 - [x] 管理游戏的多个账号。
 - [x] 获取游戏的抽卡链接。
 - [x] 获取抽卡记录并保存到本地数据库文件。
-- [ ] 实现 `UIGF` 统一可交换祈愿记录标准。
+- [x] 实现 `UIGF` 统一可交换祈愿记录标准。
+- [ ] 实现 `SRGF` 统一可交换跃迁记录标准。
 - [ ] 支持导入导出为 Json、Excel 文件。
 - [ ] 支持创建图片分享。
 - [ ] 开发中...
