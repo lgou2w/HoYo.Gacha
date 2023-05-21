@@ -3,7 +3,12 @@ import { ThemeProvider, createTheme } from '@mui/material/styles'
 import { zhCN } from '@mui/material/locale'
 import CssBaseline from '@mui/material/CssBaseline'
 import Box from '@mui/material/Box'
-import '@/assets/global.css'
+
+if (import.meta.env.DEV) {
+  import('@/assets/global.css')
+} else if (import.meta.env.PROD) {
+  import('@/assets/fontmin/index.css')
+}
 
 const theme = createTheme({
   typography: {

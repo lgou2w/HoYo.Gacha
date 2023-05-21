@@ -17,7 +17,9 @@
     "tauri:dev": "cross-env RUST_LOG=debug tauri dev",
     "tauri:build": "tauri build",
     "dev": "cross-env NODE_ENV=development vite",
-    "build": "cross-env NODE_ENV=production tsc && vite build",
+    "build": "pnpm build:font && pnpm build:vite",
+    "build:font": "node ./scripts/fontmin.mjs",
+    "build:vite": "cross-env NODE_ENV=production tsc && vite build",
     "lint": "eslint --ext .ts,.tsx --ignore-path .gitignore .",
     "lint:fix": "eslint --fix --ext .ts,.tsx --ignore-path .gitignore ."
   },
@@ -40,6 +42,7 @@
   },
   "devDependencies": {
     "@tauri-apps/cli": "^1.3.1",
+    "@types/fontmin": "^0.9.0",
     "@types/node": "^18.16.13",
     "@types/react": "^18.2.6",
     "@types/react-dom": "^18.2.4",
@@ -53,6 +56,8 @@
     "eslint-plugin-n": "^16.0.0",
     "eslint-plugin-promise": "^6.1.1",
     "eslint-plugin-react": "^7.32.2",
+    "fontmin": "^0.9.9",
+    "glob": "^10.2.6",
     "typescript": "^5.0.4",
     "vite": "^4.3.8"
   }
