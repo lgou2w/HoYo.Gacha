@@ -27,8 +27,9 @@ export default function GachaItemView (props: GachaItemViewProps) {
       data-facet={facet}
       data-rank={rank}
       data-restricted={restricted}
+      title={name}
     >
-      <img src={src} alt={name} title={name} />
+      <img src={src} alt={name} />
       {usedPity && <Typography className={`${GachaItemViewCls}-used-pity`}>{usedPity}</Typography>}
       {restricted && <Typography className={`${GachaItemViewCls}-restricted`}>限定</Typography>}
     </Box>
