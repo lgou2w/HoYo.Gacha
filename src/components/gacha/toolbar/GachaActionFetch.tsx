@@ -1,7 +1,7 @@
 import React from 'react'
 import { useImmer } from 'use-immer'
 import { resolveCurrency } from '@/interfaces/account'
-import { useUpdateAccountPropertiesFn } from '@/hooks/useStatefulAccount'
+import { useUpdateAccountGachaUrlFn, useUpdateAccountPropertiesFn } from '@/hooks/useStatefulAccount'
 import { GachaRecords, useRefetchGachaRecordsFn } from '@/hooks/useGachaRecordsQuery'
 import { useGachaLayoutContext } from '@/components/gacha/GachaLayoutContext'
 import useGachaRecordsFetcher from '@/hooks/useGachaRecordsFetcher'
@@ -16,6 +16,7 @@ export default function GachaActionFetch () {
   const { selectedAccount, gachaRecords, alert } = useGachaLayoutContext()
   const { currentFragment, pull } = useGachaRecordsFetcher()
   const { action } = resolveCurrency(selectedAccount.facet)
+  const updateAccountGachaUrl = useUpdateAccountGachaUrlFn()
   const updateAccountProperties = useUpdateAccountPropertiesFn()
   const refetchGachaRecords = useRefetchGachaRecordsFn()
   const [{ busy }, produceState] = useImmer({
@@ -32,8 +33,8 @@ export default function GachaActionFetch () {
       draft.busy = true
     })
 
+    const { facet, uid, gachaUrl } = selectedAccount
     try {
-      const { facet, uid, gachaUrl } = selectedAccount
       const { namedValues: { character, weapon, permanent, newbie } } = gachaRecords
       await pull(facet, uid, {
         gachaUrl,
@@ -53,13 +54,25 @@ export default function GachaActionFetch () {
       await refetchGachaRecords(facet, uid)
       alert(null, '记录更新成功！')
     } catch (e) {
+      // TODO: optimize error handling
+      const isTimeoutdGachaUrlError = e && (e instanceof Error || typeof e === 'object')
+        ? 'identifier' in e && e.identifier === 'TIMEOUTD_GACHA_URL'
+        : false
+
+      if (isTimeoutdGachaUrlError) {
+        await updateAccountGachaUrl(facet, uid, null)
+      }
       alert(e)
     } finally {
       produceState((draft) => {
         draft.busy = false
       })
     }
-  }, [selectedAccount, gachaRecords, alert, pull, updateAccountProperties, refetchGachaRecords, produceState])
+  }, [
+    selectedAccount, gachaRecords, alert, pull,
+    updateAccountGachaUrl, updateAccountProperties,
+    refetchGachaRecords, produceState
+  ])
 
   return (
     <Box display="inline-flex">
