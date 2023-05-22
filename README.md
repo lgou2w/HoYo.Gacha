@@ -22,9 +22,9 @@
 - [x] 管理游戏的多个账号。
 - [x] 获取游戏的抽卡链接。
 - [x] 获取抽卡记录并保存到本地数据库文件。
-- [x] 实现 `UIGF` 统一可交换祈愿记录标准。
-- [ ] 实现 `SRGF` 统一可交换跃迁记录标准。
-- [ ] 支持导入导出为 Json、Excel 文件。
+- [x] 实现 [`UIGF`](https://uigf.org/zh/standards/UIGF.html) 统一可交换抽卡记录标准。
+- [x] 实现 [`SRGF`](https://uigf.org/zh/standards/SRGF.html) 星穹铁道抽卡记录标准。
+- [ ] 支持导出为 Excel 文件。
 - [ ] 支持创建图片分享。
 - [ ] 开发中...
 
