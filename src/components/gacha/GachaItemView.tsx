@@ -23,7 +23,8 @@ export default function GachaItemView (props: GachaItemViewProps) {
   const src = getStaticResource(facet, isWeapon ? 'weapon' : 'character', id)
 
   return (
-    <Box className={GachaItemViewCls} sx={GachaItemViewSx} width={size}
+    <Box className={GachaItemViewCls} sx={GachaItemViewSx}
+      width={size} height={size}
       data-facet={facet}
       data-rank={rank}
       data-restricted={restricted}
