@@ -28,7 +28,7 @@ export default function GachaActionImport () {
         filters: [{
           extensions: ['json'],
           name: {
-            [AccountFacet.Genshin]: 'UIGF 统一可交换抽卡记录标准',
+            [AccountFacet.Genshin]: 'UIGF 统一可交换祈愿记录标准',
             [AccountFacet.StarRail]: 'SRGF 星穹铁道抽卡记录标准'
           }[selectedAccount.facet]
         }]
