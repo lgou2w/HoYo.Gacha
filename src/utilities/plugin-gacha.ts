@@ -34,30 +34,28 @@ export async function pullAllGachaRecords (
   })
 }
 
-export async function importUIGFGachaRecords (
-  // TODO: UIGF only support Genshin Impact for now
-  facet: AccountFacet.Genshin,
+export async function importGachaRecords (
+  facet: AccountFacet,
   uid: Account['uid'],
   file: string
 ): Promise<number> {
-  return invoke('plugin:gacha|import_uigf_gacha_records', { facet, uid, file })
+  return invoke('plugin:gacha|import_gacha_records', { facet, uid, file })
 }
 
-export async function exportUIGFGachaRecords (
-  // TODO: UIGF only support Genshin Impact for now
-  facet: AccountFacet.Genshin,
+export async function exportGachaRecords (
+  facet: AccountFacet,
   uid: Account['uid'],
   directory: string
 ): Promise<string> {
-  return invoke('plugin:gacha|export_uigf_gacha_records', { facet, uid, directory })
+  return invoke('plugin:gacha|export_gacha_records', { facet, uid, directory })
 }
 
 const PluginGacha = Object.freeze({
   findGameDataDirectories,
   findGachaUrl,
   pullAllGachaRecords,
-  importUIGFGachaRecords,
-  exportUIGFGachaRecords
+  importGachaRecords,
+  exportGachaRecords
 })
 
 export default PluginGacha

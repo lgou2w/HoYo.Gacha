@@ -9,13 +9,13 @@ use lazy_static::lazy_static;
 use serde::{Serialize, Deserialize};
 use time::OffsetDateTime;
 use time::format_description;
-use crate::constants;
+use crate::constants::{ID, VERSION};
 use crate::error::{Error, Result};
 use crate::gacha::GenshinGachaRecord;
 
+// See: https://uigf.org/zh/standards/UIGF.html
+
 const UIGF_VERSION      : &str = "v2.2";
-const EXPORT_APP        : &str = constants::ID;
-const EXPORT_APP_VERSION: &str = constants::VERSION;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UIGFInfo {
@@ -64,8 +64,8 @@ impl UIGF {
         lang,
         export_time: Some(export_time),
         export_timestamp: Some(export_timestamp),
-        export_app: Some(EXPORT_APP.into()),
-        export_app_version: Some(EXPORT_APP_VERSION.into()),
+        export_app: Some(ID.into()),
+        export_app_version: Some(VERSION.into()),
         uigf_version: UIGF_VERSION.into()
       },
       list
@@ -112,9 +112,9 @@ impl TryFrom<&UIGFListItem> for GenshinGachaRecord {
   type Error = Error;
 
   fn try_from(value: &UIGFListItem) -> std::result::Result<Self, Self::Error> {
-    let uid = value.uid.clone().ok_or_else(|| Error::UIGFInvalidField("uid".to_owned()))?;
-    let lang = value.lang.clone().ok_or_else(|| Error::UIGFInvalidField("lang".to_owned()))?;
-    let rank_type = value.rank_type.clone().ok_or_else(|| Error::UIGFInvalidField("rank_type".to_owned()))?;
+    let uid = value.uid.clone().ok_or_else(|| Error::UIGFOrSRGFInvalidField("uid".to_owned()))?;
+    let lang = value.lang.clone().ok_or_else(|| Error::UIGFOrSRGFInvalidField("lang".to_owned()))?;
+    let rank_type = value.rank_type.clone().ok_or_else(|| Error::UIGFOrSRGFInvalidField("rank_type".to_owned()))?;
 
     Ok(Self {
       id: value.id.clone(),
@@ -138,7 +138,7 @@ impl TryFrom<&GenshinGachaRecord> for UIGFListItem {
   fn try_from(value: &GenshinGachaRecord) -> std::result::Result<Self, Self::Error> {
     let uigf_gacha_type = GACHA_TYPE_UIGF_MAPPINGS
       .get(&value.gacha_type)
-      .ok_or_else(|| Error::UIGFInvalidField(format!("gacha_type={}", value.gacha_type)))?;
+      .ok_or_else(|| Error::UIGFOrSRGFInvalidField(format!("gacha_type={}", value.gacha_type)))?;
 
     Ok(Self {
       id: value.id.clone(),

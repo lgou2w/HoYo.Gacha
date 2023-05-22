@@ -62,13 +62,13 @@ pub enum Error {
   #[error("Gacha record fetcher channel join error")]
   GachaRecordFetcherChannelJoin,
 
-  // UIGF
+  // UIGF & SRGF
 
-  #[error("UIGF Mismatched UID: expected {expected:?}, actual {actual:?}")]
-  UIGFMismatchedUID { expected: String, actual: String },
+  #[error("UIGF or SRGF Mismatched UID: expected {expected:?}, actual {actual:?}")]
+  UIGFOrSRGFMismatchedUID { expected: String, actual: String },
 
-  #[error("UIGF invalid field: {0:?}")]
-  UIGFInvalidField(String),
+  #[error("UIGF or SRGF invalid field: {0:?}")]
+  UIGFOrSRGFInvalidField(String),
 
   // Account
 
@@ -104,8 +104,8 @@ impl_error_identifiers! {
   GachaRecordRetcode            => GACHA_RECORD_RETCODE,
   GachaRecordFetcherChannelSend => GACHA_RECORD_FETCHER_CHANNEL_SEND,
   GachaRecordFetcherChannelJoin => GACHA_RECORD_FETCHER_CHANNEL_JOIN,
-  UIGFMismatchedUID             => UIGF_MISMATCHED_UID,
-  UIGFInvalidField              => UIGF_INVALID_FIELD,
+  UIGFOrSRGFMismatchedUID       => UIGF_OR_SRGF_MISMATCHED_UID,
+  UIGFOrSRGFInvalidField        => UIGF_OR_SRGF_INVALID_FIELD,
   AccountAlreadyExists          => ACCOUNT_ALREADY_EXISTS,
   AccountNotFound               => ACCOUNT_NOT_FOUND
 }

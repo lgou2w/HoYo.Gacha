@@ -25,6 +25,7 @@ use super::utilities::{
   find_gacha_url_and_validate_consistency,
 };
 use super::uigf;
+use super::srgf;
 
 /// Tauri commands
 
@@ -116,45 +117,53 @@ async fn pull_all_gacha_records(
 }
 
 #[tauri::command]
-async fn import_uigf_gacha_records(
+async fn import_gacha_records(
   storage: tauri::State<'_, Storage>,
   facet: AccountFacet,
   uid: String,
   file: String
 ) -> Result<u64> {
-  // TODO: UIGF only support Genshin Impact for now
-  if facet != AccountFacet::Genshin {
-    return Err(Error::UnsupportedOperation)
-  }
-
   let file = File::open(file)?;
-  let mut uigf = uigf::UIGF::from_reader(file)?;
 
-  if uigf.info.uid != uid {
-    return Err(Error::UIGFMismatchedUID {
-      expected: uid,
-      actual: uigf.info.uid
-    })
+  match facet {
+    AccountFacet::Genshin => {
+      let mut uigf = uigf::UIGF::from_reader(file)?;
+      if uigf.info.uid != uid {
+        return Err(Error::UIGFOrSRGFMismatchedUID {
+          expected: uid,
+          actual: uigf.info.uid
+        })
+      }
+
+      let gacha_records = uigf::convert_uigf_to_offical(&mut uigf)?;
+      storage
+        .save_genshin_gacha_records(&gacha_records)
+        .await
+    },
+    AccountFacet::StarRail => {
+      let mut srgf = srgf::SRGF::from_reader(file)?;
+      if srgf.info.uid != uid {
+        return Err(Error::UIGFOrSRGFMismatchedUID {
+          expected: uid,
+          actual: srgf.info.uid
+        })
+      }
+
+      let gacha_records = srgf::convert_srgf_to_offical(&mut srgf)?;
+      storage
+        .save_starrail_gacha_records(&gacha_records)
+        .await
+    }
   }
-
-  let gacha_records = uigf::convert_uigf_to_offical(&mut uigf)?;
-  storage
-    .save_genshin_gacha_records(&gacha_records)
-    .await
 }
 
 #[tauri::command]
-async fn export_uigf_gacha_records(
+async fn export_gacha_records(
   storage: tauri::State<'_, Storage>,
   facet: AccountFacet,
   uid: String,
   directory: String
 ) -> Result<PathBuf> {
-  // TODO: UIGF only support Genshin Impact for now
-  if facet != AccountFacet::Genshin {
-    return Err(Error::UnsupportedOperation)
-  }
-
   let locale_offset = UtcOffset::current_local_offset().map_err(time::Error::from)?;
   let now = OffsetDateTime::now_utc().to_offset(locale_offset);
 
@@ -166,18 +175,36 @@ async fn export_uigf_gacha_records(
   // output file
   let format = format_description::parse("[year][month][day]_[hour][minute][second]").map_err(time::Error::from)?;
   let time = now.format(&format).map_err(time::Error::from)?;
-  let filename = format!("{}_原神祈愿记录_UIGF_{uid}_{time}.json", constants::NAME);
+
+  let (primary, format) = match facet {
+    AccountFacet::Genshin => ("原神祈愿记录", "UIGF"),
+    AccountFacet::StarRail => ("星穹铁道跃迁记录", "SRGF")
+  };
+  let filename = format!("{}_{}_{}_{uid}_{time}.json",constants::NAME, primary, format);
   let filename = directory.join(filename);
   let writer = File::create(&filename)?;
 
-  // find gacha records
-  let gacha_records = storage.find_genshin_gacha_records(&uid, None, None).await?;
-  let lang = gacha_records.first().map(|v| v.lang.clone()).unwrap_or("zh-cn".to_owned());
+  match facet {
+    AccountFacet::Genshin => {
+      let gacha_records = storage.find_genshin_gacha_records(&uid, None, None).await?;
+      let lang = gacha_records.first().map(|v| v.lang.clone()).unwrap_or("zh-cn".to_owned());
 
-  // convert to uigf and write
-  let uigf_list = uigf::convert_offical_to_uigf(&gacha_records)?;
-  let uigf = uigf::UIGF::new(uid, lang, &now, uigf_list)?;
-  uigf.to_writer(writer, false)?;
+      // convert to uigf and write
+      let uigf_list = uigf::convert_offical_to_uigf(&gacha_records)?;
+      let uigf = uigf::UIGF::new(uid, lang, &now, uigf_list)?;
+      uigf.to_writer(writer, false)?;
+    },
+    AccountFacet::StarRail => {
+      let gacha_records = storage.find_starrail_gacha_records(&uid, None, None).await?;
+      let lang = gacha_records.first().map(|v| v.lang.clone()).unwrap_or("zh-cn".to_owned());
+      let time_zone = 8; // TODO: export time zone
+
+      // convert to srgf and write
+      let srgf_list = srgf::convert_offical_to_srgf(&gacha_records)?;
+      let srgf = srgf::SRGF::new(uid, lang, time_zone, &now, srgf_list)?;
+      srgf.to_writer(writer, false)?;
+    }
+  }
 
   Ok(filename)
 }
@@ -200,8 +227,8 @@ impl GachaPluginBuilder {
         find_game_data_directories,
         find_gacha_url,
         pull_all_gacha_records,
-        import_uigf_gacha_records,
-        export_uigf_gacha_records
+        import_gacha_records,
+        export_gacha_records
       ])
       .build()
   }

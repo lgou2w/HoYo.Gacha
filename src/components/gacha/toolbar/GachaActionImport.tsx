@@ -1,6 +1,6 @@
 import React from 'react'
 import { dialog } from '@tauri-apps/api'
-import { AccountFacet } from '@/interfaces/account'
+import { AccountFacet, resolveCurrency } from '@/interfaces/account'
 import { useGachaLayoutContext } from '@/components/gacha/GachaLayoutContext'
 import { useRefetchGachaRecordsFn } from '@/hooks/useGachaRecordsQuery'
 import PluginGacha from '@/utilities/plugin-gacha'
@@ -13,32 +13,34 @@ import Typography from '@mui/material/Typography'
 import FileUploadIcon from '@mui/icons-material/FileUpload'
 
 export default function GachaActionImport () {
-  const { selectedAccount, alert } = useGachaLayoutContext()
+  const { facet, selectedAccount, alert } = useGachaLayoutContext()
+  const { action } = resolveCurrency(facet)
   const [busy, setBusy] = React.useState(false)
   const refetchGachaRecords = useRefetchGachaRecordsFn()
 
   const handleImportGachaRecords = React.useCallback(async () => {
-    if (selectedAccount.facet !== AccountFacet.Genshin) {
-      alert(null, '暂只支持导入原神祈愿记录！')
-      return
-    }
-
     setBusy(true)
     try {
       const file = await dialog.open({
-        title: '请选择要导入的祈愿记录文件：',
+        title: `请选择要导入的${action}记录文件：`,
         directory: false,
         multiple: false,
-        filters: [{ name: 'UIGF Gacha Logs - Genshin Impact', extensions: ['json'] }]
+        filters: [{
+          extensions: ['json'],
+          name: {
+            [AccountFacet.Genshin]: 'UIGF 统一可交换抽卡记录标准',
+            [AccountFacet.StarRail]: 'SRGF 星穹铁道抽卡记录标准'
+          }[selectedAccount.facet]
+        }]
       })
       if (typeof file === 'string') {
-        const changes = await PluginGacha.importUIGFGachaRecords(
+        const changes = await PluginGacha.importGachaRecords(
           selectedAccount.facet,
           selectedAccount.uid,
           file
         )
         setBusy(false)
-        alert(null, `祈愿记录导入成功：${changes}（忽略重复）`)
+        alert(null, `${action}记录导入成功：${changes}（忽略重复）`)
         await refetchGachaRecords(selectedAccount.facet, selectedAccount.uid)
       } else {
         setBusy(false)
@@ -47,11 +49,11 @@ export default function GachaActionImport () {
       alert(e)
       setBusy(false)
     }
-  }, [selectedAccount, alert, setBusy])
+  }, [selectedAccount, alert, action, setBusy])
 
   return (
     <Box>
-      <Tooltip placement="bottom" title="导入祈愿" arrow>
+      <Tooltip placement="bottom" title={`导入${action}记录`} arrow>
         <IconButton onClick={handleImportGachaRecords} disabled={busy} sx={{
           bgcolor: (theme) => theme.palette.action.hover
         }}>
@@ -66,7 +68,7 @@ export default function GachaActionImport () {
         <Box display="flex" flexDirection="column" alignItems="center">
           <CircularProgress color="info" />
           <Typography variant="h6" sx={{ marginTop: 2 }}>
-            正在导入祈愿记录中，请稍候...
+            {`正在导入${action}记录中，请稍候...`}
           </Typography>
         </Box>
       </Backdrop>

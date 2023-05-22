@@ -51,14 +51,20 @@ export default function GachaLayout () {
       selectedAccount,
       gachaRecords,
       alert (error, message) {
+        // TODO: optimize error handling
         const severity = error ? 'error' : 'success'
         if (error && (error instanceof Error || typeof error === 'object')) {
           const msg = (error as { message: string }).message
           const identifier = (error as { identifier?: string }).identifier
           let knownMessage = identifier ? KnownErrorIdentifiers[identifier] : undefined
-          let index: number
-          if (knownMessage && (index = msg.indexOf(':')) !== -1) {
-            knownMessage += msg.substring(index + 1)
+          if (knownMessage) {
+            let index: number
+            if ((index = msg.indexOf(':')) !== -1) {
+              knownMessage += msg.substring(index + 1)
+            }
+            if (identifier === 'INTERNAL_CRATE') {
+              knownMessage += msg
+            }
           }
           message = knownMessage || msg
         } else if (error) {
@@ -98,9 +104,10 @@ export default function GachaLayout () {
 }
 
 const KnownErrorIdentifiers: Record<string, string> = {
+  INTERNAL_CRATE: '内部错误：',
   ILLEGAL_GACHA_URL: '无效的抽卡链接！',
   VACANT_GACHA_URL: '未找到有效的抽卡链接。请尝试在游戏内打开抽卡历史记录界面！',
   TIMEOUTD_GACHA_URL: '抽卡链接已经过期失效。请重新在游戏内打开抽卡历史记录界面！',
-  UIGF_MISMATCHED_UID: '待导入的 UIGF 数据 UID 与当前账号不匹配！',
-  UIGF_INVALID_FIELD: '待导入的 UIGF 数据中存在无效的字段！'
+  UIGF_OR_SRGF_MISMATCHED_UID: '待导入的 UIGF 或 SRGF 数据 UID 与当前账号不匹配！',
+  UIGF_OR_SRGF_INVALID_FIELD: '待导入的 UIGF 或 SRGF 数据中存在无效的字段！'
 }

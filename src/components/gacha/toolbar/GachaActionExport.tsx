@@ -1,6 +1,6 @@
 import React from 'react'
 import { dialog } from '@tauri-apps/api'
-import { AccountFacet } from '@/interfaces/account'
+import { AccountFacet, resolveCurrency } from '@/interfaces/account'
 import { useGachaLayoutContext } from '@/components/gacha/GachaLayoutContext'
 import PluginGacha from '@/utilities/plugin-gacha'
 import Box from '@mui/material/Box'
@@ -16,7 +16,8 @@ import SaveAltIcon from '@mui/icons-material/SaveAlt'
 import AssistantIcon from '@mui/icons-material/Assistant'
 
 export default function GachaActionExport () {
-  const { selectedAccount, alert } = useGachaLayoutContext()
+  const { facet, selectedAccount, alert } = useGachaLayoutContext()
+  const { action } = resolveCurrency(facet)
   const [busy, setBusy] = React.useState(false)
   const [anchorEl, setAnchorEl] = React.useState<HTMLElement | null>(null)
   const open = Boolean(anchorEl)
@@ -27,37 +28,32 @@ export default function GachaActionExport () {
   }
 
   const handleExportGachaRecords = React.useCallback(async () => {
-    if (selectedAccount.facet !== AccountFacet.Genshin) {
-      alert(null, '暂只支持原神祈愿记录导入！')
-      return
-    }
-
     setAnchorEl(null)
     setBusy(true)
     try {
       const directory = await dialog.open({
-        title: '请选择导出文件夹：',
+        title: '请选择导出的文件夹：',
         directory: true,
         multiple: false
       })
       if (typeof directory === 'string') {
-        const exportFile = await PluginGacha.exportUIGFGachaRecords(
+        const exportFile = await PluginGacha.exportGachaRecords(
           selectedAccount.facet,
           selectedAccount.uid,
           directory
         )
-        alert(null, '祈愿记录导出成功：' + exportFile)
+        alert(null, `${action}记录导出成功：${exportFile}`)
       }
     } catch (e) {
       alert(e)
     } finally {
       setBusy(false)
     }
-  }, [selectedAccount, alert, setBusy, setAnchorEl])
+  }, [selectedAccount, alert, action, setBusy, setAnchorEl])
 
   return (
     <Box>
-      <Tooltip placement="bottom" title="导出祈愿" arrow>
+      <Tooltip placement="bottom" title={`导出${action}记录`} arrow>
         <IconButton onClick={handleClick} disabled={busy} sx={{
           bgcolor: (theme) => theme.palette.action.hover
         }}>
@@ -68,13 +64,18 @@ export default function GachaActionExport () {
         MenuListProps={{ disablePadding: false }}
         slotProps={{ backdrop: { invisible: false } }}
       >
-        <Typography variant="body2" paddingX={2} paddingY={1}>导出祈愿记录为：</Typography>
+        <Typography variant="body2" paddingX={2} paddingY={1}>
+          {`导出${action}记录为：`}
+        </Typography>
         <Divider sx={{ marginBottom: 1 }} />
-        <MenuItem data-format="uigf" onClick={handleExportGachaRecords}>
+        <MenuItem onClick={handleExportGachaRecords}>
           <ListItemIcon>
             <AssistantIcon />
           </ListItemIcon>
-          <ListItemText>统一可交换标准 UIGF.J</ListItemText>
+          {{
+            [AccountFacet.Genshin]: <ListItemText>UIGF 统一可交换抽卡记录标准</ListItemText>,
+            [AccountFacet.StarRail]: <ListItemText>SRGF 星穹铁道抽卡记录标准</ListItemText>
+          }[facet]}
         </MenuItem>
         {/* <MenuItem data-format="xlsx" onClick={handleExportGachaLogs}>
           <ListItemIcon>

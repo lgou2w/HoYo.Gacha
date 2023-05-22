@@ -5,6 +5,7 @@ mod impl_starrail;
 mod plugin;
 
 pub mod uigf;
+pub mod srgf;
 
 pub use declare::*;
 pub use impl_genshin::*;
