@@ -1,29 +1,28 @@
-import React from 'react'
-import { useQuery } from '@tanstack/react-query'
-import invoke from '@/utilities/invoke'
-import Typography, { TypographyProps } from '@mui/material/Typography'
+import React from "react";
+import { useQuery } from "@tanstack/react-query";
+import invoke from "@/utilities/invoke";
+import Typography, { TypographyProps } from "@mui/material/Typography";
 
 export interface VersionProps extends TypographyProps {
-  format?: (versionStr: string) => string
+  format?: (versionStr: string) => string;
 }
 
-export default function Version (props: VersionProps) {
+export default function Version(props: VersionProps) {
   const version = useQuery({
-    queryKey: ['get_version'],
-    queryFn: async () => invoke<string>('get_version'),
+    queryKey: ["get_version"],
+    queryFn: async () => invoke<string>("get_version"),
     staleTime: Infinity,
     cacheTime: Infinity,
-    refetchOnWindowFocus: false
-  })
+    refetchOnWindowFocus: false,
+  });
 
-  const { format, ...rest } = props
+  const { format, ...rest } = props;
 
   return (
     <Typography component="span" {...rest}>
       {format
         ? format(version.data || __APP_VERSION__)
-        : version.data || __APP_VERSION__
-      }
+        : version.data || __APP_VERSION__}
     </Typography>
-  )
+  );
 }

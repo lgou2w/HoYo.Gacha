@@ -16,7 +16,7 @@
     "dev": "cross-env NODE_ENV=development vite",
     "build": "cross-env NODE_ENV=production tsc && vite build",
     "lint": "prettier --check src/**/*.{ts,tsx} && eslint --ext .ts,.tsx --ignore-path .gitignore .",
-    "lint:fix": "prettier --fix src/**/*.{ts,tsx} && eslint --fix --ext .ts,.tsx --ignore-path .gitignore ."
+    "lint:fix": "prettier --write src/**/*.{ts,tsx} && eslint --fix --ext .ts,.tsx --ignore-path .gitignore ."
   },
   "dependencies": {
     "@emotion/react": "^11.11.0",
