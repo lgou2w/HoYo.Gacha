@@ -15,8 +15,8 @@
     "tauri:build": "tauri build",
     "dev": "cross-env NODE_ENV=development vite",
     "build": "cross-env NODE_ENV=production tsc && vite build",
-    "lint": "eslint --ext .ts,.tsx --ignore-path .gitignore .",
-    "lint:fix": "eslint --fix --ext .ts,.tsx --ignore-path .gitignore ."
+    "lint": "prettier --check src/**/*.{ts,tsx} && eslint --ext .ts,.tsx --ignore-path .gitignore .",
+    "lint:fix": "prettier --fix src/**/*.{ts,tsx} && eslint --fix --ext .ts,.tsx --ignore-path .gitignore ."
   },
   "dependencies": {
     "@emotion/react": "^11.11.0",
@@ -45,11 +45,13 @@
     "@vitejs/plugin-react": "^4.0.0",
     "cross-env": "^7.0.3",
     "eslint": "^8.41.0",
+    "eslint-config-prettier": "^8.8.0",
     "eslint-config-standard": "^17.0.0",
     "eslint-plugin-import": "^2.27.5",
     "eslint-plugin-n": "^16.0.0",
     "eslint-plugin-promise": "^6.1.1",
     "eslint-plugin-react": "^7.32.2",
+    "prettier": "^2.8.8",
     "typescript": "^5.0.4",
     "vite": "^4.3.8"
   },
