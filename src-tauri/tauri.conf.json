@@ -1,13 +1,13 @@
 {
   "build": {
-    "beforeDevCommand": "pnpm dev",
-    "beforeBuildCommand": "pnpm build",
+    "beforeDevCommand": "yarn dev",
+    "beforeBuildCommand": "yarn build",
     "devPath": "http://localhost:1420",
     "distDir": "../dist"
   },
   "package": {
-    "productName": "HoYo_Gacha",
-    "version": "0.3.0"
+    "productName": "WxWatch_gacha",
+    "version": "1.0.0"
   },
   "tauri": {
     "allowlist": {
@@ -33,7 +33,7 @@
         "icons/icon.icns",
         "icons/icon.ico"
       ],
-      "identifier": "com.lgou2w.hoyo.gacha",
+      "identifier": "com.wxwatch.gacha.tracker",
       "longDescription": "An unofficial tool for managing and analyzing your miHoYo gacha records",
       "macOS": {
         "entitlements": null,
@@ -50,7 +50,7 @@
         "digestAlgorithm": "sha256",
         "timestampUrl": "",
         "wix": {
-          "language": "zh-CN"
+          "language": "en-US"
         }
       }
     },
@@ -66,7 +66,7 @@
         "height": 864,
         "resizable": true,
         "center": true,
-        "title": "HoYo.Gacha",
+        "title": "Gacha Tracker",
         "width": 1152
       }
     ]
