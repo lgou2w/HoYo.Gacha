@@ -1,16 +1,14 @@
-import React from 'react'
-import Layout from '@/components/Layout'
-import SettingAbout from '@/components/setting/SettingAbout'
-import Typography from '@mui/material/Typography'
-import Divider from '@mui/material/Divider'
+import React from "react";
+import Layout from "@/components/Layout";
+import SettingAbout from "@/components/setting/SettingAbout";
+import Typography from "@mui/material/Typography";
+import Divider from "@mui/material/Divider";
 
-const Sections = [
-  { id: 'about', title: '关于', content: <SettingAbout /> }
-]
+const Sections = [{ id: "about", title: "About", content: <SettingAbout /> }];
 
-export default function Setting () {
+export default function Setting() {
   return (
-    <Layout title="设置">
+    <Layout title="Settings">
       {Sections.map((section) => (
         <section key={section.id} id={section.id}>
           <Typography component="h2" variant="h6">
@@ -21,5 +19,5 @@ export default function Setting () {
         </section>
       ))}
     </Layout>
-  )
+  );
 }

@@ -1,16 +1,13 @@
 {
-  "name": "hoyo.gacha",
-  "version": "0.3.0",
+  "name": "@wxwatch/gacha-tracker",
+  "version": "1.0.0",
   "description": "An unofficial tool for managing and analyzing your miHoYo gacha records",
-  "author": "lgou2w <lgou2w@hotmail.com>",
-  "homepage": "https://github.com/lgou2w/HoYo.Gacha#readme",
-  "repository": "https://github.com/lgou2w/HoYo.Gacha.git",
+  "homepage": "https://github.com/WxWatch/gacha-tracker",
+  "repository": "https://github.com/WxWatch/gacha-tracker.git",
   "license": "MIT OR Apache-2.0",
-  "private": "true",
   "type": "module",
   "engines": {
-    "node": ">=18.0.0",
-    "pnpm": ">=7.0.0"
+    "node": ">=18.0.0"
   },
   "scripts": {
     "tauri": "tauri",
@@ -55,5 +52,6 @@
     "eslint-plugin-react": "^7.32.2",
     "typescript": "^5.0.4",
     "vite": "^4.3.8"
-  }
+  },
+  "packageManager": "yarn@3.5.1"
 }
