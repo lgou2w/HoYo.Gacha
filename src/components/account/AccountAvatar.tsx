@@ -1,28 +1,26 @@
-import React from 'react'
-import Avatar, { AvatarProps } from '@mui/material/Avatar'
-import { AccountFacet } from '@/interfaces/account'
-import AvatarGenshinLumine from '@/assets/images/genshin/UI_AvatarIcon_PlayerGirl.png'
-import AvatarGenshinAether from '@/assets/images/genshin/UI_AvatarIcon_PlayerBoy.png'
-import AvatarStarRailTrailblazer from '@/assets/images/starrail/Trailblazer.png'
+import React from "react";
+import Avatar, { AvatarProps } from "@mui/material/Avatar";
+import { AccountFacet } from "@/interfaces/account";
+import AvatarGenshinLumine from "@/assets/images/genshin/UI_AvatarIcon_PlayerGirl.png";
+// import AvatarGenshinAether from "@/assets/images/genshin/UI_AvatarIcon_PlayerBoy.png";
+import AvatarStarRailTrailblazer from "@/assets/images/starrail/Trailblazer.png";
 
-export interface AccountAvatarProps extends Omit<AvatarProps, 'src'> {
-  facet: AccountFacet
+export interface AccountAvatarProps extends Omit<AvatarProps, "src"> {
+  facet: AccountFacet;
 }
 
-export default function AccountAvatar (props: AccountAvatarProps) {
-  const { facet, ...rest } = props
+export default function AccountAvatar(props: AccountAvatarProps) {
+  const { facet, ...rest } = props;
   const src = React.useMemo(() => {
     switch (facet) {
       case AccountFacet.Genshin:
-        return AvatarGenshinLumine
+        return AvatarGenshinLumine;
       case AccountFacet.StarRail:
-        return AvatarStarRailTrailblazer
+        return AvatarStarRailTrailblazer;
       default:
-        return undefined
+        return undefined;
     }
-  }, [facet])
+  }, [facet]);
 
-  return (
-    <Avatar src={src} {...rest} />
-  )
+  return <Avatar src={src} {...rest} />;
 }

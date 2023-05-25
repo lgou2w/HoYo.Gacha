@@ -1,53 +1,55 @@
-import { Account, AccountFacet } from '@/interfaces/account'
-import { GenshinGachaRecord, StarRailGachaRecord } from '@/interfaces/gacha'
-import invoke from '@/utilities/invoke'
+import { Account, AccountFacet } from "@/interfaces/account";
+import { GenshinGachaRecord, StarRailGachaRecord } from "@/interfaces/gacha";
+import invoke from "@/utilities/invoke";
 
-export async function findGameDataDirectories (facet: AccountFacet): Promise<string[]> {
-  return invoke('plugin:gacha|find_game_data_directories', { facet })
+export async function findGameDataDirectories(
+  facet: AccountFacet
+): Promise<string[]> {
+  return invoke("plugin:gacha|find_game_data_directories", { facet });
 }
 
-export async function findGachaUrl (
+export async function findGachaUrl(
   facet: AccountFacet,
-  uid: Account['uid'],
+  uid: Account["uid"],
   gameDataDir: string
 ): Promise<string> {
-  return invoke('plugin:gacha|find_gacha_url', { facet, uid, gameDataDir })
+  return invoke("plugin:gacha|find_gacha_url", { facet, uid, gameDataDir });
 }
 
-export async function pullAllGachaRecords (
+export async function pullAllGachaRecords(
   facet: AccountFacet,
-  uid: Account['uid'],
+  uid: Account["uid"],
   payload: {
-    gachaUrl: string
+    gachaUrl: string;
     gachaTypeAndLastEndIdMappings: Record<
-      GenshinGachaRecord['gacha_type'] | StarRailGachaRecord['gacha_type'],
-      GenshinGachaRecord['id'] | StarRailGachaRecord['id'] | null
-    >
-    eventChannel: string
-    saveToStorage?: boolean
+      GenshinGachaRecord["gacha_type"] | StarRailGachaRecord["gacha_type"],
+      GenshinGachaRecord["id"] | StarRailGachaRecord["id"] | null
+    >;
+    eventChannel: string;
+    saveToStorage?: boolean;
   }
 ): Promise<void> {
-  return invoke('plugin:gacha|pull_all_gacha_records', {
+  return invoke("plugin:gacha|pull_all_gacha_records", {
     facet,
     uid,
-    ...payload
-  })
+    ...payload,
+  });
 }
 
-export async function importGachaRecords (
+export async function importGachaRecords(
   facet: AccountFacet,
-  uid: Account['uid'],
+  uid: Account["uid"],
   file: string
 ): Promise<number> {
-  return invoke('plugin:gacha|import_gacha_records', { facet, uid, file })
+  return invoke("plugin:gacha|import_gacha_records", { facet, uid, file });
 }
 
-export async function exportGachaRecords (
+export async function exportGachaRecords(
   facet: AccountFacet,
-  uid: Account['uid'],
+  uid: Account["uid"],
   directory: string
 ): Promise<string> {
-  return invoke('plugin:gacha|export_gacha_records', { facet, uid, directory })
+  return invoke("plugin:gacha|export_gacha_records", { facet, uid, directory });
 }
 
 const PluginGacha = Object.freeze({
@@ -55,7 +57,7 @@ const PluginGacha = Object.freeze({
   findGachaUrl,
   pullAllGachaRecords,
   importGachaRecords,
-  exportGachaRecords
-})
+  exportGachaRecords,
+});
 
-export default PluginGacha
+export default PluginGacha;

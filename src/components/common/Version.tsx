@@ -10,7 +10,7 @@ export default function Version (props: TypographyProps) {
     <Typography component="span" {...props}>
       {version.data ? formatVersion(version.data) : __APP_VERSION__}
     </Typography>
-  )
+  );
 }
 
 function formatVersion (version: CurrentVersion): string {
