@@ -3,26 +3,24 @@
 module.exports = {
   root: true,
   env: {
-    node: true
+    node: true,
   },
-  parser: '@typescript-eslint/parser',
+  parser: "@typescript-eslint/parser",
   parserOptions: {
-    ecmaVersion: 'latest',
-    sourceType: 'module'
+    ecmaVersion: "latest",
+    sourceType: "module",
   },
   extends: [
-    'standard',
-    'eslint:recommended',
-    'plugin:@typescript-eslint/recommended',
-    'plugin:react/recommended'
+    "standard",
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:react/recommended",
+    "prettier",
   ],
-  plugins: ['@typescript-eslint'],
-  rules: {
-    semi: [2, 'never']
-  },
+  plugins: ["@typescript-eslint"],
   settings: {
     react: {
-      version: '18'
-    }
-  }
-}
+      version: "18",
+    },
+  },
+};
