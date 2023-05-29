@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTheme } from '@mui/material/styles'
 import { resolveCurrency } from '@/interfaces/account'
 import { useGachaLayoutContext } from '@/components/gacha/GachaLayoutContext'
 import { CalendarDatum, ResponsiveTimeRange } from '@nivo/calendar'
@@ -65,6 +66,8 @@ export default function GachaChartCalendar () {
     }
   }, [containerRef.current])
 
+  const theme = useTheme()
+
   return (
     <Stack direction="column" gap={2}>
       <Typography variant="h6" gutterBottom>{`❖ ${currencyAction}日历`}</Typography>
@@ -92,7 +95,16 @@ export default function GachaChartCalendar () {
               ? `${date.getFullYear()} 年`
               : `${month} 月`
           }}
-          theme={{ fontFamily: 'inherit', fontSize: 14 }}
+          theme={{
+            fontFamily: 'inherit',
+            fontSize: 14,
+            tooltip: {
+              // See: https://github.com/plouc/nivo/blob/0f0a926627c370f4ae0ca435a91573a16d96affc/packages/tooltip/src/TooltipWrapper.tsx#L79-L83
+              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+              // @ts-ignore
+              zIndex: theme.zIndex.drawer + 1
+            }
+          }}
           tooltip={({ color, day, value }) => (
             <Box component={Paper}
               position="absolute"
