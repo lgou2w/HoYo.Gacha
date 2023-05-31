@@ -7,7 +7,7 @@ import Stack from '@mui/material/Stack'
 import Box from '@mui/material/Box'
 import Paper from '@mui/material/Paper'
 import Typography from '@mui/material/Typography'
-import dayjs from 'dayjs'
+import dayjs from '@/utilities/dayjs'
 
 export default function GachaChartCalendar () {
   const { facet, gachaRecords: { aggregatedValues } } = useGachaLayoutContext()

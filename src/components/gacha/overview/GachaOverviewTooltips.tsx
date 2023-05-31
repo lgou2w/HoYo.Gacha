@@ -3,7 +3,7 @@ import { resolveCurrency } from '@/interfaces/account'
 import { useGachaLayoutContext } from '@/components/gacha/GachaLayoutContext'
 import Box from '@mui/material/Box'
 import Typography from '@mui/material/Typography'
-import dayjs from 'dayjs'
+import dayjs from '@/utilities/dayjs'
 
 export default function GachaOverviewTooltips () {
   const { facet, gachaRecords } = useGachaLayoutContext()
@@ -34,11 +34,11 @@ export default function GachaOverviewTooltips () {
       <Typography>
         {`· ${action}记录日期覆盖范围：`}
         <Typography component="span" color="secondary">
-          {dayjs(firstTime).format('YYYY.MM.DD HH:mm:ss')}
+          {dayjs(firstTime).format('LLLL')}
         </Typography>
         {' ~ '}
         <Typography component="span" color="secondary">
-        {dayjs(lastTime).format('YYYY.MM.DD HH:mm:ss')}
+        {dayjs(lastTime).format('LLLL')}
         </Typography>
         {'。'}
       </Typography>

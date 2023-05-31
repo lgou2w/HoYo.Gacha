@@ -2,7 +2,7 @@ import React from 'react'
 import { resolveCurrency } from '@/interfaces/account'
 import { useGachaLayoutContext } from '@/components/gacha/GachaLayoutContext'
 import Typography from '@mui/material/Typography'
-import dayjs from 'dayjs'
+import dayjs from '@/utilities/dayjs'
 
 export default function GachaOverviewLastUpdated () {
   const { facet, selectedAccount } = useGachaLayoutContext()
@@ -14,7 +14,7 @@ export default function GachaOverviewLastUpdated () {
       <Typography component="span" variant="inherit">{`最近${action}记录更新日期：`}</Typography>
       <Typography component="span" variant="inherit">
         {lastGachaUpdated
-          ? dayjs(lastGachaUpdated).format('YYYY.MM.DD HH:mm:ss')
+          ? dayjs(lastGachaUpdated).format('LLLL')
           : '无'}
       </Typography>
     </Typography>
