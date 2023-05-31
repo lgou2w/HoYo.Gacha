@@ -1,29 +1,24 @@
 import React from 'react'
-import { useQuery } from '@tanstack/react-query'
-import invoke from '@/utilities/invoke'
+import { CurrentVersion, useVersion } from '@/components/common/useVersion'
 import Typography, { TypographyProps } from '@mui/material/Typography'
+import dayjs from '@/utilities/dayjs'
 
-export interface VersionProps extends TypographyProps {
-  format?: (versionStr: string) => string
-}
-
-export default function Version (props: VersionProps) {
-  const version = useQuery({
-    queryKey: ['get_version'],
-    queryFn: async () => invoke<string>('get_version'),
-    staleTime: Infinity,
-    cacheTime: Infinity,
-    refetchOnWindowFocus: false
-  })
-
-  const { format, ...rest } = props
+export default function Version (props: TypographyProps) {
+  const version = useVersion()
 
   return (
-    <Typography component="span" {...rest}>
-      {format
-        ? format(version.data || __APP_VERSION__)
-        : version.data || __APP_VERSION__
-      }
+    <Typography component="span" {...props}>
+      {version.data ? formatVersion(version.data) : __APP_VERSION__}
     </Typography>
   )
+}
+
+function formatVersion (version: CurrentVersion): string {
+  const date = dayjs(version.date)
+  const ymd = date.format('YYYY-MM-DD')
+  const fromNow = date.fromNow()
+
+  return version.commit_tag
+    ? `v${version.commit_tag} (${ymd}, ${fromNow})`
+    : `v${version.version}-${version.commit_hash} (${ymd}, ${fromNow})`
 }

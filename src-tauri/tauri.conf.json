@@ -15,6 +15,7 @@
       "clipboard": { "all": true },
       "dialog": { "all": true },
       "path": { "all": true },
+      "process": { "all": true },
       "shell": { "all": true }
     },
     "bundle": {

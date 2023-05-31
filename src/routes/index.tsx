@@ -16,7 +16,7 @@ export default function Index () {
           HoYo.Gacha
         </MuiLink>
         &nbsp;&nbsp;
-        <Version variant="caption" format={(ver) => `v${ver}`} />
+        <Version variant="caption" />
       </Typography>
       <Typography>An unofficial tool for managing and analyzing your miHoYo gacha records.</Typography>
       <Typography>一个非官方的工具，用于管理和分析你的 miHoYo 抽卡记录。</Typography>
