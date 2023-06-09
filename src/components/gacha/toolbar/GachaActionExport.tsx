@@ -62,7 +62,7 @@ export default function GachaActionExport () {
       </Tooltip>
       <Menu anchorEl={anchorEl} open={open} onClose={handleClose}
         MenuListProps={{ disablePadding: false }}
-        slotProps={{ backdrop: { invisible: false } }}
+        slotProps={{ root: { slotProps: { backdrop: { invisible: false } } } }}
       >
         <Typography variant="body2" paddingX={2} paddingY={1}>
           {`导出${action}记录为：`}
