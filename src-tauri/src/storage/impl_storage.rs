@@ -4,6 +4,7 @@ extern crate sea_orm;
 extern crate tauri;
 extern crate tracing;
 
+use std::env::current_exe;
 use std::path::{Path, PathBuf};
 use futures::TryStreamExt;
 use paste::paste;
@@ -64,7 +65,8 @@ pub struct Storage {
 
 impl Storage {
   pub async fn new() -> Result<Self> {
-    let database_file = PathBuf::from(DATABASE);
+    // HACK: target/debug/DATABASE when running in debug mode
+    let database_file = current_exe()?.parent().unwrap().join(DATABASE);
     Self::new_with_database_file(database_file).await
   }
 
