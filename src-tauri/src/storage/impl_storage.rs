@@ -65,8 +65,8 @@ pub struct Storage {
 
 impl Storage {
   pub async fn new() -> Result<Self> {
-    let database_filename = format!("{}/{}", current_exe()?.parent().unwrap().to_str().unwrap(), DATABASE);
-    let database_file = PathBuf::from(database_filename);
+    // HACK: target/debug/DATABASE when running in debug mode
+    let database_file = current_exe()?.parent().unwrap().join(DATABASE);
     Self::new_with_database_file(database_file).await
   }
 
