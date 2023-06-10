@@ -4,7 +4,7 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 
 export default function ErrorPage() {
-  const error = useRouteError();
+  const error: any = useRouteError();
   console.error(error);
   // TODO: Error page
 
