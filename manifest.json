@@ -1,11 +1,11 @@
 {
     "id": 107926293,
-    "tag_name": "1.0.0",
+    "tag_name": "1.1.0",
     "prerelease": false,
-    "created_at": "2023-06-01T00:00:00Z",
+    "created_at": "2023-06-10T03:37:00Z",
     "asset": {
-        "name": "HoYo.Gacha.exe",
-        "size": 9262592,
-        "download_url": "https://github.com/WxWatch/gacha-tracker/releases/download/1.0.0/Gacha Tracker_1.0.0_x64_en-US.msi"
+        "name": "gacha_tracker_1.1.0_x64_en-US.msi",
+        "size": 0,
+        "download_url": "https://github.com/WxWatch/gacha-tracker/releases/download/v1.1.0/gacha_tracker_1.1.0_x64_en-US.msi"
     }
 }
