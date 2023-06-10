@@ -71,7 +71,7 @@ export default function GachaActionExport() {
         open={open}
         onClose={handleClose}
         MenuListProps={{ disablePadding: false }}
-        slotProps={{ backdrop: { invisible: false } }}
+        slotProps={{ root: { slotProps: { backdrop: { invisible: false } } } }}
       >
         <Typography variant="body2" paddingX={2} paddingY={1}>
           {`export ${action} is documented as:`}

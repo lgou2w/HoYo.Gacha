@@ -64,7 +64,16 @@ pub struct Storage {
 
 impl Storage {
   pub async fn new() -> Result<Self> {
-    let database_file = PathBuf::from(DATABASE);
+    // HACK: See -> https://github.com/lgou2w/HoYo.Gacha/issues/8
+    //  - In debug mode  : the database file is in the src-tauri directory
+    //  - In release mode: the database file is in the same directory as the executable
+    let database_file = if cfg!(debug_assertions) {
+      // Avoid clearing the database file with the 'cargo clean' command in debug mode
+      PathBuf::from(DATABASE)
+    } else {
+      std::env::current_exe()?.parent().unwrap().join(DATABASE)
+    };
+
     Self::new_with_database_file(database_file).await
   }
 
