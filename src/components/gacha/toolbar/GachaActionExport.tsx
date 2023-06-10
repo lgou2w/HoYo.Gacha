@@ -44,7 +44,10 @@ export default function GachaActionExport() {
           selectedAccount.uid,
           directory
         );
-        alert(null, `${action}The record export was successful: ${exportFile}`);
+        alert(
+          null,
+          `${action.singular}The record export was successful: ${exportFile}`
+        );
       }
     } catch (e) {
       alert(e);
@@ -55,7 +58,11 @@ export default function GachaActionExport() {
 
   return (
     <Box>
-      <Tooltip placement="bottom" title={`export ${action} Record`} arrow>
+      <Tooltip
+        placement="bottom"
+        title={`export ${action.singular} Record`}
+        arrow
+      >
         <IconButton
           onClick={handleClick}
           disabled={busy}
@@ -74,7 +81,7 @@ export default function GachaActionExport() {
         slotProps={{ root: { slotProps: { backdrop: { invisible: false } } } }}
       >
         <Typography variant="body2" paddingX={2} paddingY={1}>
-          {`export ${action} is documented as:`}
+          {`export ${action.singular} is documented as:`}
         </Typography>
         <Divider sx={{ marginBottom: 1 }} />
         <MenuItem onClick={handleExportGachaRecords}>

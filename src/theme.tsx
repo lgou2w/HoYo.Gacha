@@ -1,6 +1,6 @@
 import React from "react";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
-import { zhCN } from "@mui/material/locale";
+import { enUS } from "@mui/material/locale";
 import CssBaseline from "@mui/material/CssBaseline";
 import Box from "@mui/material/Box";
 import "@/assets/global.css";
@@ -11,7 +11,7 @@ const theme = createTheme(
       fontFamily: "汉仪文黑-85W",
     },
   },
-  zhCN
+  enUS
 );
 
 export default function Theme(props: React.PropsWithChildren) {

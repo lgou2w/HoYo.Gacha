@@ -45,16 +45,27 @@ export function resolveAccountDisplayName(
   );
 }
 
+export interface Action {
+  singular: string;
+  plural: string;
+}
+
 // TODO: i18n
 export function resolveCurrency(facet: AccountFacet): {
   currency: string;
-  action: string;
+  action: Action;
 } {
   switch (facet) {
     case AccountFacet.Genshin:
-      return { currency: "Primogems", action: "Wish" };
+      return {
+        currency: "Primogems",
+        action: { singular: "Wish", plural: "Wishes" },
+      };
     case AccountFacet.StarRail:
-      return { currency: "Stellar Jade", action: "Warp" };
+      return {
+        currency: "Stellar Jade",
+        action: { singular: "Warp", plural: "Warps" },
+      };
     default:
       throw new Error(`Unknown account facet: ${facet}`);
   }

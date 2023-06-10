@@ -19,7 +19,6 @@ use std::path::PathBuf;
 use tauri::plugin::{Builder as TauriPluginBuilder, TauriPlugin};
 use time::format_description;
 use time::{OffsetDateTime, UtcOffset};
-use tracing::debug;
 
 /// Tauri commands
 
@@ -49,8 +48,6 @@ async fn find_gacha_url(
                 .await?
         }
     };
-
-    debug!("{}", gacha_url.to_string());
 
     Ok(gacha_url.to_string())
 }
@@ -192,7 +189,7 @@ async fn export_gacha_records(
             let lang = gacha_records
                 .first()
                 .map(|v| v.lang.clone())
-                .unwrap_or("zh-cn".to_owned());
+                .unwrap_or("en-us".to_owned());
 
             // convert to uigf and write
             let uigf_list = uigf::convert_offical_to_uigf(&gacha_records)?;

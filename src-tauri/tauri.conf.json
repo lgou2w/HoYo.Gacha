@@ -6,8 +6,8 @@
     "distDir": "../dist"
   },
   "package": {
-    "productName": "WxWatch_gacha",
-    "version": "1.0.0"
+    "productName": "gacha_tracker",
+    "version": "1.1.0"
   },
   "tauri": {
     "allowlist": {
@@ -56,9 +56,6 @@
     },
     "security": {
       "csp": null
-    },
-    "updater": {
-      "active": false
     },
     "windows": [
       {

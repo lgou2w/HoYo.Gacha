@@ -9,13 +9,28 @@ import Stack from "@mui/material/Stack";
 import Box from "@mui/material/Box";
 import Button, { ButtonTypeMap } from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
-import HomeIcon from "@mui/icons-material/Home";
-import StarIcon from "@mui/icons-material/Star";
-import DirectionsSubwayIcon from "@mui/icons-material/DirectionsSubway";
 import SettingsIcon from "@mui/icons-material/Settings";
-import LogoSrc from "@/assets/images/Logo.png";
+import LogoSrc from "@/assets/images/Logo.webp";
+import StarRailLogoSrc from "@/assets/images/starrail/starrail-icon.jpeg";
+import GenshinLogoSrc from "@/assets/images/genshin/genshin-icon.jpeg";
+import PaimonTreasureSrc from "@/assets/images/Paimon.png";
 
 export const SidebarWidth = "96px";
+
+const GameIcon = styled((props: { src: string }) => {
+  const { src } = props;
+  return (
+    <Box {...props}>
+      <img src={src} alt="logo" />
+    </Box>
+  );
+})(() => ({
+  "& img": {
+    borderRadius: "8px",
+    maxWidth: 64,
+    maxHeight: 64,
+  },
+}));
 
 export default function Sidebar() {
   return (
@@ -43,9 +58,17 @@ export default function Sidebar() {
 type Nav = { title: string; href: string; icon?: React.ReactNode };
 
 const Navs: Nav[] = [
-  { title: "Home", href: "/", icon: <HomeIcon /> },
-  { title: "Genshin Impact", href: "/genshin", icon: <StarIcon /> },
-  { title: "Star Rail", href: "/starrail", icon: <DirectionsSubwayIcon /> },
+  { title: "Home", href: "/", icon: <GameIcon src={PaimonTreasureSrc} /> },
+  {
+    title: "Genshin Impact",
+    href: "/genshin",
+    icon: <GameIcon src={GenshinLogoSrc} />,
+  },
+  {
+    title: "Honkai: Star Rail",
+    href: "/starrail",
+    icon: <GameIcon src={StarRailLogoSrc} />,
+  },
 ];
 
 const NavSetting: Nav = {
@@ -93,6 +116,7 @@ const NavListItemButton = styled(Button, {
   paddingY: theme.spacing(0.5),
   display: "inline-flex",
   flexDirection: "column",
+  textAlign: "center",
   "& .MuiSvgIcon-root": { fontSize: "2rem" },
   ...(activated && {
     color: theme.palette.primary.main,

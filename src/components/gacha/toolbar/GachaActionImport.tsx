@@ -22,7 +22,7 @@ export default function GachaActionImport() {
     setBusy(true);
     try {
       const file = await dialog.open({
-        title: `Please select the ${action} record file:`,
+        title: `Please select the ${action.singular} record file:`,
         directory: false,
         multiple: false,
         filters: [
@@ -44,7 +44,7 @@ export default function GachaActionImport() {
         setBusy(false);
         alert(
           null,
-          `${action}
+          `${action.singular}
         Record imported successfully：${changes}(ignore duplicates)`
         );
         await refetchGachaRecords(selectedAccount.facet, selectedAccount.uid);
@@ -59,7 +59,11 @@ export default function GachaActionImport() {
 
   return (
     <Box>
-      <Tooltip placement="bottom" title={`import ${action} record`} arrow>
+      <Tooltip
+        placement="bottom"
+        title={`import ${action.singular} record`}
+        arrow
+      >
         <IconButton
           onClick={handleImportGachaRecords}
           disabled={busy}
@@ -81,7 +85,7 @@ export default function GachaActionImport() {
         <Box display="flex" flexDirection="column" alignItems="center">
           <CircularProgress color="info" />
           <Typography variant="h6" sx={{ marginTop: 2 }}>
-            {`importing ${action} recording, please wait...`}
+            {`importing ${action.singular} recording, please wait...`}
           </Typography>
         </Box>
       </Backdrop>

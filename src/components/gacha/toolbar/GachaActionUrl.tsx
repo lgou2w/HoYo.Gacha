@@ -68,8 +68,8 @@ export default function GachaActionUrl() {
       <TextField
         variant="outlined"
         size="small"
-        label={`${action}Link`}
-        placeholder={`${action}Link`}
+        label={`${action.singular} URL`}
+        placeholder={`${action.singular} URL`}
         value={selectedAccount.gachaUrl || ""}
         sx={{ maxWidth: 200 }}
         InputProps={{
@@ -101,7 +101,7 @@ export default function GachaActionUrl() {
         onClick={handleFindGachaUrl}
         disabled={busy}
       >
-        read link
+        Import link
       </Button>
     </Stack>
   );

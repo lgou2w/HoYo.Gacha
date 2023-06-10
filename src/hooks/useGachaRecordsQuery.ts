@@ -10,8 +10,11 @@ import {
 import { AccountFacet, Account, resolveCurrency } from "@/interfaces/account";
 import { GenshinGachaRecord, StarRailGachaRecord } from "@/interfaces/gacha";
 import PluginStorage from "@/utilities/plugin-storage";
+import * as _ from "lodash";
 
 type GachaRecord = GenshinGachaRecord | StarRailGachaRecord;
+
+type GachaFilter = (record: GachaRecord) => boolean;
 
 // Computed Gacha Records
 // See below
@@ -32,8 +35,8 @@ export interface GachaRecords {
     "category" | "categoryTitle" | "gachaType" | "lastEndId"
   >;
   readonly total: number;
-  readonly firstTime?: GachaRecord["time"];
-  readonly lastTime?: GachaRecord["time"];
+  readonly oldestTimestamp?: GachaRecord["time"];
+  readonly latestTimestamp?: GachaRecord["time"];
 }
 
 export interface NamedGachaRecords {
@@ -47,8 +50,8 @@ export interface NamedGachaRecords {
   lastTime?: GachaRecord["time"];
   metadata: {
     blue: GachaRecordsMetadata;
-    purple: GachaRecordsMetadata;
-    golden: GoldenGachaRecordsMetadata;
+    purple: AdvancedGachaRecordsMetadata;
+    golden: AdvancedGachaRecordsMetadata;
   };
 }
 
@@ -58,7 +61,7 @@ export interface GachaRecordsMetadata {
   sumPercentage: number;
 }
 
-export interface GoldenGachaRecordsMetadata extends GachaRecordsMetadata {
+export interface AdvancedGachaRecordsMetadata extends GachaRecordsMetadata {
   values: Array<GachaRecord & { usedPity: number; restricted?: true }>;
   sumAverage: number;
   sumRestricted: number;
@@ -134,15 +137,10 @@ function computeGachaRecords(
   data: GachaRecord[]
 ): GachaRecords {
   const total = data.length;
-  const firstTime = data[0]?.time;
-  const lastTime = data[total - 1]?.time;
+  const oldestTimestamp = _.first(data)?.time;
+  const latestTimestamp = _.last(data)?.time;
   const values = data.reduce((acc, record) => {
-    const ref = acc[record.gacha_type];
-    if (!ref) {
-      acc[record.gacha_type] = [record];
-    } else {
-      ref.push(record);
-    }
+    (acc[record.gacha_type] || (acc[record.gacha_type] = [])).push(record);
     return acc;
   }, {} as GachaRecords["values"]);
 
@@ -168,8 +166,8 @@ function computeGachaRecords(
     values,
     namedValues,
     aggregatedValues,
-    firstTime,
-    lastTime,
+    oldestTimestamp,
+    latestTimestamp,
   };
 }
 
@@ -205,9 +203,9 @@ const KnownCategoryTitles: Record<
   },
   [AccountFacet.StarRail]: {
     character: "Character",
-    weapon: "Weapon",
-    permanent: "Permanent",
-    newbie: "Newbie",
+    weapon: "Light Cone",
+    permanent: "Regular",
+    newbie: "Starter",
   },
 };
 
@@ -245,7 +243,8 @@ function computeNamedGachaRecords(
   const { action: currencyAction } = resolveCurrency(facet);
 
   return Object.entries(categories).reduce((acc, [gachaType, category]) => {
-    const categoryTitle = KnownCategoryTitles[facet][category] + currencyAction;
+    const categoryTitle =
+      KnownCategoryTitles[facet][category] + " " + currencyAction.singular;
     const data = concatNamedGachaRecordsValues(
       facet,
       values,
@@ -258,11 +257,16 @@ function computeNamedGachaRecords(
     const lastTime = data[total - 1]?.time;
     const metadata: NamedGachaRecords["metadata"] = {
       blue: computeGachaRecordsMetadata(total, data.filter(isRankTypeOfBlue)),
-      purple: computeGachaRecordsMetadata(
-        total,
-        data.filter(isRankTypeOfPurple)
+      purple: computeAdvancedGachaRecordsMetadata(
+        facet,
+        data,
+        isRankTypeOfPurple
       ),
-      golden: computeGoldenGachaRecordsMetadata(facet, data),
+      golden: computeAdvancedGachaRecordsMetadata(
+        facet,
+        data,
+        isRankTypeOfGolden
+      ),
     };
 
     acc[category] = {
@@ -306,7 +310,27 @@ function computeAggregatedGachaRecords(
     weapon.metadata.purple.sum;
   const purpleSumPercentage =
     purpleSum > 0 ? Math.round((purpleSum / total) * 10000) / 100 : 0;
-  const purpleValues = data.filter(isRankTypeOfPurple);
+  const purpleValues = Array.from(newbie.metadata.purple.values)
+    .concat(Array.from(permanent.metadata.purple.values))
+    .concat(Array.from(character.metadata.purple.values))
+    .concat(Array.from(weapon.metadata.purple.values))
+    .sort(sortGachaRecordById);
+
+  const { purpleUsedPitySum } = purpleValues.reduce(
+    (acc, record) => {
+      console.log("usedpity", record.usedPity);
+      acc.purpleUsedPitySum += record.usedPity;
+      return acc;
+    },
+    {
+      purpleUsedPitySum: 0,
+    }
+  );
+
+  const purpleSumAverage =
+    purpleSum > 0
+      ? Math.ceil(Math.round((purpleUsedPitySum / purpleSum) * 100) / 100)
+      : 0;
 
   const goldenSum =
     newbie.metadata.golden.sum +
@@ -326,6 +350,8 @@ function computeAggregatedGachaRecords(
       if (record.restricted) {
         acc.goldenSumRestricted += 1;
       }
+      console.log("usedpitgy", record.usedPity);
+
       acc.goldenUsedPitySum += record.usedPity;
       return acc;
     },
@@ -355,6 +381,9 @@ function computeAggregatedGachaRecords(
         sum: purpleSum,
         sumPercentage: purpleSumPercentage,
         values: purpleValues,
+        sumAverage: purpleSumAverage,
+        sumRestricted: 0,
+        nextPity: 0,
       },
       golden: {
         sum: goldenSum,
@@ -381,11 +410,12 @@ function computeGachaRecordsMetadata(
   };
 }
 
-function computeGoldenGachaRecordsMetadata(
+function computeAdvancedGachaRecordsMetadata(
   facet: AccountFacet,
-  values: GachaRecord[]
-): GoldenGachaRecordsMetadata {
-  const result: GoldenGachaRecordsMetadata["values"] = [];
+  values: GachaRecord[],
+  filter: GachaFilter
+): AdvancedGachaRecordsMetadata {
+  const result: AdvancedGachaRecordsMetadata["values"] = [];
 
   let sum = 0;
   let pity = 0;
@@ -393,15 +423,14 @@ function computeGoldenGachaRecordsMetadata(
   let sumRestricted = 0;
 
   for (const record of values) {
-    const isGolden = isRankTypeOfGolden(record);
     pity += 1;
 
-    if (isGolden) {
+    if (filter(record)) {
       const restricted = isRestrictedGolden(facet, record);
       const rest = Object.assign(
         { usedPity: pity, restricted },
         record
-      ) as GoldenGachaRecordsMetadata["values"][number];
+      ) as AdvancedGachaRecordsMetadata["values"][number];
       result.push(rest);
 
       sum += 1;

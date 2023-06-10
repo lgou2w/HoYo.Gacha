@@ -13,12 +13,7 @@ export default function SettingAbout() {
           Version
         </Typography>
         <Typography component="p" variant="body2">
-          {"开源地址："}
-          <Link href={__APP_REPOSITORY__} target="_blank" rel="noreferrer">
-            {__APP_REPOSITORY__}
-          </Link>
-          <br />
-          当前版本：
+          Current Version：
           <Version variant="inherit" />
           &nbsp;
           <VersionChecker />

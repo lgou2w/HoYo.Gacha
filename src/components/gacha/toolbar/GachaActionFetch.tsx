@@ -98,7 +98,7 @@ export default function GachaActionFetch() {
         onClick={handleFetch}
         disabled={busy}
       >
-        {`renew${action}`}
+        {`Update`}
       </Button>
       {busy && (
         <Backdrop
@@ -112,7 +112,7 @@ export default function GachaActionFetch() {
           <Box display="flex" flexDirection="column" alignItems="center">
             <CircularProgress color="info" />
             <Typography variant="h6" color="white" sx={{ marginTop: 2 }}>
-              {`retrieving${action}Logging, please wait...`}
+              {`Retrieving latest ${action.plural.toLocaleLowerCase()}...`}
             </Typography>
             <Typography variant="body1" sx={{ marginTop: 1 }}>
               {stringifyFragment(gachaRecords, currentFragment)}
@@ -138,13 +138,13 @@ function stringifyFragment(
     const gachaType = fragment.ready;
     const category = gachaRecords.gachaTypeToCategoryMappings[gachaType];
     const categoryTitle = gachaRecords.namedValues[category].categoryTitle;
-    return `Start fetching data:${categoryTitle}`;
+    return `Fetching data for ${categoryTitle}`;
   } else if ("pagination" in fragment) {
     const pagination = fragment.pagination;
-    return `Get the first ${pagination} page data...`;
+    return `Page ${pagination}...`;
   } else if ("data" in fragment) {
     const data = fragment.data;
-    return `get it ${data.length} new data...`;
+    return `Found ${data.length} new...`;
   } else {
     // Should never reach here
     return `Unknown fragment: ${JSON.stringify(fragment)}`;

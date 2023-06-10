@@ -1,11 +1,11 @@
 [package]
-name = "hoyo_gacha"
-version = "0.3.0"
+name = "gacha_tracker"
+version = "1.1.0"
 edition = "2021"
-authors = ["lgou2w"]
+authors = ["WxWatch"]
 description = "An unofficial tool for managing and analyzing your miHoYo gacha records"
-homepage = "https://github.com/lgou2w/HoYo.Gacha#readme"
-repository = "https://github.com/lgou2w/HoYo.Gacha"
+homepage = "https://github.com/WxWatch/gacha-tracker#readme"
+repository = "https://github.com/WxWatch/gacha-tracker"
 readme = "../README.md"
 license = "MIT OR Apache-2.0"
 build = "build.rs"
