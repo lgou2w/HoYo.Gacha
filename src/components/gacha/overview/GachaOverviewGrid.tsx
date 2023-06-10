@@ -8,7 +8,7 @@ import Stack from "@mui/material/Stack";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Chip from "@mui/material/Chip";
-import dayjs from "dayjs";
+import dayjs from "@/utilities/dayjs";
 
 export default function GachaOverviewGrid() {
   const { facet, gachaRecords } = useGachaLayoutContext();

@@ -16,7 +16,7 @@ export default function Index() {
           Gacha Tracker
         </MuiLink>
         &nbsp;&nbsp;
-        <Version variant="caption" format={(ver) => `v${ver}`} />
+        <Version variant="caption" />
       </Typography>
       <Typography>
         An unofficial tool for managing and analyzing your miHoYo gacha records.

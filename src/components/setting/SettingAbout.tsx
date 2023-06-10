@@ -1,11 +1,9 @@
 import React from "react";
 import Version from "@/components/common/Version";
+import VersionChecker from "@/components/common/VersionChecker";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
-import Button from "@mui/material/Button";
 import Link from "@mui/material/Link";
-
-// TODO: Version check
 
 export default function SettingAbout() {
   return (
@@ -15,19 +13,15 @@ export default function SettingAbout() {
           Version
         </Typography>
         <Typography component="p" variant="body2">
-          <Version
-            variant="inherit"
-            format={(ver) => `current version：v${ver}`}
-          />
-          &nbsp;&nbsp;
-          <Button size="small" disabled>
-            Check for updates
-          </Button>
-          <br />
-          {"Open source address:"}
+          {"开源地址："}
           <Link href={__APP_REPOSITORY__} target="_blank" rel="noreferrer">
             {__APP_REPOSITORY__}
           </Link>
+          <br />
+          当前版本：
+          <Version variant="inherit" />
+          &nbsp;
+          <VersionChecker />
         </Typography>
       </Stack>
       <Stack gap={1}>

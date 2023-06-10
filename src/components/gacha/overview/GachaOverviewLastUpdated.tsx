@@ -16,9 +16,7 @@ export default function GachaOverviewLastUpdated() {
         variant="inherit"
       >{`recently ${action} date of record update:`}</Typography>
       <Typography component="span" variant="inherit">
-        {lastGachaUpdated
-          ? dayjs(lastGachaUpdated).format("YYYY.MM.DD HH:mm:ss")
-          : "none"}
+        {lastGachaUpdated ? dayjs(lastGachaUpdated).format("LLLL") : "none"}
       </Typography>
     </Typography>
   );

@@ -37,11 +37,11 @@ export default function GachaOverviewTooltips() {
       <Typography>
         {`· ${action} record date coverage：`}
         <Typography component="span" color="secondary">
-          {dayjs(firstTime).format("YYYY.MM.DD HH:mm:ss")}
+          {dayjs(firstTime).format("LLLL")}
         </Typography>
         {" ~ "}
         <Typography component="span" color="secondary">
-          {dayjs(lastTime).format("YYYY.MM.DD HH:mm:ss")}
+          {dayjs(lastTime).format("LLLL")}
         </Typography>
         {"。"}
       </Typography>
