@@ -1,9 +1,4 @@
-# HoYo.Gacha
-
-<p>
-<a href="https://github.com/lgou2w/HoYo.Gacha/actions"><img src="https://img.shields.io/github/actions/workflow/status/lgou2w/HoYo.Gacha/build.yml?branch=main&logo=github&style=flat-square"/></a>
-<a href="https://github.com/lgou2w/HoYo.Gacha/releases"><img src="https://img.shields.io/github/v/release/lgou2w/HoYo.Gacha?logo=github&style=flat-square&include_prereleases" /></a>
-</p>
+# Gacha Tracker
 
 An unofficial tool to manage and analyze your miHoYo gacha records.
 
