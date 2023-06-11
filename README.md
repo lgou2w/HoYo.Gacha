@@ -5,50 +5,45 @@
 <a href="https://github.com/lgou2w/HoYo.Gacha/releases"><img src="https://img.shields.io/github/v/release/lgou2w/HoYo.Gacha?logo=github&style=flat-square&include_prereleases" /></a>
 </p>
 
-一个非官方的工具，用于管理和分析你的 miHoYo 抽卡记录。
-
-**无需任何本地代理服务器**。只需读取 `Chromium` [硬盘缓存](DiskCache/README.md)文件并请求 API 端点。
+An unofficial tool to manage and analyze your miHoYo gacha records.
 
 <br />
 <img src="src-tauri/icons/icon.png" style="width:256px;" />
 
-## 功能
+## Features
 
-- [x] 支持 **`原神`** 和 **`崩坏：星穹铁道`** 游戏抽卡记录。
-- [x] 管理游戏的多个账号。
-- [x] 获取游戏的抽卡链接。
-- [x] 获取抽卡记录并保存到本地数据库文件。
-- [x] 实现 [`UIGF`](https://uigf.org/zh/standards/UIGF.html) 统一可交换祈愿记录标准。
-- [x] 实现 [`SRGF`](https://uigf.org/zh/standards/SRGF.html) 星穹铁道抽卡记录标准。
-- [ ] ~~支持导出为 Excel 文件。~~（暂不考虑）
-- [ ] 支持创建图片分享。
-- [ ] 开发中...
+- [x] Support for **`Genshin Impact`** and **`Honkai: Star Rail`** gacha records.
+- [x] Manage multiple accounts for each game.
+- [x] Automatically fetches needed links. No need to copy/paste complex Powershell commands.
+- [x] Saves to local database. Data stays private and on your machine.
+- [x] Uses [`UIGF`](https://uigf.org/en/standards/UIGF.html) standard.
+- [x] Uses [`SRGF`](https://uigf.org/en/standards/SRGF.html) standard.
 
-## 硬盘缓存
+## Hard Disk Cache
 
-**关于从 `Chromium Disk Cache` 硬盘缓存获取抽卡链接的实现原理请参考：[硬盘缓存](DiskCache/README.md)**
+Please refer to [`Chromium Disk Cache`](DiskCache/README.md) for more information.
 
-## 特别感谢
+## Special Thanks
 
-* [UIGF organization](https://uigf.org)
-* [EnkaNetwork](https://github.com/EnkaNetwork)
-* [DGP-Studio/Snap.Hutao](https://github.com/DGP-Studio/Snap.Hutao)
-* [YuehaiTeam/cocogoat](https://github.com/YuehaiTeam/cocogoat)
-* [vikiboss/gs-helper](https://github.com/vikiboss/gs-helper)
+- [UIGF organization](https://uigf.org)
+- [EnkaNetwork](https://github.com/EnkaNetwork)
+- [DGP-Studio/Snap.Hutao](https://github.com/DGP-Studio/Snap.Hutao)
+- [YuehaiTeam/cocogoat](https://github.com/YuehaiTeam/cocogoat)
+- [vikiboss/gs-helper](https://github.com/vikiboss/gs-helper)
 
-## 协议
+## License
 
-MIT OR Apache-2.0 **仅供个人学习交流使用。请勿用于任何商业或违法违规用途。**
+MIT OR Apache-2.0 **For personal use only. Do not use for commercial or illegal purposes**
 
-### 部分资源文件
+### Resources
 
-[个人非商用授权](https://www.hanyi.com.cn/faq-doc-1) - 北京汉仪创新科技股份有限公司 版权所有
+[Personal Non-Commercial License](https://www.hanyi.com.cn/faq-doc-1) - Beijing Hanyi Innovation Technology Co., Ltd. All rights reserved
 
-* [src/assets/汉仪文黑-85W.ttf](src/assets/%E6%B1%89%E4%BB%AA%E6%96%87%E9%BB%91-85W.ttf)
+- [src/assets/汉仪文黑-85W.ttf](src/assets/%E6%B1%89%E4%BB%AA%E6%96%87%E9%BB%91-85W.ttf)
 
-©miHoYo | 上海米哈游影铁科技有限公司 版权所有
+©miHoYo
 
-* [src/assets/images/Logo.png](src/assets/images/Logo.png)
-* [src/assets/images/genshin/*](src/assets/images/genshin)
-* [src/assets/images/starrail/*](src/assets/images/starrail)
-* [src-tauri/icons/*](src-tauri/icons/)
+- [src/assets/images/Logo.png](src/assets/images/Logo.png)
+- [src/assets/images/genshin/\*](src/assets/images/genshin)
+- [src/assets/images/starrail/\*](src/assets/images/starrail)
+- [src-tauri/icons/\*](src-tauri/icons/)
