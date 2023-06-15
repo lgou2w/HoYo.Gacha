@@ -1,6 +1,6 @@
 [package]
 name = "gacha_tracker"
-version = "1.1.0"
+version = "1.2.0"
 edition = "2021"
 authors = ["WxWatch"]
 description = "An unofficial tool for managing and analyzing your miHoYo gacha records"
