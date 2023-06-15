@@ -171,8 +171,8 @@ async fn export_gacha_records(
     let time = now.format(&format).map_err(time::Error::from)?;
 
     let (primary, format) = match facet {
-        AccountFacet::Genshin => ("Original God Prayer Record", "UIGF"),
-        AccountFacet::StarRail => ("Star Dome Railway Jump Record", "SRGF"),
+        AccountFacet::Genshin => ("Unified Standardized GenshinData Format", "UIGF"),
+        AccountFacet::StarRail => ("Star Rail GachaLog Format", "SRGF"),
     };
     let filename = format!(
         "{}_{}_{}_{uid}_{time}.json",

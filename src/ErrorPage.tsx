@@ -4,7 +4,7 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 
 export default function ErrorPage() {
-  const error: any = useRouteError();
+  const error = useRouteError();
   console.error(error);
   // TODO: Error page
 
@@ -15,7 +15,7 @@ export default function ErrorPage() {
         Sorry, an unexpected error has occurred.
       </Typography>
       <Typography>
-        <pre>{error.stack || error.statusText || error.message}</pre>
+        <pre>{`${error}`}</pre>
       </Typography>
     </Box>
   );

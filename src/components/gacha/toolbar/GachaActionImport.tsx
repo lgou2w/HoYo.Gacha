@@ -29,8 +29,9 @@ export default function GachaActionImport() {
           {
             extensions: ["json"],
             name: {
-              [AccountFacet.Genshin]: "UIGF 统一可交换祈愿记录标准",
-              [AccountFacet.StarRail]: "SRGF 星穹铁道抽卡记录标准",
+              [AccountFacet.Genshin]:
+                "UIGF (Unified Standardized GenshinData Format)",
+              [AccountFacet.StarRail]: "SRGF (Star Rail GachaLog Format)",
             }[selectedAccount.facet],
           },
         ],
@@ -42,11 +43,7 @@ export default function GachaActionImport() {
           file
         );
         setBusy(false);
-        alert(
-          null,
-          `${action.singular}
-        Record imported successfully：${changes}(ignore duplicates)`
-        );
+        alert(null, `Successfully imported ${changes} records`);
         await refetchGachaRecords(selectedAccount.facet, selectedAccount.uid);
       } else {
         setBusy(false);
@@ -59,11 +56,7 @@ export default function GachaActionImport() {
 
   return (
     <Box>
-      <Tooltip
-        placement="bottom"
-        title={`import ${action.singular} record`}
-        arrow
-      >
+      <Tooltip placement="bottom" title="Import" arrow>
         <IconButton
           onClick={handleImportGachaRecords}
           disabled={busy}
@@ -79,7 +72,7 @@ export default function GachaActionImport() {
         sx={{
           zIndex: (theme) => theme.zIndex.drawer + 1,
           bgcolor: "rgba(0, 0, 0, 0.65)",
-          color: "white",
+          color: "#efefef",
         }}
       >
         <Box display="flex" flexDirection="column" alignItems="center">

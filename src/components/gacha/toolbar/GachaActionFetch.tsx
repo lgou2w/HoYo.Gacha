@@ -106,12 +106,12 @@ export default function GachaActionFetch() {
           sx={{
             zIndex: (theme) => theme.zIndex.drawer + 1,
             bgcolor: "rgba(0, 0, 0, 0.75)",
-            color: "white",
+            color: "#efefef",
           }}
         >
           <Box display="flex" flexDirection="column" alignItems="center">
             <CircularProgress color="info" />
-            <Typography variant="h6" color="white" sx={{ marginTop: 2 }}>
+            <Typography variant="h6" color="#efefef" sx={{ marginTop: 2 }}>
               {`Retrieving latest ${action.plural.toLocaleLowerCase()}...`}
             </Typography>
             <Typography variant="body1" sx={{ marginTop: 1 }}>

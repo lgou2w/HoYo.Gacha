@@ -39,7 +39,7 @@ export default function Sidebar() {
       sx={{
         width: SidebarWidth,
         flexShrink: 0,
-        bgcolor: "white",
+        bgcolor: "#efefef",
         "& .MuiDrawer-paper": {
           width: SidebarWidth,
           boxSizing: "border-box",

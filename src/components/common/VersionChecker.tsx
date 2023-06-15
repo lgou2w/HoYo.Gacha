@@ -1,5 +1,5 @@
 import React from "react";
-import { dialog, process } from "@tauri-apps/api";
+import { dialog } from "@tauri-apps/api";
 import {
   useVersion,
   useLatestVersion,
@@ -9,7 +9,6 @@ import {
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import DownloadIcon from "@mui/icons-material/Download";
-import invoke from "@/utilities/invoke";
 import dayjs from "@/utilities/dayjs";
 
 export default function VersionChecker() {

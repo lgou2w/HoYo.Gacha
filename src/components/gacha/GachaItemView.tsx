@@ -12,14 +12,23 @@ export interface GachaItemViewProps {
   name: string;
   id: string;
   isWeapon: boolean;
-  rank: 3 | 4 | 5 | "3" | "4" | "5";
-  size: number;
+  rank: string;
+  size?: number;
   usedPity?: number;
   restricted?: boolean;
 }
 
 export default function GachaItemView(props: GachaItemViewProps) {
-  const { facet, name, id, isWeapon, rank, size, usedPity, restricted } = props;
+  const {
+    facet,
+    name,
+    id,
+    isWeapon,
+    rank,
+    size,
+    usedPity,
+    restricted = false,
+  } = props;
   const src = getStaticResource(facet, isWeapon ? "weapon" : "character", id);
 
   return (
@@ -84,19 +93,6 @@ const GachaItemViewSx: SxProps<Theme> = {
   // TODO: Because there is no background assets, temporarily use gradient color instead
   '&[data-facet="starrail"]': {
     position: "relative",
-    "&::before": {
-      content: '""',
-      position: "absolute",
-      boxSizing: "border-box",
-      width: "calc(100% - 0.5rem)",
-      height: "calc(100% - 0.25rem)",
-      top: "0.25rem",
-      left: "0.25rem",
-      right: "0.25rem",
-      bottom: 0,
-      border: 1,
-      borderColor: "rgba(255, 255, 255, 0.25)",
-    },
     '&[data-rank="3"] > img': {
       backgroundImage: "linear-gradient(#434e7e, #4d80c8)",
     },
@@ -114,8 +110,8 @@ const GachaItemViewSx: SxProps<Theme> = {
     userSelect: "none",
     position: "absolute",
     paddingX: 0.2,
-    color: "white",
-    borderColor: "white",
+    color: "#efefef",
+    borderColor: "#efefef",
     minWidth: "1.25rem",
   },
   [`& .${GachaItemViewCls}-used-pity`]: {
@@ -126,6 +122,15 @@ const GachaItemViewSx: SxProps<Theme> = {
     borderTop: 2,
     borderTopLeftRadius: 4,
     borderBottomRightRadius: 4,
+  },
+  [`&[data-rank="3"] > .${GachaItemViewCls}-used-pity`]: {
+    bgcolor: "#35598c",
+  },
+  [`&[data-rank="4"] > .${GachaItemViewCls}-used-pity`]: {
+    bgcolor: "#644393",
+  },
+  [`&[data-rank="5"] > .${GachaItemViewCls}-used-pity`]: {
+    bgcolor: "#93794e",
   },
   [`& .${GachaItemViewCls}-restricted`]: {
     top: 0,

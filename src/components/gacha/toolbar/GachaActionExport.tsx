@@ -58,11 +58,7 @@ export default function GachaActionExport() {
 
   return (
     <Box>
-      <Tooltip
-        placement="bottom"
-        title={`export ${action.singular} Record`}
-        arrow
-      >
+      <Tooltip placement="bottom" title="Export" arrow>
         <IconButton
           onClick={handleClick}
           disabled={busy}
@@ -81,7 +77,7 @@ export default function GachaActionExport() {
         slotProps={{ root: { slotProps: { backdrop: { invisible: false } } } }}
       >
         <Typography variant="body2" paddingX={2} paddingY={1}>
-          {`export ${action.singular} is documented as:`}
+          Export as:
         </Typography>
         <Divider sx={{ marginBottom: 1 }} />
         <MenuItem onClick={handleExportGachaRecords}>
@@ -91,20 +87,16 @@ export default function GachaActionExport() {
           {
             {
               [AccountFacet.Genshin]: (
-                <ListItemText>UIGF 统一可交换祈愿记录标准</ListItemText>
+                <ListItemText>
+                  UIGF (Unified Standardized GenshinData Format)
+                </ListItemText>
               ),
               [AccountFacet.StarRail]: (
-                <ListItemText>SRGF 星穹铁道抽卡记录标准</ListItemText>
+                <ListItemText>SRGF (Star Rail GachaLog Format)</ListItemText>
               ),
             }[facet]
           }
         </MenuItem>
-        {/* <MenuItem data-format="xlsx" onClick={handleExportGachaLogs}>
-          <ListItemIcon>
-            <ViewColumnIcon />
-          </ListItemIcon>
-          <ListItemText>Excel 工作簿 UIGF.W</ListItemText>
-        </MenuItem> */}
       </Menu>
     </Box>
   );

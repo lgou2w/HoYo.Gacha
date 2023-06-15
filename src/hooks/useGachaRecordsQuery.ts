@@ -458,6 +458,8 @@ function computeAdvancedGachaRecordsMetadata(
 }
 
 function isRestrictedGolden(facet: AccountFacet, record: GachaRecord): boolean {
+  // TODO: rework "restricted"
+  return false;
   switch (facet) {
     case AccountFacet.Genshin:
       return !KnownGenshinPermanentGoldenNames.includes(record.name);
