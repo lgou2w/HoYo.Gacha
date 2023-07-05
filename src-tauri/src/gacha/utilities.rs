@@ -83,16 +83,15 @@ pub(super) fn lookup_path_line_from_keyword<P: AsRef<Path>>(
 }
 
 pub(super) fn lookup_gacha_urls_from_endpoint<P: AsRef<Path>>(
-  game_data_dir: P,
+  cache_data_dir: P,
   endpoint: &str
 ) -> Result<Vec<GachaUrl>> {
-  // Join the path to the web cache data directory
-  let cache_dir = game_data_dir.as_ref().join("webCaches/Cache/Cache_Data");
+  let cache_data_dir = cache_data_dir.as_ref();
 
   // Read index file and data_1, data_2 block files
-  let index_file = IndexFile::from_file(cache_dir.join("index"))?;
-  let block_file1 = BlockFile::from_file(cache_dir.join("data_1"))?;
-  let block_file2 = BlockFile::from_file(cache_dir.join("data_2"))?;
+  let index_file = IndexFile::from_file(cache_data_dir.join("index"))?;
+  let block_file1 = BlockFile::from_file(cache_data_dir.join("data_1"))?;
+  let block_file2 = BlockFile::from_file(cache_data_dir.join("data_2"))?;
 
   let mut result = Vec::new();
   let current_local_offset = UtcOffset::current_local_offset().map_err(time::Error::from)?;

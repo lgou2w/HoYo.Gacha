@@ -63,7 +63,9 @@ impl GachaUrlFinder for GenshinGacha {
   fn find_gacha_urls<P: AsRef<Path>>(&self,
     game_data_dir: P
   ) -> Result<Vec<GachaUrl>> {
-    lookup_gacha_urls_from_endpoint(game_data_dir, ENDPOINT)
+    // HACK: Since Genshin Impact v3.8.0 version -> webCaches/2.13.0.1/Cache/Cache_Data
+    let cache_data_dir = game_data_dir.as_ref().join("webCaches/2.13.0.1/Cache/Cache_Data");
+    lookup_gacha_urls_from_endpoint(cache_data_dir, ENDPOINT)
   }
 }
 
