@@ -21,7 +21,7 @@ export default function SettingAbout() {
       </Stack>
       <Stack gap={1}>
         <Typography component="h3" variant="body1">
-          information
+          Information
         </Typography>
         <Typography component="p" variant="body2">
           <Typography component="span" color="error.light">
