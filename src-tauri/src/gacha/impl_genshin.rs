@@ -20,6 +20,7 @@ use super::{
 use super::utilities::{
   lookup_mihoyo_dir,
   lookup_path_line_from_keyword,
+  lookup_valid_cache_data_dir,
   lookup_gacha_urls_from_endpoint,
   fetch_gacha_records
 };
@@ -63,8 +64,8 @@ impl GachaUrlFinder for GenshinGacha {
   fn find_gacha_urls<P: AsRef<Path>>(&self,
     game_data_dir: P
   ) -> Result<Vec<GachaUrl>> {
-    // HACK: Since Genshin Impact v3.8.0 version -> webCaches/2.13.0.1/Cache/Cache_Data
-    let cache_data_dir = game_data_dir.as_ref().join("webCaches/2.13.0.1/Cache/Cache_Data");
+    // See: https://github.com/lgou2w/HoYo.Gacha/issues/10
+    let cache_data_dir = lookup_valid_cache_data_dir(game_data_dir)?;
     lookup_gacha_urls_from_endpoint(cache_data_dir, ENDPOINT)
   }
 }

@@ -71,6 +71,10 @@ export default function GachaLayout () {
           message = String(error)
         }
 
+        if (error) {
+          console.error('GachaLayoutContext.alert: ', error)
+        }
+
         produceState((draft) => {
           draft.alert = message
             ? { severity, message }
@@ -105,6 +109,7 @@ export default function GachaLayout () {
 
 const KnownErrorIdentifiers: Record<string, string> = {
   INTERNAL_CRATE: '内部错误：',
+  WEB_CACHES: '读取硬盘缓存失败：未找到正确目录！请尝试在游戏内打开抽卡历史记录界面！',
   ILLEGAL_GACHA_URL: '无效的抽卡链接！',
   VACANT_GACHA_URL: '未找到有效的抽卡链接。请尝试在游戏内打开抽卡历史记录界面！',
   TIMEOUTD_GACHA_URL: '抽卡链接已经过期失效。请重新在游戏内打开抽卡历史记录界面！',
