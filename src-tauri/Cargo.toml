@@ -17,22 +17,22 @@ shadow-rs = "0.23.0"
 tauri-build = { version = "1", features = [] }
 
 [dependencies]
-anyhow = "1.0.71"
-async-trait = "0.1.70"
+anyhow = "1.0.72"
+async-trait = "0.1.71"
 byteorder = "1.4.3"
 form_urlencoded = "1.2.0"
 futures = { version = "0.3.28", default-features = false, features = ["std", "async-await"] }
 lazy_static = "1.4.0"
-paste = "1.0.13"
+paste = "1.0.14"
 reqwest = { version = "0.11.18", features = ["json", "stream"] }
 sea-orm = { version = "0.11.3", features = ["sqlx-sqlite", "runtime-tokio", "macros", "runtime-tokio-native-tls"], default-features = false }
-serde = { version = "1.0.166", features = ["derive"] }
-serde_json = "1.0.100"
+serde = { version = "1.0.171", features = ["derive"] }
+serde_json = "1.0.103"
 shadow-rs = "0.23.0"
 sqlx-core = "0.6.3"
 tauri = { version = "1.4.1", features = ["clipboard-all", "dialog-all", "path-all", "process-all", "shell-all"] }
-thiserror = "1.0.41"
-time = { version = "0.3.22", features = ["formatting", "serde", "macros", "serde-human-readable", "local-offset"] }
+thiserror = "1.0.43"
+time = { version = "0.3.23", features = ["formatting", "serde", "macros", "serde-human-readable", "local-offset"] }
 tokio = { version = "1.29.1", features = ["full"] }
 tracing = "0.1.37"
 tracing-subscriber = "0.3.17"
