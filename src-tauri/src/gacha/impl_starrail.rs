@@ -66,7 +66,7 @@ impl GachaUrlFinder for StarRailGacha {
   fn find_gacha_urls<P: AsRef<Path>>(&self,
     game_data_dir: P
   ) -> Result<Vec<GachaUrl>> {
-    let cache_data_dir = game_data_dir.as_ref().join("webCaches/Cache/Cache_Data");
+    let cache_data_dir = game_data_dir.as_ref().join("webCaches/2.14.0.0/Cache/Cache_Data");
     lookup_gacha_urls_from_endpoint(cache_data_dir, ENDPOINT)
   }
 }
