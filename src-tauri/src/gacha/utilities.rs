@@ -11,6 +11,7 @@ use std::collections::hash_map::Entry;
 use std::fs::File;
 use std::io::{prelude::BufRead, BufReader};
 use std::path::{Path, PathBuf};
+use std::str::FromStr;
 use lazy_static::lazy_static;
 use reqwest::Client as Reqwest;
 use serde::{Deserialize, Serialize};
@@ -80,6 +81,86 @@ pub(super) fn lookup_path_line_from_keyword<P: AsRef<Path>>(
   }
 
   Ok(None)
+}
+
+mod web_caches {
+  use std::num::ParseIntError;
+  use std::str::FromStr;
+  use super::Error;
+
+  #[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
+  pub struct WebCachesVersion {
+    major: u8,
+    minor: u8,
+    patch: u8,
+    build: u8,
+  }
+
+  impl WebCachesVersion {
+    pub fn version(&self) -> String {
+      format!("{}.{}.{}.{}", self.major, self.minor, self.patch, self.build)
+    }
+  }
+
+  impl From<ParseIntError> for Error {
+    fn from(_: ParseIntError) -> Self {
+      Self::WebCaches
+    }
+  }
+
+  impl FromStr for WebCachesVersion {
+    type Err = Error;
+
+    fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
+      let mut s = s.split('.');
+      match (s.next(), s.next(), s.next(), s.next()) {
+        (Some(major), Some(minor), Some(patch), build_opt) => {
+          Ok(WebCachesVersion {
+            major: major.parse()?,
+            minor: minor.parse()?,
+            patch: patch.parse()?,
+            build: build_opt.unwrap_or("0").parse()?,
+          })
+        },
+        _ => Err(Error::WebCaches)
+      }
+    }
+  }
+}
+
+pub(super) fn lookup_valid_cache_data_dir<P: AsRef<Path>>(game_data_dir: P) -> Result<PathBuf> {
+  use std::fs::read_dir;
+  use self::web_caches::WebCachesVersion;
+
+  let mut web_caches_versions = Vec::new();
+
+  // Read webCaches directory
+  let web_caches_dir = game_data_dir.as_ref().join("webCaches");
+  for entry in read_dir(&web_caches_dir)? {
+    let entry = entry?;
+    let entry_path = entry.path();
+    if !entry_path.is_dir() {
+      continue;
+    }
+
+    let entry_name = entry_path.file_name().unwrap().to_string_lossy();
+    if let Ok(version) = WebCachesVersion::from_str(&entry_name) {
+      // Matches version: `x.y.z.a` or `x.y.z`
+      web_caches_versions.push(version);
+    }
+  }
+
+  // Sort by version asc
+  web_caches_versions.sort();
+
+  // Get the latest version
+  let latest = web_caches_versions.last().ok_or(Error::WebCaches)?;
+  let cache_data_dir = web_caches_dir
+    .join(latest.version())
+    .join("Cache")
+    .join("Cache_Data");
+
+  Ok(cache_data_dir)
 }
 
 pub(super) fn lookup_gacha_urls_from_endpoint<P: AsRef<Path>>(

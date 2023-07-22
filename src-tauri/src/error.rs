@@ -39,6 +39,9 @@ pub enum Error {
 
   // Gacha
 
+  #[error("Web Caches")]
+  WebCaches,
+
   #[error("Illegal Gacha Url")]
   IllegalGachaUrl,
 
@@ -98,6 +101,7 @@ macro_rules! impl_error_identifiers {
 
 impl_error_identifiers! {
   UnsupportedOperation          => UNSUPPORTED_OPERATION,
+  WebCaches                     => WEB_CACHES,
   IllegalGachaUrl               => ILLEGAL_GACHA_URL,
   VacantGachaUrl                => VACANT_GACHA_URL,
   TimeoutdGachaUrl              => TIMEOUTD_GACHA_URL,
