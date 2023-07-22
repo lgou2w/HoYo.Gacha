@@ -1417,33 +1417,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7f24254aa9a54b5c858eaee2f5bccdb46aaf0e486a595ed5fd8f86ba55232a70"
 
 [[package]]
-name = "hoyo_gacha"
-version = "0.3.2"
-dependencies = [
- "anyhow",
- "async-trait",
- "byteorder",
- "form_urlencoded",
- "futures",
- "lazy_static",
- "paste",
- "reqwest",
- "sea-orm",
- "serde",
- "serde_json",
- "shadow-rs",
- "sqlx-core",
- "tauri",
- "tauri-build",
- "thiserror",
- "time",
- "tokio",
- "tracing",
- "tracing-subscriber",
- "url",
-]
-
-[[package]]
 name = "html5ever"
 version = "0.25.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
