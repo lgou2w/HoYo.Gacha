@@ -3,10 +3,10 @@ extern crate reqwest;
 extern crate serde;
 extern crate url;
 
-use super::utilities::{
-    fetch_gacha_records, lookup_cognosphere_dir, lookup_gacha_urls_from_endpoint,
-    lookup_mihoyo_dir, lookup_path_line_from_keyword,
-};
+use std::any::Any;
+use std::cmp::Ordering;
+use std::path::{Path, PathBuf};
+
 use super::utilities::{
     fetch_gacha_records, lookup_cognosphere_dir, lookup_gacha_urls_from_endpoint,
     lookup_mihoyo_dir, lookup_path_line_from_keyword, lookup_valid_cache_data_dir,
@@ -15,11 +15,7 @@ use super::{
     GachaRecord, GachaRecordFetcher, GachaRecordFetcherChannel, GachaUrl, GachaUrlFinder,
     GameDataDirectoryFinder,
 };
-use super::{
-    GachaRecord, GachaRecordFetcher, GachaRecordFetcherChannel, GachaUrl, GachaUrlFinder,
-    GameDataDirectoryFinder,
-};
-use crate::error::Result;
+
 use crate::error::Result;
 use async_trait::async_trait;
 use reqwest::Client as Reqwest;
