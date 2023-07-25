@@ -39,7 +39,7 @@ impl GameDataDirectoryFinder for StarRailGacha {
     let mut directories = Vec::new();
 
     // TODO: Untested
-    const INTERNATIONAL_PLAYER_LOG : &str = "/Star Rail/Player.log";
+    const INTERNATIONAL_PLAYER_LOG : &str = "Star Rail/Player.log";
     const INTERNATIONAL_DIR_KEYWORD: &str = "/StarRail_Data/";
 
     let mut player_log = cognosphere_dir.join(INTERNATIONAL_PLAYER_LOG);
