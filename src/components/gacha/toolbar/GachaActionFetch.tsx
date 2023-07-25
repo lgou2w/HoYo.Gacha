@@ -29,6 +29,9 @@ export default function GachaActionFetch() {
     busy: false,
   });
 
+  const [currentCategory, setCurrentCategory] = React.useState();
+  const [currentTotal, setCurrentTotal] = React.useState(0);
+
   const handleFetch = React.useCallback(async () => {
     if (!selectedAccount.gachaUrl) {
       alert("Link not available! Please try to read the link first.");
@@ -88,6 +91,68 @@ export default function GachaActionFetch() {
     produceState,
   ]);
 
+  React.useEffect(() => {
+    if (
+      currentFragment === "idle" ||
+      currentFragment === "sleeping" ||
+      currentFragment === "finished"
+    ) {
+      resetFetchState();
+    } else if ("ready" in currentFragment) {
+      const gachaType = currentFragment.ready;
+      const category = gachaRecords.gachaTypeToCategoryMappings[gachaType];
+      const categoryTitle = gachaRecords.namedValues[category].categoryTitle;
+      setCurrentCategory(categoryTitle);
+    } else if ("pagination" in currentFragment) {
+      const pagination = currentFragment.pagination;
+    } else if ("data" in currentFragment) {
+      const data = currentFragment.data;
+      setCurrentTotal(currentTotal + data.length);
+    } else {
+      // Should never reach here
+      resetFetchState();
+    }
+  }, [gachaRecords, currentFragment]);
+
+  React.useEffect(() => {
+    setCurrentTotal(0);
+  }, [currentCategory]);
+
+  const resetFetchState = () => {
+    setCurrentCategory("");
+  };
+
+  const loadingString = () => {
+    return (
+      <>
+        <p>{currentCategory}</p>
+        <p>Located {currentTotal} new records</p>
+      </>
+    );
+  };
+
+  const stringifyFragment = (
+    gachaRecords: GachaRecords,
+    fragment: ReturnType<typeof useGachaRecordsFetcher>["currentFragment"]
+  ) => {
+    if (fragment === "idle") {
+      return "idle...";
+    } else if (fragment === "sleeping") {
+      return "Waiting...";
+    } else if (fragment === "finished") {
+      return "Finish";
+    } else if ("ready" in fragment) {
+      return loadingString();
+    } else if ("pagination" in fragment) {
+      return loadingString();
+    } else if ("data" in fragment) {
+      return loadingString();
+    } else {
+      // Should never reach here
+      return `Unknown fragment: ${JSON.stringify(fragment)}`;
+    }
+  };
+
   return (
     <Box display="inline-flex">
       <Button
@@ -114,7 +179,10 @@ export default function GachaActionFetch() {
             <Typography variant="h6" color="#efefef" sx={{ marginTop: 2 }}>
               {`Retrieving latest ${action.plural.toLocaleLowerCase()}...`}
             </Typography>
-            <Typography variant="body1" sx={{ marginTop: 1 }}>
+            <Typography
+              variant="body1"
+              sx={{ marginTop: 1, textAlign: "center" }}
+            >
               {stringifyFragment(gachaRecords, currentFragment)}
             </Typography>
           </Box>
@@ -122,31 +190,4 @@ export default function GachaActionFetch() {
       )}
     </Box>
   );
-}
-
-function stringifyFragment(
-  gachaRecords: GachaRecords,
-  fragment: ReturnType<typeof useGachaRecordsFetcher>["currentFragment"]
-): string {
-  if (fragment === "idle") {
-    return "idle...";
-  } else if (fragment === "sleeping") {
-    return "Waiting...";
-  } else if (fragment === "finished") {
-    return "Finish";
-  } else if ("ready" in fragment) {
-    const gachaType = fragment.ready;
-    const category = gachaRecords.gachaTypeToCategoryMappings[gachaType];
-    const categoryTitle = gachaRecords.namedValues[category].categoryTitle;
-    return `Fetching data for ${categoryTitle}`;
-  } else if ("pagination" in fragment) {
-    const pagination = fragment.pagination;
-    return `Page ${pagination}...`;
-  } else if ("data" in fragment) {
-    const data = fragment.data;
-    return `Found ${data.length} new...`;
-  } else {
-    // Should never reach here
-    return `Unknown fragment: ${JSON.stringify(fragment)}`;
-  }
 }
