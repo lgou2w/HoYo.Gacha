@@ -1,29 +1,22 @@
-extern crate anyhow;
-extern crate futures;
-extern crate sea_orm;
-extern crate tracing;
-
-use std::path::Path;
-use futures::TryStreamExt;
-use sea_orm::{ConnectOptions, Database, EntityTrait, TransactionTrait};
-use sea_orm::entity::ActiveValue;
-use sea_orm::sea_query::OnConflict;
-use tracing::debug;
-use super::entity_genshin_gacha_record_legacy::{
-  Entity as GenshinGachaRecordLegacyEntity,
-  Model as GenshinGachaRecordLegacyModel
-};
 use super::entity_genshin_gacha_record::{
-  ActiveModel as GenshinGachaRecordActiveModel,
-  Column as GenshinGachaRecordColumn,
-  Entity as GenshinGachaRecordEntity
+  ActiveModel as GenshinGachaRecordActiveModel, Column as GenshinGachaRecordColumn,
+  Entity as GenshinGachaRecordEntity,
+};
+use super::entity_genshin_gacha_record_legacy::{
+  Entity as GenshinGachaRecordLegacyEntity, Model as GenshinGachaRecordLegacyModel,
 };
 use super::Storage;
+use futures::TryStreamExt;
+use sea_orm::entity::ActiveValue;
+use sea_orm::sea_query::OnConflict;
+use sea_orm::{ConnectOptions, Database, EntityTrait, TransactionTrait};
+use std::path::Path;
+use tracing::debug;
 
 #[allow(unused)]
 pub async fn legacy_migration<P: AsRef<Path>>(
   legacy_database: P,
-  destination_database: P
+  destination_database: P,
 ) -> anyhow::Result<()> {
   debug!("Starting legacy migration...");
   debug!("Legacy database: {:?}", legacy_database.as_ref());
@@ -52,7 +45,11 @@ pub async fn legacy_migration<P: AsRef<Path>>(
   while let Some(legacy) = stream.try_next().await? {
     let model = GenshinGachaRecordActiveModel::from(legacy);
     GenshinGachaRecordEntity::insert(model)
-      .on_conflict(OnConflict::column(GenshinGachaRecordColumn::Id).do_nothing().to_owned())
+      .on_conflict(
+        OnConflict::column(GenshinGachaRecordColumn::Id)
+          .do_nothing()
+          .to_owned(),
+      )
       .exec_without_returning(&txn)
       .await?;
 
@@ -70,11 +67,15 @@ pub async fn legacy_migration<P: AsRef<Path>>(
 // Convert Genshin legacy model to active model
 
 const GENSHIN_ITEM_TYPE_CHARACTER: &str = "角色";
-const GENSHIN_ITEM_TYPE_WEAPON   : &str = "武器";
+const GENSHIN_ITEM_TYPE_WEAPON: &str = "武器";
 
 impl From<GenshinGachaRecordLegacyModel> for GenshinGachaRecordActiveModel {
   fn from(value: GenshinGachaRecordLegacyModel) -> Self {
-    let item_type = if value.item_type == 0 { GENSHIN_ITEM_TYPE_CHARACTER } else { GENSHIN_ITEM_TYPE_WEAPON };
+    let item_type = if value.item_type == 0 {
+      GENSHIN_ITEM_TYPE_CHARACTER
+    } else {
+      GENSHIN_ITEM_TYPE_WEAPON
+    };
     Self {
       id: ActiveValue::Set(value.id),
       uid: ActiveValue::Set(value.uid.to_string()),
@@ -85,7 +86,7 @@ impl From<GenshinGachaRecordLegacyModel> for GenshinGachaRecordActiveModel {
       name: ActiveValue::Set(value.name),
       lang: ActiveValue::Set(value.lang),
       item_type: ActiveValue::Set(item_type.to_owned()),
-      rank_type: ActiveValue::Set(value.rank_type)
+      rank_type: ActiveValue::Set(value.rank_type),
     }
   }
 }

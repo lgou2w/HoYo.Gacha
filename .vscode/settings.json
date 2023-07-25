@@ -11,6 +11,14 @@
     {
       "fileMatch": ["/src-tauri/tauri.conf.json"],
       "url": "https://esm.sh/@tauri-apps/cli/schema.json"
+    },
+    {
+      "fileMatch": ["/rustfmt.toml"],
+      "url": "https://json.schemastore.org/rustfmt.json"
     }
-  ]
+  ],
+  "[rust]": {
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "rust-lang.rust-analyzer"
+  }
 }

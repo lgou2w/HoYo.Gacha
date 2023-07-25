@@ -3,16 +3,12 @@
   windows_subsystem = "windows"
 )]
 
-extern crate tauri;
-extern crate tracing;
-extern crate tracing_subscriber;
-
-mod disk_cache;
+mod commands;
 mod constants;
+mod disk_cache;
 mod error;
 mod gacha;
 mod storage;
-mod commands;
 
 fn main() {
   tracing_subscriber::fmt()

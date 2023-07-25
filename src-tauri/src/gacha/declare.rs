@@ -1,20 +1,12 @@
-extern crate async_trait;
-extern crate form_urlencoded;
-extern crate reqwest;
-extern crate serde;
-extern crate time;
-extern crate tokio;
-extern crate url;
-
+use crate::error::{Error, Result};
+use async_trait::async_trait;
+use reqwest::Client as Reqwest;
+use serde::{Deserialize, Serialize};
 use std::any::Any;
 use std::collections::BTreeMap;
 use std::future::Future;
 use std::path::{Path, PathBuf};
-use async_trait::async_trait;
-use reqwest::Client as Reqwest;
-use serde::{Deserialize, Serialize};
 use time::OffsetDateTime;
-use crate::error::{Error, Result};
 
 /// Game Directory
 
@@ -31,7 +23,7 @@ pub trait GameDataDirectoryFinder {
 pub struct GachaUrl {
   pub addr: u32,
   pub creation_time: OffsetDateTime,
-  pub value: String
+  pub value: String,
 }
 
 impl std::ops::Deref for GachaUrl {
@@ -45,9 +37,7 @@ impl std::ops::Deref for GachaUrl {
 /// Gacha Url Finder
 
 pub trait GachaUrlFinder {
-  fn find_gacha_urls<P: AsRef<Path>>(&self,
-    game_data_dir: P
-  ) -> Result<Vec<GachaUrl>>;
+  fn find_gacha_urls<P: AsRef<Path>>(&self, game_data_dir: P) -> Result<Vec<GachaUrl>>;
 }
 
 /// Gacha Record
@@ -70,16 +60,18 @@ impl dyn GachaRecord {
 pub trait GachaRecordFetcher {
   type Target: GachaRecord;
 
-  async fn fetch_gacha_records(&self,
+  async fn fetch_gacha_records(
+    &self,
     reqwest: &Reqwest,
     gacha_url: &str,
     gacha_type: Option<&str>,
-    end_id: Option<&str>
+    end_id: Option<&str>,
   ) -> Result<Option<Vec<Self::Target>>>;
 
-  async fn fetch_gacha_records_any_uid(&self,
+  async fn fetch_gacha_records_any_uid(
+    &self,
     reqwest: &Reqwest,
-    gacha_url: &str
+    gacha_url: &str,
   ) -> Result<Option<String>>;
 }
 
@@ -93,24 +85,28 @@ pub enum GachaRecordFetcherChannelFragment<T: GachaRecord + Sized + Serialize + 
   Ready(String),
   Pagination(u32),
   Data(Vec<T>),
-  Finished
+  Finished,
 }
 
 #[async_trait]
 pub trait GachaRecordFetcherChannel<T: GachaRecord + Sized + Serialize + Send + Sync> {
   type Fetcher: GachaRecordFetcher<Target = T> + Send + Sync;
 
-  async fn pull_gacha_records(&self,
+  async fn pull_gacha_records(
+    &self,
     reqwest: &Reqwest,
     fetcher: &Self::Fetcher,
     sender: &tokio::sync::mpsc::Sender<GachaRecordFetcherChannelFragment<T>>,
     gacha_url: &str,
     gacha_type: &str,
-    last_end_id: Option<&str>
+    last_end_id: Option<&str>,
   ) -> Result<()> {
     const SLEEPING: u64 = 3;
 
-    sender.send(GachaRecordFetcherChannelFragment::Ready(gacha_type.to_owned()))
+    sender
+      .send(GachaRecordFetcherChannelFragment::Ready(
+        gacha_type.to_owned(),
+      ))
       .await
       .map_err(|_| Error::GachaRecordFetcherChannelSend)?;
     tokio::time::sleep(tokio::time::Duration::from_secs(SLEEPING)).await;
@@ -120,16 +116,20 @@ pub trait GachaRecordFetcherChannel<T: GachaRecord + Sized + Serialize + Send + 
 
     loop {
       if pagination % 5 == 0 {
-        sender.send(GachaRecordFetcherChannelFragment::Sleeping)
+        sender
+          .send(GachaRecordFetcherChannelFragment::Sleeping)
           .await
           .map_err(|_| Error::GachaRecordFetcherChannelSend)?;
         tokio::time::sleep(tokio::time::Duration::from_secs(SLEEPING)).await;
       }
 
-      sender.send(GachaRecordFetcherChannelFragment::Pagination(pagination))
+      sender
+        .send(GachaRecordFetcherChannelFragment::Pagination(pagination))
         .await
         .map_err(|_| Error::GachaRecordFetcherChannelSend)?;
-      let gacha_records = fetcher.fetch_gacha_records(reqwest, gacha_url, Some(gacha_type), Some(&end_id)).await?;
+      let gacha_records = fetcher
+        .fetch_gacha_records(reqwest, gacha_url, Some(gacha_type), Some(&end_id))
+        .await?;
       pagination += 1;
 
       if let Some(gacha_records) = gacha_records {
@@ -151,7 +151,8 @@ pub trait GachaRecordFetcherChannel<T: GachaRecord + Sized + Serialize + Send + 
             gacha_records
           };
 
-          sender.send(GachaRecordFetcherChannelFragment::Data(data))
+          sender
+            .send(GachaRecordFetcherChannelFragment::Data(data))
             .await
             .map_err(|_| Error::GachaRecordFetcherChannelSend)?;
 
@@ -167,39 +168,50 @@ pub trait GachaRecordFetcherChannel<T: GachaRecord + Sized + Serialize + Send + 
       break;
     }
 
-    sender.send(GachaRecordFetcherChannelFragment::Finished)
+    sender
+      .send(GachaRecordFetcherChannelFragment::Finished)
       .await
       .map_err(|_| Error::GachaRecordFetcherChannelSend)?;
     Ok(())
   }
 
-  async fn pull_all_gacha_records(&self,
+  async fn pull_all_gacha_records(
+    &self,
     reqwest: &Reqwest,
     fetcher: &Self::Fetcher,
     sender: &tokio::sync::mpsc::Sender<GachaRecordFetcherChannelFragment<T>>,
     gacha_url: &str,
-    gacha_type_and_last_end_id_mappings: &BTreeMap<String, Option<String>>
+    gacha_type_and_last_end_id_mappings: &BTreeMap<String, Option<String>>,
   ) -> Result<()> {
     for (gacha_type, last_end_id) in gacha_type_and_last_end_id_mappings {
-      self.pull_gacha_records(reqwest, fetcher, sender, gacha_url, gacha_type, last_end_id.as_deref()).await?;
+      self
+        .pull_gacha_records(
+          reqwest,
+          fetcher,
+          sender,
+          gacha_url,
+          gacha_type,
+          last_end_id.as_deref(),
+        )
+        .await?;
     }
     Ok(())
   }
 }
 
-pub async fn create_fetcher_channel<Record, FetcherChannel, F, Fut> (
+pub async fn create_fetcher_channel<Record, FetcherChannel, F, Fut>(
   fetcher_channel: FetcherChannel,
   reqwest: Reqwest,
   fetcher: FetcherChannel::Fetcher,
   gacha_url: String,
   gacha_type_and_last_end_id_mappings: BTreeMap<String, Option<String>>,
-  receiver_fn: F
+  receiver_fn: F,
 ) -> Result<()>
-  where
+where
   Record: GachaRecord + Sized + Serialize + Send + Sync,
   FetcherChannel: GachaRecordFetcherChannel<Record> + Send + Sync + 'static,
   F: Fn(GachaRecordFetcherChannelFragment<Record>) -> Fut,
-  Fut: Future<Output = Result<()>>
+  Fut: Future<Output = Result<()>>,
 {
   use tokio::spawn;
   use tokio::sync::mpsc::channel;
@@ -212,7 +224,7 @@ pub async fn create_fetcher_channel<Record, FetcherChannel, F, Fut> (
         &fetcher,
         &sender,
         &gacha_url,
-        &gacha_type_and_last_end_id_mappings
+        &gacha_type_and_last_end_id_mappings,
       )
       .await
   });

@@ -1,9 +1,7 @@
-extern crate byteorder;
-
-use byteorder::{ReadBytesExt, LittleEndian};
+use super::{BlockFile, CacheAddr, ReadCacheAddrExt};
+use byteorder::{LittleEndian, ReadBytesExt};
 use std::borrow::Cow;
 use std::io::{Error, ErrorKind, Read, Result};
-use super::{BlockFile, CacheAddr, ReadCacheAddrExt};
 
 const BLOCK_KEY_SIZE: u32 = 256 - 24 * 4;
 
@@ -22,7 +20,7 @@ pub struct EntryStore {
   pub flags: u32,
   pub pad: [i32; 4],
   pub self_hash: u32,
-  pub key: Box<[u8; BLOCK_KEY_SIZE as usize]>
+  pub key: Box<[u8; BLOCK_KEY_SIZE as usize]>,
 }
 
 impl EntryStore {
@@ -60,7 +58,7 @@ impl EntryStore {
       flags,
       pad,
       self_hash,
-      key
+      key,
     })
   }
 
@@ -71,7 +69,7 @@ impl EntryStore {
         format!(
           "Entry store is only in data_1 block file. (Current file: {}, Expected: 1)",
           block_file.header.this_file
-        )
+        ),
       ))
     } else {
       let data = block_file.read_data(addr)?;
@@ -89,8 +87,11 @@ impl EntryStore {
     if self.is_long_url() {
       return Err(Error::new(
         ErrorKind::Unsupported,
-        format!("Entry store is a long key. Require other block file data: {:?}", self.long_key)
-      ))
+        format!(
+          "Entry store is a long key. Require other block file data: {:?}",
+          self.long_key
+        ),
+      ));
     }
 
     if self.key_len <= BLOCK_KEY_SIZE as i32 {
@@ -103,7 +104,10 @@ impl EntryStore {
 
   pub fn read_long_url<'a>(&self, block_file: &'a BlockFile) -> Result<Cow<'a, str>> {
     if !self.is_long_url() {
-      return Err(Error::new(ErrorKind::Unsupported, "Entry store is a short key"))
+      return Err(Error::new(
+        ErrorKind::Unsupported,
+        "Entry store is a short key",
+      ));
     }
 
     if block_file.header.this_file != 2 {
@@ -112,7 +116,7 @@ impl EntryStore {
         format!(
           "Long key is only in data_2 block file. (Current file: {}, Expected: 2)",
           block_file.header.this_file
-        )
+        ),
       ))
     } else {
       let long_key_data = block_file.read_data(&self.long_key)?;

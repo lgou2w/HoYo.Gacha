@@ -1,23 +1,19 @@
-extern crate byteorder;
-extern crate lazy_static;
-extern crate serde;
-
-use std::cmp::Ordering;
-use std::collections::HashMap;
-use std::io::{Read, Result};
 use byteorder::{ByteOrder, ReadBytesExt};
 use lazy_static::lazy_static;
 use serde::ser::{Serialize, Serializer};
+use std::cmp::Ordering;
+use std::collections::HashMap;
+use std::io::{Read, Result};
 
-const ADDR_INITIALIZED_MASK     : u32 = 0x80000000;
-const ADDR_FILE_TYPE_MASK       : u32 = 0x70000000;
-const ADDR_FILE_TYPE_OFFSET     : u32 =         28;
-const ADDR_NUM_BLOCKS_MASK      : u32 = 0x03000000;
-const ADDR_NUM_BLOCKS_OFFSET    : u32 =         24;
-const ADDR_FILE_SELECTOR_MASK   : u32 = 0x00FF0000;
-const ADDR_FILE_SELECTOR_OFFSET : u32 =         16;
-const ADDR_START_BLOCK_MASK     : u32 = 0x0000FFFF;
-const ADDR_FILE_NAME_MASK       : u32 = 0x0FFFFFFF;
+const ADDR_INITIALIZED_MASK: u32 = 0x80000000;
+const ADDR_FILE_TYPE_MASK: u32 = 0x70000000;
+const ADDR_FILE_TYPE_OFFSET: u32 = 28;
+const ADDR_NUM_BLOCKS_MASK: u32 = 0x03000000;
+const ADDR_NUM_BLOCKS_OFFSET: u32 = 24;
+const ADDR_FILE_SELECTOR_MASK: u32 = 0x00FF0000;
+const ADDR_FILE_SELECTOR_OFFSET: u32 = 16;
+const ADDR_START_BLOCK_MASK: u32 = 0x0000FFFF;
+const ADDR_FILE_NAME_MASK: u32 = 0x0FFFFFFF;
 
 lazy_static! {
   static ref FILE_BLOCK_SIZE_MAPPINGS: HashMap<u32, u32> = {
@@ -63,9 +59,7 @@ impl CacheAddr {
 
   pub fn block_size(&self) -> u32 {
     let file_type = self.file_type();
-    *FILE_BLOCK_SIZE_MAPPINGS
-      .get(&file_type)
-      .unwrap_or(&0) // Other is External. Always zero
+    *FILE_BLOCK_SIZE_MAPPINGS.get(&file_type).unwrap_or(&0) // Other is External. Always zero
   }
 
   pub fn start_block(&self) -> u32 {
@@ -114,7 +108,7 @@ pub trait ReadCacheAddrExt: Read {
   fn read_cache_addrs<T: ByteOrder, const LENGTH: usize>(&mut self) -> Result<[CacheAddr; LENGTH]> {
     let mut addrs = [0u32; LENGTH];
     self.read_u32_into::<T>(&mut addrs)?;
-    Ok(addrs.map(|addr| { CacheAddr(addr) }))
+    Ok(addrs.map(|addr| CacheAddr(addr)))
   }
 }
 
@@ -122,7 +116,9 @@ impl<R: Read + ?Sized> ReadCacheAddrExt for R {}
 
 impl Serialize for CacheAddr {
   fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
-  where S: Serializer {
+  where
+    S: Serializer,
+  {
     serializer.serialize_u32(self.0)
   }
 }

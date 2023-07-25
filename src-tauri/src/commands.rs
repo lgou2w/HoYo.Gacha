@@ -1,13 +1,8 @@
-extern crate futures;
-extern crate reqwest;
-extern crate serde;
-extern crate tauri;
-
+use crate::constants;
+use crate::error::Result;
 use reqwest::Client as Reqwest;
 use serde::{Deserialize, Serialize};
 use tauri::{Invoke, Runtime};
-use crate::constants;
-use crate::error::Result;
 
 pub fn get_handlers<R: Runtime>() -> Box<dyn Fn(Invoke<R>) + Send + Sync> {
   Box::new(tauri::generate_handler![
@@ -31,8 +26,12 @@ fn get_version() -> Version {
   Version {
     version: constants::VERSION.to_owned(),
     commit_hash: constants::COMMIT_HASH[0..7].to_owned(),
-    commit_tag: if commit_tag.is_empty() { None } else { Some(commit_tag.to_owned()) },
-    date: constants::COMMIT_DATE.to_owned()
+    commit_tag: if commit_tag.is_empty() {
+      None
+    } else {
+      Some(commit_tag.to_owned())
+    },
+    date: constants::COMMIT_DATE.to_owned(),
   }
 }
 
@@ -54,22 +53,24 @@ struct LatestVersion {
 
 #[tauri::command]
 async fn get_latest_version() -> Result<LatestVersion> {
-  Ok(Reqwest::builder()
-    .build()?
-    .get("https://hoyo-gacha.lgou2w.com/release/latest")
-    .send()
-    .await?
-    .json::<LatestVersion>()
-    .await?)
+  Ok(
+    Reqwest::builder()
+      .build()?
+      .get("https://hoyo-gacha.lgou2w.com/release/latest")
+      .send()
+      .await?
+      .json::<LatestVersion>()
+      .await?,
+  )
 }
 
 #[tauri::command]
 async fn update_app(latest_version: LatestVersion) -> Result<()> {
+  use futures::stream::TryStreamExt;
   use std::env::current_exe;
-  use std::fs::{File, remove_file, rename};
+  use std::fs::{remove_file, rename, File};
   use std::io::Write;
   use std::path::PathBuf;
-  use futures::stream::TryStreamExt;
 
   let current_exe = dbg!(current_exe()?);
   let current_dir = current_exe.parent().unwrap();
@@ -92,7 +93,9 @@ async fn update_app(latest_version: LatestVersion) -> Result<()> {
   }
 
   // delete old bak and rename current exe to bak
-  let dest_bak = current_dir.join(constants::NAME.replace('.', "_")).with_extension("bak");
+  let dest_bak = current_dir
+    .join(constants::NAME.replace('.', "_"))
+    .with_extension("bak");
   if dest_bak.exists() {
     remove_file(&dest_bak)?;
   }

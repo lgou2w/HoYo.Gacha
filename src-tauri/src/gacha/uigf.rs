@@ -1,21 +1,16 @@
-extern crate lazy_static;
-extern crate serde;
-extern crate serde_json;
-extern crate time;
-
-use std::collections::HashMap;
-use std::io::{Read, Write};
-use lazy_static::lazy_static;
-use serde::{Serialize, Deserialize};
-use time::OffsetDateTime;
-use time::format_description;
 use crate::constants::{ID, VERSION};
 use crate::error::{Error, Result};
 use crate::gacha::GenshinGachaRecord;
+use lazy_static::lazy_static;
+use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
+use std::io::{Read, Write};
+use time::format_description;
+use time::OffsetDateTime;
 
 // See: https://uigf.org/zh/standards/UIGF.html
 
-const UIGF_VERSION      : &str = "v2.2";
+const UIGF_VERSION: &str = "v2.2";
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UIGFInfo {
@@ -25,7 +20,7 @@ pub struct UIGFInfo {
   pub export_timestamp: Option<i64>,
   pub export_app: Option<String>,
   pub export_app_version: Option<String>,
-  pub uigf_version: String
+  pub uigf_version: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -40,7 +35,7 @@ pub struct UIGFListItem {
   pub lang: Option<String>,
   pub item_type: String,
   pub rank_type: Option<String>,
-  pub uigf_gacha_type: String
+  pub uigf_gacha_type: String,
 }
 
 pub type UIGFList = Vec<UIGFListItem>;
@@ -49,7 +44,7 @@ pub type UIGFList = Vec<UIGFListItem>;
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UIGF {
   pub info: UIGFInfo,
-  pub list: UIGFList
+  pub list: UIGFList,
 }
 
 impl UIGF {
@@ -66,9 +61,9 @@ impl UIGF {
         export_timestamp: Some(export_timestamp),
         export_app: Some(ID.into()),
         export_app_version: Some(VERSION.into()),
-        uigf_version: UIGF_VERSION.into()
+        uigf_version: UIGF_VERSION.into(),
       },
-      list
+      list,
     })
   }
 
@@ -112,9 +107,18 @@ impl TryFrom<&UIGFListItem> for GenshinGachaRecord {
   type Error = Error;
 
   fn try_from(value: &UIGFListItem) -> std::result::Result<Self, Self::Error> {
-    let uid = value.uid.clone().ok_or_else(|| Error::UIGFOrSRGFInvalidField("uid".to_owned()))?;
-    let lang = value.lang.clone().ok_or_else(|| Error::UIGFOrSRGFInvalidField("lang".to_owned()))?;
-    let rank_type = value.rank_type.clone().ok_or_else(|| Error::UIGFOrSRGFInvalidField("rank_type".to_owned()))?;
+    let uid = value
+      .uid
+      .clone()
+      .ok_or_else(|| Error::UIGFOrSRGFInvalidField("uid".to_owned()))?;
+    let lang = value
+      .lang
+      .clone()
+      .ok_or_else(|| Error::UIGFOrSRGFInvalidField("lang".to_owned()))?;
+    let rank_type = value
+      .rank_type
+      .clone()
+      .ok_or_else(|| Error::UIGFOrSRGFInvalidField("rank_type".to_owned()))?;
 
     Ok(Self {
       id: value.id.clone(),
@@ -151,7 +155,7 @@ impl TryFrom<&GenshinGachaRecord> for UIGFListItem {
       lang: Some(value.lang.clone()),
       item_type: value.item_type.clone(),
       rank_type: Some(value.rank_type.clone()),
-      uigf_gacha_type: uigf_gacha_type.to_owned()
+      uigf_gacha_type: uigf_gacha_type.to_owned(),
     })
   }
 }

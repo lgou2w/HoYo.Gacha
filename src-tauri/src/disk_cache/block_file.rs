@@ -1,16 +1,17 @@
-extern crate byteorder;
-
-use byteorder::{ReadBytesExt, LittleEndian};
+use super::CacheAddr;
+use byteorder::{LittleEndian, ReadBytesExt};
 use std::fs::File;
 use std::io::{BufReader, Error, ErrorKind, Read, Result};
 use std::path::Path;
-use super::CacheAddr;
 
-#[allow(unused)] const BLOCK_MAGIC      : u32 = 0xC104CAC3;
-#[allow(unused)] const BLOCK_VERSION2_0 : u32 = 0x20000;
-#[allow(unused)] const BLOCK_VERSION3_0 : u32 = 0x30000;
+#[allow(unused)]
+const BLOCK_MAGIC: u32 = 0xC104CAC3;
+#[allow(unused)]
+const BLOCK_VERSION2_0: u32 = 0x20000;
+#[allow(unused)]
+const BLOCK_VERSION3_0: u32 = 0x30000;
 const BLOCK_HEADER_SIZE: u32 = 8192;
-const BLOCK_MAX_BLOCKS : u32 = (BLOCK_HEADER_SIZE - 80) * 8;
+const BLOCK_MAX_BLOCKS: u32 = (BLOCK_HEADER_SIZE - 80) * 8;
 
 pub struct BlockFileHeader {
   pub magic: u32,
@@ -24,12 +25,12 @@ pub struct BlockFileHeader {
   pub hints: [i32; 4],
   pub updating: i32,
   pub user: [i32; 5],
-  pub allocation_map: Box<[u32; BLOCK_MAX_BLOCKS as usize / 32]>
+  pub allocation_map: Box<[u32; BLOCK_MAX_BLOCKS as usize / 32]>,
 }
 
 pub struct BlockFile {
   pub header: BlockFileHeader,
-  pub data: Vec<u8>
+  pub data: Vec<u8>,
 }
 
 impl BlockFileHeader {
@@ -63,7 +64,7 @@ impl BlockFileHeader {
       hints,
       updating,
       user,
-      allocation_map
+      allocation_map,
     })
   }
 }
@@ -74,10 +75,7 @@ impl BlockFile {
     let mut data = Vec::new();
     reader.read_to_end(&mut data)?;
 
-    Ok(Self {
-      header,
-      data
-    })
+    Ok(Self { header, data })
   }
 
   pub fn from_file<P: AsRef<Path>>(path: P) -> Result<Self> {
@@ -88,11 +86,14 @@ impl BlockFile {
 
   pub fn read_data(&self, addr: &CacheAddr) -> Result<&[u8]> {
     if !addr.is_initialized() {
-      return Err(Error::new(ErrorKind::InvalidInput, "Invalid address"))
+      return Err(Error::new(ErrorKind::InvalidInput, "Invalid address"));
     }
 
     if !addr.is_block_file() {
-      Err(Error::new(ErrorKind::InvalidInput, "Address is not block file"))
+      Err(Error::new(
+        ErrorKind::InvalidInput,
+        "Address is not block file",
+      ))
     } else {
       let block_size = addr.block_size();
       let num_blocks = addr.num_blocks();

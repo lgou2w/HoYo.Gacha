@@ -1,65 +1,39 @@
-extern crate futures;
-extern crate paste;
-extern crate sea_orm;
-extern crate tauri;
-extern crate tracing;
-
-use std::path::{Path, PathBuf};
-use futures::TryStreamExt;
-use paste::paste;
-use sea_orm::{
-  ActiveModelTrait,
-  ActiveValue,
-  ColumnTrait,
-  ConnectOptions,
-  Database,
-  DatabaseConnection,
-  DeriveIden,
-  EntityTrait,
-  QueryFilter,
-  QueryOrder,
-  QuerySelect,
-  QueryTrait,
-  TransactionTrait
+use super::entity_account::{
+  AccountFacet, AccountProperties, ActiveModel as AccountActiveModel, Column as AccountColumn,
+  Entity as AccountEntity, Model as AccountModel,
 };
-use sea_orm::sea_query::{Condition, Index, OnConflict};
-use tauri::Runtime;
-use tauri::async_runtime::block_on;
-use tauri::plugin::{Builder as TauriPluginBuilder, TauriPlugin};
-use tracing::debug;
+use super::entity_genshin_gacha_record::{
+  ActiveModel as GenshinGachaRecordActiveModel, Column as GenshinGachaRecordColumn,
+  Entity as GenshinGachaRecordEntity,
+};
+use super::entity_starrail_gacha_record::{
+  ActiveModel as StarRailGachaRecordActiveModel, Column as StarRailGachaRecordColumn,
+  Entity as StarRailGachaRecordEntity,
+};
+use super::utilities::{
+  create_index_statements, create_table_statement, execute_statements, is_constraint_unique_err,
+};
 use crate::constants::DATABASE;
 use crate::error::{Error, Result};
 use crate::gacha::{GenshinGachaRecord, StarRailGachaRecord};
-use super::entity_genshin_gacha_record::{
-  ActiveModel as GenshinGachaRecordActiveModel,
-  Column as GenshinGachaRecordColumn,
-  Entity as GenshinGachaRecordEntity
+use futures::TryStreamExt;
+use paste::paste;
+use sea_orm::sea_query::{Condition, Index, OnConflict};
+use sea_orm::{
+  ActiveModelTrait, ActiveValue, ColumnTrait, ConnectOptions, Database, DatabaseConnection,
+  DeriveIden, EntityTrait, QueryFilter, QueryOrder, QuerySelect, QueryTrait, TransactionTrait,
 };
-use super::entity_starrail_gacha_record::{
-  ActiveModel as StarRailGachaRecordActiveModel,
-  Column as StarRailGachaRecordColumn,
-  Entity as StarRailGachaRecordEntity
-};
-use super::entity_account::{
-  AccountFacet,
-  AccountProperties,
-  ActiveModel as AccountActiveModel,
-  Column as AccountColumn,
-  Entity as AccountEntity,
-  Model as AccountModel
-};
-use super::utilities::{
-  create_table_statement,
-  create_index_statements,
-  execute_statements,
-  is_constraint_unique_err
-};
+use std::path::{Path, PathBuf};
+use tauri::async_runtime::block_on;
+use tauri::plugin::{Builder as TauriPluginBuilder, TauriPlugin};
+use tauri::Runtime;
+use tracing::debug;
 
 /// Storage
 
 pub struct Storage {
   pub database_file: PathBuf,
-  pub database: DatabaseConnection
+  pub database: DatabaseConnection,
 }
 
 impl Storage {
@@ -91,7 +65,7 @@ impl Storage {
 
     Ok(Self {
       database_file: database_file.to_path_buf(),
-      database
+      database,
     })
   }
 
@@ -103,11 +77,7 @@ impl Storage {
       let statement1 = create_table_statement(GenshinGachaRecordEntity);
       let statement2 = create_table_statement(StarRailGachaRecordEntity);
       let statement3 = create_table_statement(AccountEntity);
-      execute_statements(&self.database, &[
-        statement1,
-        statement2,
-        statement3
-      ]).await?;
+      execute_statements(&self.database, &[statement1, statement2, statement3]).await?;
     }
 
     {
@@ -142,12 +112,13 @@ impl Storage {
     Ok(())
   }
 
-  pub async fn create_account(&self,
+  pub async fn create_account(
+    &self,
     facet: &AccountFacet,
     uid: &str,
     game_data_dir: &str,
     gacha_url: Option<&str>,
-    properties: Option<&AccountProperties>
+    properties: Option<&AccountProperties>,
   ) -> Result<AccountModel> {
     debug!("Create account...: facet={facet:?}, uid={uid:?}, game_data_dir={game_data_dir:?}, gacha_url={gacha_url:?}, properties={properties:?}");
 
@@ -157,7 +128,7 @@ impl Storage {
       uid: ActiveValue::Set(uid.to_owned()),
       game_data_dir: ActiveValue::Set(game_data_dir.to_owned()),
       gacha_url: ActiveValue::Set(gacha_url.map(|s| s.to_owned())),
-      properties: ActiveValue::Set(properties.cloned())
+      properties: ActiveValue::Set(properties.cloned()),
     };
 
     AccountEntity::insert(model)
@@ -172,50 +143,49 @@ impl Storage {
       })
   }
 
-  pub async fn find_accounts(&self,
-    facet: Option<&AccountFacet>
-  ) -> Result<Vec<AccountModel>> {
+  pub async fn find_accounts(&self, facet: Option<&AccountFacet>) -> Result<Vec<AccountModel>> {
     debug!("Find accounts...");
 
     let result = if let Some(facet) = facet {
-      AccountEntity::find()
-        .filter(AccountColumn::Facet.eq(facet.clone()))
+      AccountEntity::find().filter(AccountColumn::Facet.eq(facet.clone()))
     } else {
       AccountEntity::find()
     }
-      .all(&self.database)
-      .await?;
+    .all(&self.database)
+    .await?;
 
     Ok(result)
   }
 
-  pub async fn try_find_account(&self,
+  pub async fn try_find_account(
+    &self,
     facet: &AccountFacet,
-    uid: &str
+    uid: &str,
   ) -> Result<Option<AccountModel>> {
     debug!("Find account...: facet={facet:?}, uid={uid:?}");
-    Ok(AccountEntity::find()
-      .filter(AccountColumn::Facet.eq(facet.clone()))
-      .filter(AccountColumn::Uid.eq(uid))
-      .one(&self.database)
-      .await?)
+    Ok(
+      AccountEntity::find()
+        .filter(AccountColumn::Facet.eq(facet.clone()))
+        .filter(AccountColumn::Uid.eq(uid))
+        .one(&self.database)
+        .await?,
+    )
   }
 
-  pub async fn find_account(&self,
-    facet: &AccountFacet,
-    uid: &str
-  ) -> Result<AccountModel> {
-    self.try_find_account(facet, uid)
+  pub async fn find_account(&self, facet: &AccountFacet, uid: &str) -> Result<AccountModel> {
+    self
+      .try_find_account(facet, uid)
       .await?
       .ok_or(Error::AccountNotFound)
   }
 
-  pub async fn try_update_account(&self,
+  pub async fn try_update_account(
+    &self,
     facet: &AccountFacet,
     uid: &str,
     game_data_dir: ActiveValue<String>,
     gacha_url: ActiveValue<Option<String>>,
-    properties: ActiveValue<Option<AccountProperties>>
+    properties: ActiveValue<Option<AccountProperties>>,
   ) -> Result<Option<AccountModel>> {
     debug!("Update account...: game_data_dir={game_data_dir:?}, gacha_url={gacha_url:?}, properties={properties:?}");
 
@@ -230,14 +200,17 @@ impl Storage {
     }
   }
 
-  pub async fn update_account(&self,
+  pub async fn update_account(
+    &self,
     facet: &AccountFacet,
     uid: &str,
     game_data_dir: ActiveValue<String>,
     gacha_url: ActiveValue<Option<String>>,
-    properties: ActiveValue<Option<AccountProperties>>
+    properties: ActiveValue<Option<AccountProperties>>,
   ) -> Result<AccountModel> {
-    let result = self.try_update_account(facet, uid, game_data_dir, gacha_url, properties).await?;
+    let result = self
+      .try_update_account(facet, uid, game_data_dir, gacha_url, properties)
+      .await?;
     if let Some(account) = result {
       Ok(account)
     } else {
@@ -245,52 +218,58 @@ impl Storage {
     }
   }
 
-  pub async fn update_account_game_data_dir(&self,
+  pub async fn update_account_game_data_dir(
+    &self,
     facet: &AccountFacet,
     uid: &str,
-    game_data_dir: &str
+    game_data_dir: &str,
   ) -> Result<AccountModel> {
-    self.update_account(
-      facet,
-      uid,
-      ActiveValue::Set(game_data_dir.to_owned()),
-      ActiveValue::NotSet,
-      ActiveValue::NotSet
-    ).await
+    self
+      .update_account(
+        facet,
+        uid,
+        ActiveValue::Set(game_data_dir.to_owned()),
+        ActiveValue::NotSet,
+        ActiveValue::NotSet,
+      )
+      .await
   }
 
-  pub async fn update_account_gacha_url(&self,
+  pub async fn update_account_gacha_url(
+    &self,
     facet: &AccountFacet,
     uid: &str,
-    gacha_url: Option<&str>
+    gacha_url: Option<&str>,
   ) -> Result<AccountModel> {
-    self.update_account(
-      facet,
-      uid,
-      ActiveValue::NotSet,
-      ActiveValue::Set(gacha_url.map(|s| s.to_owned())),
-      ActiveValue::NotSet
-    ).await
+    self
+      .update_account(
+        facet,
+        uid,
+        ActiveValue::NotSet,
+        ActiveValue::Set(gacha_url.map(|s| s.to_owned())),
+        ActiveValue::NotSet,
+      )
+      .await
   }
 
-  pub async fn update_account_properties(&self,
+  pub async fn update_account_properties(
+    &self,
     facet: &AccountFacet,
     uid: &str,
-    properties: Option<&AccountProperties>
+    properties: Option<&AccountProperties>,
   ) -> Result<AccountModel> {
-    self.update_account(
-      facet,
-      uid,
-      ActiveValue::NotSet,
-      ActiveValue::NotSet,
-      ActiveValue::Set(properties.cloned())
-    ).await
+    self
+      .update_account(
+        facet,
+        uid,
+        ActiveValue::NotSet,
+        ActiveValue::NotSet,
+        ActiveValue::Set(properties.cloned()),
+      )
+      .await
   }
 
-  pub async fn try_delete_account(&self,
-    facet: &AccountFacet,
-    uid: &str
-  ) -> Result<bool> {
+  pub async fn try_delete_account(&self, facet: &AccountFacet, uid: &str) -> Result<bool> {
     debug!("Delete account...: facet={facet:?}, uid={uid:?}");
 
     let result = AccountEntity::delete_many()
@@ -303,10 +282,7 @@ impl Storage {
     Ok(result > 0)
   }
 
-  pub async fn delete_account(&self,
-    facet: &AccountFacet,
-    uid: &str
-  ) -> Result<()> {
+  pub async fn delete_account(&self, facet: &AccountFacet, uid: &str) -> Result<()> {
     let result = self.try_delete_account(facet, uid).await?;
     if !result {
       Err(Error::AccountNotFound)
@@ -373,16 +349,22 @@ macro_rules! impl_gacha_records_curd {
         }
       }
     }
-  }
+  };
 }
 
-impl_gacha_records_curd!(Storage, genshin, GenshinGachaRecord,
+impl_gacha_records_curd!(
+  Storage,
+  genshin,
+  GenshinGachaRecord,
   GenshinGachaRecordActiveModel,
   GenshinGachaRecordEntity,
   GenshinGachaRecordColumn
 );
 
-impl_gacha_records_curd!(Storage, starrail, StarRailGachaRecord,
+impl_gacha_records_curd!(
+  Storage,
+  starrail,
+  StarRailGachaRecord,
   StarRailGachaRecordActiveModel,
   StarRailGachaRecordEntity,
   StarRailGachaRecordColumn
@@ -397,10 +379,16 @@ async fn create_account(
   uid: String,
   game_data_dir: String,
   gacha_url: Option<String>,
-  properties: Option<AccountProperties>
+  properties: Option<AccountProperties>,
 ) -> Result<AccountModel> {
   storage
-    .create_account(&facet, &uid, &game_data_dir, gacha_url.as_deref(), properties.as_ref())
+    .create_account(
+      &facet,
+      &uid,
+      &game_data_dir,
+      gacha_url.as_deref(),
+      properties.as_ref(),
+    )
     .await
 }
 
@@ -409,7 +397,7 @@ async fn update_account_game_data_dir(
   storage: tauri::State<'_, Storage>,
   facet: AccountFacet,
   uid: String,
-  game_data_dir: String
+  game_data_dir: String,
 ) -> Result<AccountModel> {
   storage
     .update_account_game_data_dir(&facet, &uid, &game_data_dir)
@@ -421,7 +409,7 @@ async fn update_account_gacha_url(
   storage: tauri::State<'_, Storage>,
   facet: AccountFacet,
   uid: String,
-  gacha_url: Option<String>
+  gacha_url: Option<String>,
 ) -> Result<AccountModel> {
   storage
     .update_account_gacha_url(&facet, &uid, gacha_url.as_deref())
@@ -433,7 +421,7 @@ async fn update_account_properties(
   storage: tauri::State<'_, Storage>,
   facet: AccountFacet,
   uid: String,
-  properties: Option<AccountProperties>
+  properties: Option<AccountProperties>,
 ) -> Result<AccountModel> {
   storage
     .update_account_properties(&facet, &uid, properties.as_ref())
@@ -443,33 +431,27 @@ async fn update_account_properties(
 #[tauri::command]
 async fn find_accounts(
   storage: tauri::State<'_, Storage>,
-  facet: Option<AccountFacet>
+  facet: Option<AccountFacet>,
 ) -> Result<Vec<AccountModel>> {
-  storage
-    .find_accounts(facet.as_ref())
-    .await
+  storage.find_accounts(facet.as_ref()).await
 }
 
 #[tauri::command]
 async fn find_account(
   storage: tauri::State<'_, Storage>,
   facet: AccountFacet,
-  uid: String
+  uid: String,
 ) -> Result<AccountModel> {
-  storage
-    .find_account(&facet, &uid)
-    .await
+  storage.find_account(&facet, &uid).await
 }
 
 #[tauri::command]
 async fn delete_account(
   storage: tauri::State<'_, Storage>,
   facet: AccountFacet,
-  uid: String
+  uid: String,
 ) -> Result<()> {
-  storage
-    .delete_account(&facet, &uid)
-    .await
+  storage.delete_account(&facet, &uid).await
 }
 
 macro_rules! impl_gacha_records_tauri_command {
@@ -507,7 +489,7 @@ impl_gacha_records_tauri_command!(starrail, StarRailGachaRecord);
 
 #[derive(Default)]
 pub struct StoragePluginBuilder {
-  database_file: Option<PathBuf>
+  database_file: Option<PathBuf>,
 }
 
 impl StoragePluginBuilder {

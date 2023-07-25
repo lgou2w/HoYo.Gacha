@@ -1,35 +1,34 @@
-extern crate lazy_static;
-extern crate reqwest;
-extern crate serde;
-extern crate time;
-extern crate tokio;
-extern crate tracing;
-extern crate url;
-
-use std::collections::HashMap;
+use super::{GachaRecord, GachaRecordFetcher, GachaUrl};
+use crate::constants;
+use crate::disk_cache::{BlockFile, EntryStore, IndexFile};
+use crate::error::{Error, Result};
+use crate::storage::entity_account::AccountFacet;
+use lazy_static::lazy_static;
+use reqwest::Client as Reqwest;
+use serde::de::DeserializeOwned;
+use serde::{Deserialize, Serialize};
 use std::collections::hash_map::Entry;
+use std::collections::HashMap;
 use std::fs::File;
 use std::io::{prelude::BufRead, BufReader};
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
-use lazy_static::lazy_static;
-use reqwest::Client as Reqwest;
-use serde::{Deserialize, Serialize};
-use serde::de::DeserializeOwned;
 use time::{OffsetDateTime, UtcOffset};
 use tokio::sync::Mutex;
 use tracing::debug;
 use url::Url;
-use crate::constants;
-use crate::disk_cache::{IndexFile, BlockFile, EntryStore};
-use crate::error::{Error, Result};
-use crate::storage::entity_account::AccountFacet;
-use super::{GachaUrl, GachaRecord, GachaRecordFetcher};
 
 pub(super) fn create_default_reqwest() -> Result<reqwest::Client> {
-  Ok(reqwest::Client::builder()
-    .user_agent(format!("{} v{} by {}", constants::NAME, constants::VERSION, constants::AUTHOR))
-    .build()?)
+  Ok(
+    reqwest::Client::builder()
+      .user_agent(format!(
+        "{} v{} by {}",
+        constants::NAME,
+        constants::VERSION,
+        constants::AUTHOR
+      ))
+      .build()?,
+  )
 }
 
 pub(super) fn lookup_mihoyo_dir() -> PathBuf {
@@ -58,7 +57,7 @@ pub(super) fn lookup_cognosphere_dir() -> PathBuf {
 
 pub(super) fn lookup_path_line_from_keyword<P: AsRef<Path>>(
   path: P,
-  keyword: &str
+  keyword: &str,
 ) -> Result<Option<PathBuf>> {
   if !path.as_ref().exists() || !path.as_ref().is_file() {
     return Ok(None);
@@ -84,9 +83,9 @@ pub(super) fn lookup_path_line_from_keyword<P: AsRef<Path>>(
 }
 
 mod web_caches {
+  use super::Error;
   use std::num::ParseIntError;
   use std::str::FromStr;
-  use super::Error;
 
   #[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
   pub struct WebCachesVersion {
@@ -98,7 +97,10 @@ mod web_caches {
 
   impl WebCachesVersion {
     pub fn version(&self) -> String {
-      format!("{}.{}.{}.{}", self.major, self.minor, self.patch, self.build)
+      format!(
+        "{}.{}.{}.{}",
+        self.major, self.minor, self.patch, self.build
+      )
     }
   }
 
@@ -114,23 +116,21 @@ mod web_caches {
     fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
       let mut s = s.split('.');
       match (s.next(), s.next(), s.next(), s.next()) {
-        (Some(major), Some(minor), Some(patch), build_opt) => {
-          Ok(WebCachesVersion {
-            major: major.parse()?,
-            minor: minor.parse()?,
-            patch: patch.parse()?,
-            build: build_opt.unwrap_or("0").parse()?,
-          })
-        },
-        _ => Err(Error::WebCaches)
+        (Some(major), Some(minor), Some(patch), build_opt) => Ok(WebCachesVersion {
+          major: major.parse()?,
+          minor: minor.parse()?,
+          patch: patch.parse()?,
+          build: build_opt.unwrap_or("0").parse()?,
+        }),
+        _ => Err(Error::WebCaches),
       }
     }
   }
 }
 
 pub(super) fn lookup_valid_cache_data_dir<P: AsRef<Path>>(game_data_dir: P) -> Result<PathBuf> {
-  use std::fs::read_dir;
   use self::web_caches::WebCachesVersion;
+  use std::fs::read_dir;
 
   let mut web_caches_versions = Vec::new();
 
@@ -165,7 +165,7 @@ pub(super) fn lookup_valid_cache_data_dir<P: AsRef<Path>>(game_data_dir: P) -> R
 
 pub(super) fn lookup_gacha_urls_from_endpoint<P: AsRef<Path>>(
   cache_data_dir: P,
-  endpoint: &str
+  endpoint: &str,
 ) -> Result<Vec<GachaUrl>> {
   let cache_data_dir = cache_data_dir.as_ref();
 
@@ -206,14 +206,15 @@ pub(super) fn lookup_gacha_urls_from_endpoint<P: AsRef<Path>>(
     // Convert creation time
     let creation_time = {
       let timestamp = (entry.creation_time / 1_000_000) as i64 - 11_644_473_600;
-      let offset_datetime = OffsetDateTime::from_unix_timestamp(timestamp).map_err(time::Error::from)?;
+      let offset_datetime =
+        OffsetDateTime::from_unix_timestamp(timestamp).map_err(time::Error::from)?;
       offset_datetime.to_offset(current_local_offset)
     };
 
     result.push(GachaUrl {
       addr: addr.into(),
       creation_time,
-      value: url
+      value: url,
     })
   }
 
@@ -227,7 +228,7 @@ pub(super) fn lookup_gacha_urls_from_endpoint<P: AsRef<Path>>(
 pub(super) struct GachaResponse<T> {
   pub retcode: i32,
   pub message: String,
-  pub data: Option<T>
+  pub data: Option<T>,
 }
 
 pub(super) async fn fetch_gacha_records<T: Sized + DeserializeOwned>(
@@ -235,7 +236,7 @@ pub(super) async fn fetch_gacha_records<T: Sized + DeserializeOwned>(
   endpoint: &str,
   gacha_url: &str,
   gacha_type: Option<&str>,
-  end_id: Option<&str>
+  end_id: Option<&str>,
 ) -> Result<GachaResponse<T>> {
   let endpoint_start = gacha_url.find(endpoint).ok_or(Error::IllegalGachaUrl)?;
   let base_url = &gacha_url[0..endpoint_start + endpoint.len()];
@@ -245,7 +246,10 @@ pub(super) async fn fetch_gacha_records<T: Sized + DeserializeOwned>(
     .into_owned()
     .collect();
 
-  let origin_gacha_type = queries.get("gacha_type").cloned().ok_or(Error::IllegalGachaUrl)?;
+  let origin_gacha_type = queries
+    .get("gacha_type")
+    .cloned()
+    .ok_or(Error::IllegalGachaUrl)?;
   let origin_end_id = queries.get("end_id").cloned();
   let gacha_type = gacha_type.unwrap_or(&origin_gacha_type);
 
@@ -255,8 +259,7 @@ pub(super) async fn fetch_gacha_records<T: Sized + DeserializeOwned>(
   queries.remove("begin_id");
   queries.remove("end_id");
 
-  let mut url = Url::parse_with_params(base_url, queries)
-    .map_err(|_| Error::IllegalGachaUrl)?;
+  let mut url = Url::parse_with_params(base_url, queries).map_err(|_| Error::IllegalGachaUrl)?;
 
   url
     .query_pairs_mut()
@@ -265,17 +268,10 @@ pub(super) async fn fetch_gacha_records<T: Sized + DeserializeOwned>(
     .append_pair("gacha_type", gacha_type);
 
   if let Some(end_id) = end_id.or(origin_end_id.as_deref()) {
-    url
-      .query_pairs_mut()
-      .append_pair("end_id", end_id);
+    url.query_pairs_mut().append_pair("end_id", end_id);
   }
 
-  let response: GachaResponse<T> = reqwest
-    .get(url)
-    .send()
-    .await?
-    .json()
-    .await?;
+  let response: GachaResponse<T> = reqwest.get(url).send().await?.json().await?;
 
   if response.retcode != 0 {
     if response.retcode == -101 {
@@ -283,7 +279,7 @@ pub(super) async fn fetch_gacha_records<T: Sized + DeserializeOwned>(
     } else {
       Err(Error::GachaRecordRetcode {
         retcode: response.retcode,
-        message: response.message
+        message: response.message,
       })
     }
   } else {
@@ -304,15 +300,17 @@ pub(crate) async fn find_gacha_url_and_validate_consistency<Record, Fetcher>(
   fetcher: &Fetcher,
   facet: &AccountFacet,
   uid: &str,
-  gacha_urls: &[GachaUrl]
+  gacha_urls: &[GachaUrl],
 ) -> Result<GachaUrl>
 where
   Record: GachaRecord + Sized + Serialize + Send + Sync,
-  Fetcher: GachaRecordFetcher<Target = Record>
+  Fetcher: GachaRecordFetcher<Target = Record>,
 {
-  debug!("Find gacha url and validate consistency: facet={}, uid={}", facet, uid);
+  debug!(
+    "Find gacha url and validate consistency: facet={}, uid={}",
+    facet, uid
+  );
   let mut cached = GACHA_URL_CACHED.lock().await;
-
 
   let reqwest = create_default_reqwest()?;
   let local_datetime = OffsetDateTime::now_local().map_err(time::Error::from)?;
@@ -336,7 +334,11 @@ where
     if let Entry::Occupied(entry) = cached.entry(key.to_owned()) {
       let value = entry.get();
       if value.creation_time + time::Duration::DAY > local_datetime {
-        debug!("Hit gacha url cache: key={}, creation_time={}", entry.key(), value.creation_time);
+        debug!(
+          "Hit gacha url cache: key={}, creation_time={}",
+          entry.key(),
+          value.creation_time
+        );
         return Ok(value.clone());
       } else {
         debug!("Remove expired gacha url cache: key={}", entry.key());
@@ -350,13 +352,18 @@ where
       tokio::time::sleep(std::time::Duration::from_secs(3)).await;
     }
 
-    let result = fetcher.fetch_gacha_records_any_uid(&reqwest, gacha_url).await;
+    let result = fetcher
+      .fetch_gacha_records_any_uid(&reqwest, gacha_url)
+      .await;
     match result {
       Err(Error::GachaRecordRetcode { retcode, message }) => {
         // TODO: always retcode = -101 authkey timeout?
-        debug!("Gacha record retcode: retcode={}, message={}", retcode, message);
+        debug!(
+          "Gacha record retcode: retcode={}, message={}",
+          retcode, message
+        );
         return Err(Error::VacantGachaUrl);
-      },
+      }
       Err(err) => return Err(err),
       Ok(gacha_url_uid) => {
         // Always cache the result
@@ -370,7 +377,11 @@ where
         if gacha_url_uid.as_deref() == Some(uid) {
           return Ok(gacha_url.clone());
         } else {
-          debug!("Gacha url uid mismatch: expected={}, actual={}", uid, gacha_url_uid.unwrap_or_default());
+          debug!(
+            "Gacha url uid mismatch: expected={}, actual={}",
+            uid,
+            gacha_url_uid.unwrap_or_default()
+          );
           continue;
         }
       }

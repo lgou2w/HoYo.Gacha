@@ -1,18 +1,13 @@
-extern crate lazy_static;
-extern crate serde;
-extern crate serde_json;
-extern crate time;
-
-use std::io::{Read, Write};
-use serde::{Serialize, Deserialize};
-use time::OffsetDateTime;
 use crate::constants::{ID, VERSION};
 use crate::error::{Error, Result};
 use crate::gacha::StarRailGachaRecord;
+use serde::{Deserialize, Serialize};
+use std::io::{Read, Write};
+use time::OffsetDateTime;
 
 // See: https://uigf.org/zh/standards/SRGF.html
 
-const SRGF_VERSION      : &str = "v1.0";
+const SRGF_VERSION: &str = "v1.0";
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SRGFInfo {
@@ -22,7 +17,7 @@ pub struct SRGFInfo {
   pub export_timestamp: Option<i64>,
   pub export_app: Option<String>,
   pub export_app_version: Option<String>,
-  pub srgf_version: String
+  pub srgf_version: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -35,7 +30,7 @@ pub struct SRGFListItem {
   pub time: String,
   pub name: String,
   pub item_type: String,
-  pub rank_type: Option<String>
+  pub rank_type: Option<String>,
 }
 
 pub type SRGFList = Vec<SRGFListItem>;
@@ -44,11 +39,17 @@ pub type SRGFList = Vec<SRGFListItem>;
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SRGF {
   pub info: SRGFInfo,
-  pub list: SRGFList
+  pub list: SRGFList,
 }
 
 impl SRGF {
-  pub fn new(uid: String, lang: String, time_zone: u8, time: &OffsetDateTime, list: SRGFList) -> Result<Self> {
+  pub fn new(
+    uid: String,
+    lang: String,
+    time_zone: u8,
+    time: &OffsetDateTime,
+    list: SRGFList,
+  ) -> Result<Self> {
     let export_timestamp = time.unix_timestamp();
     Ok(Self {
       info: SRGFInfo {
@@ -58,9 +59,9 @@ impl SRGF {
         export_timestamp: Some(export_timestamp),
         export_app: Some(ID.into()),
         export_app_version: Some(VERSION.into()),
-        srgf_version: SRGF_VERSION.into()
+        srgf_version: SRGF_VERSION.into(),
       },
-      list
+      list,
     })
   }
 
@@ -82,7 +83,10 @@ impl SRGF {
 // SRGF -> Official StarRailGachaRecord
 impl StarRailGachaRecord {
   fn try_from(value: &SRGFListItem, uid: &str, lang: &str) -> Result<Self> {
-    let rank_type = value.rank_type.clone().ok_or_else(|| Error::UIGFOrSRGFInvalidField("rank_type".to_owned()))?;
+    let rank_type = value
+      .rank_type
+      .clone()
+      .ok_or_else(|| Error::UIGFOrSRGFInvalidField("rank_type".to_owned()))?;
 
     Ok(Self {
       id: value.id.clone(),
@@ -114,7 +118,7 @@ impl TryFrom<&StarRailGachaRecord> for SRGFListItem {
       time: value.time.clone(),
       name: value.name.clone(),
       item_type: value.item_type.clone(),
-      rank_type: Some(value.rank_type.clone())
+      rank_type: Some(value.rank_type.clone()),
     })
   }
 }

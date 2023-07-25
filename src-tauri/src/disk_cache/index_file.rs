@@ -1,16 +1,19 @@
-extern crate byteorder;
-
-use byteorder::{ReadBytesExt, LittleEndian};
+use super::{CacheAddr, ReadCacheAddrExt};
+use byteorder::{LittleEndian, ReadBytesExt};
 use std::fs::File;
 use std::io::{BufReader, Read, Result};
 use std::path::Path;
-use super::{CacheAddr, ReadCacheAddrExt};
 
-#[allow(unused)] const INDEX_MAGIC     : u32 = 0xC103CAC3;
-#[allow(unused)] const INDEX_VERSION2_0: u32 =    0x20000;
-#[allow(unused)] const INDEX_VERSION2_1: u32 =    0x20001;
-#[allow(unused)] const INDEX_VERSION3_0: u32 =    0x30000;
-#[allow(unused)] const INDEX_TABLE_SIZE: u32 =    0x10000;
+#[allow(unused)]
+const INDEX_MAGIC: u32 = 0xC103CAC3;
+#[allow(unused)]
+const INDEX_VERSION2_0: u32 = 0x20000;
+#[allow(unused)]
+const INDEX_VERSION2_1: u32 = 0x20001;
+#[allow(unused)]
+const INDEX_VERSION3_0: u32 = 0x30000;
+#[allow(unused)]
+const INDEX_TABLE_SIZE: u32 = 0x10000;
 
 pub struct LruData {
   pub pad1: [i32; 2],
@@ -21,7 +24,7 @@ pub struct LruData {
   pub transaction: CacheAddr,
   pub operation: i32,
   pub operation_list: i32,
-  pub pad2: [i32; 7]
+  pub pad2: [i32; 7],
 }
 
 pub struct IndexFileHeader {
@@ -37,12 +40,12 @@ pub struct IndexFileHeader {
   pub experiment: i32,
   pub create_time: u64,
   pub pad: Box<[i32; 52]>,
-  pub lru: LruData
+  pub lru: LruData,
 }
 
 pub struct IndexFile {
   pub header: IndexFileHeader,
-  pub table: Vec<CacheAddr>
+  pub table: Vec<CacheAddr>,
 }
 
 impl LruData {
@@ -69,7 +72,7 @@ impl LruData {
       transaction,
       operation,
       operation_list,
-      pad2
+      pad2,
     })
   }
 }
@@ -104,7 +107,7 @@ impl IndexFileHeader {
       experiment,
       create_time,
       pad,
-      lru
+      lru,
     })
   }
 }
@@ -120,10 +123,7 @@ impl IndexFile {
       }
     }
 
-    Ok(Self {
-      header,
-      table
-    })
+    Ok(Self { header, table })
   }
 
   pub fn from_file<P: AsRef<Path>>(path: P) -> Result<Self> {

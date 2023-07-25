@@ -1,29 +1,18 @@
-extern crate async_trait;
-extern crate reqwest;
-extern crate serde;
-
-use std::any::Any;
-use std::cmp::Ordering;
-use std::path::{Path, PathBuf};
+use super::utilities::{
+  fetch_gacha_records, lookup_gacha_urls_from_endpoint, lookup_mihoyo_dir,
+  lookup_path_line_from_keyword, lookup_valid_cache_data_dir,
+};
+use super::{
+  GachaRecord, GachaRecordFetcher, GachaRecordFetcherChannel, GachaUrl, GachaUrlFinder,
+  GameDataDirectoryFinder,
+};
+use crate::error::Result;
 use async_trait::async_trait;
 use reqwest::Client as Reqwest;
 use serde::{Deserialize, Serialize};
-use crate::error::Result;
-use super::{
-  GameDataDirectoryFinder,
-  GachaUrl,
-  GachaUrlFinder,
-  GachaRecord,
-  GachaRecordFetcher,
-  GachaRecordFetcherChannel
-};
-use super::utilities::{
-  lookup_mihoyo_dir,
-  lookup_path_line_from_keyword,
-  lookup_valid_cache_data_dir,
-  lookup_gacha_urls_from_endpoint,
-  fetch_gacha_records
-};
+use std::any::Any;
+use std::cmp::Ordering;
+use std::path::{Path, PathBuf};
 
 #[derive(Default, Deserialize)]
 pub struct GenshinGacha;
@@ -36,16 +25,17 @@ impl GameDataDirectoryFinder for GenshinGacha {
     let mut directories = Vec::new();
 
     // TODO: Untested
-    const INTERNATIONAL_OUTPUT_LOG : &str = "Genshin Impact/output_log.txt";
+    const INTERNATIONAL_OUTPUT_LOG: &str = "Genshin Impact/output_log.txt";
     const INTERNATIONAL_DIR_KEYWORD: &str = "/GenshinImpact_Data/";
 
     let mut output_log = mihoyo_dir.join(INTERNATIONAL_OUTPUT_LOG);
-    if let Some(directory) = lookup_path_line_from_keyword(&output_log, INTERNATIONAL_DIR_KEYWORD)? {
+    if let Some(directory) = lookup_path_line_from_keyword(&output_log, INTERNATIONAL_DIR_KEYWORD)?
+    {
       directories.push(directory);
     }
 
-    const CHINESE_OUTPUT_LOG       : &str = "原神/output_log.txt";
-    const CHINESE_DIR_KEYWORD      : &str = "/YuanShen_Data/";
+    const CHINESE_OUTPUT_LOG: &str = "原神/output_log.txt";
+    const CHINESE_DIR_KEYWORD: &str = "/YuanShen_Data/";
 
     output_log = mihoyo_dir.join(CHINESE_OUTPUT_LOG);
     if let Some(directory) = lookup_path_line_from_keyword(&output_log, CHINESE_DIR_KEYWORD)? {
@@ -61,9 +51,7 @@ impl GameDataDirectoryFinder for GenshinGacha {
 const ENDPOINT: &str = "/event/gacha_info/api/getGachaLog?";
 
 impl GachaUrlFinder for GenshinGacha {
-  fn find_gacha_urls<P: AsRef<Path>>(&self,
-    game_data_dir: P
-  ) -> Result<Vec<GachaUrl>> {
+  fn find_gacha_urls<P: AsRef<Path>>(&self, game_data_dir: P) -> Result<Vec<GachaUrl>> {
     // See: https://github.com/lgou2w/HoYo.Gacha/issues/10
     let cache_data_dir = lookup_valid_cache_data_dir(game_data_dir)?;
     lookup_gacha_urls_from_endpoint(cache_data_dir, ENDPOINT)
@@ -83,7 +71,7 @@ pub struct GenshinGachaRecord {
   pub name: String,
   pub lang: String,
   pub item_type: String,
-  pub rank_type: String
+  pub rank_type: String,
 }
 
 impl GachaRecord for GenshinGachaRecord {
@@ -111,41 +99,37 @@ pub(crate) struct GenshinGachaRecordPagination {
   size: String,
   total: String,
   list: Vec<GenshinGachaRecord>,
-  region: String
+  region: String,
 }
 
 #[async_trait]
 impl GachaRecordFetcher for GenshinGacha {
   type Target = GenshinGachaRecord;
 
-  async fn fetch_gacha_records(&self,
+  async fn fetch_gacha_records(
+    &self,
     reqwest: &Reqwest,
     gacha_url: &str,
     gacha_type: Option<&str>,
-    end_id: Option<&str>
+    end_id: Option<&str>,
   ) -> Result<Option<Vec<Self::Target>>> {
     let response = fetch_gacha_records::<GenshinGachaRecordPagination>(
-      reqwest,
-      ENDPOINT,
-      gacha_url,
-      gacha_type,
-      end_id
-    ).await?;
+      reqwest, ENDPOINT, gacha_url, gacha_type, end_id,
+    )
+    .await?;
 
     Ok(response.data.map(|pagination| pagination.list))
   }
 
-  async fn fetch_gacha_records_any_uid(&self,
+  async fn fetch_gacha_records_any_uid(
+    &self,
     reqwest: &Reqwest,
-    gacha_url: &str
+    gacha_url: &str,
   ) -> Result<Option<String>> {
-    let result = self.fetch_gacha_records(reqwest, gacha_url, None, None).await?;
-    Ok(result
-      .and_then(|gacha_records| {
-        gacha_records
-          .first()
-          .map(|record| record.uid.clone())
-      }))
+    let result = self
+      .fetch_gacha_records(reqwest, gacha_url, None, None)
+      .await?;
+    Ok(result.and_then(|gacha_records| gacha_records.first().map(|record| record.uid.clone())))
   }
 }
 

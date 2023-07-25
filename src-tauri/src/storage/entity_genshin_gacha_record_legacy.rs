@@ -1,5 +1,3 @@
-extern crate sea_orm;
-
 use sea_orm::entity::prelude::*;
 
 /// v0.2.x Legacy Genshin Gacha Record

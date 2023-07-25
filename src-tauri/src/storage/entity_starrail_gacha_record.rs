@@ -1,8 +1,6 @@
-extern crate sea_orm;
-
-use sea_orm::ActiveValue;
-use sea_orm::entity::prelude::*;
 use crate::gacha::StarRailGachaRecord;
+use sea_orm::entity::prelude::*;
+use sea_orm::ActiveValue;
 
 #[derive(Clone, Debug, PartialEq, Eq, DeriveEntityModel)]
 #[sea_orm(table_name = "starrail_gacha_records")]
@@ -45,7 +43,7 @@ impl From<StarRailGachaRecord> for ActiveModel {
       name: ActiveValue::set(value.name),
       lang: ActiveValue::set(value.lang),
       item_type: ActiveValue::set(value.item_type),
-      rank_type: ActiveValue::set(value.rank_type)
+      rank_type: ActiveValue::set(value.rank_type),
     }
   }
 }
@@ -63,7 +61,7 @@ impl From<Model> for StarRailGachaRecord {
       name: value.name,
       lang: value.lang,
       item_type: value.item_type,
-      rank_type: value.rank_type
+      rank_type: value.rank_type,
     }
   }
 }
