@@ -192,7 +192,7 @@ Every piece of data stored by the disk cache has a given “cache address”. Th
 请参考本仓库内的源代码实现：
 
 - 硬盘缓存：[disk_cache](../src-tauri/src/disk_cache)
-- 获取祈愿链接：[gacha/declare.rs](../src-tauri/src/gacha/declare.rs#L214)
+- 获取祈愿链接：[gacha/utilities.rs](https://github.com/lgou2w/HoYo.Gacha/blob/139b9b6/src-tauri/src/gacha/utilities.rs#L166-L225)
 
 ### Node.js
 
@@ -429,12 +429,11 @@ function findGachaUrl(genshinDataDir: string): { creation_time: Date, url: strin
       url = url.substring(4);
     }
 
-    // 将 Windows ticks 转换（这里必须要将存储条目的创建时间乘 10 才是正确的 ticks
-    const ticks = entry.creation_time * 10n;
-    const seconds = ticks / 10_000_000n - 11_644_473_600n;
+    // 将 Windows ticks 转换成 Unix 时间戳
+    const timestamp = entry.creation_time / 1_000_000n - 11_644_473_600n;
 
     records.push({
-      creation_time: Number(seconds * 1000n),
+      creation_time: Number(timestamp),
       url
     });
   }
@@ -449,7 +448,7 @@ function findGachaUrl(genshinDataDir: string): { creation_time: Date, url: strin
   }
 
   return {
-    creation_time: new Date(first.creation_time),
+    creation_time: new Date(first.creation_time * 1000),
     url: first.url
   };
 }
