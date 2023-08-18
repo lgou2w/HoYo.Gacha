@@ -22,6 +22,12 @@
 - [x] 实现 [`SRGF`](https://uigf.org/zh/standards/SRGF.html) 星穹铁道抽卡记录标准。
 - [ ] 更多开发中...
 
+## 下载
+
+* 请在此仓库 [Releases](https://github.com/lgou2w/HoYo.Gacha/releases) 下载最新版。
+
+* 或可以从镜像 [Release latest](https://hoyo-gacha.lgou2w.com/release/download?id=latest) 下载最新版。<sub>Powered by [Deno Deploy](https://deno.com/deploy).</sub>
+
 ## 硬盘缓存
 
 **关于从 `Chromium Disk Cache` 硬盘缓存获取抽卡链接的实现原理请参考：[硬盘缓存](DiskCache/README.md)**
@@ -29,7 +35,6 @@
 ## 特别感谢
 
 * [UIGF organization](https://uigf.org)
-* [EnkaNetwork](https://github.com/EnkaNetwork)
 * [DGP-Studio/Snap.Hutao](https://github.com/DGP-Studio/Snap.Hutao)
 * [YuehaiTeam/cocogoat](https://github.com/YuehaiTeam/cocogoat)
 * [vikiboss/gs-helper](https://github.com/vikiboss/gs-helper)
