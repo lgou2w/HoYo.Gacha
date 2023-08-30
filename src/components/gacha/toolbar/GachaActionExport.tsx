@@ -62,6 +62,10 @@ export default function GachaActionExport () {
       </Tooltip>
       <Menu anchorEl={anchorEl} open={open} onClose={handleClose}
         MenuListProps={{ disablePadding: false }}
+        // FIXME: It can work. But why is the 'backdrop' property missing?
+        // See: https://github.com/mui/material-ui/pull/37390#discussion_r1231771648
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         slotProps={{ root: { slotProps: { backdrop: { invisible: false } } } }}
       >
         <Typography variant="body2" paddingX={2} paddingY={1}>
