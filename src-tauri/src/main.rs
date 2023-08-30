@@ -20,9 +20,11 @@ fn main() {
     .plugin(storage::StoragePluginBuilder::new().build())
     .plugin(gacha::GachaPluginBuilder::new().build())
     .setup(|app| {
-      use tauri::Manager;
       #[cfg(debug_assertions)]
-      app.get_window("main").unwrap().open_devtools();
+      {
+        use tauri::Manager;
+        app.get_window("main").unwrap().open_devtools();
+      }
       Ok(())
     })
     .invoke_handler(commands::get_handlers())

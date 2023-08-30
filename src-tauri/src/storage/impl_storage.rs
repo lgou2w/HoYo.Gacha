@@ -21,7 +21,8 @@ use paste::paste;
 use sea_orm::sea_query::{Condition, Index, OnConflict};
 use sea_orm::{
   ActiveModelTrait, ActiveValue, ColumnTrait, ConnectOptions, Database, DatabaseConnection,
-  DeriveIden, EntityTrait, QueryFilter, QueryOrder, QuerySelect, QueryTrait, TransactionTrait,
+  EntityName, EntityTrait, Iden, QueryFilter, QueryOrder, QuerySelect, QueryTrait,
+  TransactionTrait,
 };
 use std::path::{Path, PathBuf};
 use tauri::async_runtime::block_on;
@@ -90,9 +91,9 @@ impl Storage {
       let statement4 = Index::create()
         .name(&format!(
           "idx-{}-{}-{}",
-          AccountEntity.to_string(),
-          AccountColumn::Facet.to_string(),
-          AccountColumn::Uid.to_string()
+          EntityName::table_name(&AccountEntity),
+          Iden::to_string(&AccountColumn::Facet),
+          Iden::to_string(&AccountColumn::Uid)
         ))
         .table(AccountEntity)
         .col(AccountColumn::Facet)

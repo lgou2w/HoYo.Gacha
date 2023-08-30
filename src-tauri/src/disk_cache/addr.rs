@@ -108,7 +108,7 @@ pub trait ReadCacheAddrExt: Read {
   fn read_cache_addrs<T: ByteOrder, const LENGTH: usize>(&mut self) -> Result<[CacheAddr; LENGTH]> {
     let mut addrs = [0u32; LENGTH];
     self.read_u32_into::<T>(&mut addrs)?;
-    Ok(addrs.map(|addr| CacheAddr(addr)))
+    Ok(addrs.map(CacheAddr))
   }
 }
 

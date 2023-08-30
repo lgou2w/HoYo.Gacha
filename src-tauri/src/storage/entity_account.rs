@@ -4,7 +4,9 @@ use sea_orm::{TryGetError, TryGetable};
 use serde::{Deserialize, Serialize};
 use serde_json::{Map as Json, Value as JsonValue};
 
-#[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize, EnumIter, DeriveActiveEnum)]
+#[derive(
+  Clone, Debug, PartialEq, Eq, Deserialize, Serialize, EnumIter, DeriveActiveEnum, DeriveDisplay,
+)]
 #[sea_orm(rs_type = "String", db_type = "Text")]
 pub enum AccountFacet {
   #[sea_orm(string_value = "genshin")]
