@@ -293,7 +293,7 @@ impl Storage {
   }
 }
 
-macro_rules! impl_gacha_records_curd {
+macro_rules! impl_gacha_records_crud {
   ($struct: ident, $name: tt, $record: ident, $active_model: ident, $entity: ident, $column: ident) => {
     paste! {
       impl $struct {
@@ -353,7 +353,7 @@ macro_rules! impl_gacha_records_curd {
   };
 }
 
-impl_gacha_records_curd!(
+impl_gacha_records_crud!(
   Storage,
   genshin,
   GenshinGachaRecord,
@@ -362,7 +362,7 @@ impl_gacha_records_curd!(
   GenshinGachaRecordColumn
 );
 
-impl_gacha_records_curd!(
+impl_gacha_records_crud!(
   Storage,
   starrail,
   StarRailGachaRecord,
