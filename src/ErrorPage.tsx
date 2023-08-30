@@ -4,6 +4,7 @@ import Box from '@mui/material/Box'
 import Typography from '@mui/material/Typography'
 
 export default function ErrorPage () {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const error = useRouteError() as any
   console.error(error)
   // TODO: Error page
