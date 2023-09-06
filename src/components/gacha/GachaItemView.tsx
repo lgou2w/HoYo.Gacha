@@ -6,6 +6,7 @@ import Typography from '@mui/material/Typography'
 import GenshinUIRarity3Background from '@/assets/images/genshin/UI_Rarity_3_Background.png'
 import GenshinUIRarity4Background from '@/assets/images/genshin/UI_Rarity_4_Background.png'
 import GenshinUIRarity5Background from '@/assets/images/genshin/UI_Rarity_5_Background.png'
+import { lookupAssetIcon } from './icons'
 
 export interface GachaItemViewProps {
   facet: AccountFacet
@@ -20,7 +21,12 @@ export interface GachaItemViewProps {
 
 export default function GachaItemView (props: GachaItemViewProps) {
   const { facet, name, id, isWeapon, rank, size, usedPity, restricted } = props
-  const src = getStaticResource(facet, isWeapon ? 'weapon' : 'character', id)
+  // const src = getStaticResource(facet, isWeapon ? 'weapon' : 'character', id)
+  const icon = lookupAssetIcon(
+    facet,
+    isWeapon ? 'weapon' : 'character',
+    id
+  )
 
   return (
     <Box className={GachaItemViewCls} sx={GachaItemViewSx}
@@ -30,16 +36,16 @@ export default function GachaItemView (props: GachaItemViewProps) {
       data-restricted={restricted}
       title={name}
     >
-      <img src={src} alt={name} />
+      <img src={icon?.[1]} alt={name} />
       {usedPity && <Typography className={`${GachaItemViewCls}-used-pity`}>{usedPity}</Typography>}
       {restricted && <Typography className={`${GachaItemViewCls}-restricted`}>限定</Typography>}
     </Box>
   )
 }
 
-function getStaticResource (facet: AccountFacet, namespace: string, itemIdOrName: string) {
-  return `https://hoyo-gacha.lgou2w.com/static/${facet}/${namespace}/${itemIdOrName}.png`
-}
+// function getStaticResource (facet: AccountFacet, namespace: string, itemIdOrName: string) {
+//   return `https://hoyo-gacha.lgou2w.com/static/${facet}/${namespace}/${itemIdOrName}.png`
+// }
 
 const GachaItemViewCls = 'gacha-item-view'
 const GachaItemViewSx: SxProps<Theme> = {
