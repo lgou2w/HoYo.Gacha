@@ -6,10 +6,20 @@ use tauri::{Invoke, Runtime};
 
 pub fn get_handlers<R: Runtime>() -> Box<dyn Fn(Invoke<R>) + Send + Sync> {
   Box::new(tauri::generate_handler![
+    get_current_exe_dir,
     get_version,
     get_latest_version,
     update_app
   ])
+}
+
+#[tauri::command]
+fn get_current_exe_dir() -> Result<std::path::PathBuf> {
+  if cfg!(debug_assertions) {
+    Ok(std::env::current_dir()?)
+  } else {
+    Ok(std::env::current_exe()?.parent().unwrap().to_path_buf())
+  }
 }
 
 #[derive(Debug, Serialize)]
