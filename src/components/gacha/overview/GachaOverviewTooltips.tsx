@@ -13,7 +13,7 @@ export default function GachaOverviewTooltips () {
   return (
     <Box>
       <Typography>
-        {`· 共计${action} `}
+        {`· 总计${action} `}
         <Typography component="span" color="primary">
           {total}
         </Typography>

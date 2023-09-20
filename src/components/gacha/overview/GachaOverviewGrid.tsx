@@ -42,13 +42,15 @@ function GachaOverviewGridCard ({ facet, value, newbie }: {
   const { total, firstTime, lastTime, metadata: { golden } } = value
   const { currency } = resolveCurrency(facet)
   const category = 'category' in value ? value.category : 'aggregated'
-  const categoryTitle = 'categoryTitle' in value ? value.categoryTitle : '合计'
+  const categoryTitle = 'categoryTitle' in value ? value.categoryTitle : '总计'
 
   const lastGolden = golden.values[golden.values.length - 1]
   const lastGoldenName = lastGolden ? `${lastGolden.name}（${lastGolden.usedPity}）` : '无'
 
   const newbieGolden = newbie && newbie.metadata.golden.values[0]
   const newbieGoldenName = newbieGolden && `${newbieGolden.name}`
+
+  const aggregated = category === 'aggregated'
 
   return (
     <Stack sx={GachaOverviewGridCardSx}>
@@ -58,7 +60,7 @@ function GachaOverviewGridCard ({ facet, value, newbie }: {
       <Box>
         <Typography component="div" variant="h4">
           {categoryTitle}
-          {category === 'aggregated' && <Typography variant="button">（包含新手）</Typography>}
+          {aggregated && <Typography variant="button">（包含新手）</Typography>}
         </Typography>
         <Typography component="div" variant="caption">
           {dayjs(firstTime).format('YYYY.MM.DD')}
@@ -68,16 +70,16 @@ function GachaOverviewGridCard ({ facet, value, newbie }: {
       </Box>
       <Stack className="labels">
         <Stack>
-          <Chip label={`共 ${total} 抽`} color="primary" />
-          {category !== 'aggregated'
+          <Chip label={aggregated ? `总计 ${total} 抽` : `共 ${total} 抽`} color="primary" />
+          {!aggregated
             ? <Chip label={`已垫 ${golden.nextPity} 抽`} color="secondary" />
             : newbieGoldenName && <Chip label={`新手：${newbieGoldenName}`} color="warning" />
           }
-          <Chip label={`已出 ${golden.sum} 金`} color="warning" />
+          <Chip label={aggregated ? `总出 ${golden.sum} 金` : `已出 ${golden.sum} 金`} color="warning" />
         </Stack>
         <Stack>
           <Chip label={`最近出金：${lastGoldenName}`} />
-          <Chip label={`出金率 ${golden.sumPercentage}%`} />
+          <Chip label={`${aggregated ? '总' : ''}出金率 ${golden.sumPercentage}%`} />
         </Stack>
         <Stack>
           <Chip label={`平均每金 ${golden.sumAverage} 抽`} />
