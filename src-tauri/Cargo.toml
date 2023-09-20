@@ -30,7 +30,7 @@ serde = { version = "1.0.188", features = ["derive"] }
 serde_json = "1.0.107"
 shadow-rs = "0.23.0"
 sqlx-core = "0.7.1"
-tauri = { version = "1.4.1", features = ["clipboard-all", "dialog-all", "path-all", "process-all", "shell-all"] }
+tauri = { version = "1.4.1", features = ["clipboard-all", "dialog-all", "path-all", "process-all", "shell-all", "devtools"] }
 thiserror = "1.0.48"
 time = { version = "0.3.28", features = ["formatting", "serde", "macros", "serde-human-readable", "local-offset"] }
 tokio = { version = "1.32.0", features = ["full"] }

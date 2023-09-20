@@ -20,8 +20,8 @@ fn main() {
     .plugin(storage::StoragePluginBuilder::new().build())
     .plugin(gacha::GachaPluginBuilder::new().build())
     .setup(|app| {
-      #[cfg(debug_assertions)]
-      {
+      let open_devtools = cfg!(debug_assertions) || std::env::var("DEVTOOLS").is_ok();
+      if open_devtools {
         use tauri::Manager;
         app.get_window("main").unwrap().open_devtools();
       }
