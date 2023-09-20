@@ -28,19 +28,19 @@
 
   * 主页
 
-  ![Home](Screenshots\home.jpg)
+  ![Home](Screenshots/home.jpg)
 
   * 原神 - Genshin Impact
 
-  ![Gacha-Genshin-1](Screenshots\gacha-genshin-1.jpg)
+  ![Gacha-Genshin-1](Screenshots/gacha-genshin-1.jpg)
 
   * 崩坏：星穹铁道 - Honkai: Star Rail
 
-  ![Gacha-StarRail-1](Screenshots\gacha-starrail-1.jpg)
+  ![Gacha-StarRail-1](Screenshots/gacha-starrail-1.jpg)
 
-  ![Gacha-StarRail-2](Screenshots\gacha-starrail-2.jpg)
+  ![Gacha-StarRail-2](Screenshots/gacha-starrail-2.jpg)
 
-  ![Gacha-StarRail-3](Screenshots\gacha-starrail-3.jpg)
+  ![Gacha-StarRail-3](Screenshots/gacha-starrail-3.jpg)
 </details>
 
 ## 下载
