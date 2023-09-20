@@ -23,12 +23,14 @@ export interface GachaItemViewProps {
 
 export default function GachaItemView (props: GachaItemViewProps) {
   const { facet, name, id, isWeapon, rank, size, usedPity, restricted, time } = props
-  // const src = getStaticResource(facet, isWeapon ? 'weapon' : 'character', id)
-  const icon = lookupAssetIcon(
-    facet,
-    isWeapon ? 'weapon' : 'character',
-    id
-  )
+
+  const category = isWeapon ? 'weapon' : 'character'
+  const icon = lookupAssetIcon(facet, category, id)
+
+  let src = icon?.[1]
+  if (!src) {
+    src = getRemoteResourceSrc(facet, category, id)
+  }
 
   const title = !time
     ? name
@@ -42,16 +44,16 @@ export default function GachaItemView (props: GachaItemViewProps) {
       data-restricted={restricted}
       title={title}
     >
-      <img src={icon?.[1]} alt={name} />
+      <img src={src} alt={name} />
       {usedPity && <Typography className={`${GachaItemViewCls}-used-pity`}>{usedPity}</Typography>}
       {restricted && <Typography className={`${GachaItemViewCls}-restricted`}>限定</Typography>}
     </Box>
   )
 }
 
-// function getStaticResource (facet: AccountFacet, namespace: string, itemIdOrName: string) {
-//   return `https://hoyo-gacha.lgou2w.com/static/${facet}/${namespace}/${itemIdOrName}.png`
-// }
+function getRemoteResourceSrc (facet: AccountFacet, category: string, itemIdOrName: string) {
+  return `https://hoyo-gacha.lgou2w.com/static/${facet}/${category}/${itemIdOrName}.png`
+}
 
 const GachaItemViewCls = 'gacha-item-view'
 const GachaItemViewSx: SxProps<Theme> = {
