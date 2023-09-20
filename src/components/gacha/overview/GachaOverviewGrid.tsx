@@ -2,6 +2,7 @@ import React from 'react'
 import { AccountFacet, resolveCurrency } from '@/interfaces/account'
 import { GachaRecords, NamedGachaRecords } from '@/hooks/useGachaRecordsQuery'
 import { useGachaLayoutContext } from '@/components/gacha/GachaLayoutContext'
+import GachaItemView from '@/components/gacha/GachaItemView'
 import { SxProps, Theme } from '@mui/material/styles'
 import Grid from '@mui/material/Grid'
 import Stack from '@mui/material/Stack'
@@ -44,7 +45,7 @@ function GachaOverviewGridCard ({ facet, value, newbie }: {
   const category = 'category' in value ? value.category : 'aggregated'
   const categoryTitle = 'categoryTitle' in value ? value.categoryTitle : '总计'
 
-  const lastGolden = golden.values[golden.values.length - 1]
+  const lastGolden: typeof golden.values[number] | undefined = golden.values[golden.values.length - 1]
   const lastGoldenName = lastGolden ? `${lastGolden.name}（${lastGolden.usedPity}）` : '无'
 
   const newbieGolden = newbie && newbie.metadata.golden.values[0]
@@ -86,6 +87,22 @@ function GachaOverviewGridCard ({ facet, value, newbie }: {
           <Chip label={`平均每金 ${golden.sumAverage * 160} ${currency}`} />
         </Stack>
       </Stack>
+      {lastGolden && !aggregated && (
+        <Box className="view">
+          <GachaItemView
+            facet={facet}
+            key={lastGolden.id}
+            name={lastGolden.name}
+            id={lastGolden.item_id || lastGolden.name}
+            isWeapon={lastGolden.item_type === '武器' || lastGolden.item_type === '光锥'}
+            rank={5}
+            size={72}
+            usedPity={lastGolden.usedPity}
+            restricted={lastGolden.restricted}
+            time={lastGolden.time}
+          />
+        </Box>
+      )}
     </Stack>
   )
 }
@@ -120,5 +137,10 @@ const GachaOverviewGridCardSx: SxProps<Theme> = {
     fontSize: '1rem',
     '& > .MuiStack-root': { flexDirection: 'row', gap: 1 },
     '& > .MuiStack-root > .MuiChip-root': { fontSize: 'inherit' }
+  },
+  '& .view': {
+    position: 'absolute',
+    bottom: '1rem',
+    right: '1rem'
   }
 }
