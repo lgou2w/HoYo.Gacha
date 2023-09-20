@@ -20,7 +20,7 @@ export default function GachaAnalysisHistory () {
         <Typography
           variant="caption"
           sx={{ borderBottom: 1, cursor: 'help' }}
-          title="光标移至物品图标上停留查看详情"
+          title="光标移至图标上停留查看详情"
         >(?)</Typography>
       </Typography>
       <Stack direction="column" spacing={2}>
