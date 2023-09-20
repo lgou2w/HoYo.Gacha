@@ -14,7 +14,15 @@ export default function GachaAnalysisSum () {
     <Box className={GachaAnalysisSumCls} sx={GachaAnalysisSumSx}>
       <Typography variant="h6" gutterBottom>❖ 数据占比</Typography>
       <Stack flexDirection="row" gap={2}>
-        <GachaAnalysisSumCol title="出货数 / 率" values={['五星', '四星', '三星', '合计']} />
+        <GachaAnalysisSumCol
+          title="出货数 / 率"
+          values={[
+            ['五星', 'warning.main'],
+            ['四星', 'secondary.main'],
+            ['三星', 'info.main'],
+            ['合计', 'grey.800']
+          ]}
+        />
         <GachaAnalysisSumCol title={character.categoryTitle} values={computeNamedGachaRecordsValues(character)} />
         <GachaAnalysisSumCol title={weapon.categoryTitle} values={computeNamedGachaRecordsValues(weapon)} />
         <GachaAnalysisSumCol title={permanent.categoryTitle} values={computeNamedGachaRecordsValues(permanent)} />
@@ -25,19 +33,21 @@ export default function GachaAnalysisSum () {
   )
 }
 
-function computeNamedGachaRecordsValues (data: NamedGachaRecords | GachaRecords['aggregatedValues']) {
+function computeNamedGachaRecordsValues (
+  data: NamedGachaRecords | GachaRecords['aggregatedValues']
+): [React.ReactNode, React.ReactNode, string][] {
   const { metadata: { golden, purple, blue }, total } = data
   return [
     [golden.sum, golden.sumPercentage + '%', 'warning.main'],
     [purple.sum, purple.sumPercentage + '%', 'secondary.main'],
     [blue.sum, blue.sumPercentage + '%', 'info.main'],
-    [total, total > 0 ? '100%' : '0%']
+    [total, total > 0 ? '100%' : '0%', 'grey.800']
   ]
 }
 
 function GachaAnalysisSumCol (props: {
   title: React.ReactNode,
-  values: [React.ReactNode, React.ReactNode, string?][] | React.ReactNode[]
+  values: [React.ReactNode, React.ReactNode, string][] | [React.ReactNode, string][]
 }) {
   const { title, values } = props
   return (
@@ -50,7 +60,7 @@ function GachaAnalysisSumCol (props: {
         {title}
       </Typography>
       {values.map((value, index) => (
-        Array.isArray(value)
+        value.length > 2
           ? <Box
               key={index}
               textAlign="center"
@@ -64,7 +74,8 @@ function GachaAnalysisSumCol (props: {
               key={index}
               textAlign="center"
               bgcolor="grey.100"
-            >{value}</Typography>
+              color={value[1] as string}
+            >{value[0]}</Typography>
       ))}
     </Stack>
   )
