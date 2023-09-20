@@ -22,6 +22,27 @@
 - [x] 实现 [`SRGF`](https://uigf.org/zh/standards/SRGF.html) 星穹铁道抽卡记录标准。
 - [ ] 更多开发中...
 
+<details>
+  <summary>软件截图</summary>
+  <br />
+
+  * 主页
+
+  ![Home](Screenshots\home.jpg)
+
+  * 原神 - Genshin Impact
+
+  ![Gacha-Genshin-1](Screenshots\gacha-genshin-1.jpg)
+
+  * 崩坏：星穹铁道 - Honkai: Star Rail
+
+  ![Gacha-StarRail-1](Screenshots\gacha-starrail-1.jpg)
+
+  ![Gacha-StarRail-2](Screenshots\gacha-starrail-2.jpg)
+
+  ![Gacha-StarRail-3](Screenshots\gacha-starrail-3.jpg)
+</details>
+
 ## 下载
 
 * 请在此仓库 [Releases](https://github.com/lgou2w/HoYo.Gacha/releases) 下载最新版。
