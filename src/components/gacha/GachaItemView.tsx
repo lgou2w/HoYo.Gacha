@@ -7,6 +7,7 @@ import GenshinUIRarity3Background from '@/assets/images/genshin/UI_Rarity_3_Back
 import GenshinUIRarity4Background from '@/assets/images/genshin/UI_Rarity_4_Background.png'
 import GenshinUIRarity5Background from '@/assets/images/genshin/UI_Rarity_5_Background.png'
 import { lookupAssetIcon } from './icons'
+import dayjs from '@/utilities/dayjs'
 
 export interface GachaItemViewProps {
   facet: AccountFacet
@@ -17,10 +18,11 @@ export interface GachaItemViewProps {
   size: number
   usedPity?: number
   restricted?: boolean
+  time?: string | Date
 }
 
 export default function GachaItemView (props: GachaItemViewProps) {
-  const { facet, name, id, isWeapon, rank, size, usedPity, restricted } = props
+  const { facet, name, id, isWeapon, rank, size, usedPity, restricted, time } = props
   // const src = getStaticResource(facet, isWeapon ? 'weapon' : 'character', id)
   const icon = lookupAssetIcon(
     facet,
@@ -28,13 +30,17 @@ export default function GachaItemView (props: GachaItemViewProps) {
     id
   )
 
+  const title = !time
+    ? name
+    : name + '\n' + dayjs(time).format('LLLL')
+
   return (
     <Box className={GachaItemViewCls} sx={GachaItemViewSx}
       width={size} height={size}
       data-facet={facet}
       data-rank={rank}
       data-restricted={restricted}
-      title={name}
+      title={title}
     >
       <img src={icon?.[1]} alt={name} />
       {usedPity && <Typography className={`${GachaItemViewCls}-used-pity`}>{usedPity}</Typography>}

@@ -15,7 +15,14 @@ export default function GachaAnalysisHistory () {
 
   return (
     <Box>
-      <Typography variant="h6" gutterBottom>❖ 五星历史</Typography>
+      <Typography variant="h6" gutterBottom>
+        {'❖ 五星历史 '}
+        <Typography
+          variant="caption"
+          sx={{ borderBottom: 1, cursor: 'help' }}
+          title="光标移至物品图标上停留查看详情"
+        >(?)</Typography>
+      </Typography>
       <Stack direction="column" spacing={2}>
         <GachaAnalysisHistoryList facet={facet} value={character} />
         <GachaAnalysisHistoryList facet={facet} value={weapon} />
@@ -58,6 +65,7 @@ function GachaAnalysisHistoryList ({ facet, value }: {
             size={GachaAnalysisHistoryItemViewSize}
             usedPity={item.usedPity}
             restricted={item.restricted}
+            time={item.time}
           />
         ))}
       </Stack>
