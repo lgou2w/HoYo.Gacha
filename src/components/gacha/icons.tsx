@@ -63,6 +63,8 @@ import GenshinWeapon14506 from '@/assets/images/genshin/weapon/14506.png'
 import GenshinWeapon14509 from '@/assets/images/genshin/weapon/14509.png'
 import GenshinWeapon14511 from '@/assets/images/genshin/weapon/14511.png'
 import GenshinWeapon14512 from '@/assets/images/genshin/weapon/14512.png'
+import GenshinWeapon14513 from '@/assets/images/genshin/weapon/14513.png'
+import GenshinWeapon14514 from '@/assets/images/genshin/weapon/14514.png'
 import GenshinWeapon15501 from '@/assets/images/genshin/weapon/15501.png'
 import GenshinWeapon15502 from '@/assets/images/genshin/weapon/15502.png'
 import GenshinWeapon15503 from '@/assets/images/genshin/weapon/15503.png'
@@ -173,6 +175,8 @@ const Genshin = {
     神乐之真意: [14509, GenshinWeapon14509],
     千夜浮梦: [14511, GenshinWeapon14511],
     图莱杜拉的回忆: [14512, GenshinWeapon14512],
+    金流监督: [14513, GenshinWeapon14513],
+    万世流涌大典: [14514, GenshinWeapon14514],
     天空之翼: [15501, GenshinWeapon15501],
     阿莫斯之弓: [15502, GenshinWeapon15502],
     终末嗟叹之诗: [15503, GenshinWeapon15503],
