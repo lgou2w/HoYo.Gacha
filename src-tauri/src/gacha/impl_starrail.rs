@@ -54,7 +54,7 @@ impl GachaUrlFinder for StarRailGacha {
   fn find_gacha_urls<P: AsRef<Path>>(&self, game_data_dir: P) -> Result<Vec<GachaUrl>> {
     // See: https://github.com/lgou2w/HoYo.Gacha/issues/10
     let cache_data_dir = lookup_valid_cache_data_dir(game_data_dir)?;
-    lookup_gacha_urls_from_endpoint(cache_data_dir, ENDPOINT)
+    lookup_gacha_urls_from_endpoint(cache_data_dir, ENDPOINT, true)
   }
 }
 
