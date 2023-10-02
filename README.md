@@ -49,6 +49,12 @@
 
 * 或可以从镜像 [Release latest](https://hoyo-gacha.lgou2w.com/release/download?id=latest) 下载最新版。<sub>Powered by [Deno Deploy](https://deno.com/deploy).</sub>
 
+### 注意事项
+
+* 程序会在 `运行目录` 自动创建名为 `HoYo.Gacha.db` 的数据库文件。此文件中包含了 `您的所有本地账号` 和 `全部的抽卡记录` 数据。
+
+* 请确保在 `移动程序本体文件` 或 `迁移操作系统` 时不要遗漏此数据库文件！
+
 ## 硬盘缓存
 
 **关于从 `Chromium Disk Cache` 硬盘缓存获取抽卡链接的实现原理请参考：[硬盘缓存](DiskCache/README.md)**
