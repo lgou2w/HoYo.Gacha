@@ -86,7 +86,7 @@ export default function GachaChartCalendar () {
           margin={{ top: 32, right: 64, bottom: 0, left: 16 }}
           weekdayTicks={[0, 2, 4, 6]}
           weekdayLegendOffset={64}
-          firstWeekday="monday"
+          firstWeekday="sunday"
           monthLegendPosition="before"
           monthLegendOffset={12}
           monthLegend={(_year, _month, date) => {

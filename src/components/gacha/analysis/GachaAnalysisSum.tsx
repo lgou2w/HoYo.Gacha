@@ -26,7 +26,7 @@ export default function GachaAnalysisSum () {
         <GachaAnalysisSumCol title={character.categoryTitle} values={computeNamedGachaRecordsValues(character)} />
         <GachaAnalysisSumCol title={weapon.categoryTitle} values={computeNamedGachaRecordsValues(weapon)} />
         <GachaAnalysisSumCol title={permanent.categoryTitle} values={computeNamedGachaRecordsValues(permanent)} />
-        <GachaAnalysisSumCol title={newbie.categoryTitle} values={computeNamedGachaRecordsValues(newbie)} />
+        {newbie.total > 0 && <GachaAnalysisSumCol title={newbie.categoryTitle} values={computeNamedGachaRecordsValues(newbie)} />}
         <GachaAnalysisSumCol title="合计" values={computeNamedGachaRecordsValues(aggregatedValues)} />
       </Stack>
     </Box>

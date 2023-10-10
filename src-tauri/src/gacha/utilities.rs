@@ -166,6 +166,7 @@ pub(super) fn lookup_valid_cache_data_dir<P: AsRef<Path>>(game_data_dir: P) -> R
 pub(super) fn lookup_gacha_urls_from_endpoint<P: AsRef<Path>>(
   cache_data_dir: P,
   endpoint: &str,
+  skip_expired: bool,
 ) -> Result<Vec<GachaUrl>> {
   let cache_data_dir = cache_data_dir.as_ref();
 
@@ -176,6 +177,7 @@ pub(super) fn lookup_gacha_urls_from_endpoint<P: AsRef<Path>>(
 
   let mut result = Vec::new();
   let current_local_offset = UtcOffset::current_local_offset().map_err(time::Error::from)?;
+  let now = OffsetDateTime::now_utc().to_offset(current_local_offset);
 
   // Foreach the cache address table of the index file
   for addr in index_file.table {
@@ -196,12 +198,12 @@ pub(super) fn lookup_gacha_urls_from_endpoint<P: AsRef<Path>>(
       continue;
     }
 
-    let mut url = url.to_string();
-
     // These url start with '1/0/', only get the later part
-    if url.starts_with("1/0/") {
-      url = url[4..].to_string();
-    }
+    let url = if url.starts_with("1/0/") {
+      url[4..].to_string()
+    } else {
+      url.to_string()
+    };
 
     // Convert creation time
     let creation_time = {
@@ -210,6 +212,11 @@ pub(super) fn lookup_gacha_urls_from_endpoint<P: AsRef<Path>>(
         OffsetDateTime::from_unix_timestamp(timestamp).map_err(time::Error::from)?;
       offset_datetime.to_offset(current_local_offset)
     };
+
+    // HACK: By default, this gacha url is valid for 1 day.
+    if skip_expired && creation_time + time::Duration::DAY < now {
+      continue; // It's expired
+    }
 
     result.push(GachaUrl {
       addr: addr.into(),
