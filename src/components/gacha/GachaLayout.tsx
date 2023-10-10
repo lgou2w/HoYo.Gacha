@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useRef } from 'react'
 import { useImmer } from 'use-immer'
 import { useStatefulAccountContext } from '@/hooks/useStatefulAccount'
 import { useGachaRecordsQuery } from '@/hooks/useGachaRecordsQuery'
@@ -27,6 +27,18 @@ export default function GachaLayout () {
       message: string
     } | undefined
   })
+
+  // HACK: Clear alert if switching to another account
+  const selectedAccountUidRef = useRef(selectedAccountUid)
+  useEffect(() => {
+    if (selectedAccountUidRef.current !== selectedAccountUid) {
+      produceState((prev) => {
+        prev.alert = undefined
+      })
+    }
+
+    selectedAccountUidRef.current = selectedAccountUid
+  }, [selectedAccountUid])
 
   // Check selected account
   const selectedAccount = selectedAccountUid ? accounts[selectedAccountUid] : null
