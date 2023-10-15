@@ -90,17 +90,24 @@ impl BlockFile {
     }
 
     if !addr.is_block_file() {
-      Err(Error::new(
+      return Err(Error::new(
         ErrorKind::InvalidInput,
         "Address is not block file",
-      ))
-    } else {
-      let block_size = addr.block_size();
-      let num_blocks = addr.num_blocks();
-      let offset = (addr.start_block() * block_size) as usize;
-      let length = (block_size * num_blocks) as usize;
-      let data = &self.data[offset..(offset + length)];
-      Ok(data)
+      ));
     }
+
+    if addr.file_number() != self.header.this_file as u32 {
+      return Err(Error::new(
+        ErrorKind::InvalidInput,
+        format!("File number of the address does not match the current block file. (Expected: {}, Actual: {})", self.header.this_file, addr.file_number()),
+      ));
+    }
+
+    let block_size = addr.block_size();
+    let num_blocks = addr.num_blocks();
+    let offset = (addr.start_block() * block_size) as usize;
+    let length = (block_size * num_blocks) as usize;
+    let data = &self.data[offset..(offset + length)];
+    Ok(data)
   }
 }

@@ -110,18 +110,18 @@ impl EntryStore {
       ));
     }
 
-    if block_file.header.this_file != 2 {
-      Err(Error::new(
-        ErrorKind::Unsupported,
-        format!(
-          "Long key is only in data_2 block file. (Current file: {}, Expected: 2)",
-          block_file.header.this_file
-        ),
-      ))
-    } else {
-      let long_key_data = block_file.read_data(&self.long_key)?;
-      let data = &long_key_data[0..self.key_len as usize];
-      Ok(String::from_utf8_lossy(data))
-    }
+    // if block_file.header.this_file != 2 {
+    //   Err(Error::new(
+    //     ErrorKind::Unsupported,
+    //     format!(
+    //       "Long key is only in data_2 block file. (Current file: {}, Expected: 2)",
+    //       block_file.header.this_file
+    //     ),
+    //   ))
+    // } else {
+    let long_key_data = block_file.read_data(&self.long_key)?;
+    let data = &long_key_data[0..self.key_len as usize];
+    Ok(String::from_utf8_lossy(data))
+    // }
   }
 }

@@ -190,6 +190,12 @@ pub(super) fn lookup_gacha_urls_from_endpoint<P: AsRef<Path>>(
       continue;
     }
 
+    // Maybe the long key points to data_3 or something else
+    // SEE: https://github.com/lgou2w/HoYo.Gacha/issues/15
+    if entry.long_key.file_number() != block_file2.header.this_file as u32 {
+      continue;
+    }
+
     // Read the long url of entry store from the data_2 block file
     let url = entry.read_long_url(&block_file2)?;
 
