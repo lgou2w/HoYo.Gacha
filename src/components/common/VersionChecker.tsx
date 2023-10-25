@@ -69,7 +69,7 @@ export default function VersionChecker () {
 
 function isNeedUpdate (
   version: CurrentVersion,
-  latestVersion: LatestVersion | null
+  latestVersion: LatestVersion | null | undefined
 ): boolean {
   if (!latestVersion) return false
 

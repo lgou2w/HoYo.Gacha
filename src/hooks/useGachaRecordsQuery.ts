@@ -73,7 +73,7 @@ function createQuery (
     queryKey: [QueryPrefix, facet, uid],
     queryFn: gachaRecordsQueryFn,
     staleTime: Infinity
-    // cacheTime: Infinity // TODO: GachaRecords infinity cache time?
+    // gcTime: Infinity // TODO: GachaRecords infinity gc time?
   }
 }
 
