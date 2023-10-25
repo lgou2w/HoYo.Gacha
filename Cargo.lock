@@ -1385,7 +1385,7 @@ dependencies = [
  "byteorder",
  "form_urlencoded",
  "futures",
- "lazy_static",
+ "once_cell",
  "paste",
  "reqwest",
  "sea-orm",

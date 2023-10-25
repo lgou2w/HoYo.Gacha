@@ -1,7 +1,7 @@
 use crate::constants::{ID, VERSION};
 use crate::error::{Error, Result};
 use crate::gacha::GenshinGachaRecord;
-use lazy_static::lazy_static;
+use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::io::{Read, Write};
@@ -82,25 +82,23 @@ impl UIGF {
 
 // Convert
 
-lazy_static! {
-  /*
-   * Gacha Type (Official) | Gacha Type (UIGF)
-   *       100             |       100
-   *       200             |       200
-   *       301             |       301
-   *       400             |       301
-   *       302             |       302
-   */
-  pub static ref GACHA_TYPE_UIGF_MAPPINGS: HashMap<String, String> = {
-    let mut m = HashMap::with_capacity(5);
-    m.insert(String::from("100"), String::from("100"));
-    m.insert(String::from("200"), String::from("200"));
-    m.insert(String::from("301"), String::from("301"));
-    m.insert(String::from("400"), String::from("301")); // 400 -> 301
-    m.insert(String::from("302"), String::from("302"));
-    m
-  };
-}
+/*
+ * Gacha Type (Official) | Gacha Type (UIGF)
+ *       100             |       100
+ *       200             |       200
+ *       301             |       301
+ *       400             |       301
+ *       302             |       302
+ */
+pub static GACHA_TYPE_UIGF_MAPPINGS: Lazy<HashMap<&str, &str>> = Lazy::new(|| {
+  let mut m = HashMap::with_capacity(5);
+  m.insert("100", "100");
+  m.insert("200", "200");
+  m.insert("301", "301");
+  m.insert("400", "301"); // 400 -> 301
+  m.insert("302", "302");
+  m
+});
 
 // UIGF -> Official GenshinGachaRecord
 impl TryFrom<&UIGFListItem> for GenshinGachaRecord {
@@ -141,7 +139,7 @@ impl TryFrom<&GenshinGachaRecord> for UIGFListItem {
 
   fn try_from(value: &GenshinGachaRecord) -> std::result::Result<Self, Self::Error> {
     let uigf_gacha_type = GACHA_TYPE_UIGF_MAPPINGS
-      .get(&value.gacha_type)
+      .get(value.gacha_type.as_str())
       .ok_or_else(|| Error::UIGFOrSRGFInvalidField(format!("gacha_type={}", value.gacha_type)))?;
 
     Ok(Self {
@@ -155,7 +153,7 @@ impl TryFrom<&GenshinGachaRecord> for UIGFListItem {
       lang: Some(value.lang.clone()),
       item_type: value.item_type.clone(),
       rank_type: Some(value.rank_type.clone()),
-      uigf_gacha_type: uigf_gacha_type.to_owned(),
+      uigf_gacha_type: uigf_gacha_type.to_string(),
     })
   }
 }
@@ -165,7 +163,7 @@ pub fn convert_uigf_to_offical(uigf: &mut UIGF) -> Result<Vec<GenshinGachaRecord
   let owned_lang = &uigf.info.lang;
 
   let mut result: Vec<GenshinGachaRecord> = Vec::with_capacity(uigf.list.len());
-  for item in uigf.list.iter_mut() {
+  for item in &mut uigf.list {
     if item.uid.is_none() {
       item.uid.replace(owned_uid.clone());
     }
@@ -182,7 +180,7 @@ pub fn convert_uigf_to_offical(uigf: &mut UIGF) -> Result<Vec<GenshinGachaRecord
 
 pub fn convert_offical_to_uigf(records: &[GenshinGachaRecord]) -> Result<UIGFList> {
   let mut result: UIGFList = Vec::with_capacity(records.len());
-  for record in records.iter() {
+  for record in records {
     let item = UIGFListItem::try_from(record)?;
     result.push(item);
   }

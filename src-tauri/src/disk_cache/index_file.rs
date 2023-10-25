@@ -39,7 +39,7 @@ pub struct IndexFileHeader {
   pub crash: i32,
   pub experiment: i32,
   pub create_time: u64,
-  pub pad: Box<[i32; 52]>,
+  pub pad: [i32; 52],
   pub lru: LruData,
 }
 
@@ -90,8 +90,8 @@ impl IndexFileHeader {
     let crash = reader.read_i32::<LittleEndian>()?;
     let experiment = reader.read_i32::<LittleEndian>()?;
     let create_time = reader.read_u64::<LittleEndian>()?;
-    let mut pad = Box::new([0; 52]);
-    reader.read_i32_into::<LittleEndian>(&mut *pad)?;
+    let mut pad = [0; 52];
+    reader.read_i32_into::<LittleEndian>(&mut pad)?;
     let lru = LruData::from_reader(reader)?;
 
     Ok(Self {

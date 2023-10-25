@@ -128,7 +128,7 @@ pub fn convert_srgf_to_offical(srgf: &mut SRGF) -> Result<Vec<StarRailGachaRecor
   let owned_lang = &srgf.info.lang;
 
   let mut result: Vec<StarRailGachaRecord> = Vec::with_capacity(srgf.list.len());
-  for item in srgf.list.iter_mut() {
+  for item in &mut srgf.list {
     let record = StarRailGachaRecord::try_from(&*item, owned_uid, owned_lang)?;
     result.push(record);
   }
@@ -138,7 +138,7 @@ pub fn convert_srgf_to_offical(srgf: &mut SRGF) -> Result<Vec<StarRailGachaRecor
 
 pub fn convert_offical_to_srgf(records: &[StarRailGachaRecord]) -> Result<SRGFList> {
   let mut result: SRGFList = Vec::with_capacity(records.len());
-  for record in records.iter() {
+  for record in records {
     let item = SRGFListItem::try_from(record)?;
     result.push(item);
   }

@@ -1,5 +1,5 @@
 use byteorder::{ByteOrder, ReadBytesExt};
-use lazy_static::lazy_static;
+use once_cell::sync::Lazy;
 use serde::ser::{Serialize, Serializer};
 use std::cmp::Ordering;
 use std::collections::HashMap;
@@ -15,19 +15,17 @@ const ADDR_FILE_SELECTOR_OFFSET: u32 = 16;
 const ADDR_START_BLOCK_MASK: u32 = 0x0000FFFF;
 const ADDR_FILE_NAME_MASK: u32 = 0x0FFFFFFF;
 
-lazy_static! {
-  static ref FILE_BLOCK_SIZE_MAPPINGS: HashMap<u32, u32> = {
-    let mut m = HashMap::new();
-    m.insert(1, 36);   // Rankings
-    m.insert(2, 256);  // Block 256
-    m.insert(3, 1024); // Block 1K
-    m.insert(4, 4096); // Block 4K
-    m.insert(5, 8);    // Block Files
-    m.insert(6, 104);  // Block Entries
-    m.insert(7, 48);   // Block Evicted
-    m
-  };
-}
+static FILE_BLOCK_SIZE_MAPPINGS: Lazy<HashMap<u32, u32>> = Lazy::new(|| {
+  let mut m = HashMap::new();
+  m.insert(1, 36); // Rankings
+  m.insert(2, 256); // Block 256
+  m.insert(3, 1024); // Block 1K
+  m.insert(4, 4096); // Block 4K
+  m.insert(5, 8); // Block Files
+  m.insert(6, 104); // Block Entries
+  m.insert(7, 48); // Block Evicted
+  m
+});
 
 #[derive(Debug, Clone)]
 pub struct CacheAddr(u32);
