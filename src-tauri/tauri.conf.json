@@ -1,22 +1,28 @@
 {
+  "$schema": "https://esm.sh/@tauri-apps/cli/schema.json",
   "build": {
-    "beforeDevCommand": "pnpm dev",
     "beforeBuildCommand": "pnpm build",
+    "beforeDevCommand": "pnpm dev",
     "devPath": "http://localhost:1420",
     "distDir": "../dist"
   },
   "package": {
     "productName": "HoYo_Gacha",
-    "version": "0.3.6"
+    "version": "1.0.0"
   },
   "tauri": {
     "allowlist": {
       "all": false,
-      "clipboard": { "all": true },
-      "dialog": { "all": true },
-      "path": { "all": true },
-      "process": { "all": true },
-      "shell": { "all": true }
+      "os": { "all": true },
+      "window": {
+        "all": false,
+        "close": true,
+        "maximize": true,
+        "minimize": true,
+        "unmaximize": true,
+        "unminimize": true,
+        "startDragging": true
+      }
     },
     "bundle": {
       "active": true,
@@ -64,10 +70,11 @@
       {
         "fullscreen": false,
         "height": 864,
-        "resizable": true,
+        "resizable": false,
         "center": true,
         "title": "HoYo.Gacha",
-        "width": 1152
+        "width": 1152,
+        "decorations": false
       }
     ]
   }
