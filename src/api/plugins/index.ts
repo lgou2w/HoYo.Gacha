@@ -13,9 +13,9 @@ function resolveCommand (pluginName: string, command: string): string {
 
 export type Command<Payload = void, Result = void> =
   Payload extends void
-    ? () => Promise<Result>
+    ? () => Result extends Promise<unknown> ? Result : Promise<Result>
     : Payload extends object
-      ? (payload: Payload) => Promise<Result>
+      ? (payload: Payload) => Result extends Promise<unknown> ? Result : Promise<Result>
       : never
 
 export function defineCommand<
