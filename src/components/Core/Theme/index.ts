@@ -1,7 +1,5 @@
-import React, { PropsWithChildren } from 'react'
 import {
   BrandVariants,
-  FluentProvider,
   Theme,
   createDarkTheme,
   createLightTheme,
@@ -118,44 +116,4 @@ export const Themes = {
   })
 }
 
-export type KnownedThemeSpaces = keyof typeof Themes
-
-interface Props {
-  space?: KnownedThemeSpaces
-  color?: ThemeColor
-}
-
-const DefaultThemeSpace: KnownedThemeSpaces = 'web'
-const DefaultColor: ThemeColor = 'light'
-
-function lookupThemeSpaces (space?: KnownedThemeSpaces) {
-  space ||= DefaultThemeSpace
-
-  const theme: Record<ThemeColor, Theme> | undefined = Themes[space]
-  if (!theme) {
-    throw new Error(`Unknown theme space value: ${space}`)
-  }
-
-  return theme
-}
-
-export default function Theme (props: PropsWithChildren<Props>) {
-  const {
-    space = DefaultThemeSpace,
-    color = DefaultColor,
-    children
-  } = props
-
-  const themeSpaces = lookupThemeSpaces(space)
-  const theme = themeSpaces[color]
-
-  if (import.meta.env.DEV) {
-    console.debug(`Use theme space '${space}' and color '${color}'`)
-  }
-
-  return (
-    <FluentProvider theme={theme}>
-      {children}
-    </FluentProvider>
-  )
-}
+export type KnownThemeSpaces = keyof typeof Themes

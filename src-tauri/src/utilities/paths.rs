@@ -2,14 +2,14 @@ use std::env::var;
 use std::path::PathBuf;
 
 macro_rules! user_dirs {
-  ($($os:literal -> $home:literal = { $($fn:ident => $inner:literal),* }),*) => {
+  ($($os:literal -> $home:literal { $($fn:ident => $inner:literal),* }),*) => {
     $(
       #[allow(unused)]
       #[cfg(target_os = $os)]
       pub fn home() -> PathBuf {
         var($home)
           .map(PathBuf::from)
-          .expect(&format!("Failed to get environment variable {}", $home))
+          .unwrap_or_else(|e| panic!("Failed to get environment variable: {}", $home))
       }
 
       $(
@@ -24,13 +24,13 @@ macro_rules! user_dirs {
 }
 
 user_dirs!(
-  "windows" -> "USERPROFILE" = {
+  "windows" -> "USERPROFILE" {
     appdata           => "AppData",
     appdata_local     => r"AppData\Local",
     appdata_local_low => r"AppData\LocalLow",
     appdata_roaming   => r"AppData\Roaming"
   },
-  "macos" -> "HOME" = {
+  "macos" -> "HOME" {
     appdata           => "Library",
     appdata_local     => "Library/Caches",
     appdata_local_low => "Library/Caches",

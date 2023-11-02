@@ -21,7 +21,7 @@ mod database;
 mod error;
 mod utilities;
 
-use crate::database::Database;
+use crate::database::{Database, DatabasePluginBuilder};
 use crate::utilities::paths::appdata_roaming;
 
 fn welcome() {
@@ -42,7 +42,7 @@ fn welcome() {
   )
 }
 
-fn initial_tracing() -> Result<Option<WorkerGuard>, Box<dyn Error>> {
+fn initialize_tracing() -> Result<Option<WorkerGuard>, Box<dyn Error>> {
   let filter = EnvFilter::builder()
     .from_env_lossy()
     .add_directive("hyper::proto=error".parse()?)
@@ -84,7 +84,7 @@ fn initial_tracing() -> Result<Option<WorkerGuard>, Box<dyn Error>> {
       .join(constants::ID)
       .join(constants::LOGS_DIRECTORY);
     if !logs_dir.exists() {
-      create_dir_all(&logs_dir).expect("Failed to create logs directory");
+      create_dir_all(&logs_dir).unwrap_or_else(|e| panic!("Failed to create logs directory: {e}"));
     }
 
     let file_appender =
@@ -101,7 +101,7 @@ fn initial_tracing() -> Result<Option<WorkerGuard>, Box<dyn Error>> {
   Ok(appender_guard)
 }
 
-async fn database() -> Database {
+async fn initialize_database() -> Result<Database, Box<dyn Error>> {
   // Database storage directory
   //   In debug mode  : is in the src-tauri directory
   //   In release mode: is in the appdata_roaming/{ID}
@@ -112,23 +112,18 @@ async fn database() -> Database {
   } else {
     let app_dir = appdata_roaming().join(constants::ID);
     if !app_dir.exists() {
-      create_dir(&app_dir).expect("Failed to create app directory");
+      create_dir(&app_dir).unwrap_or_else(|e| panic!("Failed to create app directory: {e}"));
     }
     app_dir.join(constants::DATABASE)
   };
 
-  debug!("Connect to the database: {:?}", db_file);
-  let database = Database::from_file(db_file)
-    .await
-    .unwrap_or_else(|e| panic!("Failed to connect to database: {}", e));
+  debug!("Connect to the database: {db_file:?}");
+  let database = Database::from_file(db_file).await?;
 
-  // Initialize entities
-  database
-    .initialize_entities(&[database::AccountQuestioner])
-    .await
-    .expect("Failed to initialize entities");
+  // Wait to initialize database
+  database.initialize().await?;
 
-  database
+  Ok(database)
 }
 
 async fn start(database: Arc<Database>) {
@@ -137,6 +132,7 @@ async fn start(database: Arc<Database>) {
 
   info!("Starting Tauri application...");
   let mut app = tauri::Builder::default()
+    .plugin(DatabasePluginBuilder::new(database).build())
     .setup(|app| {
       use tauri::Manager;
       let window = app.get_window("main").unwrap();
@@ -153,7 +149,7 @@ async fn start(database: Arc<Database>) {
       Ok(())
     })
     .build(tauri::generate_context!())
-    .expect("error while running Tauri application");
+    .unwrap_or_else(|e| panic!("error while running Tauri application: {e}"));
 
   info!("Waiting for the Tauri event loop...");
   loop {
@@ -171,7 +167,8 @@ async fn main() {
   welcome();
 
   // Initialize Tracing and appender
-  let appender_guard = initial_tracing().expect("Failed to initialize Tracing");
+  let appender_guard =
+    initialize_tracing().unwrap_or_else(|e| panic!("Failed to initialize Tracing: {e}"));
   info!("Tracing initialized");
 
   // App env
@@ -186,7 +183,11 @@ async fn main() {
   );
 
   // Connect database
-  let database = database().await;
+  let database = initialize_database()
+    .await
+    .unwrap_or_else(|e| panic!("Failed to initialize database: {e}"));
+  info!("Database initialized");
+
   let database = Arc::new(database);
 
   // Start tauri and wait exit

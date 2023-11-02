@@ -4,8 +4,68 @@ use serde::de::DeserializeOwned;
 use serde::Serialize;
 use sqlx::query::{Query as SqlxQuery, QueryAs as SqlxQueryAs};
 use sqlx::sqlite::{Sqlite, SqliteArguments, SqliteConnectOptions, SqlitePool};
-use sqlx::Result;
 use tracing::debug;
+
+// Error
+
+#[derive(Debug, thiserror::Error)]
+#[error(transparent)]
+pub struct DatabaseError(#[from] pub sqlx::Error);
+
+/// Database
+
+pub struct Database(SqlitePool);
+
+impl Database {
+  pub async fn from_file(filename: impl AsRef<Path>) -> Result<Database, DatabaseError> {
+    let options = SqliteConnectOptions::new()
+      .filename(filename)
+      .create_if_missing(true)
+      .read_only(false)
+      .immutable(false)
+      .shared_cache(false);
+    // TODO: Sqlite Journal Mode
+    // .journal_mode(SqliteJournalMode::Off);
+
+    let pool = SqlitePool::connect_with(options).await?;
+    Ok(Self(pool))
+  }
+}
+
+impl Database {
+  #[inline]
+  pub fn executor(&self) -> &SqlitePool {
+    &self.0
+  }
+
+  pub async fn close(&self) {
+    debug!("Closing database...");
+    self.0.close().await;
+  }
+
+  pub async fn initialize(&self) -> Result<(), DatabaseError> {
+    debug!("Initializing database...");
+    self
+      .initialize_entities(&[super::AccountQuestioner])
+      .await?;
+
+    Ok(())
+  }
+
+  async fn initialize_entities(
+    &self,
+    questioners: &[impl Questioner],
+  ) -> Result<(), DatabaseError> {
+    debug!("Starting initialize entities...");
+    for questioner in questioners {
+      debug!("Initializing entity: {}", questioner.entity_name());
+      questioner.sql_initialize().execute(&self.0).await?;
+    }
+    Ok(())
+  }
+}
+
+// Questioner and Entity generate
 
 pub type Query = SqlxQuery<'static, Sqlite, SqliteArguments<'static>>;
 pub type QueryAs<T> = SqlxQueryAs<'static, Sqlite, T, SqliteArguments<'static>>;
@@ -86,45 +146,4 @@ macro_rules! generate_entity {
       }
     }
   };
-}
-
-/// Database
-
-pub struct Database(SqlitePool);
-
-impl Database {
-  pub async fn from_file(filename: impl AsRef<Path>) -> Result<Database> {
-    let options = SqliteConnectOptions::new()
-      .filename(filename)
-      .create_if_missing(true)
-      .read_only(false)
-      .immutable(false)
-      .shared_cache(false);
-    // TODO: Sqlite Journal Mode
-    // .journal_mode(SqliteJournalMode::Off);
-
-    let pool = SqlitePool::connect_with(options).await?;
-    Ok(Self(pool))
-  }
-}
-
-impl Database {
-  #[inline]
-  pub fn executor(&self) -> &SqlitePool {
-    &self.0
-  }
-
-  pub async fn initialize_entities(&self, questioners: &[impl Questioner]) -> Result<()> {
-    debug!("Starting initialize entities...");
-    for questioner in questioners {
-      debug!("Initializing entity: {}", questioner.entity_name());
-      questioner.sql_initialize().execute(&self.0).await?;
-    }
-    Ok(())
-  }
-
-  pub async fn close(&self) {
-    debug!("Closing database...");
-    self.0.close().await;
-  }
 }

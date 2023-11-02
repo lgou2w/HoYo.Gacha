@@ -5,7 +5,8 @@ import App from './App'
 ReactDOM
   .createRoot(document.getElementById('root')!)
   .render(
-    <React.StrictMode>
-        <App />
-    </React.StrictMode>
+    // FIXME: Strict mode
+    // <React.StrictMode>
+      <App />
+    // </React.StrictMode>
   )
