@@ -9,7 +9,7 @@ macro_rules! user_dirs {
       pub fn home() -> PathBuf {
         var($home)
           .map(PathBuf::from)
-          .unwrap_or_else(|e| panic!("Failed to get environment variable: {}", $home))
+          .unwrap_or_else(|e| panic!("Failed to get environment variable '{}': {e}", $home))
       }
 
       $(
