@@ -25,14 +25,14 @@ function bind<Payload = void, Result = void> (command: Command) {
 export type AccountFacet = 0 | 1
 
 export interface Account {
-  readonly id: number
-  readonly facet: AccountFacet
-  readonly uid: number
-  readonly gameDataDir: string
-  readonly gachaUrl: string | null
-  readonly gachaUrlUpdatedAt: string | null
-  readonly properties: Record<string, unknown> | null
-  readonly createdAt: string
+  id: number
+  facet: AccountFacet
+  uid: number
+  gameDataDir: string
+  gachaUrl: string | null
+  gachaUrlUpdatedAt: string | null
+  properties: Record<string, unknown> | null
+  createdAt: string
 }
 
 // Plugin
@@ -45,9 +45,9 @@ const Plugin = {
   findAccountByFacetAndUid: bind<Pick<Account, 'facet' | 'uid'>, Account | null>('find_account_by_facet_and_uid'),
   createAccount: bind<Pick<Account, 'facet' | 'uid' | 'gameDataDir'>, Account>('create_account'),
   deleteAccount: bind<Pick<Account, 'id'>, Account | null>('delete_account'),
-  updateAccountGameDataDir: bind<Pick<Account, 'id' | 'gameDataDir'>, Account | null>('update_account_game_data_dir'),
-  updateAccountGachaUrl: bind<Pick<Account, 'id' | 'gachaUrl' | 'gachaUrlUpdatedAt'>, Account | null>('update_account_gacha_url'),
-  updateAccountProperties: bind<Pick<Account, 'id' | 'properties'>, Account | null>('update_account_properties')
+  updateAccountGameDataDir: bind<Pick<Account, 'gameDataDir' | 'id'>, Account | null>('update_account_game_data_dir'),
+  updateAccountGachaUrl: bind<Pick<Account, 'gachaUrl' | 'gachaUrlUpdatedAt' | 'id'>, Account | null>('update_account_gacha_url'),
+  updateAccountProperties: bind<Pick<Account, 'properties' | 'id'>, Account | null>('update_account_properties')
 } as const
 
 export default Plugin
