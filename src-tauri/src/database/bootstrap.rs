@@ -4,7 +4,7 @@ use serde::de::DeserializeOwned;
 use serde::Serialize;
 use sqlx::query::{Query as SqlxQuery, QueryAs as SqlxQueryAs};
 use sqlx::sqlite::{Sqlite, SqliteArguments, SqliteConnectOptions, SqlitePool};
-use tracing::debug;
+use tracing::info;
 
 // Error
 
@@ -39,28 +39,25 @@ impl Database {
   }
 
   pub async fn close(&self) {
-    debug!("Closing database...");
+    info!("Closing database...");
     self.0.close().await;
   }
 
   pub async fn initialize(&self) -> Result<(), DatabaseError> {
-    debug!("Initializing database...");
-    self
-      .initialize_entities(&[super::AccountQuestioner])
-      .await?;
+    info!("Initializing database...");
+
+    {
+      info!("Starting initialize entities...");
+      self.initialize_entity(super::AccountQuestioner).await?;
+      self.initialize_entity(super::GachaRecordQuestioner).await?;
+    }
 
     Ok(())
   }
 
-  async fn initialize_entities(
-    &self,
-    questioners: &[impl Questioner],
-  ) -> Result<(), DatabaseError> {
-    debug!("Starting initialize entities...");
-    for questioner in questioners {
-      debug!("Initializing entity: {}", questioner.entity_name());
-      questioner.sql_initialize().execute(&self.0).await?;
-    }
+  async fn initialize_entity(&self, questioner: impl Questioner) -> Result<(), DatabaseError> {
+    info!("Initializing entity: {}", questioner.entity_name());
+    questioner.sql_initialize().execute(&self.0).await?;
     Ok(())
   }
 }

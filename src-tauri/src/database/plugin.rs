@@ -33,7 +33,8 @@ impl DatabasePluginBuilder {
         handler::delete_account,
         handler::update_account_game_data_dir,
         handler::update_account_gacha_url,
-        handler::update_account_properties
+        handler::update_account_properties,
+        handler::find_gacha_records_by_facet_and_uid
       ])
       .build()
   }
@@ -69,7 +70,9 @@ mod handler {
   use time::OffsetDateTime;
 
   use super::DatabasePluginState;
-  use crate::database::{Account, AccountFacet, AccountProperties, AccountQuestioner};
+  use crate::database::{
+    Account, AccountFacet, AccountProperties, AccountQuestioner, GachaRecord, GachaRecordQuestioner,
+  };
 
   generate_handlers!(AccountQuestioner, {
     find_accounts {} find_many and fetch_all => Vec<Account>,
@@ -112,5 +115,13 @@ mod handler {
       properties: Option<AccountProperties>,
       id: u32
     } update_properties_by_id and fetch_optional => Option<Account>,
+  });
+
+  generate_handlers!(GachaRecordQuestioner, {
+    find_gacha_records_by_facet_and_uid {
+      facet: AccountFacet,
+      uid: u32,
+      gacha_type: Option<u32>
+    } find_many_by_facet_and_uid and fetch_all => Vec<GachaRecord>,
   });
 }

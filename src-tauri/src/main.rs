@@ -9,7 +9,7 @@ use std::sync::Arc;
 use human_panic::setup_panic;
 use time::format_description::FormatItem;
 use time::macros::format_description;
-use tracing::{debug, info};
+use tracing::info;
 use tracing_appender::non_blocking::WorkerGuard;
 use tracing_subscriber::filter::LevelFilter;
 use tracing_subscriber::fmt::time::LocalTime;
@@ -117,7 +117,7 @@ async fn initialize_database() -> Result<Database, Box<dyn Error>> {
     app_dir.join(constants::DATABASE)
   };
 
-  debug!("Connect to the database: {db_file:?}");
+  info!("Connect to the database: {db_file:?}");
   let database = Database::from_file(db_file).await?;
 
   // Wait to initialize database

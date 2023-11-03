@@ -124,16 +124,16 @@ generate_entity!({
         `properties`           TEXT,
         `created_at`           DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
       );
-      CREATE        INDEX IF NOT EXISTS `hg.facet_idx`     ON `hg.accounts` (`facet`);
-      CREATE        INDEX IF NOT EXISTS `hg.uid_idx`       ON `hg.accounts` (`uid`);
-      CREATE UNIQUE INDEX IF NOT EXISTS `hg.facet_uid_idx` ON `hg.accounts` (`facet`, `uid`);
+      CREATE        INDEX IF NOT EXISTS `hg.accounts.facet_idx`     ON `hg.accounts` (`facet`);
+      CREATE        INDEX IF NOT EXISTS `hg.accounts.uid_idx`       ON `hg.accounts` (`uid`);
+      CREATE UNIQUE INDEX IF NOT EXISTS `hg.accounts.facet_uid_idx` ON `hg.accounts` (`facet`, `uid`);
     ",
 
     find_one_by_id { id: u32 } => "SELECT * FROM `hg.accounts` WHERE `id` = ?;",
     find_one_by_facet_and_uid {
       facet: AccountFacet,
       uid: u32
-    } => "SELECT * FROM `hg.accounts` WHERE `facet` = ? and `uid` = ?;",
+    } => "SELECT * FROM `hg.accounts` WHERE `facet` = ? AND `uid` = ?;",
 
     find_many {} => "SELECT * FROM `hg.accounts`;",
     find_many_by_facet { facet: AccountFacet } => "SELECT * FROM `hg.accounts` WHERE `facet` = ?;",
@@ -198,7 +198,7 @@ mod tests {
   use serde_json::{from_str as from_json, to_string as to_json, Number, Value};
   use time::macros::datetime;
 
-  use crate::database::{Account, AccountFacet};
+  use super::{Account, AccountFacet};
 
   #[test]
   fn test_serialize() {
