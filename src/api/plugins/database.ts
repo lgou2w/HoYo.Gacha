@@ -42,7 +42,7 @@ export interface Account {
 export type GachaRecordRankType = 3 | 4 | 5
 
 // TODO: Stricter type inference based on facet ?
-//   ON `facet` = 0 -> `gachaType` = 100 | 200 | 301 | 400 | 401
+//   ON `facet` = 0 -> `gachaType` = 100 | 200 | 301 | 400 | 302
 //                  -> `gachaId` === null
 //   ON `facet` = 1 -> `gachaType` = 1 | 2 | 11 | 12
 //                  -> `gachaId` !== null
