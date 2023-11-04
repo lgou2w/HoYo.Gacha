@@ -18,6 +18,7 @@ use tracing_subscriber::{fmt, EnvFilter};
 
 mod constants;
 mod database;
+mod diskcache;
 mod error;
 mod utilities;
 
