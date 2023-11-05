@@ -1,7 +1,9 @@
 use std::borrow::Cow;
 use std::collections::HashMap;
 use std::fmt::{Debug, Formatter};
+use std::fs::File;
 use std::io::{Error, ErrorKind, Read, Result, Seek, SeekFrom};
+use std::path::Path;
 
 use once_cell::sync::Lazy;
 use paste::paste;
@@ -35,6 +37,7 @@ const ADDR_FILE_SELECTOR_OFFSET: u32 = 16;
 const ADDR_START_BLOCK_MASK: u32 = 0x0000FFFF;
 const ADDR_FILE_NAME_MASK: u32 = 0x0FFFFFFF;
 
+// File Type -> Block Size
 static FILE_BLOCK_SIZE_MAPPINGS: Lazy<HashMap<u32, u32>> = Lazy::new(|| {
   let mut m = HashMap::new();
   m.insert(1, 36); // Rankings
@@ -232,9 +235,21 @@ pub struct IndexFile {
 impl IndexFile {
   pub fn from_reader(mut reader: impl Read + Seek) -> Result<Self> {
     let magic = reader.read_u32()?;
-    assert_eq!(magic, INDEX_MAGIC); // FIXME: unsafe
+    if magic != INDEX_MAGIC {
+      return Err(Error::new(
+        ErrorKind::InvalidData,
+        format!("Invalid index file magic number: 0x{magic:X} (Expected: 0x{INDEX_MAGIC:X})"),
+      ));
+    }
 
     let version = reader.read_u32()?;
+    if version != INDEX_VERSION2_0 && version != INDEX_VERSION2_1 {
+      return Err(Error::new(
+        ErrorKind::InvalidData,
+        format!("Unsupported index file version: 0x{version:X} (Valid: 0x{INDEX_VERSION2_0:X}, 0x{INDEX_VERSION2_1:X})")
+      ));
+    }
+
     let num_entries = reader.read_i32()?;
     let num_bytes = reader.read_i32()?;
     let last_file = reader.read_i32()?;
@@ -275,6 +290,11 @@ impl IndexFile {
       },
       table,
     })
+  }
+
+  pub fn from_file(path: impl AsRef<Path>) -> Result<Self> {
+    let file = File::open(path)?;
+    Self::from_reader(file)
   }
 }
 
@@ -322,9 +342,21 @@ impl Debug for BlockFile {
 impl BlockFile {
   pub fn from_reader(mut reader: impl Read + Seek) -> Result<Self> {
     let magic = reader.read_u32()?;
-    assert_eq!(magic, BLOCK_MAGIC); // FIXME: unsafe
+    if magic != BLOCK_MAGIC {
+      return Err(Error::new(
+        ErrorKind::InvalidData,
+        format!("Invalid block file magic number: 0x{magic:X} (Expected: 0x{BLOCK_MAGIC:X})"),
+      ));
+    }
 
     let version = reader.read_u32()?;
+    if version != BLOCK_VERSION2_0 {
+      return Err(Error::new(
+        ErrorKind::InvalidData,
+        format!("Unsupported block file version: 0x{version:X} (Valid: 0x{BLOCK_VERSION2_0:X})"),
+      ));
+    }
+
     let this_file = reader.read_i16()?;
     let next_file = reader.read_i16()?;
     let entry_size = reader.read_i32()?;
@@ -361,7 +393,12 @@ impl BlockFile {
     })
   }
 
-  pub fn read_data(&self, addr: &CacheAddr) -> Result<&[u8]> {
+  pub fn from_file(path: impl AsRef<Path>) -> Result<Self> {
+    let file = File::open(path)?;
+    Self::from_reader(file)
+  }
+
+  pub fn read_data<'a>(&'a self, addr: &CacheAddr) -> Result<&'a [u8]> {
     if !addr.is_initialized() {
       return Err(Error::new(ErrorKind::InvalidInput, "Invalid address"));
     }
@@ -389,9 +426,19 @@ impl BlockFile {
     let offset = (addr.start_block() * block_size) as usize;
     let length = (block_size * num_blocks) as usize;
 
-    // FIXME: index out bounds. If the address is unsafe
-    let data = &self.data[offset..offset + length];
-    Ok(data)
+    // HACK: Avoid index out-of-bounds caused by illegal address
+    if let Some(data) = self.data.get(offset..offset + length) {
+      Ok(data)
+    } else {
+      Err(Error::new(
+        ErrorKind::InvalidInput,
+        format!(
+          "Illegal address: [{addr:X?}], Incorrect data offset and length: {}..{}",
+          offset,
+          offset + length
+        ),
+      ))
+    }
   }
 }
 
@@ -457,12 +504,6 @@ impl EntryStore {
     })
   }
 
-  pub fn from_block_file(block_file: &BlockFile, addr: &CacheAddr) -> Result<Self> {
-    let data = block_file.read_data(addr)?;
-    let entry = Self::from_reader(data)?;
-    Ok(entry)
-  }
-
   pub fn is_long_key(&self) -> bool {
     self.long_key.is_initialized()
   }
@@ -479,7 +520,7 @@ impl EntryStore {
     }
 
     if self.key_len <= BLOCK_KEY_SIZE as i32 {
-      let data = &self.key[0..self.key_len as usize];
+      let data = &self.key[..self.key_len as usize];
       Ok(String::from_utf8_lossy(data))
     } else {
       Ok(String::from_utf8_lossy(&self.key))
@@ -495,20 +536,63 @@ impl EntryStore {
     }
 
     let long_key_data = block_file.read_data(&self.long_key)?;
-    let data = &long_key_data[0..self.key_len as usize];
+    let data = &long_key_data[..self.key_len as usize];
     Ok(String::from_utf8_lossy(data))
+  }
+}
+
+impl BlockFile {
+  pub fn read_entry_store(&self, addr: &CacheAddr) -> Result<EntryStore> {
+    let data = self.read_data(addr)?;
+    let entry = EntryStore::from_reader(data)?;
+    Ok(entry)
   }
 }
 
 #[cfg(test)]
 mod tests {
-  use std::fs::File;
-  use std::io::Result;
+  use std::io::{Cursor, ErrorKind, Result};
   use std::path::PathBuf;
 
-  use crate::diskcache::{
-    BlockFile, IndexFile, BLOCK_MAGIC, BLOCK_VERSION2_0, INDEX_MAGIC, INDEX_VERSION2_1,
-  };
+  use super::{BlockFile, IndexFile, BLOCK_MAGIC, BLOCK_VERSION2_0, INDEX_MAGIC, INDEX_VERSION2_1};
+
+  #[test]
+  fn test_illegal_index_file() {
+    let illegal_magic = [0, 0, 0, 0];
+    let result = IndexFile::from_reader(Cursor::new(&illegal_magic));
+    assert!(result.is_err());
+    assert_eq!(result.unwrap_err().kind(), ErrorKind::InvalidData);
+
+    let unsupported_version = [INDEX_MAGIC.to_le_bytes(), [0, 0, 0, 0]].concat();
+    let result = IndexFile::from_reader(Cursor::new(&unsupported_version));
+    assert!(result.is_err());
+    assert_eq!(result.unwrap_err().kind(), ErrorKind::InvalidData);
+
+    // Although the magic number and version are correct, the data is incomplete. so EOF
+    let correct = [INDEX_MAGIC.to_le_bytes(), INDEX_VERSION2_1.to_le_bytes()].concat();
+    let result = IndexFile::from_reader(Cursor::new(&correct));
+    assert!(result.is_err());
+    assert_eq!(result.unwrap_err().kind(), ErrorKind::UnexpectedEof);
+  }
+
+  #[test]
+  fn test_illegal_block_file() {
+    let illegal_magic = [0, 0, 0, 0];
+    let result = BlockFile::from_reader(Cursor::new(&illegal_magic));
+    assert!(result.is_err());
+    assert_eq!(result.unwrap_err().kind(), ErrorKind::InvalidData);
+
+    let unsupported_version = [BLOCK_MAGIC.to_le_bytes(), [0, 0, 0, 0]].concat();
+    let result = IndexFile::from_reader(Cursor::new(&unsupported_version));
+    assert!(result.is_err());
+    assert_eq!(result.unwrap_err().kind(), ErrorKind::InvalidData);
+
+    // Although the magic number and version are correct, the data is incomplete. so EOF
+    let correct = [BLOCK_MAGIC.to_le_bytes(), BLOCK_VERSION2_0.to_le_bytes()].concat();
+    let result = BlockFile::from_reader(Cursor::new(&correct));
+    assert!(result.is_err());
+    assert_eq!(result.unwrap_err().kind(), ErrorKind::UnexpectedEof);
+  }
 
   // HACK: Hard-coded unit test
   #[ignore = "Because the path is hard-coded, it is for manual testing only"]
@@ -521,9 +605,9 @@ mod tests {
     let block_file1 = cache_data_dir.join("data_1");
     let block_file2 = cache_data_dir.join("data_2");
 
-    let index_file = IndexFile::from_reader(File::open(index_file)?)?;
-    let block_file1 = BlockFile::from_reader(File::open(block_file1)?)?;
-    let block_file2 = BlockFile::from_reader(File::open(block_file2)?)?;
+    let index_file = IndexFile::from_file(index_file)?;
+    let block_file1 = BlockFile::from_file(block_file1)?;
+    let block_file2 = BlockFile::from_file(block_file2)?;
 
     assert_eq!(index_file.header.magic, INDEX_MAGIC); // Index magic
     assert_eq!(index_file.header.version, INDEX_VERSION2_1); // Index version 2.1
