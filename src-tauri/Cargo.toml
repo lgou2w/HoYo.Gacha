@@ -1,6 +1,6 @@
 [package]
 name = "hoyo_gacha"
-version = "0.3.6"
+version = "0.3.7"
 edition = "2021"
 authors = ["lgou2w"]
 description = "An unofficial tool for managing and analyzing your miHoYo gacha records"
