@@ -26,7 +26,7 @@ export function useVersion () {
     queryKey: ['get_version'],
     queryFn: async () => invoke<CurrentVersion>('get_version'),
     staleTime: Infinity,
-    cacheTime: Infinity,
+    gcTime: Infinity,
     refetchOnWindowFocus: false
   })
 }

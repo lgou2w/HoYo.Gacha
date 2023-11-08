@@ -25,7 +25,7 @@ pub struct BlockFileHeader {
   pub hints: [i32; 4],
   pub updating: i32,
   pub user: [i32; 5],
-  pub allocation_map: Box<[u32; BLOCK_MAX_BLOCKS as usize / 32]>,
+  pub allocation_map: [u32; BLOCK_MAX_BLOCKS as usize / 32],
 }
 
 pub struct BlockFile {
@@ -49,8 +49,8 @@ impl BlockFileHeader {
     let updating = reader.read_i32::<LittleEndian>()?;
     let mut user = [0; 5];
     reader.read_i32_into::<LittleEndian>(&mut user)?;
-    let mut allocation_map = Box::new([0; BLOCK_MAX_BLOCKS as usize / 32]);
-    reader.read_u32_into::<LittleEndian>(&mut *allocation_map)?;
+    let mut allocation_map = [0; BLOCK_MAX_BLOCKS as usize / 32];
+    reader.read_u32_into::<LittleEndian>(&mut allocation_map)?;
 
     Ok(Self {
       magic,

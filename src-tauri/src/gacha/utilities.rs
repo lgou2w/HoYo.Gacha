@@ -3,7 +3,7 @@ use crate::constants;
 use crate::disk_cache::{BlockFile, EntryStore, IndexFile};
 use crate::error::{Error, Result};
 use crate::storage::entity_account::AccountFacet;
-use lazy_static::lazy_static;
+use once_cell::sync::Lazy;
 use reqwest::Client as Reqwest;
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
@@ -65,6 +65,7 @@ pub(super) fn lookup_path_line_from_keyword<P: AsRef<Path>>(
 
   let file = File::open(path)?;
   let reader = BufReader::new(file);
+  let keyword_len = keyword.len();
 
   for line in reader.lines().map(|l| l.unwrap()) {
     if !line.contains(keyword) {
@@ -73,7 +74,7 @@ pub(super) fn lookup_path_line_from_keyword<P: AsRef<Path>>(
 
     if let Some(colon) = line.rfind(':') {
       if let Some(end) = line.find(keyword) {
-        let path = &line[colon - 1..end + keyword.len()];
+        let path = &line[colon - 1..end + keyword_len];
         return Ok(Some(Path::new(path).to_path_buf()));
       }
     }
@@ -92,15 +93,16 @@ mod web_caches {
     major: u8,
     minor: u8,
     patch: u8,
-    build: u8,
+    build: Option<u8>,
   }
 
   impl WebCachesVersion {
     pub fn version(&self) -> String {
-      format!(
-        "{}.{}.{}.{}",
-        self.major, self.minor, self.patch, self.build
-      )
+      if let Some(build) = self.build {
+        format!("{}.{}.{}.{}", self.major, self.minor, self.patch, build)
+      } else {
+        format!("{}.{}.{}", self.major, self.minor, self.patch)
+      }
     }
   }
 
@@ -120,7 +122,7 @@ mod web_caches {
           major: major.parse()?,
           minor: minor.parse()?,
           patch: patch.parse()?,
-          build: build_opt.unwrap_or("0").parse()?,
+          build: build_opt.map(|opt| opt.parse::<u8>()).transpose()?,
         }),
         _ => Err(Error::WebCaches),
       }
@@ -205,10 +207,10 @@ pub(super) fn lookup_gacha_urls_from_endpoint<P: AsRef<Path>>(
     }
 
     // These url start with '1/0/', only get the later part
-    let url = if url.starts_with("1/0/") {
-      url[4..].to_string()
+    let url = if let Some(stripped) = url.strip_prefix("1/0/") {
+      stripped
     } else {
-      url.to_string()
+      &url
     };
 
     // Convert creation time
@@ -225,9 +227,9 @@ pub(super) fn lookup_gacha_urls_from_endpoint<P: AsRef<Path>>(
     }
 
     result.push(GachaUrl {
-      addr: addr.into(),
+      addr: u32::from(addr),
       creation_time,
-      value: url,
+      value: url.to_owned(),
     })
   }
 
@@ -305,9 +307,7 @@ pub(super) async fn fetch_gacha_records<T: Sized + DeserializeOwned>(
 //    key: facet + uid + addr
 //    value: GachaUrl
 
-lazy_static! {
-  static ref GACHA_URL_CACHED: Mutex<HashMap<String, GachaUrl>> = Default::default();
-}
+static GACHA_URL_CACHED: Lazy<Mutex<HashMap<String, GachaUrl>>> = Lazy::new(Default::default);
 
 pub(crate) async fn find_gacha_url_and_validate_consistency<Record, Fetcher>(
   fetcher: &Fetcher,

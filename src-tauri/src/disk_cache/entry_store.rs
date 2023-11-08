@@ -20,7 +20,7 @@ pub struct EntryStore {
   pub flags: u32,
   pub pad: [i32; 4],
   pub self_hash: u32,
-  pub key: Box<[u8; BLOCK_KEY_SIZE as usize]>,
+  pub key: [u8; BLOCK_KEY_SIZE as usize],
 }
 
 impl EntryStore {
@@ -40,8 +40,8 @@ impl EntryStore {
     let mut pad = [0; 4];
     reader.read_i32_into::<LittleEndian>(&mut pad)?;
     let self_hash = reader.read_u32::<LittleEndian>()?;
-    let mut key = Box::new([0; BLOCK_KEY_SIZE as usize]);
-    reader.read_exact(&mut *key)?;
+    let mut key = [0; BLOCK_KEY_SIZE as usize];
+    reader.read_exact(&mut key)?;
 
     Ok(Self {
       hash,
@@ -98,7 +98,7 @@ impl EntryStore {
       let data = &self.key[0..self.key_len as usize];
       Ok(String::from_utf8_lossy(data))
     } else {
-      Ok(String::from_utf8_lossy(&*self.key))
+      Ok(String::from_utf8_lossy(&self.key))
     }
   }
 
