@@ -48,7 +48,7 @@ impl GameDataDirectoryFinder for GenshinGacha {
 
 /// Gacha Url
 
-const ENDPOINT: &str = "/event/gacha_info/api/getGachaLog?";
+const ENDPOINT: &str = "/api/getGachaLog?";
 
 impl GachaUrlFinder for GenshinGacha {
   fn find_gacha_urls<P: AsRef<Path>>(&self, game_data_dir: P) -> Result<Vec<GachaUrl>> {

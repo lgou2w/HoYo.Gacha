@@ -48,7 +48,7 @@ impl GameDataDirectoryFinder for StarRailGacha {
 
 /// Gacha Url
 
-const ENDPOINT: &str = "/common/gacha_record/api/getGachaLog?";
+const ENDPOINT: &str = "/api/getGachaLog?";
 
 impl GachaUrlFinder for StarRailGacha {
   fn find_gacha_urls<P: AsRef<Path>>(&self, game_data_dir: P) -> Result<Vec<GachaUrl>> {
