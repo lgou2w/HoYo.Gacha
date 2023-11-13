@@ -69,7 +69,7 @@ const Plugin = {
   findAccountsByFacet: bind<Pick<Account, 'facet'>, Account[]>('find_accounts_by_facet'),
   findAccountById: bind<Pick<Account, 'id'>, Account | null>('find_account_by_id'),
   findAccountByFacetAndUid: bind<Pick<Account, 'facet' | 'uid'>, Account | null>('find_account_by_facet_and_uid'),
-  createAccount: bind<Pick<Account, 'facet' | 'uid' | 'gameDataDir'>, Account>('create_account'),
+  createAccount: bind<Pick<Account, 'facet' | 'uid' | 'gameDataDir'>, Account | null>('create_account'),
   deleteAccount: bind<Pick<Account, 'id'>, Account | null>('delete_account'),
   updateAccountGameDataDir: bind<Pick<Account, 'gameDataDir' | 'id'>, Account | null>('update_account_game_data_dir'),
   updateAccountGachaUrl: bind<Pick<Account, 'gachaUrl' | 'gachaUrlUpdatedAt' | 'id'>, Account | null>('update_account_gacha_url'),

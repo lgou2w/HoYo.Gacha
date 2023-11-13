@@ -94,7 +94,7 @@ mod handler {
       facet: AccountFacet,
       uid: u32,
       game_data_dir: String
-    } create_one and fetch_one => Account,
+    } create_one and fetch_optional => Option<Account>,
 
     delete_account {
       id: u32
