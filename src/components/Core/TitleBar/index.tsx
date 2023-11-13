@@ -1,10 +1,9 @@
 import React, { useEffect, useRef } from 'react'
-import { Image, Subtitle2, makeStyles, shorthands, tokens } from '@fluentui/react-components'
+import { Image, Subtitle2, makeStyles, tokens } from '@fluentui/react-components'
 import Logo from '@/assets/images/Logo.png'
 import TitleBarButtons from './Buttons'
 
-const Height = '2.5rem'
-
+export const Height = '2.5rem'
 const useStyles = makeStyles({
   root: {
     position: 'fixed',
@@ -19,8 +18,8 @@ const useStyles = makeStyles({
     color: tokens.colorNeutralForegroundOnBrand,
     backgroundColor: tokens.colorBrandBackground,
     boxShadow: tokens.shadow2,
-    ...shorthands.padding(0, 0, 0, tokens.spacingHorizontalS),
-    ...shorthands.gap(tokens.spacingVerticalS, 0)
+    paddingLeft: tokens.spacingHorizontalS,
+    columnGap: tokens.spacingVerticalS
   },
   placeholder: {
     width: '100%',

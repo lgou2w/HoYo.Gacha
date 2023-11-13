@@ -68,6 +68,7 @@ function createTheme ([light, dark]: [Theme, Theme]) {
   } as const
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function createThemeByBrandVariants (variants: BrandVariants) {
   return createTheme([
     createLightTheme(variants),
@@ -77,43 +78,37 @@ function createThemeByBrandVariants (variants: BrandVariants) {
 
 export const Themes = {
   web: createTheme([webLightTheme, webDarkTheme]),
-  teams: createTheme([teamsLightTheme, teamsDarkTheme]),
-  blue: createThemeByBrandVariants({
-    10: '#020305',
-    20: '#121725',
-    30: '#182542',
-    40: '#1C315A',
-    50: '#1F3D73',
-    60: '#20498D',
-    70: '#1F56A8',
-    80: '#1C63C3',
-    90: '#1471E0',
-    100: '#027FFD',
-    110: '#4A8DFF',
-    120: '#6D9BFF',
-    130: '#88A9FF',
-    140: '#A0B8FF',
-    150: '#B7C7FF',
-    160: '#CCD6FF'
-  }),
-  deepblue: createThemeByBrandVariants({
-    10: '#020305',
-    20: '#101820',
-    30: '#152838',
-    40: '#18354C',
-    50: '#194260',
-    60: '#194F75',
-    70: '#175D8A',
-    80: '#126CA0',
-    90: '#077AB7',
-    100: '#2E88C5',
-    110: '#5295CC',
-    120: '#6DA3D3',
-    130: '#85B1DA',
-    140: '#9DBFE1',
-    150: '#B3CDE8',
-    160: '#C9DBEE'
-  })
+  teams: createTheme([teamsLightTheme, teamsDarkTheme])
+  // FIXME: https://github.com/tauri-apps/tauri/issues/8180
+  // vibrancy: createThemeByBrandVariants({
+  //   10: '#030303',
+  //   20: '#171717',
+  //   30: '#252525',
+  //   40: '#313131',
+  //   50: '#3D3D3D',
+  //   60: '#494949',
+  //   70: '#565656',
+  //   80: '#636363',
+  //   90: '#717171',
+  //   100: '#7F7F7F',
+  //   110: '#8D8D8D',
+  //   120: '#9B9B9B',
+  //   130: '#AAAAAA',
+  //   140: '#B9B9B9',
+  //   150: '#C8C8C8',
+  //   160: '#D7D7D7'
+  // })
 }
 
-export type KnownThemeSpaces = keyof typeof Themes
+export type ThemeSpace = keyof typeof Themes
+
+export const KnownThemeSpaces = Object.keys(Themes) as ThemeSpace[]
+export const KnownThemeColors: ThemeColor[] = ['light', 'dark']
+
+// FIXME: https://github.com/tauri-apps/tauri/issues/8180
+// See: src-tauri/src/main.ts -> Apply window vibrancy
+// export const WindowVibrancy = window.localStorage.getItem('WINDOW_VIBRANCY') === 'true'
+
+// if (import.meta.env.DEV) {
+//   console.debug('Window Vibrancy:', WindowVibrancy)
+// }

@@ -7,6 +7,7 @@ use std::path::PathBuf;
 use std::sync::Arc;
 
 use human_panic::setup_panic;
+use tauri::{Builder as TauriBuilder, WindowBuilder, WindowUrl};
 use time::format_description::FormatItem;
 use time::macros::format_description;
 use tracing::info;
@@ -48,6 +49,7 @@ fn initialize_tracing() -> Result<Option<WorkerGuard>, Box<dyn Error>> {
     .from_env_lossy()
     .add_directive("hyper::proto=error".parse()?)
     .add_directive("tao::platform_impl=error".parse()?)
+    .add_directive("wry::webview=error".parse()?)
     .add_directive(
       if cfg!(debug_assertions) {
         LevelFilter::TRACE
@@ -132,21 +134,53 @@ async fn start(database: Arc<Database>) {
   tauri::async_runtime::set(tokio::runtime::Handle::current());
 
   info!("Starting Tauri application...");
-  let mut app = tauri::Builder::default()
+  let mut app = TauriBuilder::default()
     .plugin(DatabasePluginBuilder::new(database).build())
     .setup(|app| {
-      use tauri::Manager;
-      let window = app.get_window("main").unwrap();
+      let window = WindowBuilder::new(app, "main", WindowUrl::App("index.html".into()))
+        .center()
+        .fullscreen(false)
+        .resizable(true)
+        .decorations(false)
+        .transparent(false)
+        .min_inner_size(1152.0, 864.0)
+        .title(constants::NAME)
+        .build()?;
 
-      // Apply window shadow
-      // See: https://github.com/tauri-apps/window-shadows
-      #[cfg(any(windows, target_os = "macos"))]
-      window_shadows::set_shadow(&window, true).unwrap();
+      #[cfg(windows)]
+      utilities::windows::set_window_shadow(&window, true);
+
+      // FIXME: https://github.com/tauri-apps/tauri/issues/8180
+      // // Apply window vibrancy
+      // // See: https://github.com/tauri-apps/window-vibrancy
+      // #[cfg(windows)]
+      // {
+      //   let vibrancy = window_vibrancy::apply_mica(&window, Some(true)).is_ok()
+      //     || window_vibrancy::apply_acrylic(&window, Some((18, 18, 18, 125))).is_ok();
+
+      //     // Set WebView2 Theme
+      //     utilities::windows::set_webview_theme(&window, vibrancy);
+
+      //     match window.eval(&format!(
+      //       "window.localStorage.setItem('WINDOW_VIBRANCY', {vibrancy});"
+      //     )) {
+      //       Ok(_) => info!("Mica or Acrylic window effects applied successfully!"),
+      //       Err(error) => {
+      //         error!("Failed to execute window vibrancy js script: {error}");
+      //         if vibrancy {
+      //           info!("Clear window effects...");
+      //           let _ = window_vibrancy::clear_mica(&window);
+      //           let _ = window_vibrancy::clear_acrylic(&window);
+      //         }
+      //       }
+      //     }
+      // }
 
       // Open devtools in debug mode or when specifying environment variable
       if cfg!(debug_assertions) || std::env::var(constants::ENV_DEVTOOLS).is_ok() {
         window.open_devtools();
       }
+
       Ok(())
     })
     .build(tauri::generate_context!())

@@ -1,18 +1,22 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { useRouteError } from 'react-router-dom'
+import { Subtitle1, Body2, Text } from '@fluentui/react-components'
 
 export default function ErrorPage () {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const error = useRouteError() as any
-  console.error(error)
+  const { t } = useTranslation()
+  const error = useRouteError() as Record<string, unknown>
+  console.error('Oops!', error)
 
   return (
-    <div>
-      <h5>Oops!</h5>
-      <p>Sorry, an unexpected error has occurred.</p>
-      <p>
-        <pre>{error.stack || error.statusText || error.message}</pre>
-      </p>
+    <div style={{ padding: '1rem' }}>
+      <Subtitle1 as="h5" block>{t('errorPage.title')}</Subtitle1>
+      <br />
+      <Body2 as="h6" block>{t('errorPage.subtitle')}</Body2>
+      <br />
+      <Text as="pre" font="monospace" style={{ whiteSpace: 'pre' }} block>
+        {(error.stack || error.statusText || error.message) as string | undefined}
+      </Text>
     </div>
   )
 }

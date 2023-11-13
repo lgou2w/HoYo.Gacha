@@ -1,5 +1,5 @@
 {
-  "$schema": "https://esm.sh/@tauri-apps/cli/schema.json",
+  "$schema": "../node_modules/@tauri-apps/cli/schema.json",
   "build": {
     "beforeBuildCommand": "pnpm build",
     "beforeDevCommand": "pnpm dev",
@@ -66,16 +66,6 @@
     "updater": {
       "active": false
     },
-    "windows": [
-      {
-        "fullscreen": false,
-        "height": 864,
-        "resizable": false,
-        "center": true,
-        "title": "HoYo.Gacha",
-        "width": 1152,
-        "decorations": false
-      }
-    ]
+    "windows": []
   }
 }

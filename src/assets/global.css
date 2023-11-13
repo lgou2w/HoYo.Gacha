@@ -1,13 +1,72 @@
 :root {
-  font-size: 16px;
+  --base-font-size: 16px;
+  font-size: var(--base-font-size);
 }
 
 html,
 body {
   margin: 0;
   padding: 0;
+  overflow: hidden;
 }
 
 * {
   box-sizing: border-box;
+}
+
+blockquote,
+dl,
+dd,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+hr,
+figure,
+p,
+pre {
+  margin: 0;
+}
+
+::-webkit-scrollbar {
+  background: var(--colorNeutralBackground1);
+  width: 12px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--colorNeutralForeground4);
+  background-clip: padding-box;
+  border: 4px solid transparent;
+  border-radius: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--colorNeutralBackground2)
+}
+
+/*
+ * HACK: Override Fluent UI Components Styles
+ *   px -> rem
+ */
+
+.fui-Select .fui-Select__select {
+  height: 2rem;
+}
+
+.fui-Switch .fui-Switch__input {
+  width: calc(2.5rem + 2 * var(--spacingHorizontalS));
+}
+.fui-Switch .fui-Switch__label {
+  margin-top: calc((1.25rem - var(--lineHeightBase300)) / 2);
+  margin-bottom: calc((1.25rem - var(--lineHeightBase300)) / 2);
+}
+.fui-Switch .fui-Switch__indicator {
+  font-size: 1.125rem;
+  width: 2.5rem;
+  height: 1.25rem;
+}
+.fui-Switch .fui-Switch__input:checked ~ .fui-Switch__indicator > * {
+  transform: translateX(1.25rem);
 }
