@@ -53,6 +53,12 @@ pre {
 
 .fui-Select .fui-Select__select {
   height: 2rem;
+  padding-right: calc(var(--spacingHorizontalMNudge) + 1.25rem + var(--spacingHorizontalXXS) + var(--spacingHorizontalXXS));
+}
+.fui-Select .fui-Select__icon {
+  font-size: 1.25rem;
+  width: 1.25rem;
+  height: 1.25rem;
 }
 
 .fui-Switch .fui-Switch__input {
@@ -69,4 +75,38 @@ pre {
 }
 .fui-Switch .fui-Switch__input:checked ~ .fui-Switch__indicator > * {
   transform: translateX(1.25rem);
+}
+
+.fui-SplitButton .fui-Button.fui-SplitButton__primaryActionButton {
+  min-width: 6rem;
+  padding: 0.3125rem var(--spacingHorizontalM);
+}
+.fui-SplitButton .fui-Button.fui-SplitButton__menuButton {
+  max-width: 2rem;
+  padding: 0.3125rem;
+}
+.fui-SplitButton .fui-Button.fui-SplitButton__menuButton .fui-MenuButton__menuIcon {
+  font-size: 0.75rem;
+  width: 0.75rem;
+  height: 0.75rem;
+}
+
+.fui-FluentProvider .fui-MenuPopover {
+  padding: 0.25rem;
+  min-width: 8.625rem;
+  max-width: 27.375rem;
+}
+.fui-MenuPopover .fui-MenuList {
+  row-gap: 0;
+  column-gap: 0;
+}
+.fui-MenuPopover .fui-MenuList .fui-MenuItem {
+  min-height: 2rem;
+  max-width: 18.125rem;
+  gap: 0.25rem;
+  padding: 0;
+  align-items: center;
+}
+.fui-MenuPopover .fui-MenuList .fui-MenuItem .fui-MenuItem__content {
+  padding: 0 var(--spacingVerticalSNudge);
 }

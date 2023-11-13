@@ -17,7 +17,7 @@ export default {
         language: {
           title: '语言',
           subtitle: '更改应用使用的主要语言。',
-          'en-US': '英语',
+          'en-US': '英语 (US)',
           'zh-Hans': '简体中文',
           'zh-Hant': '繁体中文'
         }
@@ -37,6 +37,18 @@ export default {
         themeZoom: {
           title: '界面缩放',
           subtitle: '更改应用中界面的缩放比例。'
+        }
+      },
+      about: {
+        title: '关于',
+        update: {
+          title: '应用更新',
+          subtitle: '检查应用的版本更新。',
+          checkBtn: '检查更新',
+          channel: {
+            stable: '稳定版 (Stable)',
+            insider: '预览版 (Insider)'
+          }
         }
       }
     }

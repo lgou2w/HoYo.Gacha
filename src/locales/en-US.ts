@@ -17,7 +17,7 @@ export default {
         language: {
           title: 'Language',
           subtitle: 'Change the primary language used by the application.',
-          'en-US': 'English',
+          'en-US': 'English (US)',
           'zh-Hans': 'Simplified Chinese',
           'zh-Hant': 'Traditional Chinese'
         }
@@ -37,6 +37,18 @@ export default {
         themeZoom: {
           title: 'Interface Scaling',
           subtitle: 'Changing the scaling of the interface in the application.'
+        }
+      },
+      about: {
+        title: 'About',
+        update: {
+          title: 'Application Update',
+          subtitle: 'Check for application version updates.',
+          checkBtn: 'Check Update',
+          channel: {
+            stable: 'Stable (Release)',
+            insider: 'Insider (Alpha)'
+          }
         }
       }
     }
