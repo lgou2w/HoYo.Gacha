@@ -1,7 +1,7 @@
-import React, { ReactNode, useCallback } from 'react'
+import React, { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { Tab, TabList, SelectTabEventHandler, makeStyles, shorthands, tokens, Tooltip } from '@fluentui/react-components'
+import { Tab, TabList, Tooltip, makeStyles, shorthands, tokens } from '@fluentui/react-components'
 import { BoardRegular, BoardFilled, PersonCircleRegular, PersonCircleFilled, SettingsRegular, SettingsFilled } from '@fluentui/react-icons'
 import { SparkleRegular, SparkleFilled, TrainRegular } from '@/components/Utilities/Icons'
 
@@ -14,13 +14,18 @@ const useStyles = makeStyles({
     ...shorthands.padding(tokens.spacingVerticalM, tokens.spacingHorizontalM),
     ...shorthands.borderRadius(tokens.borderRadiusSmall),
     ':hover': { backgroundColor: tokens.colorNeutralBackground2Hover },
+    ':active': { backgroundColor: tokens.colorNeutralBackground2Pressed },
     '[aria-selected=true]': { backgroundColor: tokens.colorBrandBackground2Hover },
-    '[aria-selected=true]:hover': { backgroundColor: tokens.colorBrandBackground2Hover }
-  },
-  icon: {
-    width: ButtonSize,
-    height: ButtonSize,
-    fontSize: ButtonSize
+    '[aria-selected=true]:hover': { backgroundColor: tokens.colorBrandBackground2Hover },
+    // '[aria-selected=true]:active': { backgroundColor: tokens.colorBrandBackground2Pressed },
+    '> .fui-Tab__icon': {
+      width: ButtonSize,
+      height: ButtonSize,
+      fontSize: ButtonSize,
+      color: tokens.colorCompoundBrandForeground1
+    },
+    ':hover > .fui-Tab__icon': { color: tokens.colorBrandForeground1 },
+    ':active > .fui-Tab__icon': { color: tokens.colorCompoundBrandForeground1Pressed }
   },
   spacing: {
     flexGrow: 1
@@ -71,18 +76,17 @@ export default function NavbarTabListRouter () {
   const { t } = useTranslation()
   const location = useLocation()
   const navigate = useNavigate()
-  const onTabSelect = useCallback<SelectTabEventHandler>((_, data) => {
-    if (typeof data.value === 'string') {
-      navigate(data.value)
-    }
-  }, [navigate])
 
   const classes = useStyles()
   return (
     <TabList
       className={classes.root}
       selectedValue={location.pathname}
-      onTabSelect={onTabSelect}
+      onTabSelect={(_, data) => {
+        if (typeof data.value === 'string') {
+          navigate(data.value)
+        }
+      }}
       size="large"
       vertical
     >
@@ -91,7 +95,7 @@ export default function NavbarTabListRouter () {
           return (
             <Tooltip
               key={index}
-              content={t(`router.${item.path}`)}
+              content={t(`components.core.navbar.tabListRouter.${item.path}`)}
               relationship="label"
               positioning="after"
               withArrow
@@ -100,7 +104,6 @@ export default function NavbarTabListRouter () {
                 value={item.path}
                 className={classes.tab}
                 icon={{
-                  className: classes.icon,
                   children: location.pathname === item.path
                     ? item.icon.selected || item.icon.normal
                     : item.icon.normal

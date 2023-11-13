@@ -12,22 +12,22 @@ export default function SettingsGroupItemUpdate () {
   return (
     <SettingsGroupItem
       icon={<ArrowClockwiseRegular />}
-      title={t('routes.settings.about.update.title')}
-      subtitle={t('routes.settings.about.update.subtitle')}
+      title={t('components.routes.settings.about.update.title')}
+      subtitle={t('components.routes.settings.about.update.subtitle')}
       action={(
         <Fragment>
           <Menu positioning="below-end">
             <MenuTrigger disableButtonEnhancement>
               {(triggerProps: MenuButtonProps) => (
                 <SplitButton appearance="primary" size="small" menuButton={triggerProps}>
-                  {t('routes.settings.about.update.checkBtn')}
+                  {t('components.routes.settings.about.update.checkBtn')}
                 </SplitButton>
               )}
             </MenuTrigger>
             <MenuPopover>
               <MenuList>
-                <MenuItem>{t('routes.settings.about.update.channel.stable')}</MenuItem>
-                <MenuItem>{t('routes.settings.about.update.channel.insider')}</MenuItem>
+                <MenuItem>{t('components.routes.settings.about.update.channel.stable')}</MenuItem>
+                <MenuItem>{t('components.routes.settings.about.update.channel.insider')}</MenuItem>
               </MenuList>
             </MenuPopover>
           </Menu>

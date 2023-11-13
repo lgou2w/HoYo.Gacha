@@ -6,7 +6,7 @@ import SettingsGroupItemLanguage from './Language'
 export default function SettingsGroupGeneral () {
   const { t } = useTranslation()
   return (
-    <SettingsGroup title={t('routes.settings.general.title')}>
+    <SettingsGroup title={t('components.routes.settings.general.title')}>
       <SettingsGroupItemLanguage />
     </SettingsGroup>
   )

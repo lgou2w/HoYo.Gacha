@@ -8,7 +8,7 @@ import SettingsGroupItemThemeZoom from './ThemeZoom'
 export default function SettingsGroupAppearance () {
   const { t } = useTranslation()
   return (
-    <SettingsGroup title={t('routes.settings.appearance.title')}>
+    <SettingsGroup title={t('components.routes.settings.appearance.title')}>
       <SettingsGroupItemThemeSpace />
       <SettingsGroupItemThemeColor />
       <SettingsGroupItemThemeZoom />

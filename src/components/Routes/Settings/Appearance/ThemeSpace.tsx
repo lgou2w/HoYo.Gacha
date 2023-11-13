@@ -13,8 +13,8 @@ export default function SettingsGroupItemThemeSpace () {
   return (
     <SettingsGroupItem
       icon={<ColorRegular />}
-      title={t('routes.settings.appearance.themeSpace.title')}
-      subtitle={t('routes.settings.appearance.themeSpace.subtitle')}
+      title={t('components.routes.settings.appearance.themeSpace.title')}
+      subtitle={t('components.routes.settings.appearance.themeSpace.subtitle')}
       action={(
         <Select
           value={space}

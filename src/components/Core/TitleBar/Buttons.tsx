@@ -3,7 +3,6 @@ import { Button, GriffelStyle, makeStyles, shorthands, tokens } from '@fluentui/
 import { DismissFilled, MaximizeFilled, SubtractFilled, SquareMultipleRegular } from '@fluentui/react-icons'
 import { appWindow } from '@tauri-apps/api/window'
 
-const IconSize = '1.25rem'
 const useStyles = makeStyles({
   root: {
     marginLeft: 'auto',
@@ -20,12 +19,7 @@ const useStyles = makeStyles({
   buttonClose: createButtonStyles([
     tokens.colorStatusDangerBackground3,
     tokens.colorStatusDangerBackground2
-  ]),
-  icon: {
-    fontSize: IconSize,
-    width: IconSize,
-    height: IconSize
-  }
+  ])
 })
 
 function createButtonStyles ([hover, pressed]: [string, string]): GriffelStyle {
@@ -42,6 +36,11 @@ function createButtonStyles ([hover, pressed]: [string, string]): GriffelStyle {
     ':hover:active': {
       color: tokens.colorNeutralForegroundOnBrand,
       backgroundColor: pressed
+    },
+    '> .fui-Button__icon': {
+      fontSize: '1.25rem',
+      width: '1.25rem',
+      height: '1.25rem'
     }
   }
 }
@@ -68,26 +67,21 @@ export default function TitleBarButtons () {
     <div className={classes.root}>
       <Button
         className={classes.buttonMinimize}
-        icon={{ className: classes.icon, children: <SubtractFilled /> }}
+        icon={<SubtractFilled />}
         onClick={() => appWindow.minimize()}
         shape="square"
         tabIndex={-1}
       />
       <Button
         className={classes.buttonMaximize}
-        icon={{
-          className: classes.icon,
-          children: !maximized
-            ? <MaximizeFilled />
-            : <SquareMultipleRegular />
-        }}
+        icon={!maximized ? <MaximizeFilled /> : <SquareMultipleRegular />}
         onClick={handleMaximize}
         shape="square"
         tabIndex={-1}
       />
       <Button
         className={classes.buttonClose}
-        icon={{ className: classes.icon, children: <DismissFilled /> }}
+        icon={<DismissFilled />}
         onClick={() => appWindow.close()}
         shape="square"
         tabIndex={-1}

@@ -25,19 +25,19 @@ function initializeThemeData (): ThemeData {
     return data
   }
 
-  if (parsed.space && parsed.color && parsed.zoom) {
-    data.space = parsed.space
-    data.color = parsed.color
-    data.zoom = parsed.zoom
-
-    const valid = typeof Themes[data.space]?.[data.color] !== 'undefined'
-    if (!valid) {
-      console.warn(`Invalid theme space value: ${parsed.space}.${parsed.color}`)
-      window.localStorage.removeItem(LocalStorageKey)
-    }
+  const { space, color, zoom } = parsed
+  const valid = !!space && !!color && typeof Themes[space]?.[color] !== 'undefined'
+  if (!valid) {
+    console.warn(`Invalid theme space value: ${space}.${color}`)
+    window.localStorage.removeItem(LocalStorageKey)
+    return data
   }
 
-  return data
+  return {
+    space,
+    color,
+    zoom: zoom || DefaultThemeData.zoom
+  }
 }
 
 function onThemeDataChange (data: ThemeData) {

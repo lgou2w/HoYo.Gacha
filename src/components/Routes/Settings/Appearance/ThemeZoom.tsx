@@ -21,8 +21,8 @@ export default function SettingsGroupItemThemeZoom () {
   return (
     <SettingsGroupItem
       icon={ZoomMappings[zoom].icon}
-      title={t('routes.settings.appearance.themeZoom.title')}
-      subtitle={t('routes.settings.appearance.themeZoom.subtitle')}
+      title={t('components.routes.settings.appearance.themeZoom.title')}
+      subtitle={t('components.routes.settings.appearance.themeZoom.subtitle')}
       action={(
         <Fragment>
           <Label htmlFor={zoomId} weight="semibold">{ZoomMappings[zoom].label}</Label>

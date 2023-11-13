@@ -16,7 +16,8 @@ const useStyle = makeStyles({
     display: 'inline-flex',
     fontSize: IconSize,
     width: IconSize,
-    height: IconSize
+    height: IconSize,
+    color: tokens.colorBrandForeground2
   },
   header: {
     display: 'inline-flex',

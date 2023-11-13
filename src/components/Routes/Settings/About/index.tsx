@@ -6,7 +6,7 @@ import SettingsGroupItemUpdate from './Update'
 export default function SettingsGroupAbout () {
   const { t } = useTranslation()
   return (
-    <SettingsGroup title={t('routes.settings.about.title')}>
+    <SettingsGroup title={t('components.routes.settings.about.title')}>
       <SettingsGroupItemUpdate />
     </SettingsGroup>
   )

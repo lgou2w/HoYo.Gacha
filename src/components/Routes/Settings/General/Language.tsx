@@ -11,8 +11,8 @@ export default function SettingsGroupItemLanguage () {
   return (
     <SettingsGroupItem
       icon={<LocalLanguageRegular />}
-      title={t('routes.settings.general.language.title')}
-      subtitle={t('routes.settings.general.language.subtitle')}
+      title={t('components.routes.settings.general.language.title')}
+      subtitle={t('components.routes.settings.general.language.subtitle')}
       action={(
         <Select
           value={i18n.language}
@@ -20,7 +20,7 @@ export default function SettingsGroupItemLanguage () {
         >
           {SupportedLanguages.map((language) => (
             <option key={language} value={language}>
-              {t(`routes.settings.general.language.${language}`)}
+              {t(`components.routes.settings.general.language.${language}`)}
             </option>
           ))}
         </Select>

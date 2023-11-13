@@ -106,7 +106,7 @@ export const KnownThemeSpaces = Object.keys(Themes) as ThemeSpace[]
 export const KnownThemeColors: ThemeColor[] = ['light', 'dark']
 
 // FIXME: https://github.com/tauri-apps/tauri/issues/8180
-// See: src-tauri/src/main.ts -> Apply window vibrancy
+// See: src-tauri/src/main.rs -> Apply window vibrancy
 // export const WindowVibrancy = window.localStorage.getItem('WINDOW_VIBRANCY') === 'true'
 
 // if (import.meta.env.DEV) {

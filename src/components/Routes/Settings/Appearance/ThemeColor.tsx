@@ -12,12 +12,12 @@ export default function SettingsGroupItemThemeColor () {
   return (
     <SettingsGroupItem
       icon={<DarkThemeRegular style={{ transform: 'rotate(180deg)' }} />}
-      title={t('routes.settings.appearance.themeColor.title')}
-      subtitle={t('routes.settings.appearance.themeColor.subtitle')}
+      title={t('components.routes.settings.appearance.themeColor.title')}
+      subtitle={t('components.routes.settings.appearance.themeColor.subtitle')}
       action={(
         <Switch
           labelPosition="before"
-          label={t(`routes.settings.appearance.themeColor.${color}`)}
+          label={t(`components.routes.settings.appearance.themeColor.${color}`)}
           checked={color === 'dark'}
           onChange={(_, data) => toggleColor(data.checked)}
         />
