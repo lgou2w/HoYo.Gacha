@@ -5,7 +5,7 @@ interface Props {
   title: ReactNode
 }
 
-export default function SettingsSectionGroup (props: PropsWithChildren<Props>) {
+export default function SettingsGroup (props: PropsWithChildren<Props>) {
   return (
     <Fragment>
       <Subtitle2 as="h6">{props.title}</Subtitle2>

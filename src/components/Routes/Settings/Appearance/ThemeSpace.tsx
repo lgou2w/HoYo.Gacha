@@ -4,14 +4,14 @@ import { Select } from '@fluentui/react-components'
 import { ColorRegular } from '@fluentui/react-icons'
 import { KnownThemeSpaces, ThemeSpace } from '@/components/Core/Theme/Declares'
 import useTheme from '@/components/Core/Theme/useTheme'
-import SettingsSectionGroupItem from '@/components/Routes/Settings/Section/GroupItem'
+import SettingsGroupItem from '@/components/Routes/Settings/GroupItem'
 
-export default function SettingsSectionGroupItemThemeSpace () {
+export default function SettingsGroupItemThemeSpace () {
   const { t } = useTranslation()
   const { space, change } = useTheme()
 
   return (
-    <SettingsSectionGroupItem
+    <SettingsGroupItem
       icon={<ColorRegular />}
       title={t('routes.settings.appearance.themeSpace.title')}
       subtitle={t('routes.settings.appearance.themeSpace.subtitle')}

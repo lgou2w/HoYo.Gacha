@@ -3,14 +3,14 @@ import { useTranslation } from 'react-i18next'
 import { Switch } from '@fluentui/react-components'
 import { DarkThemeRegular } from '@fluentui/react-icons'
 import useTheme from '@/components/Core/Theme/useTheme'
-import SettingsSectionGroupItem from '@/components/Routes/Settings/Section/GroupItem'
+import SettingsGroupItem from '@/components/Routes/Settings/GroupItem'
 
-export default function SettingsSectionGroupItemThemeColor () {
+export default function SettingsGroupItemThemeColor () {
   const { t } = useTranslation()
   const { color, toggleColor } = useTheme()
 
   return (
-    <SettingsSectionGroupItem
+    <SettingsGroupItem
       icon={<DarkThemeRegular style={{ transform: 'rotate(180deg)' }} />}
       title={t('routes.settings.appearance.themeColor.title')}
       subtitle={t('routes.settings.appearance.themeColor.subtitle')}

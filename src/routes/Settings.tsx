@@ -1,12 +1,12 @@
 import React, { Fragment } from 'react'
-import SettingsSectionGroupAppearance from '@/components/Routes/Settings/Section/Appearance'
-import SettingsSectionGroupGeneral from '@/components/Routes/Settings/Section/General'
+import SettingsGroupAppearance from '@/components/Routes/Settings/Appearance'
+import SettingsGroupGeneral from '@/components/Routes/Settings/General'
 
 export default function Settings () {
   return (
     <Fragment>
-      <SettingsSectionGroupGeneral />
-      <SettingsSectionGroupAppearance />
+      <SettingsGroupGeneral />
+      <SettingsGroupAppearance />
     </Fragment>
   )
 }

@@ -11,4 +11,4 @@ export const KnownLanguages = {
 
 export type Language = keyof typeof KnownLanguages
 export const SupportedLanguages = Object.keys(KnownLanguages) as Language[]
-export const DefaultLng = SupportedLanguages[0] || 'en-US'
+export const DefaultLanguage = SupportedLanguages[0] || 'en-US'

@@ -38,7 +38,7 @@ interface Props {
   action: ReactNode
 }
 
-export default function SettingsSectionGroupItem (props: Props) {
+export default function SettingsGroupItem (props: Props) {
   const classes = useStyle()
   return (
     <section className={classes.root}>

@@ -2,14 +2,14 @@ import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { Select } from '@fluentui/react-components'
 import { LocalLanguageRegular } from '@fluentui/react-icons'
-import SettingsSectionGroupItem from '@/components/Routes/Settings/Section/GroupItem'
+import SettingsGroupItem from '@/components/Routes/Settings/GroupItem'
 import { SupportedLanguages } from '@/locales/Declares'
 
-export default function SettingsSectionGroupItemLanguage () {
+export default function SettingsGroupItemLanguage () {
   const { t, i18n } = useTranslation()
 
   return (
-    <SettingsSectionGroupItem
+    <SettingsGroupItem
       icon={<LocalLanguageRegular />}
       title={t('routes.settings.general.language.title')}
       subtitle={t('routes.settings.general.language.subtitle')}

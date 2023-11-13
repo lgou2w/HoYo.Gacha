@@ -1,10 +1,10 @@
 import { initReactI18next } from 'react-i18next'
 import { locale as tauriLocale } from '@tauri-apps/api/os'
 import i18n, { LanguageDetectorAsyncModule } from 'i18next'
-import { KnownLanguages, SupportedLanguages, DefaultLng, Language } from './Declares'
+import { KnownLanguages, SupportedLanguages, DefaultLanguage, Language } from './Declares'
 
 console.debug('Supported languages:', SupportedLanguages)
-console.debug('Default language:', DefaultLng)
+console.debug('Default language:', DefaultLanguage)
 
 const LocalStorageKey = 'HG_LOCALE'
 
@@ -24,7 +24,7 @@ i18n
 
       if (!('__TAURI__' in window)) {
         console.warn('Not the Tauri runtime environment.')
-        return DefaultLng
+        return DefaultLanguage
       }
 
       let tauriLng: string | null = null
@@ -34,7 +34,7 @@ i18n
         console.error('Failed to get Tauri locale:', e)
       }
 
-      return tauriLng || DefaultLng
+      return tauriLng || DefaultLanguage
     },
     cacheUserLanguage (lng) {
       console.debug('Cache user language:', lng)
@@ -45,7 +45,7 @@ i18n
   .init({
     debug: import.meta.env.DEV,
     load: 'currentOnly',
-    fallbackLng: DefaultLng,
+    fallbackLng: DefaultLanguage,
     supportedLngs: SupportedLanguages,
     interpolation: { escapeValue: false },
     resources: KnownLanguages

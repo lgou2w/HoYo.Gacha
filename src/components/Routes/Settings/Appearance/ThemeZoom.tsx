@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { Label, Slider, useId } from '@fluentui/react-components'
 import { Multiplier1XRegular, Multiplier12XRegular, Multiplier15XRegular, Multiplier18XRegular, Multiplier2XRegular } from '@fluentui/react-icons'
 import useTheme from '@/components/Core/Theme/useTheme'
-import SettingsSectionGroupItem from '@/components/Routes/Settings/Section/GroupItem'
+import SettingsGroupItem from '@/components/Routes/Settings/GroupItem'
 
 const ZoomMappings: Record<ReturnType<typeof useTheme>['zoom'], { label: string, icon: ReactNode }> = {
   16: { label: '1x', icon: <Multiplier1XRegular /> },
@@ -13,13 +13,13 @@ const ZoomMappings: Record<ReturnType<typeof useTheme>['zoom'], { label: string,
   32: { label: '2x', icon: <Multiplier2XRegular /> }
 }
 
-export default function SettingsSectionGroupItemThemeZoom () {
+export default function SettingsGroupItemThemeZoom () {
   const { t } = useTranslation()
   const { zoom, change } = useTheme()
   const zoomId = useId()
 
   return (
-    <SettingsSectionGroupItem
+    <SettingsGroupItem
       icon={ZoomMappings[zoom].icon}
       title={t('routes.settings.appearance.themeZoom.title')}
       subtitle={t('routes.settings.appearance.themeZoom.subtitle')}
