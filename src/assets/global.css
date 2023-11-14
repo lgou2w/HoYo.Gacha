@@ -110,3 +110,8 @@ pre {
 .fui-MenuPopover .fui-MenuList .fui-MenuItem .fui-MenuItem__content {
   padding: 0 var(--spacingVerticalSNudge);
 }
+
+.fui-FluentProvider .fui-Tooltip__content {
+  padding: 0.25rem 0.6875rem 0.375rem;
+  max-width: 15rem;
+}

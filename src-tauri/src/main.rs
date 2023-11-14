@@ -11,7 +11,9 @@ use tauri::{Builder as TauriBuilder, WindowBuilder, WindowUrl};
 use time::format_description::FormatItem;
 use time::macros::format_description;
 use tracing::info;
+use tracing_appender::non_blocking as non_blocking_appender;
 use tracing_appender::non_blocking::WorkerGuard;
+use tracing_appender::rolling::RollingFileAppender;
 use tracing_subscriber::filter::LevelFilter;
 use tracing_subscriber::fmt::time::LocalTime;
 use tracing_subscriber::fmt::writer::MakeWriterExt;
@@ -86,13 +88,19 @@ fn initialize_tracing() -> Result<Option<WorkerGuard>, Box<dyn Error>> {
     let logs_dir = appdata_local
       .join(constants::ID)
       .join(constants::LOGS_DIRECTORY);
+
     if !logs_dir.exists() {
       create_dir_all(&logs_dir).unwrap_or_else(|e| panic!("Failed to create logs directory: {e}"));
     }
 
-    let file_appender =
-      tracing_appender::rolling::daily(logs_dir, constants::LOGS_FILE_NAME_PREFIX);
-    let (non_blocking, appender_guard) = tracing_appender::non_blocking(file_appender);
+    let file_appender = RollingFileAppender::builder()
+      .rotation(constants::LOGS_ROTATION)
+      .max_log_files(constants::LOGS_MAX_FILES)
+      .filename_prefix(constants::LOGS_FILE_NAME_PREFIX)
+      .filename_suffix(constants::LOGS_FILE_NAME_SUFFIX)
+      .build(logs_dir)?;
+
+    let (non_blocking, appender_guard) = non_blocking_appender(file_appender);
     subscriber
       .with_ansi(false)
       .with_writer(std::io::stdout.and(non_blocking))

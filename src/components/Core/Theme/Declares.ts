@@ -1,8 +1,8 @@
 import {
-  BrandVariants,
+  // BrandVariants,
   Theme,
-  createDarkTheme,
-  createLightTheme,
+  // createDarkTheme,
+  // createLightTheme,
   webLightTheme,
   webDarkTheme,
   teamsLightTheme,
@@ -68,13 +68,12 @@ function createTheme ([light, dark]: [Theme, Theme]) {
   } as const
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function createThemeByBrandVariants (variants: BrandVariants) {
-  return createTheme([
-    createLightTheme(variants),
-    createDarkTheme(variants)
-  ])
-}
+// function createThemeByBrandVariants (variants: BrandVariants) {
+//   return createTheme([
+//     createLightTheme(variants),
+//     createDarkTheme(variants)
+//   ])
+// }
 
 export const Themes = {
   web: createTheme([webLightTheme, webDarkTheme]),

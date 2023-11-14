@@ -9,7 +9,11 @@ pub const AUTHORS: &str = env!("CARGO_PKG_AUTHORS");
 pub const REPOSITORY: &str = env!("CARGO_PKG_REPOSITORY");
 
 pub const LOGS_DIRECTORY: &str = "logs";
-pub const LOGS_FILE_NAME_PREFIX: &str = NAME;
+pub const LOGS_ROTATION: tracing_appender::rolling::Rotation =
+  tracing_appender::rolling::Rotation::DAILY;
+pub const LOGS_MAX_FILES: usize = 30;
+pub const LOGS_FILE_NAME_PREFIX: &str = "HoYo.Gacha.";
+pub const LOGS_FILE_NAME_SUFFIX: &str = ".log";
 
 // Environment Variables
 

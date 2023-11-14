@@ -31,8 +31,8 @@ thiserror = "1.0.50"
 time = { version = "0.3.30", features = ["formatting", "local-offset", "macros", "serde", "serde-human-readable"] }
 tokio = { version = "1.34.0", features = ["full"] }
 tracing = "0.1.40"
-tracing-appender = "0.2.2"
-tracing-subscriber = { version = "0.3.17", features = ["env-filter", "local-time"] }
+tracing-appender = "0.2.3"
+tracing-subscriber = { version = "0.3.18", features = ["env-filter", "local-time"] }
 url = "2.4.1"
 
 [dependencies.sqlx]
@@ -48,6 +48,7 @@ features = [
 [dependencies.tauri]
 version = "1.5.2"
 features = [
+  "devtools",
   "os-all",
   "window-close",
   "window-maximize",

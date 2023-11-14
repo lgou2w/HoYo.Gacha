@@ -19,7 +19,8 @@ module.exports = {
     'react-refresh',
     'jest',
     'jest-dom',
-    'testing-library'
+    'testing-library',
+    '@tanstack/query'
   ],
   extends: [
     'standard',
@@ -28,7 +29,8 @@ module.exports = {
     'plugin:import/recommended',
     'plugin:promise/recommended',
     'plugin:react/recommended',
-    'plugin:react-hooks/recommended'
+    'plugin:react-hooks/recommended',
+    'plugin:@tanstack/eslint-plugin-query/recommended'
   ],
   overrides: [{
     files: [

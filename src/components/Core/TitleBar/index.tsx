@@ -14,6 +14,7 @@ const useStyles = makeStyles({
     display: 'flex',
     alignItems: 'center',
     height: Height,
+    maxHeight: Height,
     userSelect: 'none',
     color: tokens.colorNeutralForegroundOnBrand,
     backgroundColor: tokens.colorBrandBackground,
@@ -26,9 +27,16 @@ const useStyles = makeStyles({
     height: Height
   },
   brand: {
-    width: '1.5rem',
-    height: '1.5rem',
-    userSelect: 'none'
+    width: `calc(${Height} / 1.6)`,
+    height: `calc(${Height} / 1.6)`,
+    userSelect: 'none',
+    pointerEvents: 'none', // Penetrates the mouse, triggering Tauri drag
+    '-webkit-user-drag': 'none' // Avoid image dragging
+  },
+  title: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    height: '100%'
   }
 })
 
@@ -37,21 +45,13 @@ const useStyles = makeStyles({
 const AttrTauriDragRegion = 'data-tauri-drag-region'
 const Title = `HoYo.Gacha - v${__APP_VERSION__}`
 
-function applyTauriDragRegion (element: Element) {
-  element.setAttribute(AttrTauriDragRegion, '')
-}
-
 export default function TitleBarInner () {
   const containerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (!containerRef.current) return
     if (containerRef.current.hasAttribute(AttrTauriDragRegion)) return
-
-    applyTauriDragRegion(containerRef.current)
-    for (const child of containerRef.current.children) {
-      applyTauriDragRegion(child)
-    }
+    containerRef.current.setAttribute(AttrTauriDragRegion, '')
   }, [containerRef])
 
   const classes = useStyles()
@@ -59,7 +59,7 @@ export default function TitleBarInner () {
     <React.Fragment>
       <div className={classes.root} ref={containerRef}>
         <Image className={classes.brand} src={Logo} shape="square" />
-        <Subtitle2 as="h1">{Title}</Subtitle2>
+        <Subtitle2 className={classes.title} as="h1">{Title}</Subtitle2>
         <TitleBarButtons />
       </div>
       <div className={classes.placeholder} />

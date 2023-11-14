@@ -34,6 +34,7 @@ export default defineConfig({
     }
   ],
   define: {
+    __APP_NAME__: `"${process.env.npm_package_name}"`,
     __APP_VERSION__: `"${process.env.npm_package_version}"`,
     __APP_DESCRIPTION__: `"${process.env.npm_package_description}"`,
     __APP_AUTHOR__: `"${process.env.npm_package_author}"`,
