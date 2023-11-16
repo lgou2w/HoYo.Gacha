@@ -10,8 +10,8 @@ export default {
           '/': '主页',
           '/accounts': '账户',
           '/settings': '设置',
-          '/gacha/genshin': '祈愿',
-          '/gacha/starrail': '跃迁'
+          '/gacha/genshin': '原神',
+          '/gacha/starrail': '崩坏：星穹铁道'
         }
       }
     },

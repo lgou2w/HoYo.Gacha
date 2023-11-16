@@ -10,8 +10,8 @@ export default {
           '/': 'Home',
           '/accounts': 'Accounts',
           '/settings': 'Settings',
-          '/gacha/genshin': 'Wish',
-          '/gacha/starrail': 'Wrap'
+          '/gacha/genshin': 'Genshin Impact',
+          '/gacha/starrail': 'Honkai: Star Rail'
         }
       }
     },
