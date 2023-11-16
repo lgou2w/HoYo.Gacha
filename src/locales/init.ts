@@ -1,7 +1,7 @@
 import { initReactI18next } from 'react-i18next'
 import { locale as tauriLocale } from '@tauri-apps/api/os'
 import i18n, { LanguageDetectorAsyncModule } from 'i18next'
-import { KnownLanguages, SupportedLanguages, DefaultLanguage, Language } from './Declares'
+import { KnownLanguages, SupportedLanguages, DefaultLanguage, Language } from './declares'
 
 console.debug('Supported languages:', SupportedLanguages)
 console.debug('Default language:', DefaultLanguage)

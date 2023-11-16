@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { Select } from '@fluentui/react-components'
 import { LocalLanguageRegular } from '@fluentui/react-icons'
 import SettingsGroupItem from '@/components/Routes/Settings/GroupItem'
-import { SupportedLanguages } from '@/locales/Declares'
+import { SupportedLanguages } from '@/locales/declares'
 
 export default function SettingsGroupItemLanguage () {
   const { t, i18n } = useTranslation()
