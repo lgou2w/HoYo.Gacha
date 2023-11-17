@@ -4,7 +4,7 @@ const CommandPrefix = 'plugin:'
 
 function resolveCommand (pluginName: string, command: string): string {
   if (command.startsWith(CommandPrefix)) {
-    throw new Error(`Command name '${command}' cannot starts with 'plugin:'`)
+    throw new Error(`Command name '${command}' cannot starts with '${CommandPrefix}'`)
   }
 
   // plugin:foo|bar
