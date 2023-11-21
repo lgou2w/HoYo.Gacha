@@ -55,12 +55,12 @@ macro_rules! generate_handlers {
       pub async fn $name(
         database: DatabasePluginState<'_>,
         $($arg_n: $arg_t),*
-      ) -> Result<$result, String> {
+      ) -> Result<$result, crate::database::DatabaseError> {
         $questioner
           .$query($($arg_n),*)
           .$operation(database.executor())
           .await
-          .map_err(|e| format!("{e}")) // TODO: error
+          .map_err(Into::into)
       }
     )*
   };
@@ -94,7 +94,7 @@ mod handler {
       facet: AccountFacet,
       uid: u32,
       game_data_dir: String
-    } create_one and fetch_optional => Option<Account>,
+    } create_one and fetch_one => Account,
 
     delete_account {
       id: u32

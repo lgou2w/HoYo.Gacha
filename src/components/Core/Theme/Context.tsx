@@ -1,5 +1,5 @@
 import React from 'react'
-import { ThemeColor, ThemeSpace } from './Declares'
+import { ThemeColor, ThemeSpace } from './declares'
 
 export interface ThemeContextState {
   space: ThemeSpace

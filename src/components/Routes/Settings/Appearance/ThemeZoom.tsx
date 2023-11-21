@@ -1,7 +1,7 @@
 import React, { Fragment, ReactNode } from 'react'
-import { useTranslation } from 'react-i18next'
 import { Label, Slider, useId } from '@fluentui/react-components'
 import { Multiplier1XRegular, Multiplier12XRegular, Multiplier15XRegular, Multiplier18XRegular, Multiplier2XRegular } from '@fluentui/react-icons'
+import Locale from '@/components/Core/Locale'
 import useTheme from '@/components/Core/Theme/useTheme'
 import SettingsGroupItem from '@/components/Routes/Settings/GroupItem'
 
@@ -14,15 +14,14 @@ const ZoomMappings: Record<ReturnType<typeof useTheme>['zoom'], { label: string,
 }
 
 export default function SettingsGroupItemThemeZoom () {
-  const { t } = useTranslation()
   const { zoom, change } = useTheme()
   const zoomId = useId()
 
   return (
     <SettingsGroupItem
       icon={ZoomMappings[zoom].icon}
-      title={t('components.routes.settings.appearance.themeZoom.title')}
-      subtitle={t('components.routes.settings.appearance.themeZoom.subtitle')}
+      title={<Locale mapping={['components.routes.settings.appearance.themeZoom.title']} />}
+      subtitle={<Locale mapping={['components.routes.settings.appearance.themeZoom.subtitle']} />}
       action={(
         <Fragment>
           <Label htmlFor={zoomId} weight="semibold">{ZoomMappings[zoom].label}</Label>

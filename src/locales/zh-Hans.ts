@@ -1,4 +1,42 @@
 export default {
+  common: {
+    facet: {
+      Genshin: {
+        name: '原神',
+        player: '旅行者',
+        servers: {
+          official: '天空岛',
+          channel: '世界树',
+          oversea: {
+            usa: '美服',
+            euro: '欧服',
+            asia: '亚服',
+            cht: '港澳台服'
+          }
+        },
+        gacha: {
+          name: '祈愿'
+        }
+      },
+      StarRail: {
+        name: '崩坏：星穹铁道',
+        player: '开拓者',
+        servers: {
+          official: '星穹列车',
+          channel: '无名客',
+          oversea: {
+            usa: '美服',
+            euro: '欧服',
+            asia: '亚服',
+            cht: '港澳台服'
+          }
+        },
+        gacha: {
+          name: '跃迁'
+        }
+      }
+    }
+  },
   errorPage: {
     title: '哎呀！',
     subtitle: '抱歉，发生了意外错误。'
@@ -10,13 +48,25 @@ export default {
           '/': '主页',
           '/accounts': '账户',
           '/settings': '设置',
-          '/gacha/genshin': '原神',
-          '/gacha/starrail': '崩坏：星穹铁道'
+          '/gacha/Genshin': '$t(common.facet.Genshin.name)',
+          '/gacha/StarRail': '$t(common.facet.StarRail.name)'
         }
       }
     },
     routes: {
+      accounts: {
+        title: '账户管理',
+        facetView: {
+          toolbar: {
+            title: '$t(common.facet.{{facet}}.name)'
+          },
+          listItem: {
+            server: '服务器：$t(common.facet.{{facet}}.servers.{{path}})'
+          }
+        }
+      },
       settings: {
+        title: '设置',
         general: {
           title: '常规',
           language: {

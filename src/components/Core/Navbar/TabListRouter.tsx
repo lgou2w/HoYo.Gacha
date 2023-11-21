@@ -1,15 +1,14 @@
-import React, { ReactNode } from 'react'
-import { useTranslation } from 'react-i18next'
+import React, { ReactNode, createRef, useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { Tab, TabList, Tooltip, makeStyles, shorthands, tokens } from '@fluentui/react-components'
 import { BoardRegular, BoardFilled, PersonCircleRegular, PersonCircleFilled, SettingsRegular, SettingsFilled } from '@fluentui/react-icons'
+import { AccountFacet, AccountFacets } from '@/api/interfaces/account'
+import Locale from '@/components/Core/Locale'
 import { SparkleRegular, SparkleFilled, TrainRegular } from '@/components/Utilities/Icons'
 
 export const ButtonSize = '2.25rem'
 const useStyles = makeStyles({
-  root: {
-    height: '100%'
-  },
+  root: { height: '100%' },
   tab: {
     ...shorthands.padding(tokens.spacingVerticalM, tokens.spacingHorizontalM),
     ...shorthands.borderRadius(tokens.borderRadiusSmall),
@@ -27,14 +26,23 @@ const useStyles = makeStyles({
     ':hover > .fui-Tab__icon': { color: tokens.colorBrandForeground1 },
     ':active > .fui-Tab__icon': { color: tokens.colorCompoundBrandForeground1Pressed }
   },
-  spacing: {
-    flexGrow: 1
-  }
+  spacing: { flexGrow: 1 }
 })
 
-type Nav = { path: string, icon: { normal: ReactNode, selected?: ReactNode } } | { spacing: true }
+type NavIcon = { normal: ReactNode, selected?: ReactNode }
+type NavItem = { path: string, icon: NavIcon } | { spacing: true }
 
-const Navs: Nav[] = [
+const AccountFacetIconMappings: Record<AccountFacet, NavIcon> = {
+  [AccountFacets.Genshin]: {
+    normal: <SparkleRegular />,
+    selected: <SparkleFilled />
+  },
+  [AccountFacets.StarRail]: {
+    normal: <TrainRegular />
+  }
+}
+
+const Navs: NavItem[] = [
   {
     path: '/',
     icon: {
@@ -42,19 +50,12 @@ const Navs: Nav[] = [
       selected: <BoardFilled />
     }
   },
-  {
-    path: '/gacha/genshin',
-    icon: {
-      normal: <SparkleRegular />,
-      selected: <SparkleFilled />
-    }
-  },
-  {
-    path: '/gacha/starrail',
-    icon: {
-      normal: <TrainRegular />
-    }
-  },
+  ...Object.entries(AccountFacets).map(([key, value]) => {
+    return {
+      path: `/gacha/${key}`,
+      icon: AccountFacetIconMappings[value]
+    } as NavItem
+  }),
   { spacing: true },
   {
     path: '/accounts',
@@ -73,13 +74,59 @@ const Navs: Nav[] = [
 ]
 
 export default function NavbarTabListRouter () {
-  const { t } = useTranslation()
+  // HACK: Development only!
+  //   This side effect is used to observe the height of
+  //   the Tanstack Query Devtools panel and apply it to the TabList.
+  //   Avoid bottom routing buttons being covered.
+  const tabListRef = createRef<HTMLDivElement>()
+  useEffect(() => {
+    if (!tabListRef.current) return
+    if (!import.meta.env.DEV) return
+
+    const container = tabListRef.current
+    const devtoolsContainer = document.getElementsByClassName('tsqd-parent-container').item(0)
+    if (!devtoolsContainer) return
+
+    function updateMaxHeight (container: HTMLElement, target: HTMLElement | null) {
+      let targetHeight = 0
+      if (target && (targetHeight = target.clientHeight) > 0) {
+        container.style.maxHeight = `calc(100% - ${targetHeight}px)`
+      } else {
+        container.style.removeProperty('max-height')
+      }
+    }
+
+    const observer = new MutationObserver((mutations) => {
+      for (const mutation of mutations) {
+        if (mutation.type === 'attributes' &&
+          mutation.target instanceof HTMLElement &&
+          mutation.target.classList.contains('tsqd-main-panel')) {
+          updateMaxHeight(container, mutation.target)
+        }
+      }
+    })
+
+    // Find child element when onmount and updates them once
+    updateMaxHeight(container, devtoolsContainer.querySelector('.tsqd-main-panel'))
+
+    observer.observe(devtoolsContainer, {
+      attributes: true,
+      subtree: true,
+      childList: true
+    })
+
+    return () => {
+      updateMaxHeight(container, null)
+      observer.disconnect()
+    }
+  }, [tabListRef])
+
   const location = useLocation()
   const navigate = useNavigate()
-
   const classes = useStyles()
   return (
     <TabList
+      ref={tabListRef}
       className={classes.root}
       selectedValue={location.pathname}
       onTabSelect={(_, data) => {
@@ -95,7 +142,7 @@ export default function NavbarTabListRouter () {
           return (
             <Tooltip
               key={index}
-              content={t(`components.core.navbar.tabListRouter.${item.path}`)}
+              content={<Locale mapping={[`components.core.navbar.tabListRouter.${item.path}`]} />}
               relationship="label"
               positioning="after"
               withArrow

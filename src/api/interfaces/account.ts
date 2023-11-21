@@ -9,6 +9,10 @@ export const AccountFacets = {
 } as const
 
 export type AccountFacet = typeof AccountFacets[keyof typeof AccountFacets]
+export type AccountFacetsEntry = {
+  key: keyof typeof AccountFacets
+  value: AccountFacet
+}
 
 export interface Account {
   id: number
@@ -29,4 +33,60 @@ export function isGenshinAccount (account: Account): boolean {
 
 export function isStarRailAccount (account: Account): boolean {
   return account.facet === AccountFacets.StarRail
+}
+
+export enum AccountServer {
+  // CN
+  Official = 1,
+  Channel,
+  // OS
+  USA = 10,
+  Euro,
+  Asia,
+  Cht
+}
+
+export const UidRegex = /^[1-9][0-9]{8}$/
+export const UidMinimum = 100_000_000
+export const UidMaximum = 999_999_999
+export function isCorrectUid (uid: number | string): boolean {
+  if (typeof uid === 'string') {
+    return UidRegex.test(uid)
+  } else if (typeof uid === 'number') {
+    return uid >= UidMinimum && uid <= UidMaximum
+  } else {
+    return false
+  }
+}
+
+/** Throws an exception if the `uid` is incorrect value. */
+export function uidFirstDigit (uid: number | string) {
+  if (!isCorrectUid(uid)) {
+    throw new Error(`Incorrect account uid: ${uid}`)
+  } else {
+    typeof uid === 'string' && (uid = parseInt(uid))
+    return Math.floor(uid / UidMinimum) as
+      1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
+  }
+}
+
+export function detectServer (account: Account): AccountServer {
+  const first = uidFirstDigit(account.uid)
+  if (first >= 1 && first <= 4) {
+    return AccountServer.Official
+  } else {
+    switch (first as 5 | 6 | 7 | 8 | 9) {
+      case 5: return AccountServer.Channel
+      case 6: return AccountServer.USA
+      case 7: return AccountServer.Euro
+      case 8: return AccountServer.Asia
+      case 9: return AccountServer.Cht
+    }
+  }
+}
+
+export function isOverseaServer (account: Account): boolean {
+  const first = uidFirstDigit(account.uid)
+  const isCN = first >= 1 && first <= 5 // Official or Channel
+  return !isCN
 }

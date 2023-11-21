@@ -1,21 +1,22 @@
 import React from 'react'
 import { createBrowserRouter } from 'react-router-dom'
-import ErrorPage from '@/ErrorPage'
+import { queryClient } from '@/api/store'
 import Accounts from '@/routes/Accounts'
-import GachaGenshin from '@/routes/Gacha/Genshin'
+import ErrorPage from '@/routes/ErrorPage'
+import GachaFacet from '@/routes/Gacha/Facet'
+import gachaFacetLoader from '@/routes/Gacha/Facet/loader'
 import RootGacha from '@/routes/Gacha/Root'
-import GachaStarRail from '@/routes/Gacha/StarRail'
+import rootGachaLoader from '@/routes/Gacha/Root/loader'
 import Home from '@/routes/Home'
 import Root from '@/routes/Root'
 import rootLoader from '@/routes/Root/loader'
 import Settings from '@/routes/Settings'
-import { queryClient } from '@/store'
 
 const router = createBrowserRouter([
   {
-    errorElement: <ErrorPage />,
     element: <Root />,
     loader: rootLoader(queryClient),
+    errorElement: <ErrorPage />,
     children: [
       { path: '/', element: <Home />, index: true },
       { path: '/accounts', element: <Accounts /> },
@@ -23,9 +24,13 @@ const router = createBrowserRouter([
       {
         path: '/gacha',
         element: <RootGacha />,
+        loader: rootGachaLoader(queryClient),
         children: [
-          { path: '/gacha/genshin', element: <GachaGenshin /> },
-          { path: '/gacha/starrail', element: <GachaStarRail /> }
+          {
+            path: '/gacha/:facet',
+            element: <GachaFacet />,
+            loader: gachaFacetLoader(queryClient)
+          }
         ]
       }
     ]

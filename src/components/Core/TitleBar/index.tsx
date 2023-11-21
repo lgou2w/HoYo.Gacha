@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react'
-import { Image, Subtitle2, makeStyles, tokens } from '@fluentui/react-components'
+import { Image, Subtitle2Stronger, makeStyles, tokens } from '@fluentui/react-components'
 import Logo from '@/assets/images/Logo.png'
 import TitleBarButtons from './Buttons'
 
@@ -45,7 +45,7 @@ const useStyles = makeStyles({
 const AttrTauriDragRegion = 'data-tauri-drag-region'
 const Title = `HoYo.Gacha - v${__APP_VERSION__}`
 
-export default function TitleBarInner () {
+export default function TitleBar () {
   const containerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -59,7 +59,7 @@ export default function TitleBarInner () {
     <React.Fragment>
       <div className={classes.root} ref={containerRef}>
         <Image className={classes.brand} src={Logo} shape="square" />
-        <Subtitle2 className={classes.title} as="h1">{Title}</Subtitle2>
+        <Subtitle2Stronger className={classes.title} as="h1">{Title}</Subtitle2Stronger>
         <TitleBarButtons />
       </div>
       <div className={classes.placeholder} />

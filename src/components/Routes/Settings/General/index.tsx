@@ -1,12 +1,11 @@
 import React from 'react'
-import { useTranslation } from 'react-i18next'
+import Locale from '@/components/Core/Locale'
 import SettingsGroup from '@/components/Routes/Settings/Group'
 import SettingsGroupItemLanguage from './Language'
 
 export default function SettingsGroupGeneral () {
-  const { t } = useTranslation()
   return (
-    <SettingsGroup title={t('components.routes.settings.general.title')}>
+    <SettingsGroup title={<Locale mapping={['components.routes.settings.general.title']} />}>
       <SettingsGroupItemLanguage />
     </SettingsGroup>
   )

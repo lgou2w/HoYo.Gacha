@@ -224,6 +224,11 @@ async fn main() {
       "RELEASE"
     }
   );
+  #[cfg(windows)]
+  info!(
+    "Windows version: {:?}",
+    windows_version::OsVersion::current()
+  );
 
   // Connect database
   let database = initialize_database()

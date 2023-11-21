@@ -1,4 +1,42 @@
 export default {
+  common: {
+    facet: {
+      Genshin: {
+        name: 'Genshin Impact',
+        player: 'Traveler',
+        servers: {
+          official: 'Celestia (CN)',
+          channel: 'Irminsul (CN)',
+          oversea: {
+            usa: 'America',
+            euro: 'Europe',
+            asia: 'Asia',
+            cht: 'TW,HK,MO'
+          }
+        },
+        gacha: {
+          name: 'Wish'
+        }
+      },
+      StarRail: {
+        name: 'Honkai: Star Rail',
+        player: 'Trailblazer',
+        servers: {
+          official: 'Astral Express (CN)',
+          channel: 'The Nameless (CN)',
+          oversea: {
+            usa: 'America',
+            euro: 'Europe',
+            asia: 'Asia',
+            cht: 'TW,HK,MO'
+          }
+        },
+        gacha: {
+          name: 'Wrap'
+        }
+      }
+    }
+  },
   errorPage: {
     title: 'Oops!',
     subtitle: 'Sorry, an unexpected error has occurred.'
@@ -10,13 +48,25 @@ export default {
           '/': 'Home',
           '/accounts': 'Accounts',
           '/settings': 'Settings',
-          '/gacha/genshin': 'Genshin Impact',
-          '/gacha/starrail': 'Honkai: Star Rail'
+          '/gacha/Genshin': '$t(common.facet.Genshin.name)',
+          '/gacha/StarRail': '$t(common.facet.StarRail.name)'
         }
       }
     },
     routes: {
+      accounts: {
+        title: 'Accounts management',
+        facetView: {
+          toolbar: {
+            title: '$t(common.facet.{{facet}}.name)'
+          },
+          listItem: {
+            server: 'Server: $t(common.facet.{{facet}}.servers.{{path}})'
+          }
+        }
+      },
       settings: {
+        title: 'Settings',
         general: {
           title: 'General',
           language: {

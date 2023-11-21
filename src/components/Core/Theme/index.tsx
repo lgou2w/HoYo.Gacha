@@ -2,7 +2,7 @@ import React, { PropsWithChildren, useEffect } from 'react'
 import { FluentProvider, Theme } from '@fluentui/react-components'
 import { useImmer } from 'use-immer'
 import { ThemeContext, ThemeContextState } from './Context'
-import { Themes } from './Declares'
+import { Themes } from './declares'
 
 type ThemeData = Pick<ThemeContextState, 'space' | 'color' | 'zoom'>
 

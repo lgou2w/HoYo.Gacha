@@ -1,7 +1,9 @@
+use std::borrow::Cow;
 use std::path::Path;
 
 use serde::de::DeserializeOwned;
-use serde::Serialize;
+use serde::ser::SerializeStruct;
+use serde::{Serialize, Serializer};
 use sqlx::query::{Query as SqlxQuery, QueryAs as SqlxQueryAs};
 use sqlx::sqlite::{Sqlite, SqliteArguments, SqliteConnectOptions, SqlitePool};
 use tracing::info;
@@ -11,6 +13,30 @@ use tracing::info;
 #[derive(Debug, thiserror::Error)]
 #[error(transparent)]
 pub struct DatabaseError(#[from] pub sqlx::Error);
+
+impl DatabaseError {
+  pub fn code(&self) -> Cow<'_, str> {
+    match &self.0 {
+      sqlx::Error::Database(inner) => inner.code().unwrap(), // FIXME: SAFETY?
+      _ => Cow::Borrowed("-1"),
+    }
+  }
+}
+
+impl Serialize for DatabaseError {
+  fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+  where
+    S: Serializer,
+  {
+    let mut state = serializer.serialize_struct("Error", 3)?;
+    state.serialize_field("identifier", stringify!(DatabaseError))?;
+    state.serialize_field("code", &self.code())?;
+    state.serialize_field("message", &self.to_string())?;
+    state.end()
+  }
+}
+
+// pub struct
 
 /// Database
 
