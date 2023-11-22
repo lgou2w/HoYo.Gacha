@@ -23,6 +23,7 @@ mod constants;
 mod database;
 mod diskcache;
 mod error;
+mod gacha;
 mod utilities;
 
 use crate::database::{Database, DatabasePluginBuilder};

@@ -47,17 +47,17 @@ export type GachaRecord<Facet = AccountFacet> = {
   : NonNullable<unknown>
 )
 
-export type GenshinGachaRecord = GachaRecord<0>
-export type StarRailGachaRecord = GachaRecord<1>
+export type GenshinImpactGachaRecord = GachaRecord<0>
+export type HonkaiStarRailGachaRecord = GachaRecord<1>
 
 // Utilities
 
-export function isGenshinGachaRecord (record: GachaRecord): record is GenshinGachaRecord {
-  return record.facet === AccountFacets.Genshin
+export function isGenshinImpactGachaRecord (record: GachaRecord): record is GenshinImpactGachaRecord {
+  return record.facet === AccountFacets.GenshinImpact
 }
 
-export function isStarRailGachaRecord (record: GachaRecord): record is StarRailGachaRecord {
-  return record.facet === AccountFacets.StarRail
+export function isHonkaiStarRailGachaRecord (record: GachaRecord): record is HonkaiStarRailGachaRecord {
+  return record.facet === AccountFacets.HonkaiStarRail
 }
 
 export function isRankBlueGachaRecord (record: GachaRecord): boolean {

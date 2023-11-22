@@ -37,3 +37,13 @@ user_dirs!(
     appdata_roaming   => "Library/Application Support"
   }
 );
+
+#[inline]
+pub fn mihoyo_dir() -> PathBuf {
+  appdata_local_low().join("miHoYo")
+}
+
+#[inline]
+pub fn cognosphere_dir() -> PathBuf {
+  appdata_local_low().join("Cognosphere")
+}

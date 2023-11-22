@@ -1,32 +1,32 @@
 import React from 'react'
 import { Image, ImageProps } from '@fluentui/react-components'
 import { AccountFacet, AccountFacets } from '@/api/interfaces/account'
-import GenshinAvatarTravelerBoy from '@/assets/images/Genshin/Avatar/Traveler_Boy.png'
-import GenshinAvatarTravelerGirl from '@/assets/images/Genshin/Avatar/Traveler_Girl.png'
-import StarRailAvatarTravelerBoy1 from '@/assets/images/StarRail/Avatar/Trailblazer_Boy_1.png'
-import StarRailAvatarTravelerBoy2 from '@/assets/images/StarRail/Avatar/Trailblazer_Boy_2.png'
-import StarRailAvatarTravelerGirl1 from '@/assets/images/StarRail/Avatar/Trailblazer_Girl_1.png'
-import StarRailAvatarTravelerGirl2 from '@/assets/images/StarRail/Avatar/Trailblazer_Girl_2.png'
+import GenshinImpactAvatarTravelerBoy from '@/assets/images/GenshinImpact/Avatar/Traveler_Boy.png'
+import GenshinImpactAvatarTravelerGirl from '@/assets/images/GenshinImpact/Avatar/Traveler_Girl.png'
+import HonkaiStarRailAvatarTravelerBoy1 from '@/assets/images/HonkaiStarRail/Avatar/Trailblazer_Boy_1.png'
+import HonkaiStarRailAvatarTravelerBoy2 from '@/assets/images/HonkaiStarRail/Avatar/Trailblazer_Boy_2.png'
+import HonkaiStarRailAvatarTravelerGirl1 from '@/assets/images/HonkaiStarRail/Avatar/Trailblazer_Girl_1.png'
+import HonkaiStarRailAvatarTravelerGirl2 from '@/assets/images/HonkaiStarRail/Avatar/Trailblazer_Girl_2.png'
 
 // TODO: Support custom player avatar
 
 type Avatar = { boy: string, girl: string }
 
 const EmbeddedAvatars: Record<AccountFacet, Avatar[]> = {
-  [AccountFacets.Genshin]: [
+  [AccountFacets.GenshinImpact]: [
     {
-      boy: GenshinAvatarTravelerBoy,
-      girl: GenshinAvatarTravelerGirl
+      boy: GenshinImpactAvatarTravelerBoy,
+      girl: GenshinImpactAvatarTravelerGirl
     }
   ],
-  [AccountFacets.StarRail]: [
+  [AccountFacets.HonkaiStarRail]: [
     {
-      boy: StarRailAvatarTravelerBoy1,
-      girl: StarRailAvatarTravelerGirl1
+      boy: HonkaiStarRailAvatarTravelerBoy1,
+      girl: HonkaiStarRailAvatarTravelerGirl1
     },
     {
-      boy: StarRailAvatarTravelerBoy2,
-      girl: StarRailAvatarTravelerGirl2
+      boy: HonkaiStarRailAvatarTravelerBoy2,
+      girl: HonkaiStarRailAvatarTravelerGirl2
     }
   ]
 }

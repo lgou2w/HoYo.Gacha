@@ -1,5 +1,5 @@
 import { Account, AccountFacets } from '@/api/interfaces/account'
-import { GachaRecord, GenshinGachaRecord, StarRailGachaRecord } from '@/api/interfaces/gacha'
+import { GachaRecord, GenshinImpactGachaRecord, HonkaiStarRailGachaRecord } from '@/api/interfaces/gacha'
 import { defineCommand } from './declares'
 
 // See: src-tauri/src/database/plugin.rs
@@ -38,17 +38,17 @@ const Plugin = {
   updateAccountProperties: bind<Pick<Account, 'properties' | 'id'>, Account | null>('update_account_properties'),
   findGachaRecordsByFacetAndUid: bind<Pick<GachaRecord, 'facet' | 'uid'> & Partial<Pick<GachaRecord, 'gachaType'>>, GachaRecord[]>('find_gacha_records_by_facet_and_uid'),
   // Utilities
-  findGenshinGachaRecordsByUid (payload: Pick<GachaRecord, 'uid'> & Partial<Pick<GachaRecord, 'gachaType'>>) {
+  findGenshinImpactGachaRecordsByUid (payload: Pick<GachaRecord, 'uid'> & Partial<Pick<GachaRecord, 'gachaType'>>) {
     return Plugin.findGachaRecordsByFacetAndUid({
       ...payload,
-      facet: AccountFacets.Genshin
-    }) as Promise<GenshinGachaRecord[]>
+      facet: AccountFacets.GenshinImpact
+    }) as Promise<GenshinImpactGachaRecord[]>
   },
-  findStarRailGachaRecordsByUid (payload: Pick<GachaRecord, 'uid'> & Partial<Pick<GachaRecord, 'gachaType'>>) {
+  findHonkaiStarRailGachaRecordsByUid (payload: Pick<GachaRecord, 'uid'> & Partial<Pick<GachaRecord, 'gachaType'>>) {
     return Plugin.findGachaRecordsByFacetAndUid({
       ...payload,
-      facet: AccountFacets.StarRail
-    }) as Promise<StarRailGachaRecord[]>
+      facet: AccountFacets.HonkaiStarRail
+    }) as Promise<HonkaiStarRailGachaRecord[]>
   }
 } as const
 

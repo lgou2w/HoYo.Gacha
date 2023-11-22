@@ -18,6 +18,7 @@ use crate::generate_entity;
 // Facet
 
 #[derive(
+  Copy,
   Clone,
   Debug,
   Deserialize_repr,
@@ -28,11 +29,12 @@ use crate::generate_entity;
   Eq,
   PartialOrd,
   Ord,
+  Hash,
 )]
 #[repr(u8)]
 pub enum AccountFacet {
-  Genshin = 0,
-  StarRail = 1,
+  GenshinImpact = 0,
+  HonkaiStarRail = 1,
 }
 
 impl Type<Sqlite> for AccountFacet {
@@ -43,7 +45,7 @@ impl Type<Sqlite> for AccountFacet {
 
 impl<'r> Encode<'r, Sqlite> for AccountFacet {
   fn encode_by_ref(&self, buf: &mut <Sqlite as HasArguments<'r>>::ArgumentBuffer) -> IsNull {
-    u8::from(self.clone()).encode_by_ref(buf)
+    u8::from(*self).encode_by_ref(buf)
   }
 }
 
@@ -100,7 +102,7 @@ impl<'r> Decode<'r, Sqlite> for AccountProperties {
 generate_entity!({
   #[derive(Clone, Debug, Deserialize, Serialize)]
   #[serde(rename_all = "camelCase")]
-  pub Account {
+  pub struct Account {
     pub id: u32,
     pub facet: AccountFacet,
     pub uid: u32,
@@ -204,7 +206,7 @@ mod tests {
   fn test_serialize() {
     let mut account = Account {
       id: 1,
-      facet: AccountFacet::Genshin,
+      facet: AccountFacet::GenshinImpact,
       uid: 100_000_001,
       game_data_dir: "empty".into(),
       gacha_url: None,
@@ -255,7 +257,7 @@ mod tests {
 
     let account = account.unwrap();
     assert_eq!(account.id, 1);
-    assert_eq!(account.facet, AccountFacet::Genshin);
+    assert_eq!(account.facet, AccountFacet::GenshinImpact);
     assert_eq!(account.uid, 100_000_001);
     assert_eq!(account.game_data_dir, "some game data dir");
     assert_eq!(account.gacha_url.as_deref(), Some("some gacha url"));

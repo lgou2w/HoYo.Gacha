@@ -1,7 +1,7 @@
 export default {
   common: {
     facet: {
-      Genshin: {
+      GenshinImpact: {
         name: '原神',
         player: '旅行者',
         servers: {
@@ -18,7 +18,7 @@ export default {
           name: '祈愿'
         }
       },
-      StarRail: {
+      HonkaiStarRail: {
         name: '崩坏：星穹铁道',
         player: '开拓者',
         servers: {
@@ -48,8 +48,8 @@ export default {
           '/': '主页',
           '/accounts': '账户',
           '/settings': '设置',
-          '/gacha/Genshin': '$t(common.facet.Genshin.name)',
-          '/gacha/StarRail': '$t(common.facet.StarRail.name)'
+          '/gacha/GenshinImpact': '$t(common.facet.GenshinImpact.name)',
+          '/gacha/HonkaiStarRail': '$t(common.facet.HonkaiStarRail.name)'
         }
       }
     },

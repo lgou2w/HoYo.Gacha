@@ -85,7 +85,7 @@ impl<'r> Decode<'r, Sqlite> for GachaRecordRankType {
 generate_entity!({
   #[derive(Clone, Debug, Deserialize, Serialize)]
   #[serde(rename_all = "camelCase")]
-  pub GachaRecord {                     // Genshin Impact          | Honkai: Star Rail
+  pub struct GachaRecord {                     // Genshin Impact          | Honkai: Star Rail
     // HACK: SQLite cannot store u64,
     //   and Id can only use String.
     pub id: String,                     // 1675850760000000000     | <-
@@ -206,7 +206,7 @@ mod tests {
   fn test_serialize() {
     let record = GachaRecord {
       id: "1675850760000000000".into(),
-      facet: AccountFacet::Genshin,
+      facet: AccountFacet::GenshinImpact,
       uid: 100_000_001,
       gacha_type: 400,
       gacha_id: None,
@@ -251,7 +251,7 @@ mod tests {
 
     let record = record.unwrap();
     assert_eq!(record.id, "1675850760000000000");
-    assert_eq!(record.facet, AccountFacet::Genshin);
+    assert_eq!(record.facet, AccountFacet::GenshinImpact);
     assert_eq!(record.uid, 100_000_001);
     assert_eq!(record.gacha_type, 400);
     assert_eq!(record.gacha_id, None);

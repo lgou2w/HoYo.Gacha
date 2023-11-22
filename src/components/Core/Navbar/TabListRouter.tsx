@@ -33,11 +33,11 @@ type NavIcon = { normal: ReactNode, selected?: ReactNode }
 type NavItem = { path: string, icon: NavIcon } | { spacing: true }
 
 const AccountFacetIconMappings: Record<AccountFacet, NavIcon> = {
-  [AccountFacets.Genshin]: {
+  [AccountFacets.GenshinImpact]: {
     normal: <SparkleRegular />,
     selected: <SparkleFilled />
   },
-  [AccountFacets.StarRail]: {
+  [AccountFacets.HonkaiStarRail]: {
     normal: <TrainRegular />
   }
 }

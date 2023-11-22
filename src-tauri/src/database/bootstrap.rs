@@ -110,7 +110,7 @@ pub trait Questioner {
 macro_rules! generate_entity {
   ({
     $(#[$attr:meta])*
-    $vis:vis $entity:ident {
+    $vis:vis struct $entity:ident {
       $(
         $(#[$field_attr:meta])*
         $field_vis:vis $field:ident: $type:ty,

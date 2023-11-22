@@ -4,8 +4,8 @@
 // Declares
 
 export const AccountFacets = {
-  Genshin: 0,
-  StarRail: 1
+  GenshinImpact: 0,
+  HonkaiStarRail: 1
 } as const
 
 export type AccountFacet = typeof AccountFacets[keyof typeof AccountFacets]
@@ -27,12 +27,12 @@ export interface Account {
 
 // Utilities
 
-export function isGenshinAccount (account: Account): boolean {
-  return account.facet === AccountFacets.Genshin
+export function isGenshinImpactAccount (account: Account): boolean {
+  return account.facet === AccountFacets.GenshinImpact
 }
 
-export function isStarRailAccount (account: Account): boolean {
-  return account.facet === AccountFacets.StarRail
+export function isHonkaiStarRailAccount (account: Account): boolean {
+  return account.facet === AccountFacets.HonkaiStarRail
 }
 
 export enum AccountServer {

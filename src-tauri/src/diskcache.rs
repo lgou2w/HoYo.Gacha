@@ -2,7 +2,7 @@ use std::borrow::Cow;
 use std::collections::HashMap;
 use std::fmt::{Debug, Formatter};
 use std::fs::File;
-use std::io::{Error, ErrorKind, Read, Result, Seek, SeekFrom};
+use std::io::{Cursor, Error, ErrorKind, Read, Result, Seek, SeekFrom};
 use std::path::Path;
 
 use once_cell::sync::Lazy;
@@ -51,7 +51,7 @@ static FILE_BLOCK_SIZE_MAPPINGS: Lazy<HashMap<u32, u32>> = Lazy::new(|| {
 });
 
 #[derive(Clone, PartialEq, Eq)]
-pub struct CacheAddr(u32);
+pub struct CacheAddr(pub u32);
 
 impl CacheAddr {
   pub fn is_initialized(&self) -> bool {
@@ -161,9 +161,12 @@ macro_rules! impl_int {
 /// to be called only where `T` is a numeric type.
 unsafe fn slice_to_u8_mut<T: Copy>(slice: &mut [T]) -> &mut [u8] {
   use core::slice::from_raw_parts_mut;
-  use std::mem::size_of_val;
+  use std::mem::size_of;
 
-  let len = size_of_val(slice) * slice.len();
+  // HACK: Get the size of type `T``, not the variable `slice`
+  #[allow(clippy::manual_slice_size_calculation)]
+  let len = size_of::<T>() * slice.len();
+
   from_raw_parts_mut(slice.as_mut_ptr() as *mut u8, len)
 }
 
