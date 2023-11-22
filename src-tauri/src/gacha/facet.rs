@@ -421,12 +421,16 @@ fn lookup_path_line_from_keyword(
     return Ok(None);
   }
 
-  let file = File::open(log_file)?;
+  let file = File::open(&log_file)?;
   let reader = BufReader::new(file);
   let keyword = keyword.as_ref();
   let keyword_len = keyword.len();
 
-  info!("Starting from the log file, look for the keyword: {keyword}");
+  info!(
+    "Starting from the log file: {:?}, look for the keyword: {keyword}",
+    log_file.as_ref()
+  );
+
   for line in reader.lines().map(|l| l.unwrap()) {
     if !line.contains(keyword) {
       continue;

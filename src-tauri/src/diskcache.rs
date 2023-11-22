@@ -2,7 +2,7 @@ use std::borrow::Cow;
 use std::collections::HashMap;
 use std::fmt::{Debug, Formatter};
 use std::fs::File;
-use std::io::{Cursor, Error, ErrorKind, Read, Result, Seek, SeekFrom};
+use std::io::{Error, ErrorKind, Read, Result, Seek, SeekFrom};
 use std::path::Path;
 
 use once_cell::sync::Lazy;
@@ -163,7 +163,7 @@ unsafe fn slice_to_u8_mut<T: Copy>(slice: &mut [T]) -> &mut [u8] {
   use core::slice::from_raw_parts_mut;
   use std::mem::size_of;
 
-  // HACK: Get the size of type `T``, not the variable `slice`
+  // HACK: Get the size of type `T`, not the variable `slice`
   #[allow(clippy::manual_slice_size_calculation)]
   let len = size_of::<T>() * slice.len();
 

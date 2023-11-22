@@ -85,7 +85,7 @@ impl<'r> Decode<'r, Sqlite> for GachaRecordRankType {
 generate_entity!({
   #[derive(Clone, Debug, Deserialize, Serialize)]
   #[serde(rename_all = "camelCase")]
-  pub struct GachaRecord {                     // Genshin Impact          | Honkai: Star Rail
+  pub struct GachaRecord {              // Genshin Impact          | Honkai: Star Rail
     // HACK: SQLite cannot store u64,
     //   and Id can only use String.
     pub id: String,                     // 1675850760000000000     | <-
