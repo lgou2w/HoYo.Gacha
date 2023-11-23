@@ -18,6 +18,7 @@ tauri-build = { version = "1.5.0", features = [] }
 
 [dependencies]
 async-trait = "0.1.74"
+exponential-backoff = "1.2.0"
 futures-util = "0.3.29"
 human-panic = "1.2.2"
 num_enum = "0.7.1"

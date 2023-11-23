@@ -6,6 +6,7 @@ use std::ops::Deref;
 use std::path::{Path, PathBuf};
 
 use async_trait::async_trait;
+use futures_util::future::BoxFuture;
 use once_cell::sync::Lazy;
 use regex::Regex;
 use serde::de::IntoDeserializer;
@@ -33,9 +34,50 @@ pub enum GachaFacetError {
   IllegalGachaUrl(String),
 
   // Only if retcode is not 0
-  #[error("Response error when fetch gacha records: {{ retcode: {retcode}, message: {message} }}")]
-  GachaRecordsResponse { retcode: i32, message: String },
+  #[error("Response error when fetching gacha records: {0}")]
+  GachaRecordsResponse(GachaRecordsResponseKind),
 }
+
+#[derive(Debug)]
+pub enum GachaRecordsResponseKind {
+  // retcode: -101, message: "authkey timeout"
+  AuthkeyTimeout,
+
+  // retcode: -110, message: "visit too frequently"
+  VisitTooFrequently,
+
+  // Other error retcodes
+  Unknown { retcode: i32, message: String },
+}
+
+impl GachaRecordsResponseKind {
+  fn from(retcode: i32, message: String) -> Self {
+    debug_assert!(retcode != 0, "Zero is not an error retcode");
+    match retcode {
+      -101 => Self::AuthkeyTimeout,
+      -110 => Self::VisitTooFrequently,
+      _ => Self::Unknown { retcode, message },
+    }
+  }
+}
+
+impl Display for GachaRecordsResponseKind {
+  fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+    match self {
+      Self::AuthkeyTimeout | Self::VisitTooFrequently => f
+        .debug_tuple("GachaRecordsResponseKind")
+        .field(self)
+        .finish(),
+      Self::Unknown { retcode, message } => f
+        .debug_struct("GachaRecordsResponseKind")
+        .field("retcode", retcode)
+        .field("message", message)
+        .finish(),
+    }
+  }
+}
+
+// Facet
 
 pub trait FacetDeclare {
   fn facet(&self) -> &'static AccountFacet;
@@ -301,6 +343,15 @@ struct GachaRecordsResponse {
   data: Option<GachaRecordsPagination>,
 }
 
+impl GachaRecordsResponse {
+  fn is_empty_data(&self) -> bool {
+    match &self.data {
+      None => true,
+      Some(data) => data.list.is_empty(),
+    }
+  }
+}
+
 #[derive(Deserialize)]
 struct GachaRecordsPagination {
   // page: String,
@@ -309,6 +360,63 @@ struct GachaRecordsPagination {
   list: Vec<GachaRecordsPaginationItem>,
   region: String,
   region_time_zone: Option<i8>, // `Honkai: Star Rail` only
+}
+
+async fn request_gacha_url(url: Url) -> Result<GachaRecordsResponse, GachaFacetError> {
+  let response: GachaRecordsResponse = constants::REQWEST.get(url).send().await?.json().await?;
+  let retcode = response.retcode;
+  if retcode != 0 {
+    Err(GachaFacetError::GachaRecordsResponse(
+      GachaRecordsResponseKind::from(retcode, response.message),
+    ))
+  } else {
+    Ok(response)
+  }
+}
+
+fn request_gacha_url_with_retry(
+  url: Url,
+  retries: u8,
+) -> BoxFuture<'static, Result<GachaRecordsResponse, GachaFacetError>> {
+  use std::time::Duration;
+
+  use exponential_backoff::Backoff;
+  use futures_util::FutureExt;
+  use tokio::time::sleep;
+
+  let min = Duration::from_millis(200);
+  let max = Duration::from_millis(10_000);
+  let backoff = Backoff::new(retries as u32, min, max);
+
+  async move {
+    for duration in &backoff {
+      match request_gacha_url(url.clone()).await {
+        // okay
+        Ok(response) => return Ok(response),
+
+        // Wait and retry only if the error is VisitTooFrequently.
+        Err(GachaFacetError::GachaRecordsResponse(
+          GachaRecordsResponseKind::VisitTooFrequently,
+        )) => {
+          debug!(
+            "Requesting gacha url visit too frequently, wait({}s) and retry...",
+            duration.as_secs_f32()
+          );
+          sleep(duration).await;
+          continue;
+        }
+
+        // Other errors are returned
+        Err(error) => return Err(error),
+      }
+    }
+
+    // Maximum number of retries reached
+    Err(GachaFacetError::GachaRecordsResponse(
+      GachaRecordsResponseKind::VisitTooFrequently,
+    ))
+  }
+  .boxed()
 }
 
 fn string_as_number<'de, D, T>(de: D) -> Result<T, D::Error>
@@ -370,6 +478,67 @@ struct GachaRecordsPaginationItem {
   item_id: Option<String>, // `Honkai: Star Rail` only
 }
 
+struct ParsedGachaUrl<'a> {
+  base_url: &'a str,
+  query: &'a str,
+  parsed: Url,
+}
+
+fn parse_and_merge_gacha_url<'a>(
+  gacha_url: &'a str,
+  gacha_type: Option<&str>,
+  end_id: Option<&str>,
+) -> Result<ParsedGachaUrl<'a>, GachaFacetError> {
+  let query_start = gacha_url
+    .find('?')
+    .ok_or(GachaFacetError::IllegalGachaUrl(gacha_url.to_owned()))?;
+
+  let base_url = &gacha_url[..query_start];
+  let query_str = &gacha_url[query_start + 1..];
+
+  let mut queries = url::form_urlencoded::parse(query_str.as_bytes())
+    .into_owned()
+    .collect::<HashMap<String, String>>();
+
+  let origin_gacha_type = queries
+    .get("gacha_type")
+    .cloned()
+    .or(queries.get("init_type").cloned())
+    .ok_or(GachaFacetError::IllegalGachaUrl(gacha_url.to_owned()))?;
+
+  let origin_end_id = queries.get("end_id").cloned();
+  let gacha_type = gacha_type.unwrap_or(&origin_gacha_type);
+
+  queries.remove("gacha_type");
+  queries.remove("page");
+  queries.remove("size");
+  queries.remove("begin_id");
+  queries.remove("end_id");
+
+  let mut url = Url::parse_with_params(base_url, queries).map_err(|e| {
+    // Normally, this is never reachable here.
+    // Unless it's a `url` crate issue.
+    warn!("Error parsing gacha url with params: {e}");
+    GachaFacetError::IllegalGachaUrl(gacha_url.to_owned())
+  })?;
+
+  url
+    .query_pairs_mut()
+    .append_pair("page", "1")
+    .append_pair("size", "20")
+    .append_pair("gacha_type", gacha_type);
+
+  if let Some(end_id) = end_id.or(origin_end_id.as_deref()) {
+    url.query_pairs_mut().append_pair("end_id", end_id);
+  }
+
+  Ok(ParsedGachaUrl {
+    base_url,
+    query: query_str,
+    parsed: url,
+  })
+}
+
 #[async_trait]
 pub trait GameGachaRecordFetcher: FacetDeclare + Send + Sync {
   async fn fetch_gacha_records(
@@ -378,94 +547,53 @@ pub trait GameGachaRecordFetcher: FacetDeclare + Send + Sync {
     gacha_type: Option<&str>,
     end_id: Option<&str>,
   ) -> Result<Option<Vec<GachaRecord>>, GachaFacetError> {
-    let query_start = gacha_url
-      .find('?')
-      .ok_or(GachaFacetError::IllegalGachaUrl(gacha_url.to_owned()))?;
-
-    let base_url = &gacha_url[..query_start];
-    let query_str = &gacha_url[query_start + 1..];
+    let gacha_url = parse_and_merge_gacha_url(gacha_url, gacha_type, end_id)?;
 
     info!(
-      "Fetching the Game({:?}) gacha records: Url={base_url}, GachaType={gacha_type:?}, EndId={end_id:?}",
+      "Fetching the Game({:?}) gacha records: GachaType={gacha_type:?}, EndId={end_id:?}",
       self.facet()
     );
+    info!("\tBase url: {}", gacha_url.base_url);
+    info!("\tQuery: {}", gacha_url.query);
 
-    let mut queries = url::form_urlencoded::parse(query_str.as_bytes())
-      .into_owned()
-      .collect::<HashMap<String, String>>();
-
-    let origin_gacha_type = queries
-      .get("gacha_type")
-      .cloned()
-      .or(queries.get("init_type").cloned())
-      .ok_or(GachaFacetError::IllegalGachaUrl(gacha_url.to_owned()))?;
-
-    let origin_end_id = queries.get("end_id").cloned();
-    let gacha_type = gacha_type.unwrap_or(&origin_gacha_type);
-
-    queries.remove("gacha_type");
-    queries.remove("page");
-    queries.remove("size");
-    queries.remove("begin_id");
-    queries.remove("end_id");
-
-    let mut url = Url::parse_with_params(base_url, queries).map_err(|e| {
-      // Normally, this is never reachable here.
-      // Unless it's a `url` crate issue.
-      warn!("Error parsing gacha url with params: {e}");
-      GachaFacetError::IllegalGachaUrl(gacha_url.to_owned())
-    })?;
-
-    url
-      .query_pairs_mut()
-      .append_pair("page", "1")
-      .append_pair("size", "20")
-      .append_pair("gacha_type", gacha_type);
-
-    if let Some(end_id) = end_id.or(origin_end_id.as_deref()) {
-      url.query_pairs_mut().append_pair("end_id", end_id);
-    }
-
-    // TODO: retcode: -101, message: "authkey timeout"
-    // TODO: retcode: -110, message: "visit too frequently"
-
-    let response: GachaRecordsResponse = constants::REQWEST.get(url).send().await?.json().await?;
-    let retcode = response.retcode;
-    if retcode != 0 {
-      let message = response.message;
-      warn!("Response error with Retcode({retcode}): {message}");
-      return Err(GachaFacetError::GachaRecordsResponse { retcode, message });
-    }
-
-    if let Some(data) = response.data {
-      if !data.list.is_empty() {
-        let list = data.list;
-        info!("Acquired {} gacha records", list.len());
-
-        let facet = self.facet();
-        let mut records = Vec::with_capacity(list.len());
-        for value in list {
-          records.push(GachaRecord {
-            id: value.id,
-            facet: *facet,
-            uid: value.uid,
-            gacha_type: value.gacha_type,
-            gacha_id: value.gacha_id,
-            rank_type: GachaRecordRankType::try_from(value.rank_type).unwrap(), // FIXME: SAFETY?
-            count: value.count,
-            time: value.time,
-            lang: value.lang,
-            name: value.name,
-            item_type: value.item_type,
-            item_id: value.item_id,
-          })
-        }
-
-        return Ok(Some(records));
+    // HACK: Default maximum 5 attempts
+    const RETRIES: u8 = 5;
+    let pagination = match request_gacha_url_with_retry(gacha_url.parsed, RETRIES).await {
+      Err(error) => {
+        warn!("Responded with an error while fetching the gacha records: {error:?}");
+        return Err(error);
       }
+      Ok(response) => {
+        if response.is_empty_data() {
+          return Ok(None);
+        } else {
+          response.data.unwrap() // SAFETY
+        }
+      }
+    };
+
+    info!("Acquired {} gacha records", pagination.list.len());
+
+    let facet = self.facet();
+    let mut records = Vec::with_capacity(pagination.list.len());
+    for value in pagination.list {
+      records.push(GachaRecord {
+        id: value.id,
+        facet: *facet,
+        uid: value.uid,
+        gacha_type: value.gacha_type,
+        gacha_id: value.gacha_id,
+        rank_type: GachaRecordRankType::try_from(value.rank_type).unwrap(), // FIXME: SAFETY?
+        count: value.count,
+        time: value.time,
+        lang: value.lang,
+        name: value.name,
+        item_type: value.item_type,
+        item_id: value.item_id,
+      })
     }
 
-    Ok(None)
+    Ok(Some(records))
   }
 
   async fn fetch_gacha_records_any_uid(
