@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use std::fmt::{Debug, Formatter};
+use std::fmt::{Debug, Display, Formatter};
 use std::fs::{read_dir, File};
 use std::io::{BufRead, BufReader};
 use std::ops::Deref;
@@ -8,9 +8,8 @@ use std::path::{Path, PathBuf};
 use async_trait::async_trait;
 use once_cell::sync::Lazy;
 use regex::Regex;
-use serde::Deserialize;
-use serde_json::map::Map as Json;
-use serde_json::Value as JsonValue;
+use serde::de::IntoDeserializer;
+use serde::{Deserialize, Deserializer};
 use time::OffsetDateTime;
 use tracing::{debug, info, warn};
 use url::Url;
@@ -101,7 +100,7 @@ pub trait GameDirectoryFinder: FacetDeclare {
   // ${GAME_DATA_DIR}/webCaches/${VERSION}
   fn find_web_caches_versions(
     &self,
-    game_data_dir: &PathBuf,
+    game_data_dir: &Path,
   ) -> Result<Vec<WebCachesVersion>, GachaFacetError> {
     info!(
       "Finding the Game({:?}) webCaches versions: {:?}",
@@ -128,14 +127,14 @@ pub trait GameDirectoryFinder: FacetDeclare {
   // ${GAME_DATA_DIR}/webCaches/${VERSION}/Cache/Cache_Data
   fn find_web_caches_latest_data_dir(
     &self,
-    game_data_dir: PathBuf,
+    game_data_dir: &Path,
   ) -> Result<Option<PathBuf>, GachaFacetError> {
     info!(
       "Finding the latest version of the Game({:?}) webCaches data directory: {:?}",
       self.facet(),
       game_data_dir
     );
-    let mut web_caches_versions = self.find_web_caches_versions(&game_data_dir)?;
+    let mut web_caches_versions = self.find_web_caches_versions(game_data_dir)?;
     if web_caches_versions.is_empty() {
       warn!("No version available");
       return Ok(None);
@@ -161,23 +160,41 @@ pub trait GameDirectoryFinder: FacetDeclare {
   }
 }
 
+/// The gacha url does not know the owner of the `uid`.
+///
+/// It can only be learned from a record after a successful request.
+/// Provided the record is not an empty list.
 #[derive(Debug)]
 pub struct GameGachaUrl {
-  pub addr: u32,
-  pub creation_time: OffsetDateTime,
-  pub value: String,
+  pub addr: u32,                     // Disk cache -> index -> Cache address
+  pub long_key: u32,                 // Entry store -> long key -> data_2
+  pub creation_time: OffsetDateTime, // Url creation time: Generally valid for 1 day
+  pub value: String,                 // Gacha url
 }
 
-static REGEX_GACHA_URL: Lazy<Regex> =
-  Lazy::new(|| Regex::new(r"^https:\/\/.*(\/getGachaLog\?).*(authkey\=).*$").unwrap());
+// gacha_url.value -> &str
+impl AsRef<str> for GameGachaUrl {
+  fn as_ref(&self) -> &str {
+    &self.value
+  }
+}
+
+static REGEX_GACHA_URL: Lazy<Regex> = Lazy::new(|| {
+  Regex::new(r"^https:\/\/.*(mihoyo.com|hoyoverse.com).*(\/getGachaLog\?).*(authkey\=).*$").unwrap()
+});
 
 pub trait GameGachaUrlFinder: FacetDeclare + GameDirectoryFinder {
+  /// Determine if a url is a gacha url.
   fn is_correct_gacha_url(&self, url: &str, _is_oversea: bool) -> bool {
-    REGEX_GACHA_URL.is_match(url)
+    REGEX_GACHA_URL.is_match(url) // fundamental characteristic
   }
 
+  /// Reads all gacha urls from the `disk cache` and sorts them by creation date `desc`.
+  ///
+  /// If the `Game directory` or `webCaches directory` is not available, the result is a `None`.
   fn find_gacha_urls(
     &self,
+    game_data_dir: &Path,
     skip_expired: bool,
     is_oversea: bool,
   ) -> Result<Option<Vec<GameGachaUrl>>, GachaFacetError> {
@@ -185,13 +202,8 @@ pub trait GameGachaUrlFinder: FacetDeclare + GameDirectoryFinder {
       "Finding the Game({:?}) gacha urls: SkipExpired={skip_expired}, IsOversea={is_oversea}",
       self.facet()
     );
-    let game_data_dir = self.find_game_data_dir(is_oversea)?;
-    if game_data_dir.is_none() {
-      warn!("No Game data directory available");
-      return Ok(None);
-    }
 
-    let cache_data_dir = self.find_web_caches_latest_data_dir(game_data_dir.unwrap())?;
+    let cache_data_dir = self.find_web_caches_latest_data_dir(game_data_dir)?;
     if cache_data_dir.is_none() {
       warn!("No Game webCaches data directory available");
       return Ok(None);
@@ -262,10 +274,12 @@ pub trait GameGachaUrlFinder: FacetDeclare + GameDirectoryFinder {
       }
 
       info!("Valid gacha url exist in the cache address: {addr:?}");
+      info!("\tLong key: {:?}", entry_store.long_key);
       info!("\tCreation time: {creation_time:?}");
       info!("\tUrl: {url}");
       urls.push(GameGachaUrl {
         addr: addr.0,
+        long_key: entry_store.long_key.0,
         creation_time,
         value: url.to_owned(),
       })
@@ -282,9 +296,78 @@ pub trait GameGachaUrlFinder: FacetDeclare + GameDirectoryFinder {
 
 #[derive(Deserialize)]
 struct GachaRecordsResponse {
-  pub retcode: i32,
-  pub message: String,
-  pub data: Option<Json<String, JsonValue>>,
+  retcode: i32,
+  message: String,
+  data: Option<GachaRecordsPagination>,
+}
+
+#[derive(Deserialize)]
+struct GachaRecordsPagination {
+  // page: String,
+  // size: String,
+  // total: String, // `Honkai: Star Rail` only
+  list: Vec<GachaRecordsPaginationItem>,
+  region: String,
+  region_time_zone: Option<i8>, // `Honkai: Star Rail` only
+}
+
+fn string_as_number<'de, D, T>(de: D) -> Result<T, D::Error>
+where
+  D: Deserializer<'de>,
+  T: TryFrom<u64>,
+  T::Error: Display,
+{
+  let str = String::deserialize(de)?;
+  let num = str.parse::<u64>().map_err(serde::de::Error::custom)?;
+  T::try_from(num).map_err(serde::de::Error::custom)
+}
+
+fn empty_string_as_none<'de, D, T>(de: D) -> Result<Option<T>, D::Error>
+where
+  D: Deserializer<'de>,
+  T: Deserialize<'de>,
+{
+  let opt = Option::<String>::deserialize(de)?;
+  match opt.as_deref() {
+    None | Some("") => Ok(None),
+    Some(s) => T::deserialize(s.into_deserializer()).map(Some),
+  }
+}
+
+fn gacha_id_de<'de, D>(de: D) -> Result<Option<u32>, D::Error>
+where
+  D: Deserializer<'de>,
+{
+  let opt: Option<String> = empty_string_as_none(de)?;
+  match opt.as_deref() {
+    None => Ok(None),
+    Some(str) => {
+      let num: u64 = string_as_number(str.into_deserializer())?;
+      let res = u32::try_from(num).map_err(serde::de::Error::custom)?;
+      Ok(Some(res))
+    }
+  }
+}
+
+#[derive(Deserialize)]
+struct GachaRecordsPaginationItem {
+  id: String,
+  #[serde(deserialize_with = "string_as_number")]
+  uid: u32,
+  #[serde(deserialize_with = "string_as_number")]
+  gacha_type: u32,
+  #[serde(deserialize_with = "gacha_id_de", default = "Option::default")]
+  gacha_id: Option<u32>, // `Honkai: Star Rail` only
+  #[serde(deserialize_with = "string_as_number")]
+  rank_type: u8,
+  #[serde(deserialize_with = "string_as_number")]
+  count: u32,
+  time: String,
+  lang: String,
+  name: String,
+  item_type: String,
+  #[serde(deserialize_with = "empty_string_as_none", default = "Option::default")]
+  item_id: Option<String>, // `Honkai: Star Rail` only
 }
 
 #[async_trait]
@@ -314,6 +397,7 @@ pub trait GameGachaRecordFetcher: FacetDeclare + Send + Sync {
     let origin_gacha_type = queries
       .get("gacha_type")
       .cloned()
+      .or(queries.get("init_type").cloned())
       .ok_or(GachaFacetError::IllegalGachaUrl(gacha_url.to_owned()))?;
 
     let origin_end_id = queries.get("end_id").cloned();
@@ -325,8 +409,12 @@ pub trait GameGachaRecordFetcher: FacetDeclare + Send + Sync {
     queries.remove("begin_id");
     queries.remove("end_id");
 
-    let mut url = Url::parse_with_params(base_url, queries)
-      .map_err(|_| GachaFacetError::IllegalGachaUrl(gacha_url.to_owned()))?;
+    let mut url = Url::parse_with_params(base_url, queries).map_err(|e| {
+      // Normally, this is never reachable here.
+      // Unless it's a `url` crate issue.
+      warn!("Error parsing gacha url with params: {e}");
+      GachaFacetError::IllegalGachaUrl(gacha_url.to_owned())
+    })?;
 
     url
       .query_pairs_mut()
@@ -338,6 +426,9 @@ pub trait GameGachaRecordFetcher: FacetDeclare + Send + Sync {
       url.query_pairs_mut().append_pair("end_id", end_id);
     }
 
+    // TODO: retcode: -101, message: "authkey timeout"
+    // TODO: retcode: -110, message: "visit too frequently"
+
     let response: GachaRecordsResponse = constants::REQWEST.get(url).send().await?.json().await?;
     let retcode = response.retcode;
     if retcode != 0 {
@@ -347,41 +438,26 @@ pub trait GameGachaRecordFetcher: FacetDeclare + Send + Sync {
     }
 
     if let Some(data) = response.data {
-      if let Some(list) = data.get("list").and_then(JsonValue::as_array) {
+      if !data.list.is_empty() {
+        let list = data.list;
         info!("Acquired {} gacha records", list.len());
-        let mut records = Vec::with_capacity(list.len());
-        let facet = self.facet();
 
-        // FIXME: unwrap
-        //   If the response data is correct, then `unwrap` is safety.
-        //   But to be sure, Shouldn't do this.
+        let facet = self.facet();
+        let mut records = Vec::with_capacity(list.len());
         for value in list {
           records.push(GachaRecord {
-            id: value["id"].to_string(),
+            id: value.id,
             facet: *facet,
-            uid: value["uid"].as_str().unwrap().parse().unwrap(),
-            gacha_type: value["gacha_type"].as_str().unwrap().parse().unwrap(),
-            gacha_id: value
-              .get("gacha_id")
-              .map(|v| v.as_str().unwrap().parse::<u32>().unwrap()),
-            rank_type: GachaRecordRankType::try_from(
-              value["rank_type"].as_str().unwrap().parse::<u8>().unwrap(),
-            )
-            .unwrap(),
-            count: value["count"].as_str().unwrap().parse().unwrap(),
-            time: value["time"].to_string(),
-            lang: value["lang"].to_string(),
-            name: value["name"].to_string(),
-            item_type: value["item_type"].to_string(),
-            item_id: value.get("item_id").and_then(|v| {
-              let v = v.as_str().unwrap();
-              if !v.is_empty() {
-                Some(v.to_owned())
-              } else {
-                // If it is the empty string, then it is `None`
-                None
-              }
-            }),
+            uid: value.uid,
+            gacha_type: value.gacha_type,
+            gacha_id: value.gacha_id,
+            rank_type: GachaRecordRankType::try_from(value.rank_type).unwrap(), // FIXME: SAFETY?
+            count: value.count,
+            time: value.time,
+            lang: value.lang,
+            name: value.name,
+            item_type: value.item_type,
+            item_id: value.item_id,
           })
         }
 
@@ -503,7 +579,7 @@ generate_facets!(
 
 // Wrapper
 
-pub struct GachaFacet(Box<dyn GachaFacetInner + Send + Sync>);
+pub struct GachaFacet(Box<dyn GachaFacetInner>);
 
 impl Debug for GachaFacet {
   fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
@@ -536,5 +612,35 @@ impl GachaFacet {
   fn ref_by(facet: &AccountFacet) -> &Self {
     // `unwrap` Make sure there is a corresponding mapping for `GACHA_FACETS`.
     GACHA_FACETS.get(facet).unwrap()
+  }
+}
+
+#[cfg(test)]
+mod tests {
+  use super::GachaFacet;
+  use crate::database::AccountFacet;
+
+  #[ignore = "This is a test with unknown results. For manual testing only"]
+  #[tokio::test]
+  async fn test_fetch_gacha_records() -> Result<(), Box<dyn std::error::Error>> {
+    let skip_expired_gacha_urls = true;
+    let is_oversea = false;
+    let facet = AccountFacet::GenshinImpact;
+
+    let facet = GachaFacet::ref_by(&facet);
+    if let Some(game_data_dir) = facet.find_game_data_dir(is_oversea)? {
+      if let Some(gacha_urls) =
+        facet.find_gacha_urls(&game_data_dir, skip_expired_gacha_urls, is_oversea)?
+      {
+        let gacha_url = &gacha_urls[0];
+        let records = facet
+          .fetch_gacha_records(gacha_url.as_ref(), None, None)
+          .await?;
+
+        println!("{records:?}");
+      }
+    }
+
+    Ok(())
   }
 }
