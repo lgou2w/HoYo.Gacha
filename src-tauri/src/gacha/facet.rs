@@ -398,7 +398,7 @@ fn request_gacha_url_with_retry(
         Err(GachaFacetError::GachaRecordsResponse(
           GachaRecordsResponseKind::VisitTooFrequently,
         )) => {
-          debug!(
+          warn!(
             "Requesting gacha url visit too frequently, wait({}s) and retry...",
             duration.as_secs_f32()
           );
@@ -412,6 +412,7 @@ fn request_gacha_url_with_retry(
     }
 
     // Maximum number of retries reached
+    warn!("Maximum number of retries exceeded: {retries}");
     Err(GachaFacetError::GachaRecordsResponse(
       GachaRecordsResponseKind::VisitTooFrequently,
     ))
