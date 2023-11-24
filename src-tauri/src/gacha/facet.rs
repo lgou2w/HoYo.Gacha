@@ -952,14 +952,14 @@ mod tests {
     )
   }
 
-  // #[ignore = "This is a test with unknown results. For manual testing only"]
+  #[ignore = "This is a test with unknown results. For manual testing only"]
   #[tokio::test]
   async fn test_fetch_gacha_records() -> Result<(), Box<dyn std::error::Error>> {
     install_tracing();
     let facet = GachaFacet::ref_by(&AccountFacet::GenshinImpact);
     if let Some(gacha_urls) = find_gacha_urls(facet)? {
       let gacha_url = &gacha_urls[0];
-      // println!("{:?}", facet.fetch_gacha_records(gacha_url.as_ref()).await?);
+      println!("{:?}", facet.fetch_gacha_records(gacha_url.as_ref()).await?);
       println!(
         "{:?}",
         facet.fetch_gacha_url_metadata(gacha_url.as_ref()).await?
