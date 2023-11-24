@@ -1,17 +1,24 @@
 use std::collections::HashMap;
 use std::fmt::{Debug, Display, Formatter};
 use std::fs::{read_dir, File};
+use std::future::Future;
 use std::io::{BufRead, BufReader};
 use std::ops::Deref;
 use std::path::{Path, PathBuf};
+use std::time::Duration;
 
 use async_trait::async_trait;
+use exponential_backoff::Backoff;
 use futures_util::future::BoxFuture;
+use futures_util::FutureExt;
 use once_cell::sync::Lazy;
 use regex::Regex;
 use serde::de::IntoDeserializer;
-use serde::{Deserialize, Deserializer};
+use serde::{Deserialize, Deserializer, Serialize};
 use time::OffsetDateTime;
+use tokio::sync::mpsc::{channel, Sender};
+use tokio::task::{spawn, JoinHandle};
+use tokio::time::sleep;
 use tracing::{debug, info, warn};
 use url::Url;
 
@@ -36,6 +43,9 @@ pub enum GachaFacetError {
   // Only if retcode is not 0
   #[error("Response error when fetching gacha records: {0}")]
   GachaRecordsResponse(GachaRecordsResponseKind),
+
+  #[error("Error while fetcher channel join: {0}")]
+  FetcherChannelJoin(String),
 }
 
 #[derive(Debug)]
@@ -316,9 +326,9 @@ pub trait GameGachaUrlFinder: FacetDeclare + GameDirectoryFinder {
       }
 
       info!("Valid gacha url exist in the cache address: {addr:?}");
-      info!("\tLong key: {:?}", entry_store.long_key);
-      info!("\tCreation time: {creation_time:?}");
-      info!("\tUrl: {url}");
+      info!("Long key: {:?}", entry_store.long_key);
+      info!("Creation time: {creation_time:?}");
+      info!("Url: {url}");
       urls.push(GameGachaUrl {
         addr: addr.0,
         long_key: entry_store.long_key.0,
@@ -378,12 +388,6 @@ fn request_gacha_url_with_retry(
   url: Url,
   retries: u8,
 ) -> BoxFuture<'static, Result<GachaRecordsResponse, GachaFacetError>> {
-  use std::time::Duration;
-
-  use exponential_backoff::Backoff;
-  use futures_util::FutureExt;
-  use tokio::time::sleep;
-
   let min = Duration::from_millis(200);
   let max = Duration::from_millis(10_000);
   let backoff = Backoff::new(retries as u32, min, max);
@@ -479,17 +483,11 @@ struct GachaRecordsPaginationItem {
   item_id: Option<String>, // `Honkai: Star Rail` only
 }
 
-struct ParsedGachaUrl<'a> {
-  base_url: &'a str,
-  query: &'a str,
-  parsed: Url,
-}
-
-fn parse_and_merge_gacha_url<'a>(
-  gacha_url: &'a str,
+fn parse_gacha_url(
+  gacha_url: &str,
   gacha_type: Option<&str>,
   end_id: Option<&str>,
-) -> Result<ParsedGachaUrl<'a>, GachaFacetError> {
+) -> Result<Url, GachaFacetError> {
   let query_start = gacha_url
     .find('?')
     .ok_or(GachaFacetError::IllegalGachaUrl(gacha_url.to_owned()))?;
@@ -510,70 +508,58 @@ fn parse_and_merge_gacha_url<'a>(
   let origin_end_id = queries.get("end_id").cloned();
   let gacha_type = gacha_type.unwrap_or(&origin_gacha_type);
 
+  // Deletion and modification of some query parameters
   queries.remove("gacha_type");
   queries.remove("page");
   queries.remove("size");
   queries.remove("begin_id");
   queries.remove("end_id");
+  queries.insert("page".into(), "1".into());
+  queries.insert("size".into(), "20".into());
+  queries.insert("gacha_type".into(), gacha_type.into());
+  if let Some(end_id) = end_id.or(origin_end_id.as_deref()) {
+    queries.insert("end_id".into(), end_id.into());
+  }
 
-  let mut url = Url::parse_with_params(base_url, queries).map_err(|e| {
+  Url::parse_with_params(base_url, queries).map_err(|e| {
     // Normally, this is never reachable here.
     // Unless it's a `url` crate issue.
     warn!("Error parsing gacha url with params: {e}");
     GachaFacetError::IllegalGachaUrl(gacha_url.to_owned())
-  })?;
-
-  url
-    .query_pairs_mut()
-    .append_pair("page", "1")
-    .append_pair("size", "20")
-    .append_pair("gacha_type", gacha_type);
-
-  if let Some(end_id) = end_id.or(origin_end_id.as_deref()) {
-    url.query_pairs_mut().append_pair("end_id", end_id);
-  }
-
-  Ok(ParsedGachaUrl {
-    base_url,
-    query: query_str,
-    parsed: url,
   })
 }
 
 #[async_trait]
 pub trait GameGachaRecordFetcher: FacetDeclare + Send + Sync {
+  /// If it is an `empty records` data, then it always return `None`.
   async fn fetch_gacha_records(
     &self,
     gacha_url: &str,
     gacha_type: Option<&str>,
     end_id: Option<&str>,
   ) -> Result<Option<Vec<GachaRecord>>, GachaFacetError> {
-    let gacha_url = parse_and_merge_gacha_url(gacha_url, gacha_type, end_id)?;
+    let gacha_url = parse_gacha_url(gacha_url, gacha_type, end_id)?;
 
     info!(
       "Fetching the Game({:?}) gacha records: GachaType={gacha_type:?}, EndId={end_id:?}",
       self.facet()
     );
-    info!("\tBase url: {}", gacha_url.base_url);
-    info!("\tQuery: {}", gacha_url.query);
 
     // HACK: Default maximum 5 attempts
     const RETRIES: u8 = 5;
-    let pagination = match request_gacha_url_with_retry(gacha_url.parsed, RETRIES).await {
+    let pagination = match request_gacha_url_with_retry(gacha_url, RETRIES).await {
       Err(error) => {
         warn!("Responded with an error while fetching the gacha records: {error:?}");
         return Err(error);
       }
       Ok(response) => {
         if response.is_empty_data() {
-          return Ok(None);
+          return Ok(None); // Empty records -> return None
         } else {
           response.data.unwrap() // SAFETY
         }
       }
     };
-
-    info!("Acquired {} gacha records", pagination.list.len());
 
     let facet = self.facet();
     let mut records = Vec::with_capacity(pagination.list.len());
@@ -609,6 +595,8 @@ pub trait GameGachaRecordFetcher: FacetDeclare + Send + Sync {
     )
   }
 }
+
+// Inner
 
 pub trait GachaFacetInner:
   FacetDeclare + GameDirectoryFinder + GameGachaUrlFinder + GameGachaRecordFetcher
@@ -738,36 +726,221 @@ static GACHA_FACETS: Lazy<HashMap<&AccountFacet, GachaFacet>> = Lazy::new(|| {
 });
 
 impl GachaFacet {
-  fn ref_by(facet: &AccountFacet) -> &Self {
+  fn ref_by(facet: &AccountFacet) -> &'static Self {
     // `unwrap` Make sure there is a corresponding mapping for `GACHA_FACETS`.
     GACHA_FACETS.get(facet).unwrap()
   }
 }
 
+// Fetcher Channel
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub enum GameGachaRecordFetcherChannelFragment {
+  Sleeping,
+  Ready(String),
+  Pagination(usize),
+  Data(Vec<GachaRecord>),
+  Completed,
+}
+
+pub async fn create_gacha_record_fetcher_channel<Fut, F>(
+  facet: &'static GachaFacet,
+  gacha_url: String,
+  gacha_type_and_last_end_id_mappings: Vec<(String, Option<String>)>,
+  receiver_fn: F,
+) -> Result<(), GachaFacetError>
+where
+  Fut: Future<Output = Result<(), GachaFacetError>>, // TODO: Box<dyn Error> ?
+  F: Fn(GameGachaRecordFetcherChannelFragment) -> Fut,
+{
+  if gacha_type_and_last_end_id_mappings.is_empty() {
+    return Ok(());
+  }
+
+  info!("Creating a Gacha Records Fetcher Channel:");
+  info!("Gacha url: {gacha_url}");
+  info!("Gacha type and Last end id mappings: {gacha_type_and_last_end_id_mappings:?}");
+
+  let (sender, mut receiver) = channel(1);
+  let task: JoinHandle<Result<(), GachaFacetError>> = spawn(async move {
+    for (gacha_type, last_end_id) in gacha_type_and_last_end_id_mappings {
+      pull_gacha_records(
+        facet,
+        &sender,
+        &gacha_url,
+        &gacha_type,
+        last_end_id.as_deref(),
+      )
+      .await?;
+    }
+    Ok(())
+  });
+
+  while let Some(fragment) = receiver.recv().await {
+    receiver_fn(fragment).await?;
+  }
+
+  match task.await {
+    Ok(_) => {
+      info!("Fetcher channel execution is complete");
+      Ok(())
+    }
+    Err(error) => {
+      warn!("Error while fetcher channel join: {error}");
+      Err(GachaFacetError::FetcherChannelJoin(error.to_string()))
+    }
+  }
+}
+
+async fn pull_gacha_records(
+  facet: &'static GachaFacet,
+  sender: &Sender<GameGachaRecordFetcherChannelFragment>,
+  gacha_url: &str,
+  gacha_type: &str,
+  last_end_id: Option<&str>,
+) -> Result<(), GachaFacetError> {
+  // Internal Abbreviations
+  type Fragment = GameGachaRecordFetcherChannelFragment;
+
+  info!("Start pulling {gacha_type} Gacha type, Last end id: {last_end_id:?}");
+  sender
+    .send(Fragment::Ready(gacha_type.to_owned()))
+    .await
+    .unwrap();
+
+  const THRESHOLD: usize = 5;
+  const WAIT_MOMENT_MILLIS: u64 = 500;
+
+  let mut end_id = String::from("0");
+  let mut pagination: usize = 0;
+  loop {
+    // Avoid visit too frequently
+    if pagination > 1 && pagination % THRESHOLD == 0 {
+      info!("One continuous request reached. Wait a moment...");
+      sender.send(Fragment::Sleeping).await.unwrap();
+      sleep(Duration::from_millis(WAIT_MOMENT_MILLIS)).await;
+    }
+
+    pagination += 1;
+    info!("Start fetching page {pagination} data...");
+    sender.send(Fragment::Pagination(pagination)).await.unwrap();
+
+    if let Some(gacha_records) = facet
+      .fetch_gacha_records(gacha_url, Some(gacha_type), Some(&end_id))
+      .await?
+    {
+      // The gacha records is always not empty.
+      // See: `GameGachaRecordFetcher::fetch_gacha_records`
+      end_id = gacha_records.last().unwrap().id.clone();
+
+      let mut should_break = false;
+      let data = if let Some(last) = last_end_id {
+        let mut temp = Vec::with_capacity(gacha_records.len());
+        for record in gacha_records {
+          if last.cmp(&record.id).is_lt() {
+            temp.push(record);
+          } else {
+            should_break = true;
+          }
+        }
+        temp
+      } else {
+        gacha_records
+      };
+
+      info!("Send {} pieces of data to the channel...", data.len());
+      sender.send(Fragment::Data(data)).await.unwrap();
+
+      if should_break {
+        info!("Break loop. Data reaches the last end id: {last_end_id:?}");
+        break;
+      } else {
+        continue;
+      }
+    }
+
+    // None gacha records. break loop
+    break;
+  }
+
+  // finished
+  info!("Gacha type {gacha_type} completed");
+  sender.send(Fragment::Completed).await.unwrap();
+  Ok(())
+}
+
+// Tests
+
 #[cfg(test)]
 mod tests {
-  use super::GachaFacet;
+  use super::{create_gacha_record_fetcher_channel, GachaFacet, GachaFacetError, GameGachaUrl};
   use crate::database::AccountFacet;
+
+  fn install_tracing() {
+    tracing_subscriber::fmt()
+      .pretty()
+      .with_ansi(true)
+      .with_env_filter(
+        tracing_subscriber::EnvFilter::from_default_env()
+          .add_directive("hyper=warn".parse().unwrap())
+          .add_directive(tracing::level_filters::LevelFilter::TRACE.into()),
+      )
+      .init();
+  }
+
+  fn find_gacha_urls(facet: &GachaFacet) -> Result<Option<Vec<GameGachaUrl>>, GachaFacetError> {
+    let skip_expired_gacha_urls = true;
+    let is_oversea = false;
+    Ok(
+      facet
+        .find_game_data_dir(is_oversea)?
+        .map(|game_data_dir| {
+          facet.find_gacha_urls(&game_data_dir, skip_expired_gacha_urls, is_oversea)
+        })
+        .transpose()?
+        .flatten(),
+    )
+  }
 
   #[ignore = "This is a test with unknown results. For manual testing only"]
   #[tokio::test]
   async fn test_fetch_gacha_records() -> Result<(), Box<dyn std::error::Error>> {
-    let skip_expired_gacha_urls = true;
-    let is_oversea = false;
-    let facet = AccountFacet::GenshinImpact;
+    install_tracing();
+    let facet = GachaFacet::ref_by(&AccountFacet::GenshinImpact);
+    if let Some(gacha_urls) = find_gacha_urls(facet)? {
+      let gacha_url = &gacha_urls[0];
+      let records = facet
+        .fetch_gacha_records(gacha_url.as_ref(), None, None)
+        .await?;
+      println!("{records:?}");
+    }
 
-    let facet = GachaFacet::ref_by(&facet);
-    if let Some(game_data_dir) = facet.find_game_data_dir(is_oversea)? {
-      if let Some(gacha_urls) =
-        facet.find_gacha_urls(&game_data_dir, skip_expired_gacha_urls, is_oversea)?
-      {
-        let gacha_url = &gacha_urls[0];
-        let records = facet
-          .fetch_gacha_records(gacha_url.as_ref(), None, None)
-          .await?;
+    Ok(())
+  }
 
-        println!("{records:?}");
-      }
+  #[ignore = "This is a test with unknown results. For manual testing only"]
+  #[tokio::test]
+  async fn test_fetcher_channel() -> Result<(), Box<dyn std::error::Error>> {
+    install_tracing();
+    let facet = GachaFacet::ref_by(&AccountFacet::GenshinImpact);
+    if let Some(gacha_urls) = find_gacha_urls(facet)? {
+      let gacha_url = &gacha_urls[0];
+      create_gacha_record_fetcher_channel(
+        facet,
+        gacha_url.value.clone(),
+        vec![
+          (String::from("100"), None),
+          // (String::from("200"), None),
+          // (String::from("301"), None),
+          // (String::from("400"), None),
+        ],
+        move |fragment| async move {
+          println!("{fragment:?}");
+          Ok(())
+        },
+      )
+      .await?;
     }
 
     Ok(())
