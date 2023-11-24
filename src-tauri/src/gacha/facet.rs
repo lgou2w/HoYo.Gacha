@@ -19,7 +19,7 @@ use time::OffsetDateTime;
 use tokio::sync::mpsc::{channel, Sender};
 use tokio::task::{spawn, JoinHandle};
 use tokio::time::sleep;
-use tracing::{debug, info, warn};
+use tracing::{info, warn};
 use url::Url;
 
 use crate::constants;
@@ -128,21 +128,28 @@ impl WebCachesVersion {
   }
 }
 
-pub trait GameDirectoryFinder: FacetDeclare {
-  fn find_game_data_dir(&self, is_oversea: bool) -> Result<Option<PathBuf>, GachaFacetError>;
-  fn find_game_data_dirs(&self) -> Result<Vec<PathBuf>, GachaFacetError> {
-    info!("Finding the Game({:?}) data directories...", self.facet());
+#[derive(Debug, Serialize)]
+pub struct DataDirectory {
+  pub path: PathBuf,
+  pub is_oversea: bool,
+  // pub is_cloud: bool, // TODO: Cloud
+}
+
+pub trait DataDirectoryFinder: FacetDeclare {
+  fn find_data_dir(&self, is_oversea: bool) -> Result<Option<DataDirectory>, GachaFacetError>;
+  fn find_data_dirs(&self) -> Result<Vec<DataDirectory>, GachaFacetError> {
+    info!("Finding the Facet({:?}) data directories...", self.facet());
     let mut paths = Vec::with_capacity(2);
 
     // CN Server
-    if let Some(cn) = self.find_game_data_dir(false)? {
-      info!("Existing CN Server Game Data directory: {cn:?}");
+    if let Some(cn) = self.find_data_dir(false)? {
+      info!("Existing CN Server Data directory: {cn:?}");
       paths.push(cn);
     }
 
     // Oversea Server
-    if let Some(os) = self.find_game_data_dir(true)? {
-      info!("Existing Oversea Server Game Data directory: {os:?}");
+    if let Some(os) = self.find_data_dir(true)? {
+      info!("Existing Oversea Server Data directory: {os:?}");
       paths.push(os);
     }
 
@@ -152,15 +159,16 @@ pub trait GameDirectoryFinder: FacetDeclare {
   // ${GAME_DATA_DIR}/webCaches/${VERSION}
   fn find_web_caches_versions(
     &self,
-    game_data_dir: &Path,
+    game_data_dir: &DataDirectory,
   ) -> Result<Vec<WebCachesVersion>, GachaFacetError> {
     info!(
-      "Finding the Game({:?}) webCaches versions: {:?}",
-      self.facet(),
-      game_data_dir
+      "Finding the Facet({:?}) webCaches versions: {game_data_dir:?}",
+      self.facet()
     );
-    let web_caches_dir = game_data_dir.join("webCaches");
+
+    let web_caches_dir = game_data_dir.path.join("webCaches");
     let mut web_caches_versions = Vec::new();
+
     for entry in read_dir(web_caches_dir)? {
       let entry_path = entry?.path();
       if !entry_path.is_dir() {
@@ -169,26 +177,27 @@ pub trait GameDirectoryFinder: FacetDeclare {
 
       let entry_name = entry_path.file_name().unwrap().to_string_lossy();
       if let Some(version) = WebCachesVersion::parse(&entry_name) {
-        debug!("Existence of version number: {entry_name}");
+        info!("Existence of version number: {entry_name}");
         web_caches_versions.push(version);
       }
     }
+
     Ok(web_caches_versions)
   }
 
   // ${GAME_DATA_DIR}/webCaches/${VERSION}/Cache/Cache_Data
   fn find_web_caches_latest_data_dir(
     &self,
-    game_data_dir: &Path,
+    game_data_dir: &DataDirectory,
   ) -> Result<Option<PathBuf>, GachaFacetError> {
     info!(
-      "Finding the latest version of the Game({:?}) webCaches data directory: {:?}",
-      self.facet(),
-      game_data_dir
+      "Finding the latest version of the Facet({:?}) webCaches data directory: {game_data_dir:?}",
+      self.facet()
     );
+
     let mut web_caches_versions = self.find_web_caches_versions(game_data_dir)?;
     if web_caches_versions.is_empty() {
-      warn!("No version available");
+      warn!("No WebCaches versions available");
       return Ok(None);
     }
 
@@ -198,6 +207,7 @@ pub trait GameDirectoryFinder: FacetDeclare {
     // Get the latest version
     let latest_version = web_caches_versions.last().unwrap();
     let cache_data_dir = game_data_dir
+      .path
       .join("webCaches")
       .join(latest_version.to_string())
       .join("Cache")
@@ -217,7 +227,7 @@ pub trait GameDirectoryFinder: FacetDeclare {
 /// It can only be learned from a record after a successful request.
 /// Provided the record is not an empty list.
 #[derive(Debug)]
-pub struct GameGachaUrl {
+pub struct GachaUrl {
   pub addr: u32,                     // Disk cache -> index -> Cache address
   pub long_key: u32,                 // Entry store -> long key -> data_2
   pub creation_time: OffsetDateTime, // Url creation time: Generally valid for 1 day
@@ -225,7 +235,7 @@ pub struct GameGachaUrl {
 }
 
 // gacha_url.value -> &str
-impl AsRef<str> for GameGachaUrl {
+impl AsRef<str> for GachaUrl {
   fn as_ref(&self) -> &str {
     &self.value
   }
@@ -235,29 +245,28 @@ static REGEX_GACHA_URL: Lazy<Regex> = Lazy::new(|| {
   Regex::new(r"^https:\/\/.*(mihoyo.com|hoyoverse.com).*(\/getGachaLog\?).*(authkey\=).*$").unwrap()
 });
 
-pub trait GameGachaUrlFinder: FacetDeclare + GameDirectoryFinder {
+pub trait GachaUrlFinder: FacetDeclare + DataDirectoryFinder {
   /// Determine if a url is a gacha url.
-  fn is_correct_gacha_url(&self, url: &str, _is_oversea: bool) -> bool {
+  fn is_correct_gacha_url(&self, url: &str) -> bool {
     REGEX_GACHA_URL.is_match(url) // fundamental characteristic
   }
 
   /// Reads all gacha urls from the `disk cache` and sorts them by creation date `desc`.
   ///
-  /// If the `Game directory` or `webCaches directory` is not available, the result is a `None`.
+  /// If the `Data directory` or `WebCaches directory` is not available, the result is a `None`.
   fn find_gacha_urls(
     &self,
-    game_data_dir: &Path,
+    game_data_dir: &DataDirectory,
     skip_expired: bool,
-    is_oversea: bool,
-  ) -> Result<Option<Vec<GameGachaUrl>>, GachaFacetError> {
+  ) -> Result<Option<Vec<GachaUrl>>, GachaFacetError> {
     info!(
-      "Finding the Game({:?}) gacha urls: SkipExpired={skip_expired}, IsOversea={is_oversea}",
+      "Finding the Facet({:?}) gacha urls: DataDirectory={game_data_dir:?}, SkipExpired={skip_expired}",
       self.facet()
     );
 
     let cache_data_dir = self.find_web_caches_latest_data_dir(game_data_dir)?;
     if cache_data_dir.is_none() {
-      warn!("No Game webCaches data directory available");
+      warn!("No WebCaches data directory available");
       return Ok(None);
     }
 
@@ -267,8 +276,10 @@ pub trait GameGachaUrlFinder: FacetDeclare + GameDirectoryFinder {
 
     info!("Reading index file...");
     let index_file = IndexFile::from_file(cache_data_dir.join("index"))?;
+
     info!("Reading block data_1 file...");
     let block_file1 = BlockFile::from_file(cache_data_dir.join("data_1"))?;
+
     info!("Reading block data_2 file...");
     let block_file2 = BlockFile::from_file(cache_data_dir.join("data_2"))?;
 
@@ -308,7 +319,7 @@ pub trait GameGachaUrlFinder: FacetDeclare + GameDirectoryFinder {
       };
 
       // Verify that the url is the correct gacha url
-      if !self.is_correct_gacha_url(url, is_oversea) {
+      if !self.is_correct_gacha_url(url) {
         continue;
       }
 
@@ -329,7 +340,7 @@ pub trait GameGachaUrlFinder: FacetDeclare + GameDirectoryFinder {
       info!("Long key: {:?}", entry_store.long_key);
       info!("Creation time: {creation_time:?}");
       info!("Url: {url}");
-      urls.push(GameGachaUrl {
+      urls.push(GachaUrl {
         addr: addr.0,
         long_key: entry_store.long_key.0,
         creation_time,
@@ -386,10 +397,15 @@ async fn request_gacha_url(url: Url) -> Result<GachaRecordsResponse, GachaFacetE
 
 fn request_gacha_url_with_retry(
   url: Url,
-  retries: u8,
+  retries: Option<u8>,
 ) -> BoxFuture<'static, Result<GachaRecordsResponse, GachaFacetError>> {
+  // HACK: Default maximum 5 attempts
+  const RETRIES: u8 = 5;
+
   let min = Duration::from_millis(200);
   let max = Duration::from_millis(10_000);
+
+  let retries = retries.unwrap_or(RETRIES);
   let backoff = Backoff::new(retries as u32, min, max);
 
   async move {
@@ -529,25 +545,38 @@ fn parse_gacha_url(
   })
 }
 
+#[derive(Debug)]
+pub struct GachaUrlMetadata {
+  pub region: String,
+  pub region_time_zone: Option<i8>, // 'Honkai: Star Rail' only
+  pub lang: Option<String>,         // When the data list is not empty
+  pub uid: Option<u32>,             // When the data list is not empty
+}
+
 #[async_trait]
-pub trait GameGachaRecordFetcher: FacetDeclare + Send + Sync {
+pub trait GachaRecordsFetcher: FacetDeclare + Send + Sync {
   /// If it is an `empty records` data, then it always return `None`.
   async fn fetch_gacha_records(
+    &self,
+    gacha_url: &str,
+  ) -> Result<Option<Vec<GachaRecord>>, GachaFacetError> {
+    self.fetch_gacha_records_with(gacha_url, None, None).await
+  }
+
+  /// If it is an `empty records` data, then it always return `None`.
+  async fn fetch_gacha_records_with(
     &self,
     gacha_url: &str,
     gacha_type: Option<&str>,
     end_id: Option<&str>,
   ) -> Result<Option<Vec<GachaRecord>>, GachaFacetError> {
-    let gacha_url = parse_gacha_url(gacha_url, gacha_type, end_id)?;
-
     info!(
-      "Fetching the Game({:?}) gacha records: GachaType={gacha_type:?}, EndId={end_id:?}",
+      "Fetching the Facet({:?}) gacha records: GachaType={gacha_type:?}, EndId={end_id:?}",
       self.facet()
     );
 
-    // HACK: Default maximum 5 attempts
-    const RETRIES: u8 = 5;
-    let pagination = match request_gacha_url_with_retry(gacha_url, RETRIES).await {
+    let gacha_url = parse_gacha_url(gacha_url, gacha_type, end_id)?;
+    let pagination = match request_gacha_url_with_retry(gacha_url, None).await {
       Err(error) => {
         warn!("Responded with an error while fetching the gacha records: {error:?}");
         return Err(error);
@@ -583,23 +612,35 @@ pub trait GameGachaRecordFetcher: FacetDeclare + Send + Sync {
     Ok(Some(records))
   }
 
-  async fn fetch_gacha_records_any_uid(
+  /// Requests a gacha url and tries to get metadata and the uid owner of a record.
+  /// If the response is null, then the result is always `None`.
+  async fn fetch_gacha_url_metadata(
     &self,
     gacha_url: &str,
-  ) -> Result<Option<u32>, GachaFacetError> {
-    Ok(
-      self
-        .fetch_gacha_records(gacha_url, None, None)
-        .await?
-        .and_then(|v| v.first().map(|r| r.uid)),
-    )
+  ) -> Result<Option<GachaUrlMetadata>, GachaFacetError> {
+    let gacha_url = parse_gacha_url(gacha_url, None, None)?;
+    let response = request_gacha_url(gacha_url).await?;
+
+    if let Some(pagination) = response.data {
+      let lang = pagination.list.first().map(|r| r.lang.clone());
+      let uid = pagination.list.first().map(|r| r.uid);
+
+      Ok(Some(GachaUrlMetadata {
+        region: pagination.region,
+        region_time_zone: pagination.region_time_zone,
+        lang,
+        uid,
+      }))
+    } else {
+      Ok(None)
+    }
   }
 }
 
 // Inner
 
 pub trait GachaFacetInner:
-  FacetDeclare + GameDirectoryFinder + GameGachaUrlFinder + GameGachaRecordFetcher
+  FacetDeclare + DataDirectoryFinder + GachaUrlFinder + GachaRecordsFetcher
 {
 }
 
@@ -632,7 +673,7 @@ fn lookup_path_line_from_keyword(
     if let Some(colon) = line.rfind(':') {
       if let Some(end) = line.find(keyword) {
         let path = &line[colon - 1..end + keyword_len];
-        info!("Locate the game data directory: {path:?}");
+        info!("Locate the data directory: {path:?}");
         return Ok(Some(Path::new(path).to_path_buf()));
       }
     }
@@ -645,9 +686,9 @@ fn lookup_path_line_from_keyword(
 macro_rules! generate_facets {
   ($(
     struct $facet:ident {
-      GameDirectoryFinder {
-        cn = $game_cn_log_file:expr => $game_cn_data_dir_keyword:literal,
-        os = $game_os_log_file:expr => $game_os_data_dir_keyword:literal
+      DataDirectoryFinder {
+        cn = $facet_cn_log_file:expr => $facet_cn_data_dir_keyword:literal,
+        os = $facet_os_log_file:expr => $facet_os_data_dir_keyword:literal
       }
     }
   ),*) => {
@@ -661,18 +702,28 @@ macro_rules! generate_facets {
         }
       }
 
-      impl GameDirectoryFinder for $facet {
-        fn find_game_data_dir(&self, is_oversea: bool) -> Result<Option<PathBuf>, GachaFacetError> {
-          info!("Finding the Game({:?}) data directory: IsOversea={is_oversea}", self.facet());
-          match is_oversea {
-            false => lookup_path_line_from_keyword($game_cn_log_file, $game_cn_data_dir_keyword),
-            true  => lookup_path_line_from_keyword($game_os_log_file, $game_os_data_dir_keyword),
+      impl DataDirectoryFinder for $facet {
+        fn find_data_dir(&self, is_oversea: bool) -> Result<Option<DataDirectory>, GachaFacetError> {
+          info!("Finding the Facet({:?}) data directory: IsOversea={is_oversea}", self.facet());
+
+          let path = match is_oversea {
+            false => lookup_path_line_from_keyword($facet_cn_log_file, $facet_cn_data_dir_keyword),
+            true  => lookup_path_line_from_keyword($facet_os_log_file, $facet_os_data_dir_keyword),
+          }?;
+
+          if let Some(path) = path {
+            Ok(Some(DataDirectory {
+              path,
+              is_oversea,
+            }))
+          } else {
+            Ok(None)
           }
         }
       }
 
-      impl GameGachaUrlFinder for $facet {}
-      impl GameGachaRecordFetcher for $facet {}
+      impl GachaUrlFinder for $facet {}
+      impl GachaRecordsFetcher for $facet {}
 
       impl GachaFacetInner for $facet {}
     )*
@@ -681,13 +732,13 @@ macro_rules! generate_facets {
 
 generate_facets!(
   struct GenshinImpact {
-    GameDirectoryFinder {
+    DataDirectoryFinder {
       cn = mihoyo_dir().join("原神/output_log.txt")           => "/YuanShen_Data/",
       os = mihoyo_dir().join("Genshin Impact/output_log.txt") => "/GenshinImpact_Data/"
     }
   },
   struct HonkaiStarRail {
-    GameDirectoryFinder {
+    DataDirectoryFinder {
       cn = mihoyo_dir().join("崩坏：星穹铁道/Player.log")   => "/StarRail_Data/",
       os = cognosphere_dir().join("Star Rail/Player.log") => "/StarRail_Data/"
     }
@@ -736,7 +787,7 @@ impl GachaFacet {
 
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub enum GameGachaRecordFetcherChannelFragment {
+pub enum GachaRecordsFetcherChannelFragment {
   Sleeping,
   Ready(String),
   Pagination(usize),
@@ -744,7 +795,7 @@ pub enum GameGachaRecordFetcherChannelFragment {
   Completed,
 }
 
-pub async fn create_gacha_record_fetcher_channel<Fut, F>(
+pub async fn create_gacha_records_fetcher_channel<Fut, F>(
   facet: &'static GachaFacet,
   gacha_url: String,
   gacha_type_and_last_end_id_mappings: Vec<(String, Option<String>)>,
@@ -752,7 +803,7 @@ pub async fn create_gacha_record_fetcher_channel<Fut, F>(
 ) -> Result<(), GachaFacetError>
 where
   Fut: Future<Output = Result<(), GachaFacetError>>, // TODO: Box<dyn Error> ?
-  F: Fn(GameGachaRecordFetcherChannelFragment) -> Fut,
+  F: Fn(GachaRecordsFetcherChannelFragment) -> Fut,
 {
   if gacha_type_and_last_end_id_mappings.is_empty() {
     return Ok(());
@@ -795,13 +846,13 @@ where
 
 async fn pull_gacha_records(
   facet: &'static GachaFacet,
-  sender: &Sender<GameGachaRecordFetcherChannelFragment>,
+  sender: &Sender<GachaRecordsFetcherChannelFragment>,
   gacha_url: &str,
   gacha_type: &str,
   last_end_id: Option<&str>,
 ) -> Result<(), GachaFacetError> {
   // Internal Abbreviations
-  type Fragment = GameGachaRecordFetcherChannelFragment;
+  type Fragment = GachaRecordsFetcherChannelFragment;
 
   info!("Start pulling {gacha_type} Gacha type, Last end id: {last_end_id:?}");
   sender
@@ -827,11 +878,11 @@ async fn pull_gacha_records(
     sender.send(Fragment::Pagination(pagination)).await.unwrap();
 
     if let Some(gacha_records) = facet
-      .fetch_gacha_records(gacha_url, Some(gacha_type), Some(&end_id))
+      .fetch_gacha_records_with(gacha_url, Some(gacha_type), Some(&end_id))
       .await?
     {
       // The gacha records is always not empty.
-      // See: `GameGachaRecordFetcher::fetch_gacha_records`
+      // See: `GachaRecordsFetcher::fetch_gacha_records`
       end_id = gacha_records.last().unwrap().id.clone();
 
       let mut should_break = false;
@@ -874,7 +925,7 @@ async fn pull_gacha_records(
 
 #[cfg(test)]
 mod tests {
-  use super::{create_gacha_record_fetcher_channel, GachaFacet, GachaFacetError, GameGachaUrl};
+  use super::{create_gacha_records_fetcher_channel, GachaFacet, GachaFacetError, GachaUrl};
   use crate::database::AccountFacet;
 
   fn install_tracing() {
@@ -889,31 +940,30 @@ mod tests {
       .init();
   }
 
-  fn find_gacha_urls(facet: &GachaFacet) -> Result<Option<Vec<GameGachaUrl>>, GachaFacetError> {
+  fn find_gacha_urls(facet: &GachaFacet) -> Result<Option<Vec<GachaUrl>>, GachaFacetError> {
     let skip_expired_gacha_urls = true;
     let is_oversea = false;
     Ok(
       facet
-        .find_game_data_dir(is_oversea)?
-        .map(|game_data_dir| {
-          facet.find_gacha_urls(&game_data_dir, skip_expired_gacha_urls, is_oversea)
-        })
+        .find_data_dir(is_oversea)?
+        .map(|game_data_dir| facet.find_gacha_urls(&game_data_dir, skip_expired_gacha_urls))
         .transpose()?
         .flatten(),
     )
   }
 
-  #[ignore = "This is a test with unknown results. For manual testing only"]
+  // #[ignore = "This is a test with unknown results. For manual testing only"]
   #[tokio::test]
   async fn test_fetch_gacha_records() -> Result<(), Box<dyn std::error::Error>> {
     install_tracing();
     let facet = GachaFacet::ref_by(&AccountFacet::GenshinImpact);
     if let Some(gacha_urls) = find_gacha_urls(facet)? {
       let gacha_url = &gacha_urls[0];
-      let records = facet
-        .fetch_gacha_records(gacha_url.as_ref(), None, None)
-        .await?;
-      println!("{records:?}");
+      // println!("{:?}", facet.fetch_gacha_records(gacha_url.as_ref()).await?);
+      println!(
+        "{:?}",
+        facet.fetch_gacha_url_metadata(gacha_url.as_ref()).await?
+      );
     }
 
     Ok(())
@@ -926,7 +976,7 @@ mod tests {
     let facet = GachaFacet::ref_by(&AccountFacet::GenshinImpact);
     if let Some(gacha_urls) = find_gacha_urls(facet)? {
       let gacha_url = &gacha_urls[0];
-      create_gacha_record_fetcher_channel(
+      create_gacha_records_fetcher_channel(
         facet,
         gacha_url.value.clone(),
         vec![
