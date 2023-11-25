@@ -38,7 +38,7 @@ pub enum GachaFacetError {
   Reqwest(#[from] reqwest::Error),
 
   #[error("The gacha url is an illegal: {0}")]
-  IllegalGachaUrl(String),
+  IllegalGachaUrl(IllegalGachaUrlKind),
 
   // Only if retcode is not 0
   #[error("Response error when fetching gacha records: {0}")]
@@ -46,6 +46,25 @@ pub enum GachaFacetError {
 
   #[error("Error while fetcher channel join: {0}")]
   FetcherChannelJoin(String),
+}
+
+#[derive(Debug)]
+pub enum IllegalGachaUrlKind {
+  Invalid,
+  MissingParameter(&'static str),
+  ParseFailed,
+}
+
+impl Display for IllegalGachaUrlKind {
+  fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+    f.debug_tuple("IllegalGachaUrlKind")
+      .field(if let Self::MissingParameter(str) = self {
+        str
+      } else {
+        self
+      })
+      .finish()
+  }
 }
 
 #[derive(Debug)]
@@ -246,11 +265,6 @@ static REGEX_GACHA_URL: Lazy<Regex> = Lazy::new(|| {
 });
 
 pub trait GachaUrlFinder: FacetDeclare + DataDirectoryFinder {
-  /// Determine if a url is a gacha url.
-  fn is_correct_gacha_url(&self, url: &str) -> bool {
-    REGEX_GACHA_URL.is_match(url) // fundamental characteristic
-  }
-
   /// Reads all gacha urls from the `disk cache` and sorts them by creation date `desc`.
   ///
   /// If the `Data directory` or `WebCaches directory` is not available, the result is a `None`.
@@ -319,7 +333,7 @@ pub trait GachaUrlFinder: FacetDeclare + DataDirectoryFinder {
       };
 
       // Verify that the url is the correct gacha url
-      if !self.is_correct_gacha_url(url) {
+      if !REGEX_GACHA_URL.is_match(url) {
         continue;
       }
 
@@ -402,8 +416,8 @@ fn request_gacha_url_with_retry(
   // HACK: Default maximum 5 attempts
   const RETRIES: u8 = 5;
 
-  let min = Duration::from_millis(200);
-  let max = Duration::from_millis(10_000);
+  let min = Duration::from_millis(200); // Min: 0.2s
+  let max = Duration::from_millis(10_000); // Max: 10s
 
   let retries = retries.unwrap_or(RETRIES);
   let backoff = Backoff::new(retries as u32, min, max);
@@ -504,9 +518,9 @@ fn parse_gacha_url(
   gacha_type: Option<&str>,
   end_id: Option<&str>,
 ) -> Result<Url, GachaFacetError> {
-  let query_start = gacha_url
-    .find('?')
-    .ok_or(GachaFacetError::IllegalGachaUrl(gacha_url.to_owned()))?;
+  let query_start = gacha_url.find('?').ok_or(GachaFacetError::IllegalGachaUrl(
+    IllegalGachaUrlKind::Invalid,
+  ))?;
 
   let base_url = &gacha_url[..query_start];
   let query_str = &gacha_url[query_start + 1..];
@@ -519,7 +533,12 @@ fn parse_gacha_url(
     .get("gacha_type")
     .cloned()
     .or(queries.get("init_type").cloned())
-    .ok_or(GachaFacetError::IllegalGachaUrl(gacha_url.to_owned()))?;
+    .ok_or_else(|| {
+      warn!("Gacha url missing important 'gacha_type' or 'init_type' parameters: {queries:?}");
+      GachaFacetError::IllegalGachaUrl(IllegalGachaUrlKind::MissingParameter(
+        "Missing parameters: 'gacha_type' or 'init_type'",
+      ))
+    })?;
 
   let origin_end_id = queries.get("end_id").cloned();
   let gacha_type = gacha_type.unwrap_or(&origin_gacha_type);
@@ -541,7 +560,7 @@ fn parse_gacha_url(
     // Normally, this is never reachable here.
     // Unless it's a `url` crate issue.
     warn!("Error parsing gacha url with params: {e}");
-    GachaFacetError::IllegalGachaUrl(gacha_url.to_owned())
+    GachaFacetError::IllegalGachaUrl(IllegalGachaUrlKind::ParseFailed)
   })
 }
 
@@ -665,7 +684,8 @@ fn lookup_path_line_from_keyword(
     log_file.as_ref()
   );
 
-  for line in reader.lines().map(|l| l.unwrap()) {
+  for line in reader.lines() {
+    let line = line?;
     if !line.contains(keyword) {
       continue;
     }
