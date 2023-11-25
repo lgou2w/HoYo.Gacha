@@ -27,6 +27,7 @@ mod gacha;
 mod utilities;
 
 use crate::database::{Database, DatabasePluginBuilder};
+use crate::gacha::facet::GachaFacetPluginBuilder;
 use crate::utilities::paths::appdata_roaming;
 
 fn welcome() {
@@ -145,6 +146,7 @@ async fn start(database: Arc<Database>) {
   info!("Starting Tauri application...");
   let mut app = TauriBuilder::default()
     .plugin(DatabasePluginBuilder::new(database).build())
+    .plugin(GachaFacetPluginBuilder::new().build())
     .setup(|app| {
       let window = WindowBuilder::new(app, "main", WindowUrl::App("index.html".into()))
         .center()

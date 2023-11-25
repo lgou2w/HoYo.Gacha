@@ -30,8 +30,8 @@ impl Serialize for DatabaseError {
   {
     let mut state = serializer.serialize_struct("Error", 3)?;
     state.serialize_field("identifier", stringify!(DatabaseError))?;
-    state.serialize_field("code", &self.code())?;
     state.serialize_field("message", &self.to_string())?;
+    state.serialize_field("code", &self.code())?;
     state.end()
   }
 }

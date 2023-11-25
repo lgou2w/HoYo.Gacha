@@ -22,6 +22,21 @@ function bind<Payload = void, Result = void> (command: Command) {
   return defineCommand<Payload, Result>(PluginName, command)
 }
 
+// Error
+
+const Identifier = 'DatabaseError' as const
+
+export interface DatabaseError {
+  identifier: typeof Identifier
+  message: string
+  code: string
+}
+
+export function isDatabaseError (error: Error | object | unknown): error is DatabaseError {
+  return (error instanceof Error || typeof error === 'object') && error !== null &&
+    'identifier' in error && error.identifier === Identifier
+}
+
 // Plugin
 
 const Plugin = {

@@ -31,15 +31,15 @@
   "dependencies": {
     "@fluentui/react-components": "^9.41.0",
     "@fluentui/react-icons": "^2.0.223",
-    "@tanstack/react-query": "^5.8.4",
-    "@tanstack/react-query-devtools": "^5.8.4",
+    "@tanstack/react-query": "^5.8.7",
+    "@tanstack/react-query-devtools": "^5.8.7",
     "@tauri-apps/api": "^1.5.1",
     "i18next": "^23.7.6",
     "immer": "^10.0.3",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-i18next": "^13.5.0",
-    "react-router-dom": "^6.19.0",
+    "react-router-dom": "^6.20.0",
     "use-immer": "^0.9.0"
   },
   "devDependencies": {
@@ -49,7 +49,7 @@
     "@testing-library/react": "^14.1.2",
     "@testing-library/user-event": "^14.5.1",
     "@types/jest": "^29.5.10",
-    "@types/node": "^18.18.12",
+    "@types/node": "^18.18.13",
     "@types/react": "^18.2.38",
     "@types/react-dom": "^18.2.17",
     "@typescript-eslint/eslint-plugin": "^6.12.0",

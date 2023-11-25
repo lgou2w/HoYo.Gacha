@@ -208,7 +208,9 @@ impl<R: Read + ?Sized> DiskCacheRead for R {}
 const INDEX_MAGIC: u32 = 0xC103CAC3;
 const INDEX_VERSION2_0: u32 = 0x20000;
 const INDEX_VERSION2_1: u32 = 0x20001;
+#[allow(unused)]
 const INDEX_VERSION3_0: u32 = 0x30000;
+#[allow(unused)]
 const INDEX_TABLE_SIZE: u32 = 0x10000;
 
 #[derive(Debug)]
@@ -307,6 +309,7 @@ impl IndexFile {
 
 const BLOCK_MAGIC: u32 = 0xC104CAC3;
 const BLOCK_VERSION2_0: u32 = 0x20000;
+#[allow(unused)]
 const BLOCK_VERSION3_0: u32 = 0x30000;
 const BLOCK_HEADER_SIZE: u32 = 8192;
 const BLOCK_MAX_BLOCKS: u32 = (BLOCK_HEADER_SIZE - 80) * 8;
@@ -511,6 +514,7 @@ impl EntryStore {
     self.long_key.is_initialized()
   }
 
+  #[allow(unused)]
   pub fn read_key(&self) -> Result<Cow<'_, str>> {
     if self.is_long_key() {
       return Err(Error::new(

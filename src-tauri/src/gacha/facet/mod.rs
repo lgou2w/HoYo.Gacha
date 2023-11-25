@@ -14,7 +14,10 @@ use futures_util::FutureExt;
 use once_cell::sync::Lazy;
 use regex::Regex;
 use serde::de::IntoDeserializer;
-use serde::{Deserialize, Deserializer, Serialize};
+use serde::ser::SerializeStruct;
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use serde_json::json;
+use time::serde::rfc3339;
 use time::OffsetDateTime;
 use tokio::sync::mpsc::{channel, Sender};
 use tokio::task::{spawn, JoinHandle};
@@ -26,6 +29,10 @@ use crate::constants;
 use crate::database::{AccountFacet, GachaRecord, GachaRecordRankType};
 use crate::diskcache::{BlockFile, IndexFile};
 use crate::utilities::paths::{cognosphere_dir, mihoyo_dir};
+
+mod plugin;
+
+pub use plugin::*;
 
 // Error
 
@@ -46,6 +53,50 @@ pub enum GachaFacetError {
 
   #[error("Error while fetcher channel join: {0}")]
   FetcherChannelJoin(String),
+
+  #[error("Error while fetcher channel interrupt: {0}")]
+  FetcherChannelInterrupt(Box<dyn std::error::Error + Send + Sync>),
+}
+
+// TODO: Optimize
+impl GachaFacetError {
+  fn kind(&self) -> impl Serialize {
+    match self {
+      Self::IO(_) => json!("IO"),
+      Self::Reqwest(_) => json!("Reqwest"),
+      Self::IllegalGachaUrl(kind) => {
+        json!({ "name": "IllegalGachaUrl", "inner": format!("{kind:?}") })
+      }
+      Self::GachaRecordsResponse(kind) => {
+        json!({
+          "name": "GachaRecordsResponse",
+          "inner": match kind {
+            GachaRecordsResponseKind::AuthkeyTimeout |
+            GachaRecordsResponseKind::VisitTooFrequently => json!(format!("{kind:?}")),
+            GachaRecordsResponseKind::Unknown { retcode, message } => json!({
+              "retcode": retcode,
+              "message": message
+            }),
+          }
+        })
+      }
+      Self::FetcherChannelJoin(_) => json!("FetcherChannelJoin"),
+      Self::FetcherChannelInterrupt(_) => json!("FetcherChannelInterrupt"),
+    }
+  }
+}
+
+impl Serialize for GachaFacetError {
+  fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+  where
+    S: Serializer,
+  {
+    let mut state = serializer.serialize_struct("Error", 3)?;
+    state.serialize_field("identifier", stringify!(GachaFacetError))?;
+    state.serialize_field("message", &self.to_string())?;
+    state.serialize_field("kind", &self.kind())?;
+    state.end()
+  }
 }
 
 #[derive(Debug)]
@@ -119,7 +170,8 @@ impl WebCachesVersion {
   }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct DataDirectory {
   pub path: PathBuf,
   pub is_oversea: bool,
@@ -217,12 +269,14 @@ pub trait DataDirectoryFinder: FacetDeclare {
 ///
 /// It can only be learned from a record after a successful request.
 /// Provided the record is not an empty list.
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct GachaUrl {
-  pub addr: u32,                     // Disk cache -> index -> Cache address
-  pub long_key: u32,                 // Entry store -> long key -> data_2
+  pub addr: u32,     // Disk cache -> index -> Cache address
+  pub long_key: u32, // Entry store -> long key -> data_2
+  #[serde(with = "rfc3339")]
   pub creation_time: OffsetDateTime, // Url creation time: Generally valid for 1 day
-  pub value: String,                 // Gacha url
+  pub value: String, // Gacha url
 }
 
 // gacha_url.value -> &str
@@ -536,7 +590,8 @@ fn parse_gacha_url(
   })
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct GachaUrlMetadata {
   pub region: String,
   pub region_time_zone: Option<i8>, // 'Honkai: Star Rail' only
@@ -794,7 +849,7 @@ pub async fn create_gacha_records_fetcher_channel<Fut, F>(
   receiver_fn: F,
 ) -> Result<(), GachaFacetError>
 where
-  Fut: Future<Output = Result<(), GachaFacetError>>, // TODO: Box<dyn Error> ?
+  Fut: Future<Output = Result<(), Box<dyn std::error::Error + Send + Sync>>>,
   F: Fn(GachaRecordsFetcherChannelFragment) -> Fut,
 {
   if gacha_type_and_last_end_id_mappings.is_empty() {
@@ -821,13 +876,16 @@ where
   });
 
   while let Some(fragment) = receiver.recv().await {
-    receiver_fn(fragment).await?;
+    if let Err(error) = receiver_fn(fragment).await {
+      warn!("Error while fetcher channel interrupt: {error}");
+      return Err(GachaFacetError::FetcherChannelInterrupt(error));
+    }
   }
 
   match task.await {
-    Ok(_) => {
+    Ok(result) => {
       info!("Fetcher channel execution is complete");
-      Ok(())
+      result
     }
     Err(error) => {
       warn!("Error while fetcher channel join: {error}");
