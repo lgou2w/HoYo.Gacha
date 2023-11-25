@@ -37,11 +37,11 @@ pub enum GachaFacetError {
   #[error(transparent)]
   Reqwest(#[from] reqwest::Error),
 
-  #[error("The gacha url is an illegal: {0}")]
+  #[error("The gacha url is an illegal: {0:?}")]
   IllegalGachaUrl(IllegalGachaUrlKind),
 
   // Only if retcode is not 0
-  #[error("Response error when fetching gacha records: {0}")]
+  #[error("Response error when fetching gacha records: {0:?}")]
   GachaRecordsResponse(GachaRecordsResponseKind),
 
   #[error("Error while fetcher channel join: {0}")]
@@ -53,18 +53,6 @@ pub enum IllegalGachaUrlKind {
   Invalid,
   MissingParameter(&'static str),
   ParseFailed,
-}
-
-impl Display for IllegalGachaUrlKind {
-  fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    f.debug_tuple("IllegalGachaUrlKind")
-      .field(if let Self::MissingParameter(str) = self {
-        str
-      } else {
-        self
-      })
-      .finish()
-  }
 }
 
 #[derive(Debug)]
@@ -86,22 +74,6 @@ impl GachaRecordsResponseKind {
       -101 => Self::AuthkeyTimeout,
       -110 => Self::VisitTooFrequently,
       _ => Self::Unknown { retcode, message },
-    }
-  }
-}
-
-impl Display for GachaRecordsResponseKind {
-  fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-    match self {
-      Self::AuthkeyTimeout | Self::VisitTooFrequently => f
-        .debug_tuple("GachaRecordsResponseKind")
-        .field(self)
-        .finish(),
-      Self::Unknown { retcode, message } => f
-        .debug_struct("GachaRecordsResponseKind")
-        .field("retcode", retcode)
-        .field("message", message)
-        .finish(),
     }
   }
 }
