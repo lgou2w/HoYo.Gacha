@@ -338,7 +338,7 @@ pub trait GachaUrlFinder: FacetDeclare + DataDirectoryFinder {
 
       // Gacha url must be a long key and stored in the data_2 block file,
       // So the long key of entry store must not be zero.
-      if !entry_store.is_long_key() {
+      if !entry_store.has_long_key() {
         continue;
       }
 

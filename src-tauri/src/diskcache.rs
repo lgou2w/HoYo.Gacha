@@ -510,17 +510,17 @@ impl EntryStore {
     })
   }
 
-  pub fn is_long_key(&self) -> bool {
+  pub fn has_long_key(&self) -> bool {
     self.long_key.is_initialized()
   }
 
   #[allow(unused)]
   pub fn read_key(&self) -> Result<Cow<'_, str>> {
-    if self.is_long_key() {
+    if self.has_long_key() {
       return Err(Error::new(
         ErrorKind::Unsupported,
         format!(
-          "Entry store is a long key. Require other block file data: {:?}",
+          "Entry store has a long key. Require other block file data: {:?}",
           self.long_key
         ),
       ));
@@ -535,10 +535,10 @@ impl EntryStore {
   }
 
   pub fn read_long_key<'a>(&self, block_file: &'a BlockFile) -> Result<Cow<'a, str>> {
-    if !self.is_long_key() {
+    if !self.has_long_key() {
       return Err(Error::new(
         ErrorKind::Unsupported,
-        "Entry store is a short key",
+        "Entry store do not have long key",
       ));
     }
 
