@@ -1,8 +1,14 @@
 #![cfg(windows)]
 
 use raw_window_handle::{HasRawWindowHandle, RawWindowHandle};
-use windows_sys::Win32::Graphics::Dwm::DwmExtendFrameIntoClientArea;
-use windows_sys::Win32::UI::Controls::MARGINS;
+use windows::Win32::Foundation::HWND;
+use windows::Win32::Graphics::Dwm::DwmExtendFrameIntoClientArea;
+use windows::Win32::System::Com::{CoCreateInstance, CLSCTX_SERVER};
+use windows::Win32::UI::Controls::MARGINS;
+use windows::Win32::UI::Shell::{
+  ITaskbarList4, TaskbarList, TBPF_ERROR, TBPF_INDETERMINATE, TBPF_NOPROGRESS, TBPF_NORMAL,
+  TBPF_PAUSED,
+};
 
 pub fn set_window_shadow(window: impl HasRawWindowHandle, enable: bool) {
   if let RawWindowHandle::Win32(handle) = window.raw_window_handle() {
@@ -15,7 +21,48 @@ pub fn set_window_shadow(window: impl HasRawWindowHandle, enable: bool) {
     };
 
     unsafe {
-      DwmExtendFrameIntoClientArea(handle.hwnd as _, &margins);
+      let _ = DwmExtendFrameIntoClientArea(HWND(handle.hwnd as _), &margins);
+    }
+  }
+}
+
+pub enum ProgressState {
+  None,
+  Normal,
+  Indeterminate,
+  #[allow(unused)]
+  Paused,
+  #[allow(unused)]
+  Error,
+}
+
+pub fn set_progress_bar(
+  window: impl HasRawWindowHandle,
+  state: ProgressState,
+  progress: Option<u64>,
+) {
+  if let RawWindowHandle::Win32(handle) = window.raw_window_handle() {
+    let tbpflag = match state {
+      ProgressState::None => TBPF_NOPROGRESS,
+      ProgressState::Normal => TBPF_NORMAL,
+      ProgressState::Indeterminate => TBPF_INDETERMINATE,
+      ProgressState::Paused => TBPF_PAUSED,
+      ProgressState::Error => TBPF_ERROR,
+    };
+
+    unsafe {
+      let hwnd = HWND(handle.hwnd as _);
+      let taskbar_list: ITaskbarList4 =
+        CoCreateInstance(&TaskbarList, None, CLSCTX_SERVER).unwrap();
+
+      taskbar_list.SetProgressState(hwnd, tbpflag).unwrap_or(());
+
+      if let Some(value) = progress {
+        let value = if value > 100 { 100 } else { value };
+        taskbar_list
+          .SetProgressValue(hwnd, value, 100)
+          .unwrap_or(());
+      }
     }
   }
 }

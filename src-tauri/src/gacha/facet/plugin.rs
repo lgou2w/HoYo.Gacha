@@ -32,6 +32,9 @@ mod handler {
     GachaRecordsFetcherChannelFragment, GachaUrl, GachaUrlMetadata,
   };
 
+  #[cfg(windows)]
+  use crate::utilities::windows::{set_progress_bar, ProgressState};
+
   #[tauri::command]
   pub async fn find_data_dir(
     facet: AccountFacet,
@@ -75,7 +78,11 @@ mod handler {
     gacha_type_and_last_end_id_mappings: Vec<(String, Option<String>)>,
     event_channel: Option<String>,
     save_to_database: Option<bool>,
+    #[cfg(windows)] sync_taskbar_progress: Option<bool>,
   ) -> Result<(), GachaFacetError> {
+    #[cfg(windows)]
+    let sync_taskbar_progress = sync_taskbar_progress.unwrap_or(false);
+
     let save_to_database = save_to_database.unwrap_or(false);
     let event_channel = event_channel.unwrap_or_default();
     let event_emit = !event_channel.is_empty();
@@ -85,13 +92,25 @@ mod handler {
     // But validation is optional. Because the final record inserted into
     // the database has nothing to do with the uid provided.
 
-    create_gacha_records_fetcher_channel(
+    #[cfg(windows)]
+    if sync_taskbar_progress {
+      set_progress_bar(&window, ProgressState::Indeterminate, None);
+    }
+
+    let result = create_gacha_records_fetcher_channel(
       GachaFacet::ref_by(&facet),
       gacha_url,
       gacha_type_and_last_end_id_mappings,
       |fragment| async {
         if event_emit {
           window.emit(&event_channel, &fragment)?;
+        }
+
+        #[cfg(windows)]
+        if sync_taskbar_progress {
+          if let GachaRecordsFetcherChannelFragment::Progress(progress) = &fragment {
+            set_progress_bar(&window, ProgressState::Normal, Some(*progress as u64));
+          }
         }
 
         if save_to_database {
@@ -103,6 +122,13 @@ mod handler {
         Ok(())
       },
     )
-    .await
+    .await;
+
+    #[cfg(windows)]
+    if sync_taskbar_progress {
+      set_progress_bar(&window, ProgressState::None, None);
+    }
+
+    result
   }
 }

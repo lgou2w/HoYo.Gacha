@@ -51,12 +51,13 @@ const Plugin = {
   // Declared commands
   findDataDir: bind<Pick<Account, 'facet'> & Pick<DataDirectory, 'isOversea'>, DataDirectory | null>('find_data_dir'),
   findDataDirs: bind<Pick<Account, 'facet'>, DataDirectory[]>('find_data_dirs'),
-  findGachaUrls: bind<Pick<Account, 'facet' & { dataDirectory: DataDirectory, skipExpired: boolean }>, GachaUrl[] | null>('find_gacha_urls'),
+  findGachaUrls: bind<Pick<Account, 'facet'> & { dataDirectory: DataDirectory, skipExpired: boolean }, GachaUrl[] | null>('find_gacha_urls'),
   fetchGachaUrlMetadata: bind<Pick<Account, 'facet'> & { gachaUrl: string }, GachaUrlMetadata | null>('fetch_gacha_url_metadata'),
   createAccountGachaRecordsFetcherChannel: bind<Pick<Account, 'facet' | 'uid' | 'gachaUrl'> & {
     gachaTypeAndLastEndIdMappings: Array<[string, string | null]>
     eventChannel: string | null
     saveToDatabase: boolean | null
+    syncTaskbarProgress: boolean | null
   }, void>('create_account_gacha_records_fetcher_channel')
 } as const
 

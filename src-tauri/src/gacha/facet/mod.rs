@@ -839,7 +839,12 @@ pub enum GachaRecordsFetcherChannelFragment {
   Ready(String),
   Pagination(usize),
   Data(Vec<GachaRecord>),
-  Completed,
+  Completed(String),
+  ///  0 ~  10: Initial. \
+  /// 10 ~  90: Gacha type and Last end id Mappings. \
+  /// 90 ~ 100: Finished.
+  Progress(usize),
+  Finished,
 }
 
 pub async fn create_gacha_records_fetcher_channel<Fut, F>(
@@ -860,8 +865,19 @@ where
   info!("Gacha url: {gacha_url}");
   info!("Gacha type and Last end id mappings: {gacha_type_and_last_end_id_mappings:?}");
 
+  // Internal Abbreviations
+  type Fragment = GachaRecordsFetcherChannelFragment;
+
   let (sender, mut receiver) = channel(1);
   let task: JoinHandle<Result<(), GachaFacetError>> = spawn(async move {
+    // Progress: Initial
+    let mut progress = 10;
+    sender.send(Fragment::Progress(progress)).await.unwrap();
+
+    // Progress: Mappings step
+    //   80 = 0.1 ~ 0.9
+    let step = 80 / gacha_type_and_last_end_id_mappings.len();
+
     for (gacha_type, last_end_id) in gacha_type_and_last_end_id_mappings {
       pull_gacha_records(
         facet,
@@ -869,9 +885,17 @@ where
         &gacha_url,
         &gacha_type,
         last_end_id.as_deref(),
+        (progress, progress + step),
       )
       .await?;
+
+      progress += step;
+      sender.send(Fragment::Progress(progress)).await.unwrap();
     }
+
+    // Progress: Finished
+    sender.send(Fragment::Progress(100)).await.unwrap();
+    sender.send(Fragment::Finished).await.unwrap();
     Ok(())
   });
 
@@ -884,7 +908,7 @@ where
 
   match task.await {
     Ok(result) => {
-      info!("Fetcher channel execution is complete");
+      info!("Fetcher channel execution is finished");
       result
     }
     Err(error) => {
@@ -900,6 +924,7 @@ async fn pull_gacha_records(
   gacha_url: &str,
   gacha_type: &str,
   last_end_id: Option<&str>,
+  (progress_min, progress_max): (usize, usize),
 ) -> Result<(), GachaFacetError> {
   // Internal Abbreviations
   type Fragment = GachaRecordsFetcherChannelFragment;
@@ -909,6 +934,9 @@ async fn pull_gacha_records(
     .send(Fragment::Ready(gacha_type.to_owned()))
     .await
     .unwrap();
+
+  let progress_tolerance = progress_max - progress_min;
+  let mut progress = progress_tolerance;
 
   const THRESHOLD: usize = 5;
   const WAIT_MOMENT_MILLIS: u64 = 500;
@@ -926,6 +954,20 @@ async fn pull_gacha_records(
     pagination += 1;
     info!("Start fetching page {pagination} data...");
     sender.send(Fragment::Pagination(pagination)).await.unwrap();
+
+    // Progress:
+    // Because it is impossible to determine the total number of pages.
+    // Can only increase the progress in an interval.
+    // When the upper limit of the interval is reached,
+    // then the progress is no longer updated.
+    // Until this Step is completed
+    if progress > 0 && pagination <= progress_tolerance {
+      progress -= 1;
+      sender
+        .send(Fragment::Progress(progress_max - progress))
+        .await
+        .unwrap();
+    }
 
     if let Some(gacha_records) = facet
       .fetch_gacha_records_with(gacha_url, Some(gacha_type), Some(&end_id))
@@ -965,9 +1007,13 @@ async fn pull_gacha_records(
     break;
   }
 
-  // finished
+  // Completed gacha type
   info!("Gacha type {gacha_type} completed");
-  sender.send(Fragment::Completed).await.unwrap();
+  sender
+    .send(Fragment::Completed(gacha_type.to_owned()))
+    .await
+    .unwrap();
+
   Ok(())
 }
 
@@ -1008,7 +1054,7 @@ mod tests {
     install_tracing();
     let facet = GachaFacet::ref_by(&AccountFacet::GenshinImpact);
     if let Some(gacha_urls) = find_gacha_urls(facet)? {
-      let gacha_url = &gacha_urls[0];
+      let gacha_url = gacha_urls.get(0).expect("No valid Gacha url available");
       println!("{:?}", facet.fetch_gacha_records(gacha_url.as_ref()).await?);
       println!(
         "{:?}",
@@ -1025,7 +1071,7 @@ mod tests {
     install_tracing();
     let facet = GachaFacet::ref_by(&AccountFacet::GenshinImpact);
     if let Some(gacha_urls) = find_gacha_urls(facet)? {
-      let gacha_url = &gacha_urls[0];
+      let gacha_url = gacha_urls.get(0).expect("No valid Gacha url available");
       create_gacha_records_fetcher_channel(
         facet,
         gacha_url.value.clone(),
