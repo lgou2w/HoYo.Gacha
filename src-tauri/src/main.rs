@@ -51,7 +51,8 @@ fn welcome() {
 fn initialize_tracing() -> Result<Option<WorkerGuard>, Box<dyn Error>> {
   let filter = EnvFilter::builder()
     .from_env_lossy()
-    .add_directive("hyper::proto=error".parse()?)
+    .add_directive("hyper=error".parse()?)
+    .add_directive("reqwest=error".parse()?)
     .add_directive("tao::platform_impl=error".parse()?)
     .add_directive("wry::webview=error".parse()?)
     .add_directive(
@@ -244,14 +245,13 @@ async fn main() {
   // Start tauri and wait exit
   start(Arc::clone(&database)).await;
 
-  // Wait for the appender to flush
-  if let Some(guard) = appender_guard {
-    info!("Flush Tracing logs...");
-    drop(guard);
-  }
-
   // Wait for database to close
   database.close().await;
 
   info!("bye!");
+
+  // Wait for the appender to flush
+  if let Some(guard) = appender_guard {
+    drop(guard);
+  }
 }
