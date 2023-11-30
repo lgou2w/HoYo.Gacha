@@ -2,7 +2,7 @@ import { FetchQueryOptions, useQuery, useMutation, UseMutationOptions } from '@t
 import { produce } from 'immer'
 import { Account } from '@/api/interfaces/account'
 import { OmitParametersFirst, PickParametersFirst } from '@/api/interfaces/declares'
-import { DatabasePlugin } from '@/api/plugins'
+import { DatabasePlugin, DatabaseError } from '@/api/plugins'
 import { queryClient } from '@/api/store'
 
 const AccountsQueryKey: FetchQueryOptions['queryKey'] = ['accounts']
@@ -40,7 +40,11 @@ export function useAccountsQuery () {
 }
 
 const CreateAccountMutationKey: UseMutationOptions['mutationKey'] = ['accounts', 'create']
-const CreateAccountMutationOptions: UseMutationOptions<Account | null, Error, PickParametersFirst<typeof DatabasePlugin['createAccount']>> = {
+const CreateAccountMutationOptions: UseMutationOptions<
+  Account | null,
+  DatabaseError | Error,
+  PickParametersFirst<typeof DatabasePlugin['createAccount']>
+> = {
   mutationKey: CreateAccountMutationKey,
   mutationFn: DatabasePlugin.createAccount,
   onSuccess (data) {

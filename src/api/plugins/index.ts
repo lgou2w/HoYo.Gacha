@@ -1,2 +1,2 @@
-export { default as DatabasePlugin } from './database'
-export { default as GachaFacetPlugin } from './gacha-facet'
+export * from './database'
+export * from './gacha-facet'

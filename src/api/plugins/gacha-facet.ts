@@ -1,10 +1,10 @@
 import { Account } from '@/api/interfaces/account'
 import { DataDirectory, GachaUrl, GachaUrlMetadata } from '@/api/interfaces/gacha-facet'
-import { defineCommand } from './declares'
+import { defineCommand, IdentifierError, isIdentifierError } from './declares'
 
 // See: src-tauri/src/gacha/facet/plugin.rs
 
-export const PluginName = 'hg_gacha_facet'
+const PluginName = 'hg_gacha_facet'
 
 type Command =
   | 'find_data_dir'
@@ -21,9 +21,7 @@ function bind<Payload = void, Result = void> (command: Command) {
 
 const Identifier = 'GachaFacetError' as const
 
-export interface GachaFacetError {
-  identifier: typeof Identifier
-  message: string
+export interface GachaFacetError extends IdentifierError<typeof Identifier> {
   kind:
     | 'IO'
     | 'Reqwest'
@@ -39,14 +37,16 @@ export interface GachaFacetError {
     | 'FetcherChannelInterrupt'
 }
 
-export function isGachaFacetError (error: Error | object | unknown): error is GachaFacetError {
-  return (error instanceof Error || typeof error === 'object') && error !== null &&
-    'identifier' in error && error.identifier === Identifier
+export function isGachaFacetError (
+  error: Error | object | unknown
+): error is GachaFacetError {
+  return isIdentifierError(error) &&
+    error.identifier === Identifier
 }
 
 // Plugin
 
-const Plugin = {
+export const GachaFacetPlugin = {
   name: PluginName,
   // Declared commands
   findDataDir: bind<Pick<Account, 'facet'> & Pick<DataDirectory, 'isOversea'>, DataDirectory | null>('find_data_dir'),
@@ -60,5 +60,3 @@ const Plugin = {
     syncTaskbarProgress: boolean | null
   }, void>('create_account_gacha_records_fetcher_channel')
 } as const
-
-export default Plugin
