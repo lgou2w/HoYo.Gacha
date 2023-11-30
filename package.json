@@ -31,10 +31,10 @@
   "dependencies": {
     "@fluentui/react-components": "^9.41.0",
     "@fluentui/react-icons": "^2.0.223",
-    "@tanstack/react-query": "^5.8.7",
-    "@tanstack/react-query-devtools": "^5.8.7",
+    "@tanstack/react-query": "^5.10.0",
+    "@tanstack/react-query-devtools": "^5.10.0",
     "@tauri-apps/api": "^1.5.1",
-    "i18next": "^23.7.6",
+    "i18next": "^23.7.7",
     "immer": "^10.0.3",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
@@ -43,17 +43,17 @@
     "use-immer": "^0.9.0"
   },
   "devDependencies": {
-    "@tanstack/eslint-plugin-query": "^5.8.4",
+    "@tanstack/eslint-plugin-query": "^5.10.0",
     "@tauri-apps/cli": "^1.5.6",
     "@testing-library/jest-dom": "^6.1.4",
     "@testing-library/react": "^14.1.2",
     "@testing-library/user-event": "^14.5.1",
     "@types/jest": "^29.5.10",
-    "@types/node": "^18.18.13",
-    "@types/react": "^18.2.38",
+    "@types/node": "^18.18.14",
+    "@types/react": "^18.2.39",
     "@types/react-dom": "^18.2.17",
-    "@typescript-eslint/eslint-plugin": "^6.12.0",
-    "@typescript-eslint/parser": "^6.12.0",
+    "@typescript-eslint/eslint-plugin": "^6.13.1",
+    "@typescript-eslint/parser": "^6.13.1",
     "@vitejs/plugin-react-swc": "^3.5.0",
     "cross-env": "^7.0.3",
     "eslint": "^8.54.0",
@@ -74,6 +74,6 @@
     "rimraf": "^5.0.5",
     "ts-jest": "^29.1.1",
     "typescript": "^5.3.2",
-    "vite": "^5.0.2"
+    "vite": "^5.0.4"
   }
 }
