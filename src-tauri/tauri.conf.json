@@ -13,6 +13,7 @@
   "tauri": {
     "allowlist": {
       "all": false,
+      "dialog": { "all": true },
       "os": { "all": true },
       "window": {
         "all": false,
@@ -49,7 +50,7 @@
         "signingIdentity": null
       },
       "resources": [],
-      "shortDescription": "An unofficial tool for managing and analyzing your miHoYo gacha records",
+      "shortDescription": "HoYo.Gacha",
       "targets": "all",
       "windows": {
         "certificateThumbprint": null,

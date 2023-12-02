@@ -48,9 +48,10 @@ features = [
 ]
 
 [dependencies.tauri]
-version = "1.5.2"
+version = "1.5.3"
 features = [
   "devtools",
+  "dialog-all",
   "os-all",
   "window-close",
   "window-maximize",

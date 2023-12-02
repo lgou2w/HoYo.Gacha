@@ -10,7 +10,10 @@ export default function Accounts () {
       <Locale component={Subtitle1} as="h5" mapping={['components.routes.accounts.title']} />
       {Object.entries(AccountFacets).map(([key, value]) => (
         <Fragment key={key}>
-          <AccountsFacetView facetEntry={{ key: key as keyof typeof AccountFacets, value }} />
+          <AccountsFacetView
+            keyOfFacets={key as keyof typeof AccountFacets}
+            facet={value}
+          />
         </Fragment>
       ))}
     </Fragment>

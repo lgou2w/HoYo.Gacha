@@ -143,8 +143,9 @@ generate_entity!({
     create_one {
       facet: AccountFacet,
       uid: u32,
-      game_data_dir: String
-    } => "INSERT INTO `hg.accounts` (`facet`, `uid`, `game_data_dir`) VALUES (?, ?, ?) RETURNING *;",
+      game_data_dir: String,
+      properties: Option<AccountProperties>
+    } => "INSERT INTO `hg.accounts` (`facet`, `uid`, `game_data_dir`, `properties`) VALUES (?, ?, ?, ?) RETURNING *;",
 
     update_game_data_dir_by_id {
       game_data_dir: String,

@@ -2,6 +2,7 @@ import React, { PropsWithChildren } from 'react'
 import { makeStyles, shorthands, tokens } from '@fluentui/react-components'
 import Navbar from '@/components/Core/Navbar'
 import { Height as TitleBarHeight } from '@/components/Core/TitleBar'
+import Toaster from '@/components/Core/Toaster'
 
 const useStyles = makeStyles({
   root: {
@@ -32,7 +33,9 @@ export default function Layout (props: PropsWithChildren) {
       <Navbar />
       <div className={classes.scroller}>
         <main className={classes.main}>
-          {props.children}
+          <Toaster>
+            {props.children}
+          </Toaster>
         </main>
       </div>
     </div>

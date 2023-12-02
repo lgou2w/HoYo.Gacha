@@ -1,6 +1,7 @@
 import React from 'react'
 import { makeStyles, tokens } from '@fluentui/react-components'
-import { AccountFacetsEntry } from '@/api/interfaces/account'
+import { AccountFacet, AccountFacets } from '@/api/interfaces/account'
+import { AccountsFacetViewContext } from './Context'
 import AccountsFacetViewList from './List'
 import AccountsFacetViewToolbar from './Toolbar'
 
@@ -12,12 +13,17 @@ const useStyles = makeStyles({
   }
 })
 
-export default function AccountsFacetView ({ facetEntry }: { facetEntry: AccountFacetsEntry }) {
+export default function AccountsFacetView ({ keyOfFacets, facet }: {
+  keyOfFacets: keyof typeof AccountFacets
+  facet: AccountFacet
+}) {
   const classes = useStyles()
   return (
     <section className={classes.root}>
-      <AccountsFacetViewToolbar facetEntry={facetEntry} />
-      <AccountsFacetViewList facetEntry={facetEntry} />
+      <AccountsFacetViewContext.Provider value={{ keyOfFacets, facet }}>
+        <AccountsFacetViewToolbar />
+        <AccountsFacetViewList />
+      </AccountsFacetViewContext.Provider>
     </section>
   )
 }

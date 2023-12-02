@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react'
 import { Button, GriffelStyle, makeStyles, shorthands, tokens } from '@fluentui/react-components'
 import { DismissFilled, MaximizeFilled, SubtractFilled, SquareMultipleRegular } from '@fluentui/react-icons'
 import { appWindow } from '@tauri-apps/api/window'
+import debounce from 'debounce'
 
 const useStyles = makeStyles({
   root: {
@@ -47,20 +48,27 @@ function createButtonStyles ([hover, pressed]: [string, string]): GriffelStyle {
 
 export default function TitleBarButtons () {
   const [maximized, setMaximized] = useState(false)
-
-  useEffect(() => {
-    appWindow
-      .isMaximized()
-      .then((val) => setMaximized(val))
-      .catch(console.error)
+  const updateMaximized = useCallback(async () => {
+    const isMaximized = await appWindow.isMaximized()
+    setMaximized(isMaximized)
   }, [])
 
-  const handleMaximize = useCallback(async () => {
-    maximized
-      ? await appWindow.unmaximize()
-      : await appWindow.maximize()
-    setMaximized(!maximized)
-  }, [maximized])
+  useEffect(() => {
+    updateMaximized()
+
+    let unlisten: Awaited<ReturnType<typeof appWindow.onResized>>
+    ;(async () => {
+      unlisten = await appWindow.onResized(
+        debounce(updateMaximized, 500, { immediate: false })
+      )
+    })()
+
+    return () => {
+      if (unlisten) {
+        unlisten()
+      }
+    }
+  }, [updateMaximized])
 
   const classes = useStyles()
   return (
@@ -75,7 +83,7 @@ export default function TitleBarButtons () {
       <Button
         className={classes.buttonMaximize}
         icon={!maximized ? <MaximizeFilled /> : <SquareMultipleRegular />}
-        onClick={handleMaximize}
+        onClick={() => appWindow.toggleMaximize()}
         shape="square"
         tabIndex={-1}
       />

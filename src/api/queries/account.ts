@@ -41,9 +41,9 @@ export function useAccountsQuery () {
 
 const CreateAccountMutationKey: UseMutationOptions['mutationKey'] = ['accounts', 'create']
 const CreateAccountMutationOptions: UseMutationOptions<
-  Account | null,
+  Account,
   DatabaseError | Error,
-  PickParametersFirst<typeof DatabasePlugin['createAccount']>
+  PickParametersFirst<typeof DatabasePlugin.createAccount>
 > = {
   mutationKey: CreateAccountMutationKey,
   mutationFn: DatabasePlugin.createAccount,
@@ -59,4 +59,29 @@ const CreateAccountMutationOptions: UseMutationOptions<
 
 export function useCreateAccountMutation () {
   return useMutation(CreateAccountMutationOptions)
+}
+
+const DeleteAccountMutationKey: UseMutationOptions['mutationKey'] = ['accounts', 'delete']
+const DeleteAccountMutationOptions: UseMutationOptions<
+  Account | null,
+  DatabaseError | Error,
+  PickParametersFirst<typeof DatabasePlugin.deleteAccount>
+> = {
+  mutationKey: DeleteAccountMutationKey,
+  mutationFn: DatabasePlugin.deleteAccount,
+  onSuccess (data) {
+    if (!data) return
+    setAccountsQueryData((prev) => {
+      return prev && produce(prev, (draft) => {
+        const idx = draft.findIndex((v) => v.id === data.id)
+        if (idx !== -1) {
+          draft.splice(idx, 1)
+        }
+      })
+    })
+  }
+}
+
+export function useDeleteAccountMutation () {
+  return useMutation(DeleteAccountMutationOptions)
 }

@@ -1,9 +1,12 @@
-import React from 'react'
+import React, { useCallback } from 'react'
 import { Button, Divider, Text, makeStyles, shorthands, tokens } from '@fluentui/react-components'
 import { MoreHorizontalRegular, ServerRegular } from '@fluentui/react-icons'
-import { Account, AccountFacetsEntry, AccountServer, detectServer } from '@/api/interfaces/account'
+import { Account, AccountServer, detectServer } from '@/api/interfaces/account'
+import { useDeleteAccountMutation } from '@/api/queries/account'
 import Locale from '@/components/Core/Locale'
+import useToaster from '@/components/Core/Toaster/useToaster'
 import PlayerAvatar from '@/components/Facet/PlayerAvatar'
+import useAccountsFacetView from '@/components/Routes/Accounts/FacetView/useAccountsFacetView'
 
 const useStyles = makeStyles({
   root: {
@@ -32,8 +35,7 @@ const useStyles = makeStyles({
   identifier: {
     display: 'inline-flex',
     flexDirection: 'column',
-    minWidth: '4rem',
-    maxWidth: '6rem'
+    width: '4.5rem'
   },
   action: {
     display: 'inline-flex',
@@ -64,12 +66,27 @@ const useStyles = makeStyles({
 })
 
 interface Props {
-  facetEntry: AccountFacetsEntry
   account: Account
 }
 
 export default function AccountsFacetViewListItem (props: Props) {
-  const { facetEntry, account } = props
+  const { account } = props
+  const { keyOfFacets } = useAccountsFacetView()
+  const { notify } = useToaster()
+
+  // TODO: test code
+  const deleteAccountMutation = useDeleteAccountMutation()
+  const handleAccountDelete = useCallback(async (id: number) => {
+    const account = await deleteAccountMutation.mutateAsync({ id })
+    if (account) {
+      notify(
+        `Account ${account.uid} has been deleted.`,
+        { intent: 'success' }
+      )
+    }
+  }, [deleteAccountMutation, notify])
+  //
+
   const classes = useStyles()
   return (
     <div className={classes.root}>
@@ -93,7 +110,7 @@ export default function AccountsFacetViewListItem (props: Props) {
             truncate
             mapping={(t) => {
               return account.properties?.displayName as string ||
-                t(`common.facet.${facetEntry.key}.player`)
+                t(`common.facet.${keyOfFacets}.player`)
             }}
           />
           <Text className="uid" as="p" font="numeric" size={200} weight="semibold">
@@ -101,7 +118,11 @@ export default function AccountsFacetViewListItem (props: Props) {
           </Text>
         </div>
         <div className={classes.action}>
-          <Button appearance="subtle" icon={<MoreHorizontalRegular />} />
+          <Button
+            appearance="subtle"
+            icon={<MoreHorizontalRegular />}
+            onClick={() => handleAccountDelete(account.id)}
+          />
         </div>
       </div>
       <Divider />
@@ -113,8 +134,8 @@ export default function AccountsFacetViewListItem (props: Props) {
             mapping={[
               'components.routes.accounts.facetView.listItem.server',
               {
-                facet: facetEntry.key,
-                path: AccountServerLocaleKeyMappings[detectServer(account)]
+                facet: keyOfFacets,
+                path: AccountServerLocaleKeyMappings[detectServer(account.uid)]
               }
             ]}
           />

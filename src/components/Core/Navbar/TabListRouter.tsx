@@ -1,10 +1,10 @@
 import React, { ReactNode, createRef, useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { Tab, TabList, Tooltip, makeStyles, shorthands, tokens } from '@fluentui/react-components'
-import { BoardRegular, BoardFilled, PersonCircleRegular, PersonCircleFilled, SettingsRegular, SettingsFilled } from '@fluentui/react-icons'
+import { SparkleRegular, SparkleFilled, BoardRegular, BoardFilled, PersonCircleRegular, PersonCircleFilled, SettingsRegular, SettingsFilled } from '@fluentui/react-icons'
 import { AccountFacet, AccountFacets } from '@/api/interfaces/account'
 import Locale from '@/components/Core/Locale'
-import { SparkleRegular, SparkleFilled, TrainRegular } from '@/components/Utilities/Icons'
+import { TrainRegular } from '@/components/Utilities/Icons'
 
 export const ButtonSize = '2.25rem'
 const useStyles = makeStyles({

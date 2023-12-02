@@ -44,6 +44,23 @@ export function isGachaFacetError (
     error.identifier === Identifier
 }
 
+export function stringifyGachaFacetErrorKind (kind: GachaFacetError['kind']): string {
+  if (typeof kind === 'string') {
+    return kind
+  } else {
+    switch (kind.name) {
+      case 'IllegalGachaUrl': return `IllegalGachaUrl(${kind.inner})`
+      case 'GachaRecordsResponse':
+        if (typeof kind.inner === 'string') {
+          return `GachaRecordsResponse(${kind.inner})`
+        } else {
+          const { retcode, message } = kind.inner
+          return `GachaRecordsResponse(retcode=${retcode}, message=${message})`
+        }
+    }
+  }
+}
+
 // Plugin
 
 export const GachaFacetPlugin = {

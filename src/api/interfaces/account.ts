@@ -9,9 +9,9 @@ export const AccountFacets = {
 } as const
 
 export type AccountFacet = typeof AccountFacets[keyof typeof AccountFacets]
-export type AccountFacetsEntry = {
-  key: keyof typeof AccountFacets
-  value: AccountFacet
+
+export interface KnownAccountProperties {
+  displayName: string | null
 }
 
 export interface Account {
@@ -21,7 +21,7 @@ export interface Account {
   gameDataDir: string
   gachaUrl: string | null
   gachaUrlUpdatedAt: string | null
-  properties: Record<string, unknown> | null
+  properties: KnownAccountProperties & Record<string, unknown> | null
   createdAt: string
 }
 
@@ -70,8 +70,8 @@ export function uidFirstDigit (uid: number | string) {
   }
 }
 
-export function detectServer (account: Account): AccountServer {
-  const first = uidFirstDigit(account.uid)
+export function detectServer (uid: string | number): AccountServer {
+  const first = uidFirstDigit(uid)
   if (first >= 1 && first <= 4) {
     return AccountServer.Official
   } else {
@@ -85,8 +85,8 @@ export function detectServer (account: Account): AccountServer {
   }
 }
 
-export function isOverseaServer (account: Account): boolean {
-  const first = uidFirstDigit(account.uid)
+export function isOverseaServer (uid: string | number): boolean {
+  const first = uidFirstDigit(uid)
   const isCN = first >= 1 && first <= 5 // Official or Channel
   return !isCN
 }

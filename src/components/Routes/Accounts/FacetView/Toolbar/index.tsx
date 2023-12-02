@@ -1,8 +1,9 @@
 import React from 'react'
-import { Button, Subtitle2, makeStyles, shorthands, tokens } from '@fluentui/react-components'
-import { PeopleListRegular, PeopleAddRegular } from '@fluentui/react-icons'
-import { AccountFacetsEntry } from '@/api/interfaces/account'
+import { Button, Subtitle2, Tooltip, makeStyles, shorthands, tokens } from '@fluentui/react-components'
+import { PeopleAddRegular, PeopleListRegular } from '@fluentui/react-icons'
 import Locale from '@/components/Core/Locale'
+import CreateAccountDialog from '@/components/Routes/Accounts/FacetView/CreateAccountDialog'
+import useAccountsFacetView from '@/components/Routes/Accounts/FacetView/useAccountsFacetView'
 
 const useStyles = makeStyles({
   root: {
@@ -39,7 +40,8 @@ const useStyles = makeStyles({
   }
 })
 
-export default function AccountsFacetViewToolbar ({ facetEntry }: { facetEntry: AccountFacetsEntry }) {
+export default function AccountsFacetViewToolbar () {
+  const { keyOfFacets } = useAccountsFacetView()
   const classes = useStyles()
   return (
     <div className={classes.root}>
@@ -52,11 +54,22 @@ export default function AccountsFacetViewToolbar ({ facetEntry }: { facetEntry: 
         as="h6"
         mapping={[
           'components.routes.accounts.facetView.toolbar.title',
-          { facet: facetEntry.key }
+          { facet: keyOfFacets }
         ]}
       />
       <div className={classes.action}>
-        <Button appearance="subtle" icon={<PeopleAddRegular />} />
+        <CreateAccountDialog
+          trigger={(
+            <Tooltip
+              relationship="label"
+              positioning="before"
+              content={<Locale mapping={['components.routes.accounts.facetView.toolbar.createAccount']} />}
+              withArrow
+            >
+              <Button appearance="subtle" icon={<PeopleAddRegular />} />
+            </Tooltip>
+          )}
+        />
       </div>
     </div>
   )

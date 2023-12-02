@@ -16,6 +16,9 @@ export default {
         },
         gacha: {
           name: '祈愿'
+        },
+        gameDataDir: {
+          example: 'X:/Genshin Impact/Genshin Impact Game/YuanShen_Data'
         }
       },
       HonkaiStarRail: {
@@ -33,13 +36,30 @@ export default {
         },
         gacha: {
           name: '跃迁'
+        },
+        gameDataDir: {
+          example: 'X:/Star Rail/Game/StarRail_Data'
         }
       }
     }
   },
+  error: {
+    database: {
+      title: '哎呀！发生意外严重的数据库错误：',
+      formattingMessage: '发生意外严重的数据库错误：{{message}} ({{code}})'
+    },
+    gachaFacet: {
+      title: '哎呀！发生意外的 GachaFacet 错误：',
+      formattingMessage: '发生意外的 GachaFacet 错误：{{message}} ({{kind}})'
+    },
+    unexpected: {
+      title: '发生意外错误：',
+      formattingMessage: '发生意外错误：{{message}}'
+    }
+  },
   errorPage: {
     title: '哎呀！',
-    subtitle: '抱歉，发生了意外错误。'
+    subtitle: '抱歉，发生意外错误。'
   },
   components: {
     core: {
@@ -57,8 +77,38 @@ export default {
       accounts: {
         title: '账户管理',
         facetView: {
+          createAccountDialog: {
+            title: '添加新账户：$t(common.facet.{{facet}}.name)',
+            cancelBtn: '取消',
+            submitBtn: '添加',
+            form: {
+              valid: '有效。',
+              success: '添加账户 {{uid}} 成功。',
+              uid: {
+                label: 'UID',
+                placeholder: '游戏内账户的 UID（9 位数字）',
+                required: '请输入 UID 字段值。',
+                pattern: '请输入正确的 UID 格式。',
+                alreadyExists: '该账户 UID 已经存在。'
+              },
+              displayName: {
+                label: '显示名称',
+                placeholder: '账户的显示名称（仅用于识别）',
+                length: '超过最大字符长度限制。'
+              },
+              gameDataDir: {
+                label: '游戏数据目录',
+                placeholder: '游戏数据目录的完整路径。\n例如：$t(common.facet.{{facet}}.gameDataDir.example)',
+                required: '请设置游戏数据目录。',
+                autoFindBtn: '自动查找',
+                manualFindBtn: '手动选择',
+                emptyFind: '未找到有效的游戏数据目录。请检查游戏是否安装并运行。'
+              }
+            }
+          },
           toolbar: {
-            title: '$t(common.facet.{{facet}}.name)'
+            title: '$t(common.facet.{{facet}}.name)',
+            createAccount: '创建账户'
           },
           listItem: {
             server: '服务器：$t(common.facet.{{facet}}.servers.{{path}})'

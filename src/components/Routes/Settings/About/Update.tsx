@@ -1,8 +1,8 @@
 import React, { Fragment } from 'react'
 import { Menu, MenuButtonProps, MenuItem, MenuList, MenuPopover, MenuTrigger, SplitButton } from '@fluentui/react-components'
+import { ArrowClockwiseRegular } from '@fluentui/react-icons'
 import Locale from '@/components/Core/Locale'
 import SettingsGroupItem from '@/components/Routes/Settings/GroupItem'
-import { ArrowClockwiseRegular } from '@/components/Utilities/Icons'
 
 // TODO: Check Application Version Updates
 

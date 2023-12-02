@@ -2,13 +2,14 @@ import React from 'react'
 import { makeStyles, shorthands, tokens } from '@fluentui/react-components'
 import NavbarTabListRouter from './TabListRouter'
 
-const MaxWidth = '5rem'
+export const Width = '4rem'
 const useStyles = makeStyles({
   root: {
     display: 'flex',
     flexDirection: 'column',
-    maxWidth: MaxWidth,
-    ...shorthands.borderRight('1px', 'solid', tokens.colorNeutralStroke3)
+    width: Width,
+    maxWidth: Width,
+    ...shorthands.borderRight(tokens.strokeWidthThin, 'solid', tokens.colorNeutralStroke3)
   }
 })
 
