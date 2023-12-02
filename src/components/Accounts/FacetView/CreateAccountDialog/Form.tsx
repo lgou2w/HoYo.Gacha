@@ -8,10 +8,10 @@ import { Account, UidRegex, isCorrectUid, isOverseaServer } from '@/api/interfac
 import { DataDirectory } from '@/api/interfaces/gacha-facet'
 import { GachaFacetPlugin, isDatabaseError, isGachaFacetError, stringifyGachaFacetErrorKind } from '@/api/plugins'
 import { useAccountsQuery, useCreateAccountMutation } from '@/api/queries/account'
+import useAccountsFacetView from '@/components/Accounts/FacetView/useAccountsFacetView'
 import Locale from '@/components/Core/Locale'
 import { LocaleProps, acceptLocale } from '@/components/Core/Locale/declares'
 import useToaster from '@/components/Core/Toaster/useToaster'
-import useAccountsFacetView from '@/components/Routes/Accounts/FacetView/useAccountsFacetView'
 import { IdentifierRegular } from '@/components/Utilities/Icons'
 
 const useStyles = makeStyles({
@@ -125,7 +125,7 @@ export default function CreateAccountDialogForm (props: Props) {
 
     if (dataDirectories.length === 0) {
       setError('gameDataDir', {
-        message: t('components.routes.accounts.facetView.createAccountDialog.form.gameDataDir.emptyFind')
+        message: t('components.accounts.facetView.createAccountDialog.form.gameDataDir.emptyFind')
       }, { shouldFocus: true })
     } else {
       // TODO: If there are multiple data directories
@@ -142,7 +142,7 @@ export default function CreateAccountDialogForm (props: Props) {
     let directory = await dialog.open({
       directory: true,
       multiple: false,
-      title: t('components.routes.accounts.facetView.createAccountDialog.form.gameDataDir.manualFindTitle')
+      title: t('components.accounts.facetView.createAccountDialog.form.gameDataDir.manualFindTitle')
     })
 
     if (typeof directory === 'string') {
@@ -171,7 +171,7 @@ export default function CreateAccountDialogForm (props: Props) {
       let message: string
       if (isDatabaseError(e)) {
         message = e.code === '2067'
-          ? t('components.routes.accounts.facetView.createAccountDialog.form.uid.alreadyExists')
+          ? t('components.accounts.facetView.createAccountDialog.form.uid.alreadyExists')
           : t('error.database.formattingMessage', { message: e.message, code: e.code })
       } else {
         message = t('error.unexpected.formattingMessage', {
@@ -185,7 +185,7 @@ export default function CreateAccountDialogForm (props: Props) {
 
     onSuccess?.(account)
     notifyLocale([
-      'components.routes.accounts.facetView.createAccountDialog.form.success',
+      'components.accounts.facetView.createAccountDialog.form.success',
       { uid: account.uid }
     ], { intent: 'success' })
   }, [onSuccess, notifyLocale, createAccountMutation, facet, setError, t])
@@ -203,21 +203,21 @@ export default function CreateAccountDialogForm (props: Props) {
         rules={{
           required: {
             value: true,
-            message: t('components.routes.accounts.facetView.createAccountDialog.form.uid.required')
+            message: t('components.accounts.facetView.createAccountDialog.form.uid.required')
           },
           pattern: {
             value: UidRegex,
-            message: t('components.routes.accounts.facetView.createAccountDialog.form.uid.pattern')
+            message: t('components.accounts.facetView.createAccountDialog.form.uid.pattern')
           },
           validate (value) {
             if (value && data?.find((v) => v.uid === +value)) {
-              return t('components.routes.accounts.facetView.createAccountDialog.form.uid.alreadyExists')
+              return t('components.accounts.facetView.createAccountDialog.form.uid.alreadyExists')
             }
           }
         }}
         component={Input}
-        labelMapping={['components.routes.accounts.facetView.createAccountDialog.form.uid.label']}
-        placeholderMapping={['components.routes.accounts.facetView.createAccountDialog.form.uid.placeholder']}
+        labelMapping={['components.accounts.facetView.createAccountDialog.form.uid.label']}
+        placeholderMapping={['components.accounts.facetView.createAccountDialog.form.uid.placeholder']}
         before={<IdentifierRegular />}
         required
       />
@@ -227,12 +227,12 @@ export default function CreateAccountDialogForm (props: Props) {
         rules={{
           maxLength: {
             value: DisplayNameMaxLength,
-            message: t('components.routes.accounts.facetView.createAccountDialog.form.displayName.length')
+            message: t('components.accounts.facetView.createAccountDialog.form.displayName.length')
           }
         }}
         component={Input}
-        labelMapping={['components.routes.accounts.facetView.createAccountDialog.form.displayName.label']}
-        placeholderMapping={['components.routes.accounts.facetView.createAccountDialog.form.displayName.placeholder']}
+        labelMapping={['components.accounts.facetView.createAccountDialog.form.displayName.label']}
+        placeholderMapping={['components.accounts.facetView.createAccountDialog.form.displayName.placeholder']}
         before={<PersonTagRegular />}
         after={({ field }) => {
           const length = field.value?.length
@@ -246,13 +246,13 @@ export default function CreateAccountDialogForm (props: Props) {
           rules={{
             required: {
               value: true,
-              message: t('components.routes.accounts.facetView.createAccountDialog.form.gameDataDir.required')
+              message: t('components.accounts.facetView.createAccountDialog.form.gameDataDir.required')
             }
           }}
           component={Textarea}
-          labelMapping={['components.routes.accounts.facetView.createAccountDialog.form.gameDataDir.label']}
+          labelMapping={['components.accounts.facetView.createAccountDialog.form.gameDataDir.label']}
           placeholderMapping={[
-            'components.routes.accounts.facetView.createAccountDialog.form.gameDataDir.placeholder',
+            'components.accounts.facetView.createAccountDialog.form.gameDataDir.placeholder',
             { facet: keyOfFacets }
           ]}
           required
@@ -264,7 +264,7 @@ export default function CreateAccountDialogForm (props: Props) {
             className="btn-auto-find"
             appearance="secondary"
             component={Button}
-            mapping={['components.routes.accounts.facetView.createAccountDialog.form.gameDataDir.autoFindBtn']}
+            mapping={['components.accounts.facetView.createAccountDialog.form.gameDataDir.autoFindBtn']}
             size="small"
             icon={<FolderSearchRegular />}
             disabled={isSubmitting}
@@ -274,7 +274,7 @@ export default function CreateAccountDialogForm (props: Props) {
             className="btn-manual-find"
             appearance="secondary"
             component={Button}
-            mapping={['components.routes.accounts.facetView.createAccountDialog.form.gameDataDir.manualFindBtn']}
+            mapping={['components.accounts.facetView.createAccountDialog.form.gameDataDir.manualFindBtn']}
             size="small"
             icon={<CursorHoverRegular />}
             disabled={isSubmitting}
@@ -285,14 +285,14 @@ export default function CreateAccountDialogForm (props: Props) {
       <div className={classes.actions}>
         <Locale
           component={Button}
-          mapping={['components.routes.accounts.facetView.createAccountDialog.cancelBtn']}
+          mapping={['components.accounts.facetView.createAccountDialog.cancelBtn']}
           appearance="secondary"
           disabled={isSubmitting}
           onClick={onCancel}
         />
         <Locale
           component={Button}
-          mapping={['components.routes.accounts.facetView.createAccountDialog.submitBtn']}
+          mapping={['components.accounts.facetView.createAccountDialog.submitBtn']}
           appearance="primary"
           type="submit"
           disabled={!isDirty || !isValid || isSubmitting}
@@ -356,7 +356,7 @@ function CreateAccountDialogFormField (props: CreateAccountDialogFormFieldProps)
         isError
           ? fieldState.error!.message
           : isValid
-            ? <Locale mapping={['components.routes.accounts.facetView.createAccountDialog.form.valid']} />
+            ? <Locale mapping={['components.accounts.facetView.createAccountDialog.form.valid']} />
             : undefined
       }
       required={required}

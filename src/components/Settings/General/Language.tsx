@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { Select } from '@fluentui/react-components'
 import { LocalLanguageRegular } from '@fluentui/react-icons'
 import Locale from '@/components/Core/Locale'
-import SettingsGroupItem from '@/components/Routes/Settings/GroupItem'
+import SettingsGroupItem from '@/components/Settings/GroupItem'
 import { SupportedLanguages } from '@/locales/declares'
 
 export default function SettingsGroupItemLanguage () {
@@ -12,8 +12,8 @@ export default function SettingsGroupItemLanguage () {
   return (
     <SettingsGroupItem
       icon={<LocalLanguageRegular />}
-      title={<Locale mapping={['components.routes.settings.general.language.title']} />}
-      subtitle={<Locale mapping={['components.routes.settings.general.language.subtitle']} />}
+      title={<Locale mapping={['components.settings.general.language.title']} />}
+      subtitle={<Locale mapping={['components.settings.general.language.subtitle']} />}
       action={(
         <Select
           value={i18n.language}
@@ -24,7 +24,7 @@ export default function SettingsGroupItemLanguage () {
               component="option"
               key={language}
               value={language}
-              mapping={[`components.routes.settings.general.language.${language}`]}
+              mapping={[`components.settings.general.language.${language}`]}
             />
           ))}
         </Select>

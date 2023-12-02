@@ -3,10 +3,10 @@ import { Button, Divider, Text, makeStyles, shorthands, tokens } from '@fluentui
 import { MoreHorizontalRegular, ServerRegular } from '@fluentui/react-icons'
 import { Account, AccountServer, detectServer } from '@/api/interfaces/account'
 import { useDeleteAccountMutation } from '@/api/queries/account'
+import useAccountsFacetView from '@/components/Accounts/FacetView/useAccountsFacetView'
 import Locale from '@/components/Core/Locale'
 import useToaster from '@/components/Core/Toaster/useToaster'
 import PlayerAvatar from '@/components/Facet/PlayerAvatar'
-import useAccountsFacetView from '@/components/Routes/Accounts/FacetView/useAccountsFacetView'
 
 const useStyles = makeStyles({
   root: {
@@ -132,7 +132,7 @@ export default function AccountsFacetViewListItem (props: Props) {
           <Locale
             component="span"
             mapping={[
-              'components.routes.accounts.facetView.listItem.server',
+              'components.accounts.facetView.listItem.server',
               {
                 facet: keyOfFacets,
                 path: AccountServerLocaleKeyMappings[detectServer(account.uid)]

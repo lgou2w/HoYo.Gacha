@@ -1,9 +1,9 @@
 import React from 'react'
 import { Button, Subtitle2, Tooltip, makeStyles, shorthands, tokens } from '@fluentui/react-components'
 import { PeopleAddRegular, PeopleListRegular } from '@fluentui/react-icons'
+import CreateAccountDialog from '@/components/Accounts/FacetView/CreateAccountDialog'
+import useAccountsFacetView from '@/components/Accounts/FacetView/useAccountsFacetView'
 import Locale from '@/components/Core/Locale'
-import CreateAccountDialog from '@/components/Routes/Accounts/FacetView/CreateAccountDialog'
-import useAccountsFacetView from '@/components/Routes/Accounts/FacetView/useAccountsFacetView'
 
 const useStyles = makeStyles({
   root: {
@@ -53,7 +53,7 @@ export default function AccountsFacetViewToolbar () {
         component={Subtitle2}
         as="h6"
         mapping={[
-          'components.routes.accounts.facetView.toolbar.title',
+          'components.accounts.facetView.toolbar.title',
           { facet: keyOfFacets }
         ]}
       />
@@ -63,7 +63,7 @@ export default function AccountsFacetViewToolbar () {
             <Tooltip
               relationship="label"
               positioning="before"
-              content={<Locale mapping={['components.routes.accounts.facetView.toolbar.createAccount']} />}
+              content={<Locale mapping={['components.accounts.facetView.toolbar.createAccount']} />}
               withArrow
             >
               <Button appearance="subtle" icon={<PeopleAddRegular />} />

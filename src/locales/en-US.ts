@@ -73,88 +73,86 @@ export default {
         }
       }
     },
-    routes: {
-      accounts: {
-        title: 'Accounts management',
-        facetView: {
-          createAccountDialog: {
-            title: 'Add new account: $t(common.facet.{{facet}}.name)',
-            cancelBtn: 'Cancel',
-            submitBtn: 'Add',
-            form: {
-              valid: 'It\'s valid.',
-              success: 'Account successfully added: {{uid}}',
-              uid: {
-                label: 'UID',
-                placeholder: 'UID for in-game account (nine-digit number)',
-                required: 'Please enter the UID field value.',
-                pattern: 'Please enter the correct UID format.',
-                alreadyExists: 'This account UID already exists.'
-              },
-              displayName: {
-                label: 'Display Name',
-                placeholder: 'Display name of the account (for identification only)',
-                length: 'Maximum character length limit exceeded.'
-              },
-              gameDataDir: {
-                label: 'Game Data Folder',
-                placeholder: 'Full path to the game data folder. \nFor example: $t(common.facet.{{facet}}.gameDataDir.example)',
-                required: 'Please set the game data folder.',
-                autoFindBtn: 'Auto Find',
-                manualFindBtn: 'Manual Choice',
-                emptyFind: 'A valid game data folder was not found. Please check that the game is installed and running.',
-                manualFindTitle: 'Please choice the game data directory manually:'
-              }
+    accounts: {
+      title: 'Accounts management',
+      facetView: {
+        createAccountDialog: {
+          title: 'Add new account: $t(common.facet.{{facet}}.name)',
+          cancelBtn: 'Cancel',
+          submitBtn: 'Add',
+          form: {
+            valid: 'It\'s valid.',
+            success: 'Account successfully added: {{uid}}',
+            uid: {
+              label: 'UID',
+              placeholder: 'UID for in-game account (nine-digit number)',
+              required: 'Please enter the UID field value.',
+              pattern: 'Please enter the correct UID format.',
+              alreadyExists: 'This account UID already exists.'
+            },
+            displayName: {
+              label: 'Display Name',
+              placeholder: 'Display name of the account (for identification only)',
+              length: 'Maximum character length limit exceeded.'
+            },
+            gameDataDir: {
+              label: 'Game Data Folder',
+              placeholder: 'Full path to the game data folder. \nFor example: $t(common.facet.{{facet}}.gameDataDir.example)',
+              required: 'Please set the game data folder.',
+              autoFindBtn: 'Auto Find',
+              manualFindBtn: 'Manual Choice',
+              emptyFind: 'A valid game data folder was not found. Please check that the game is installed and running.',
+              manualFindTitle: 'Please choice the game data directory manually:'
             }
-          },
-          toolbar: {
-            title: '$t(common.facet.{{facet}}.name)',
-            createAccount: 'Create account'
-          },
-          listItem: {
-            server: 'Server: $t(common.facet.{{facet}}.servers.{{path}})'
           }
+        },
+        toolbar: {
+          title: '$t(common.facet.{{facet}}.name)',
+          createAccount: 'Create account'
+        },
+        listItem: {
+          server: 'Server: $t(common.facet.{{facet}}.servers.{{path}})'
+        }
+      }
+    },
+    settings: {
+      title: 'Settings',
+      general: {
+        title: 'General',
+        language: {
+          title: 'Language',
+          subtitle: 'Change the primary language used by the application.',
+          'en-US': 'English (US)',
+          'zh-Hans': 'Chinese (Simplified)',
+          'zh-Hant': 'Chinese (Traditional)'
         }
       },
-      settings: {
-        title: 'Settings',
-        general: {
-          title: 'General',
-          language: {
-            title: 'Language',
-            subtitle: 'Change the primary language used by the application.',
-            'en-US': 'English (US)',
-            'zh-Hans': 'Chinese (Simplified)',
-            'zh-Hant': 'Chinese (Traditional)'
-          }
+      appearance: {
+        title: 'Appearance',
+        themeSpace: {
+          title: 'Theme Colors',
+          subtitle: 'Change the primary colors displayed in the application.'
         },
-        appearance: {
-          title: 'Appearance',
-          themeSpace: {
-            title: 'Theme Colors',
-            subtitle: 'Change the primary colors displayed in the application.'
-          },
-          themeColor: {
-            title: 'Preferred Color Schemes',
-            subtitle: 'Toggle the application to use light theme or dark theme.',
-            light: 'Light',
-            dark: 'Dark'
-          },
-          themeZoom: {
-            title: 'Interface Scaling',
-            subtitle: 'Changing the scaling of the interface in the application.'
-          }
+        themeColor: {
+          title: 'Preferred Color Schemes',
+          subtitle: 'Toggle the application to use light theme or dark theme.',
+          light: 'Light',
+          dark: 'Dark'
         },
-        about: {
-          title: 'About',
-          update: {
-            title: 'Application Update',
-            subtitle: 'Check for application version updates.',
-            checkBtn: 'Check Update',
-            channel: {
-              stable: 'Stable (Release)',
-              insider: 'Insider (Alpha)'
-            }
+        themeZoom: {
+          title: 'Interface Scaling',
+          subtitle: 'Changing the scaling of the interface in the application.'
+        }
+      },
+      about: {
+        title: 'About',
+        update: {
+          title: 'Application Update',
+          subtitle: 'Check for application version updates.',
+          checkBtn: 'Check Update',
+          channel: {
+            stable: 'Stable (Release)',
+            insider: 'Insider (Alpha)'
           }
         }
       }

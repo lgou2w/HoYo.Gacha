@@ -1,7 +1,7 @@
 import React, { ReactElement, useState } from 'react'
 import { Dialog, DialogBody, DialogContent, DialogSurface, DialogTitle, DialogTrigger } from '@fluentui/react-components'
+import useAccountsFacetView from '@/components/Accounts/FacetView/useAccountsFacetView'
 import Locale from '@/components/Core/Locale'
-import useAccountsFacetView from '@/components/Routes/Accounts/FacetView/useAccountsFacetView'
 import CreateAccountDialogForm from './Form'
 
 interface Props {
@@ -25,7 +25,7 @@ export default function CreateAccountDialog (props: Props) {
           <Locale
             component={DialogTitle}
             mapping={[
-              'components.routes.accounts.facetView.createAccountDialog.title',
+              'components.accounts.facetView.createAccountDialog.title',
               { facet: keyOfFacets }
             ]}
           />

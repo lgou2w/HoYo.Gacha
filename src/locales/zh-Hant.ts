@@ -73,87 +73,85 @@ export default {
         }
       }
     },
-    routes: {
-      accounts: {
-        title: '帳戶管理',
-        facetView: {
-          createAccountDialog: {
-            title: '創建新帳戶：$t(common.facet.{{facet}}.name)',
-            cancelBtn: '取消',
-            submitBtn: '創建',
-            form: {
-              valid: '有效。',
-              success: '創建帳戶 {{uid}} 成功。',
-              uid: {
-                label: 'UID',
-                placeholder: '遊戲內帳戶的 UID（9 比特數位）',
-                required: '請輸入 UID 欄位值。',
-                pattern: '請輸入正確的 UID 格式。',
-                alreadyExists: '該帳戶 UID 已經存在。'
-              },
-              displayName: {
-                label: '顯示名稱',
-                placeholder: '帳戶的顯示名稱（僅用於識別）',
-                length: '超過最大字元長度限制。'
-              },
-              gameDataDir: {
-                label: '遊戲數據目錄',
-                placeholder: '遊戲數據目錄的完整路徑。\n例如：$t(common.facet.{{facet}}.gameDataDir.example)',
-                required: '請設定遊戲數據目錄。',
-                autoFindBtn: '自動查找',
-                manualFindBtn: '手動選擇',
-                emptyFind: '未找到有效的遊戲數據目錄。 請檢查遊戲是否安裝並運行。'
-              }
+    accounts: {
+      title: '帳戶管理',
+      facetView: {
+        createAccountDialog: {
+          title: '創建新帳戶：$t(common.facet.{{facet}}.name)',
+          cancelBtn: '取消',
+          submitBtn: '創建',
+          form: {
+            valid: '有效。',
+            success: '創建帳戶 {{uid}} 成功。',
+            uid: {
+              label: 'UID',
+              placeholder: '遊戲內帳戶的 UID（9 比特數位）',
+              required: '請輸入 UID 欄位值。',
+              pattern: '請輸入正確的 UID 格式。',
+              alreadyExists: '該帳戶 UID 已經存在。'
+            },
+            displayName: {
+              label: '顯示名稱',
+              placeholder: '帳戶的顯示名稱（僅用於識別）',
+              length: '超過最大字元長度限制。'
+            },
+            gameDataDir: {
+              label: '遊戲數據目錄',
+              placeholder: '遊戲數據目錄的完整路徑。\n例如：$t(common.facet.{{facet}}.gameDataDir.example)',
+              required: '請設定遊戲數據目錄。',
+              autoFindBtn: '自動查找',
+              manualFindBtn: '手動選擇',
+              emptyFind: '未找到有效的遊戲數據目錄。 請檢查遊戲是否安裝並運行。'
             }
-          },
-          toolbar: {
-            title: '$t(common.facet.{{facet}}.name)',
-            createAccount: '創建帳戶'
-          },
-          listItem: {
-            server: '服務器：$t(common.facet.{{facet}}.servers.{{path}})'
           }
+        },
+        toolbar: {
+          title: '$t(common.facet.{{facet}}.name)',
+          createAccount: '創建帳戶'
+        },
+        listItem: {
+          server: '服務器：$t(common.facet.{{facet}}.servers.{{path}})'
+        }
+      }
+    },
+    settings: {
+      title: '設定',
+      general: {
+        title: '常規',
+        language: {
+          title: '語言',
+          subtitle: '更改應用使用的主要語言。',
+          'en-US': '英語 (US)',
+          'zh-Hans': '簡體中文',
+          'zh-Hant': '繁體中文'
         }
       },
-      settings: {
-        title: '設定',
-        general: {
-          title: '常規',
-          language: {
-            title: '語言',
-            subtitle: '更改應用使用的主要語言。',
-            'en-US': '英語 (US)',
-            'zh-Hans': '簡體中文',
-            'zh-Hant': '繁體中文'
-          }
+      appearance: {
+        title: '外觀',
+        themeSpace: {
+          title: '主題顏色',
+          subtitle: '更改應用中顯示的主要顏色。'
         },
-        appearance: {
-          title: '外觀',
-          themeSpace: {
-            title: '主題顏色',
-            subtitle: '更改應用中顯示的主要顏色。'
-          },
-          themeColor: {
-            title: '偏好配色方案',
-            subtitle: '切換應用使用淺色主題或暗色主題。',
-            light: '淺色',
-            dark: '暗色'
-          },
-          themeZoom: {
-            title: '介面縮放',
-            subtitle: '更改應用中介面的縮放比例。'
-          }
+        themeColor: {
+          title: '偏好配色方案',
+          subtitle: '切換應用使用淺色主題或暗色主題。',
+          light: '淺色',
+          dark: '暗色'
         },
-        about: {
-          title: '關於',
-          update: {
-            title: '應用更新',
-            subtitle: '檢查應用的版本更新。',
-            checkBtn: '檢查更新',
-            channel: {
-              stable: '穩定版 (Stable)',
-              insider: '預覽版 (Insider)'
-            }
+        themeZoom: {
+          title: '介面縮放',
+          subtitle: '更改應用中介面的縮放比例。'
+        }
+      },
+      about: {
+        title: '關於',
+        update: {
+          title: '應用更新',
+          subtitle: '檢查應用的版本更新。',
+          checkBtn: '檢查更新',
+          channel: {
+            stable: '穩定版 (Stable)',
+            insider: '預覽版 (Insider)'
           }
         }
       }

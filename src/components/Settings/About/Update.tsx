@@ -2,7 +2,7 @@ import React, { Fragment } from 'react'
 import { Menu, MenuButtonProps, MenuItem, MenuList, MenuPopover, MenuTrigger, SplitButton } from '@fluentui/react-components'
 import { ArrowClockwiseRegular } from '@fluentui/react-icons'
 import Locale from '@/components/Core/Locale'
-import SettingsGroupItem from '@/components/Routes/Settings/GroupItem'
+import SettingsGroupItem from '@/components/Settings/GroupItem'
 
 // TODO: Check Application Version Updates
 
@@ -10,8 +10,8 @@ export default function SettingsGroupItemUpdate () {
   return (
     <SettingsGroupItem
       icon={<ArrowClockwiseRegular />}
-      title={<Locale mapping={['components.routes.settings.about.update.title']} />}
-      subtitle={<Locale mapping={['components.routes.settings.about.update.subtitle']} />}
+      title={<Locale mapping={['components.settings.about.update.title']} />}
+      subtitle={<Locale mapping={['components.settings.about.update.subtitle']} />}
       action={(
         <Fragment>
           <Menu positioning="below-end">
@@ -22,7 +22,7 @@ export default function SettingsGroupItemUpdate () {
                   appearance="primary"
                   size="small"
                   menuButton={triggerProps}
-                  mapping={['components.routes.settings.about.update.checkBtn']}
+                  mapping={['components.settings.about.update.checkBtn']}
                 />
               )}
             </MenuTrigger>
@@ -30,11 +30,11 @@ export default function SettingsGroupItemUpdate () {
               <MenuList>
                 <Locale
                   component={MenuItem}
-                  mapping={['components.routes.settings.about.update.channel.stable']}
+                  mapping={['components.settings.about.update.channel.stable']}
                 />
                 <Locale
                   component={MenuItem}
-                  mapping={['components.routes.settings.about.update.channel.insider']}
+                  mapping={['components.settings.about.update.channel.insider']}
                 />
               </MenuList>
             </MenuPopover>

@@ -1,7 +1,7 @@
 import React from 'react'
 import { Text, makeStyles, shorthands, tokens } from '@fluentui/react-components'
 import { useAccountsQuery } from '@/api/queries/account'
-import useAccountsFacetView from '@/components/Routes/Accounts/FacetView/useAccountsFacetView'
+import useAccountsFacetView from '@/components/Accounts/FacetView/useAccountsFacetView'
 import AccountsFacetViewListItem from './ListItem'
 
 const useStyles = makeStyles({

@@ -73,87 +73,85 @@ export default {
         }
       }
     },
-    routes: {
-      accounts: {
-        title: '账户管理',
-        facetView: {
-          createAccountDialog: {
-            title: '添加新账户：$t(common.facet.{{facet}}.name)',
-            cancelBtn: '取消',
-            submitBtn: '添加',
-            form: {
-              valid: '有效。',
-              success: '添加账户 {{uid}} 成功。',
-              uid: {
-                label: 'UID',
-                placeholder: '游戏内账户的 UID（9 位数字）',
-                required: '请输入 UID 字段值。',
-                pattern: '请输入正确的 UID 格式。',
-                alreadyExists: '该账户 UID 已经存在。'
-              },
-              displayName: {
-                label: '显示名称',
-                placeholder: '账户的显示名称（仅用于识别）',
-                length: '超过最大字符长度限制。'
-              },
-              gameDataDir: {
-                label: '游戏数据目录',
-                placeholder: '游戏数据目录的完整路径。\n例如：$t(common.facet.{{facet}}.gameDataDir.example)',
-                required: '请设置游戏数据目录。',
-                autoFindBtn: '自动查找',
-                manualFindBtn: '手动选择',
-                emptyFind: '未找到有效的游戏数据目录。请检查游戏是否安装并运行。'
-              }
+    accounts: {
+      title: '账户管理',
+      facetView: {
+        createAccountDialog: {
+          title: '添加新账户：$t(common.facet.{{facet}}.name)',
+          cancelBtn: '取消',
+          submitBtn: '添加',
+          form: {
+            valid: '有效。',
+            success: '添加账户 {{uid}} 成功。',
+            uid: {
+              label: 'UID',
+              placeholder: '游戏内账户的 UID（9 位数字）',
+              required: '请输入 UID 字段值。',
+              pattern: '请输入正确的 UID 格式。',
+              alreadyExists: '该账户 UID 已经存在。'
+            },
+            displayName: {
+              label: '显示名称',
+              placeholder: '账户的显示名称（仅用于识别）',
+              length: '超过最大字符长度限制。'
+            },
+            gameDataDir: {
+              label: '游戏数据目录',
+              placeholder: '游戏数据目录的完整路径。\n例如：$t(common.facet.{{facet}}.gameDataDir.example)',
+              required: '请设置游戏数据目录。',
+              autoFindBtn: '自动查找',
+              manualFindBtn: '手动选择',
+              emptyFind: '未找到有效的游戏数据目录。请检查游戏是否安装并运行。'
             }
-          },
-          toolbar: {
-            title: '$t(common.facet.{{facet}}.name)',
-            createAccount: '创建账户'
-          },
-          listItem: {
-            server: '服务器：$t(common.facet.{{facet}}.servers.{{path}})'
           }
+        },
+        toolbar: {
+          title: '$t(common.facet.{{facet}}.name)',
+          createAccount: '创建账户'
+        },
+        listItem: {
+          server: '服务器：$t(common.facet.{{facet}}.servers.{{path}})'
+        }
+      }
+    },
+    settings: {
+      title: '设置',
+      general: {
+        title: '常规',
+        language: {
+          title: '语言',
+          subtitle: '更改应用使用的主要语言。',
+          'en-US': '英语 (US)',
+          'zh-Hans': '简体中文',
+          'zh-Hant': '繁体中文'
         }
       },
-      settings: {
-        title: '设置',
-        general: {
-          title: '常规',
-          language: {
-            title: '语言',
-            subtitle: '更改应用使用的主要语言。',
-            'en-US': '英语 (US)',
-            'zh-Hans': '简体中文',
-            'zh-Hant': '繁体中文'
-          }
+      appearance: {
+        title: '外观',
+        themeSpace: {
+          title: '主题颜色',
+          subtitle: '更改应用中显示的主要颜色。'
         },
-        appearance: {
-          title: '外观',
-          themeSpace: {
-            title: '主题颜色',
-            subtitle: '更改应用中显示的主要颜色。'
-          },
-          themeColor: {
-            title: '偏好配色方案',
-            subtitle: '切换应用使用浅色主题或暗色主题。',
-            light: '浅色',
-            dark: '暗色'
-          },
-          themeZoom: {
-            title: '界面缩放',
-            subtitle: '更改应用中界面的缩放比例。'
-          }
+        themeColor: {
+          title: '偏好配色方案',
+          subtitle: '切换应用使用浅色主题或暗色主题。',
+          light: '浅色',
+          dark: '暗色'
         },
-        about: {
-          title: '关于',
-          update: {
-            title: '应用更新',
-            subtitle: '检查应用的版本更新。',
-            checkBtn: '检查更新',
-            channel: {
-              stable: '稳定版 (Stable)',
-              insider: '预览版 (Insider)'
-            }
+        themeZoom: {
+          title: '界面缩放',
+          subtitle: '更改应用中界面的缩放比例。'
+        }
+      },
+      about: {
+        title: '关于',
+        update: {
+          title: '应用更新',
+          subtitle: '检查应用的版本更新。',
+          checkBtn: '检查更新',
+          channel: {
+            stable: '稳定版 (Stable)',
+            insider: '预览版 (Insider)'
           }
         }
       }

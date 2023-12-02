@@ -4,7 +4,7 @@ import { ColorRegular } from '@fluentui/react-icons'
 import Locale from '@/components/Core/Locale'
 import { KnownThemeSpaces, ThemeSpace } from '@/components/Core/Theme/declares'
 import useTheme from '@/components/Core/Theme/useTheme'
-import SettingsGroupItem from '@/components/Routes/Settings/GroupItem'
+import SettingsGroupItem from '@/components/Settings/GroupItem'
 
 export default function SettingsGroupItemThemeSpace () {
   const { space, change } = useTheme()
@@ -12,8 +12,8 @@ export default function SettingsGroupItemThemeSpace () {
   return (
     <SettingsGroupItem
       icon={<ColorRegular />}
-      title={<Locale mapping={['components.routes.settings.appearance.themeSpace.title']} />}
-      subtitle={<Locale mapping={['components.routes.settings.appearance.themeSpace.subtitle']} />}
+      title={<Locale mapping={['components.settings.appearance.themeSpace.title']} />}
+      subtitle={<Locale mapping={['components.settings.appearance.themeSpace.subtitle']} />}
       action={(
         <Select
           value={space}
