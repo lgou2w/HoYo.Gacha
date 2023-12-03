@@ -163,6 +163,12 @@ generate_entity!({
       id: u32
     } => "UPDATE `hg.accounts` SET `properties` = ? WHERE `id` = ? RETURNING *;",
 
+    update_game_data_dir_and_properties_by_id {
+      game_data_dir: String,
+      properties: Option<AccountProperties>,
+      id: u32
+    } => "UPDATE `hg.accounts` SET `game_data_dir` = ?, `properties` = ? WHERE `id` = ? RETURNING *;",
+
     delete_by_id { id: u32 } => "DELETE FROM `hg.accounts` WHERE `id` = ? RETURNING *;",
   }
 });

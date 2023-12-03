@@ -1,7 +1,7 @@
 import React from 'react'
 import { Button, Subtitle2, Tooltip, makeStyles, shorthands, tokens } from '@fluentui/react-components'
 import { PeopleAddRegular, PeopleListRegular } from '@fluentui/react-icons'
-import CreateAccountDialog from '@/components/Accounts/FacetView/CreateAccountDialog'
+import AddOrEditDialog from '@/components/Accounts/FacetView/AddOrEditDialog'
 import useAccountsFacetView from '@/components/Accounts/FacetView/useAccountsFacetView'
 import Locale from '@/components/Core/Locale'
 
@@ -58,12 +58,13 @@ export default function AccountsFacetViewToolbar () {
         ]}
       />
       <div className={classes.action}>
-        <CreateAccountDialog
+        <AddOrEditDialog
+          edit={null}
           trigger={(
             <Tooltip
               relationship="label"
               positioning="before"
-              content={<Locale mapping={['components.accounts.facetView.toolbar.createAccount']} />}
+              content={<Locale mapping={['components.accounts.facetView.toolbar.addAccountBtn']} />}
               withArrow
             >
               <Button appearance="subtle" icon={<PeopleAddRegular />} />

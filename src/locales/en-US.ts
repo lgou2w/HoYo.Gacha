@@ -76,41 +76,44 @@ export default {
     accounts: {
       title: 'Accounts management',
       facetView: {
-        createAccountDialog: {
-          title: 'Add new account: $t(common.facet.{{facet}}.name)',
+        addOrEditForm: {
           cancelBtn: 'Cancel',
-          submitBtn: 'Add',
-          form: {
-            valid: 'It\'s valid.',
-            success: 'Account successfully added: {{uid}}',
-            uid: {
-              label: 'UID',
-              placeholder: 'UID for in-game account (nine-digit number)',
-              required: 'Please enter the UID field value.',
-              pattern: 'Please enter the correct UID format.',
-              alreadyExists: 'This account UID already exists.'
-            },
-            displayName: {
-              label: 'Display Name',
-              placeholder: 'Display name of the account (for identification only)',
-              length: 'Maximum character length limit exceeded.'
-            },
-            gameDataDir: {
-              label: 'Game Data Folder',
-              placeholder: 'Full path to the game data folder. \nFor example: $t(common.facet.{{facet}}.gameDataDir.example)',
-              required: 'Please set the game data folder.',
-              autoFindBtn: 'Auto Find',
-              manualFindBtn: 'Manual Choice',
-              emptyFind: 'A valid game data folder was not found. Please check that the game is installed and running.',
-              manualFindTitle: 'Please choice the game data directory manually:'
-            }
+          submitBtn: 'Confirm',
+          valid: 'It\'s valid.',
+          successAdded: 'Account successfully added: {{uid}}',
+          successEdited: 'Account successfully edited: {{uid}}',
+          uid: {
+            label: 'UID',
+            placeholder: 'UID for in-game account (nine-digit number)',
+            required: 'Please enter the UID field value.',
+            pattern: 'Please enter the correct UID format.',
+            alreadyExists: 'This account UID already exists.'
+          },
+          displayName: {
+            label: 'Display Name',
+            placeholder: 'Display name of the account (for identification only)',
+            length: 'Maximum character length limit exceeded.'
+          },
+          gameDataDir: {
+            label: 'Game Data Folder',
+            placeholder: 'Full path to the game data folder. \nFor example: $t(common.facet.{{facet}}.gameDataDir.example)',
+            required: 'Please set the game data folder.',
+            autoFindBtn: 'Auto Find',
+            manualFindBtn: 'Manual Choice',
+            emptyFind: 'A valid game data folder was not found. Please check that the game is installed and running.',
+            manualFindTitle: 'Please choice the game data directory manually:'
           }
+        },
+        addOrEditDialog: {
+          addTitle: 'Add new account: $t(common.facet.{{facet}}.name)',
+          editTitle: 'Edit account: $t(common.facet.{{facet}}.name)'
         },
         toolbar: {
           title: '$t(common.facet.{{facet}}.name)',
-          createAccount: 'Create account'
+          addAccountBtn: 'Add account'
         },
         listItem: {
+          editAccountBtn: 'Edit account',
           server: 'Server: $t(common.facet.{{facet}}.servers.{{path}})'
         }
       }

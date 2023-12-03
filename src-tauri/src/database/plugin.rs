@@ -34,6 +34,7 @@ impl DatabasePluginBuilder {
         handler::update_account_game_data_dir,
         handler::update_account_gacha_url,
         handler::update_account_properties,
+        handler::update_account_game_data_dir_and_properties,
         handler::find_gacha_records_by_facet_and_uid
       ])
       .build()
@@ -116,6 +117,12 @@ mod handler {
       properties: Option<AccountProperties>,
       id: u32
     } update_properties_by_id and fetch_optional => Option<Account>,
+
+    update_account_game_data_dir_and_properties {
+      game_data_dir: String,
+      properties: Option<AccountProperties>,
+      id: u32
+    } update_game_data_dir_and_properties_by_id and fetch_optional => Option<Account>,
   });
 
   generate_handlers!(GachaRecordQuestioner, {

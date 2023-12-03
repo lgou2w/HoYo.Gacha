@@ -1,11 +1,10 @@
-import React, { useCallback } from 'react'
-import { Button, Divider, Text, makeStyles, shorthands, tokens } from '@fluentui/react-components'
-import { MoreHorizontalRegular, ServerRegular } from '@fluentui/react-icons'
+import React from 'react'
+import { Button, Divider, Text, Tooltip, makeStyles, shorthands, tokens } from '@fluentui/react-components'
+import { PeopleEditRegular, ServerRegular } from '@fluentui/react-icons'
 import { Account, AccountServer, detectServer } from '@/api/interfaces/account'
-import { useDeleteAccountMutation } from '@/api/queries/account'
+import AddOrEditDialog from '@/components/Accounts/FacetView/AddOrEditDialog'
 import useAccountsFacetView from '@/components/Accounts/FacetView/useAccountsFacetView'
 import Locale from '@/components/Core/Locale'
-import useToaster from '@/components/Core/Toaster/useToaster'
 import PlayerAvatar from '@/components/Facet/PlayerAvatar'
 
 const useStyles = makeStyles({
@@ -72,20 +71,6 @@ interface Props {
 export default function AccountsFacetViewListItem (props: Props) {
   const { account } = props
   const { keyOfFacets } = useAccountsFacetView()
-  const { notify } = useToaster()
-
-  // TODO: test code
-  const deleteAccountMutation = useDeleteAccountMutation()
-  const handleAccountDelete = useCallback(async (id: number) => {
-    const account = await deleteAccountMutation.mutateAsync({ id })
-    if (account) {
-      notify(
-        `Account ${account.uid} has been deleted.`,
-        { intent: 'success' }
-      )
-    }
-  }, [deleteAccountMutation, notify])
-  //
 
   const classes = useStyles()
   return (
@@ -118,10 +103,18 @@ export default function AccountsFacetViewListItem (props: Props) {
           </Text>
         </div>
         <div className={classes.action}>
-          <Button
-            appearance="subtle"
-            icon={<MoreHorizontalRegular />}
-            onClick={() => handleAccountDelete(account.id)}
+          <AddOrEditDialog
+            edit={account}
+            trigger={(
+              <Tooltip
+                relationship="label"
+                positioning="after"
+                content={<Locale mapping={['components.accounts.facetView.listItem.editAccountBtn']} />}
+                withArrow
+              >
+                <Button appearance="subtle" icon={<PeopleEditRegular />} />
+              </Tooltip>
+            )}
           />
         </div>
       </div>

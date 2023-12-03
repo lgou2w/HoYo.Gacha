@@ -85,3 +85,30 @@ const DeleteAccountMutationOptions: UseMutationOptions<
 export function useDeleteAccountMutation () {
   return useMutation(DeleteAccountMutationOptions)
 }
+
+const UpdateAccountGameDataDirAndPropertiesMutationKey: UseMutationOptions['mutationKey'] =
+  ['accounts', 'updateGameDataDirAndProperties']
+const UpdateAccountGameDataDirAndPropertiesMutation: UseMutationOptions<
+  Account | null,
+  DatabaseError | Error,
+  PickParametersFirst<typeof DatabasePlugin.updateAccountGameDataDirAndProperties>
+> = {
+  mutationKey: UpdateAccountGameDataDirAndPropertiesMutationKey,
+  mutationFn: DatabasePlugin.updateAccountGameDataDirAndProperties,
+  onSuccess (data) {
+    if (!data) return
+    setAccountsQueryData((prev) => {
+      return prev && produce(prev, (draft) => {
+        const ref = draft.find((v) => v.id === data.id)
+        if (ref) {
+          ref.gameDataDir = data.gameDataDir
+          ref.properties = data.properties
+        }
+      })
+    })
+  }
+}
+
+export function useUpdateAccountGameDataDirAndPropertiesMutation () {
+  return useMutation(UpdateAccountGameDataDirAndPropertiesMutation)
+}

@@ -76,40 +76,43 @@ export default {
     accounts: {
       title: '帳戶管理',
       facetView: {
-        createAccountDialog: {
-          title: '創建新帳戶：$t(common.facet.{{facet}}.name)',
+        addOrEditForm: {
           cancelBtn: '取消',
-          submitBtn: '創建',
-          form: {
-            valid: '有效。',
-            success: '創建帳戶 {{uid}} 成功。',
-            uid: {
-              label: 'UID',
-              placeholder: '遊戲內帳戶的 UID（9 比特數位）',
-              required: '請輸入 UID 欄位值。',
-              pattern: '請輸入正確的 UID 格式。',
-              alreadyExists: '該帳戶 UID 已經存在。'
-            },
-            displayName: {
-              label: '顯示名稱',
-              placeholder: '帳戶的顯示名稱（僅用於識別）',
-              length: '超過最大字元長度限制。'
-            },
-            gameDataDir: {
-              label: '遊戲數據目錄',
-              placeholder: '遊戲數據目錄的完整路徑。\n例如：$t(common.facet.{{facet}}.gameDataDir.example)',
-              required: '請設定遊戲數據目錄。',
-              autoFindBtn: '自動查找',
-              manualFindBtn: '手動選擇',
-              emptyFind: '未找到有效的遊戲數據目錄。 請檢查遊戲是否安裝並運行。'
-            }
+          submitBtn: '確認',
+          valid: '有效。',
+          successAdded: '創建帳戶 {{uid}} 成功。',
+          successEdited: '編輯帳戶 {{uid}} 成功。',
+          uid: {
+            label: 'UID',
+            placeholder: '遊戲內帳戶的 UID（9 比特數位）',
+            required: '請輸入 UID 欄位值。',
+            pattern: '請輸入正確的 UID 格式。',
+            alreadyExists: '該帳戶 UID 已經存在。'
+          },
+          displayName: {
+            label: '顯示名稱',
+            placeholder: '帳戶的顯示名稱（僅用於識別）',
+            length: '超過最大字元長度限制。'
+          },
+          gameDataDir: {
+            label: '遊戲數據目錄',
+            placeholder: '遊戲數據目錄的完整路徑。\n例如：$t(common.facet.{{facet}}.gameDataDir.example)',
+            required: '請設定遊戲數據目錄。',
+            autoFindBtn: '自動查找',
+            manualFindBtn: '手動選擇',
+            emptyFind: '未找到有效的遊戲數據目錄。 請檢查遊戲是否安裝並運行。'
           }
+        },
+        addOrEditDialog: {
+          addTitle: '添加新帳戶：$t(common.facet.{{facet}}.name)',
+          editTitle: '編輯帳戶：$t(common.facet.{{facet}}.name)'
         },
         toolbar: {
           title: '$t(common.facet.{{facet}}.name)',
-          createAccount: '創建帳戶'
+          addAccountBtn: '添加帳戶'
         },
         listItem: {
+          editAccountBtn: '編輯帳戶',
           server: '服務器：$t(common.facet.{{facet}}.servers.{{path}})'
         }
       }

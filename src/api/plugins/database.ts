@@ -16,6 +16,7 @@ type Command =
   | 'update_account_game_data_dir'
   | 'update_account_gacha_url'
   | 'update_account_properties'
+  | 'update_account_game_data_dir_and_properties'
   | 'find_gacha_records_by_facet_and_uid'
 
 function bind<Payload = void, Result = void> (command: Command) {
@@ -51,6 +52,7 @@ export const DatabasePlugin = {
   updateAccountGameDataDir: bind<Pick<Account, 'gameDataDir' | 'id'>, Account | null>('update_account_game_data_dir'),
   updateAccountGachaUrl: bind<Pick<Account, 'gachaUrl' | 'gachaUrlUpdatedAt' | 'id'>, Account | null>('update_account_gacha_url'),
   updateAccountProperties: bind<Pick<Account, 'properties' | 'id'>, Account | null>('update_account_properties'),
+  updateAccountGameDataDirAndProperties: bind<Pick<Account, 'gameDataDir' | 'properties' | 'id'>, Account | null>('update_account_game_data_dir_and_properties'),
   findGachaRecordsByFacetAndUid: bind<Pick<GachaRecord, 'facet' | 'uid'> & Partial<Pick<GachaRecord, 'gachaType'>>, GachaRecord[]>('find_gacha_records_by_facet_and_uid'),
   // Utilities
   findGenshinImpactGachaRecordsByUid (payload: Pick<GachaRecord, 'uid'> & Partial<Pick<GachaRecord, 'gachaType'>>) {

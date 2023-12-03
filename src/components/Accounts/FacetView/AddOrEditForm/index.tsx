@@ -1,18 +1,20 @@
-import React, { ReactNode, useCallback } from 'react'
-import { useForm, SubmitHandler, UseControllerProps, useController, UseControllerReturn } from 'react-hook-form'
+import React, { useCallback } from 'react'
+import { useForm, SubmitHandler } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-import { Button, Field, Input, Textarea, makeStyles, shorthands, tokens } from '@fluentui/react-components'
+import { Button, Input, Textarea, makeStyles, shorthands, tokens } from '@fluentui/react-components'
 import { CursorHoverRegular, FolderSearchRegular, PersonTagRegular } from '@fluentui/react-icons'
 import { dialog } from '@tauri-apps/api'
+import { produce } from 'immer'
 import { Account, UidRegex, isCorrectUid, isOverseaServer } from '@/api/interfaces/account'
 import { DataDirectory } from '@/api/interfaces/gacha-facet'
 import { GachaFacetPlugin, isDatabaseError, isGachaFacetError, stringifyGachaFacetErrorKind } from '@/api/plugins'
-import { useAccountsQuery, useCreateAccountMutation } from '@/api/queries/account'
+import { useAccountsQuery, useCreateAccountMutation, useUpdateAccountGameDataDirAndPropertiesMutation } from '@/api/queries/account'
 import useAccountsFacetView from '@/components/Accounts/FacetView/useAccountsFacetView'
 import Locale from '@/components/Core/Locale'
-import { LocaleProps, acceptLocale } from '@/components/Core/Locale/declares'
 import useToaster from '@/components/Core/Toaster/useToaster'
 import { IdentifierRegular } from '@/components/Utilities/Icons'
+import AddOrEditFormField from './Field'
+import { FormData, DisplayNameMaxLength } from './declares'
 
 const useStyles = makeStyles({
   root: {
@@ -58,25 +60,20 @@ const useStyles = makeStyles({
 // TODO: Generic Form Wrapped
 
 interface Props {
+  // Add mode if null, Edit mode otherwise
+  edit: Account | null
   onCancel?: () => void
   onSuccess?: (account: Account) => void
 }
 
-interface FormData {
-  uid: string
-  displayName?: string
-  gameDataDir: string
-}
-
-const DisplayNameMaxLength = 16
-
-export default function CreateAccountDialogForm (props: Props) {
-  const { onCancel, onSuccess } = props
+export default function AddOrEditForm (props: Props) {
+  const { edit, onCancel, onSuccess } = props
   const { keyOfFacets, facet } = useAccountsFacetView()
   const { data } = useAccountsQuery()
   const { notifyLocale } = useToaster()
   const { t } = useTranslation()
 
+  const isEditMode = !!edit
   const {
     handleSubmit,
     control,
@@ -90,6 +87,11 @@ export default function CreateAccountDialogForm (props: Props) {
       uid: '',
       displayName: '',
       gameDataDir: ''
+    },
+    values: {
+      uid: edit?.uid.toString() || '',
+      displayName: edit?.properties?.displayName || '',
+      gameDataDir: edit?.gameDataDir || ''
     }
   })
 
@@ -125,7 +127,7 @@ export default function CreateAccountDialogForm (props: Props) {
 
     if (dataDirectories.length === 0) {
       setError('gameDataDir', {
-        message: t('components.accounts.facetView.createAccountDialog.form.gameDataDir.emptyFind')
+        message: t('components.accounts.facetView.addOrEditForm.gameDataDir.emptyFind')
       }, { shouldFocus: true })
     } else {
       // TODO: If there are multiple data directories
@@ -142,7 +144,7 @@ export default function CreateAccountDialogForm (props: Props) {
     let directory = await dialog.open({
       directory: true,
       multiple: false,
-      title: t('components.accounts.facetView.createAccountDialog.form.gameDataDir.manualFindTitle')
+      title: t('components.accounts.facetView.addOrEditForm.gameDataDir.manualFindTitle')
     })
 
     if (typeof directory === 'string') {
@@ -156,22 +158,35 @@ export default function CreateAccountDialogForm (props: Props) {
   }, [t, setValue])
 
   const createAccountMutation = useCreateAccountMutation()
+  const updateAccountGameDataDirAndPropertiesMutation = useUpdateAccountGameDataDirAndPropertiesMutation()
   const onSubmit = useCallback<SubmitHandler<FormData>>(async (data) => {
     let account: Account
     try {
-      account = await createAccountMutation.mutateAsync({
-        facet,
-        uid: parseInt(data.uid),
-        gameDataDir: data.gameDataDir,
-        properties: data.displayName
-          ? { displayName: data.displayName }
-          : undefined
-      })
+      account = !edit
+        ? await createAccountMutation.mutateAsync({
+          facet,
+          uid: parseInt(data.uid),
+          gameDataDir: data.gameDataDir,
+          properties: data.displayName
+            ? { displayName: data.displayName }
+            : undefined
+        })
+        : (await updateAccountGameDataDirAndPropertiesMutation.mutateAsync({
+            id: edit.id,
+            gameDataDir: data.gameDataDir,
+            properties: !data.displayName
+              ? edit.properties
+              : !edit.properties
+                  ? { displayName: data.displayName! }
+                  : produce(edit.properties, (draft) => {
+                    draft.displayName = data.displayName!
+                  })
+          })) || edit
     } catch (e) {
       let message: string
       if (isDatabaseError(e)) {
         message = e.code === '2067'
-          ? t('components.accounts.facetView.createAccountDialog.form.uid.alreadyExists')
+          ? t('components.accounts.facetView.addOrEditForm.uid.alreadyExists')
           : t('error.database.formattingMessage', { message: e.message, code: e.code })
       } else {
         message = t('error.unexpected.formattingMessage', {
@@ -185,10 +200,24 @@ export default function CreateAccountDialogForm (props: Props) {
 
     onSuccess?.(account)
     notifyLocale([
-      'components.accounts.facetView.createAccountDialog.form.success',
+      !edit
+        ? 'components.accounts.facetView.addOrEditForm.successAdded'
+        : 'components.accounts.facetView.addOrEditForm.successEdited',
       { uid: account.uid }
-    ], { intent: 'success' })
-  }, [onSuccess, notifyLocale, createAccountMutation, facet, setError, t])
+    ], {
+      intent: 'success',
+      timeout: 5000
+    })
+  }, [
+    edit,
+    facet,
+    createAccountMutation,
+    updateAccountGameDataDirAndPropertiesMutation,
+    t,
+    setError,
+    onSuccess,
+    notifyLocale
+  ])
 
   const classes = useStyles()
   return (
@@ -197,42 +226,44 @@ export default function CreateAccountDialogForm (props: Props) {
       onSubmit={handleSubmit(onSubmit)}
       noValidate
     >
-      <CreateAccountDialogFormField
+      <AddOrEditFormField
         name="uid"
         control={control}
         rules={{
           required: {
             value: true,
-            message: t('components.accounts.facetView.createAccountDialog.form.uid.required')
+            message: t('components.accounts.facetView.addOrEditForm.uid.required')
           },
           pattern: {
             value: UidRegex,
-            message: t('components.accounts.facetView.createAccountDialog.form.uid.pattern')
+            message: t('components.accounts.facetView.addOrEditForm.uid.pattern')
           },
           validate (value) {
+            if (isEditMode) return
             if (value && data?.find((v) => v.uid === +value)) {
-              return t('components.accounts.facetView.createAccountDialog.form.uid.alreadyExists')
+              return t('components.accounts.facetView.addOrEditForm.uid.alreadyExists')
             }
           }
         }}
         component={Input}
-        labelMapping={['components.accounts.facetView.createAccountDialog.form.uid.label']}
-        placeholderMapping={['components.accounts.facetView.createAccountDialog.form.uid.placeholder']}
+        labelMapping={['components.accounts.facetView.addOrEditForm.uid.label']}
+        placeholderMapping={['components.accounts.facetView.addOrEditForm.uid.placeholder']}
         before={<IdentifierRegular />}
         required
+        disabled={isEditMode}
       />
-      <CreateAccountDialogFormField
+      <AddOrEditFormField
         name="displayName"
         control={control}
         rules={{
           maxLength: {
             value: DisplayNameMaxLength,
-            message: t('components.accounts.facetView.createAccountDialog.form.displayName.length')
+            message: t('components.accounts.facetView.addOrEditForm.displayName.length')
           }
         }}
         component={Input}
-        labelMapping={['components.accounts.facetView.createAccountDialog.form.displayName.label']}
-        placeholderMapping={['components.accounts.facetView.createAccountDialog.form.displayName.placeholder']}
+        labelMapping={['components.accounts.facetView.addOrEditForm.displayName.label']}
+        placeholderMapping={['components.accounts.facetView.addOrEditForm.displayName.placeholder']}
         before={<PersonTagRegular />}
         after={({ field }) => {
           const length = field.value?.length
@@ -240,19 +271,19 @@ export default function CreateAccountDialogForm (props: Props) {
         }}
       />
       <div className={classes.gameDataDir}>
-        <CreateAccountDialogFormField
+        <AddOrEditFormField
           name="gameDataDir"
           control={control}
           rules={{
             required: {
               value: true,
-              message: t('components.accounts.facetView.createAccountDialog.form.gameDataDir.required')
+              message: t('components.accounts.facetView.addOrEditForm.gameDataDir.required')
             }
           }}
           component={Textarea}
-          labelMapping={['components.accounts.facetView.createAccountDialog.form.gameDataDir.label']}
+          labelMapping={['components.accounts.facetView.addOrEditForm.gameDataDir.label']}
           placeholderMapping={[
-            'components.accounts.facetView.createAccountDialog.form.gameDataDir.placeholder',
+            'components.accounts.facetView.addOrEditForm.gameDataDir.placeholder',
             { facet: keyOfFacets }
           ]}
           required
@@ -264,7 +295,7 @@ export default function CreateAccountDialogForm (props: Props) {
             className="btn-auto-find"
             appearance="secondary"
             component={Button}
-            mapping={['components.accounts.facetView.createAccountDialog.form.gameDataDir.autoFindBtn']}
+            mapping={['components.accounts.facetView.addOrEditForm.gameDataDir.autoFindBtn']}
             size="small"
             icon={<FolderSearchRegular />}
             disabled={isSubmitting}
@@ -274,7 +305,7 @@ export default function CreateAccountDialogForm (props: Props) {
             className="btn-manual-find"
             appearance="secondary"
             component={Button}
-            mapping={['components.accounts.facetView.createAccountDialog.form.gameDataDir.manualFindBtn']}
+            mapping={['components.accounts.facetView.addOrEditForm.gameDataDir.manualFindBtn']}
             size="small"
             icon={<CursorHoverRegular />}
             disabled={isSubmitting}
@@ -285,100 +316,19 @@ export default function CreateAccountDialogForm (props: Props) {
       <div className={classes.actions}>
         <Locale
           component={Button}
-          mapping={['components.accounts.facetView.createAccountDialog.cancelBtn']}
+          mapping={['components.accounts.facetView.addOrEditForm.cancelBtn']}
           appearance="secondary"
           disabled={isSubmitting}
           onClick={onCancel}
         />
         <Locale
           component={Button}
-          mapping={['components.accounts.facetView.createAccountDialog.submitBtn']}
+          mapping={['components.accounts.facetView.addOrEditForm.submitBtn']}
           appearance="primary"
           type="submit"
           disabled={!isDirty || !isValid || isSubmitting}
         />
       </div>
     </form>
-  )
-}
-
-interface CreateAccountDialogFormFieldProps extends UseControllerProps<FormData> {
-  component: typeof Input | typeof Textarea
-  labelMapping: LocaleProps['mapping']
-  placeholderMapping: LocaleProps['mapping']
-  required?: boolean
-  readOnly?: boolean
-
-  // Input only
-  before?: ReactNode | ((controller: UseControllerReturn<FormData>) => ReactNode)
-  after?: ReactNode | ((controller: UseControllerReturn<FormData>) => ReactNode)
-
-  // Textarea only
-  rows?: number
-}
-
-function CreateAccountDialogFormField (props: CreateAccountDialogFormFieldProps) {
-  const { t } = useTranslation()
-  const {
-    component: Component,
-    labelMapping,
-    placeholderMapping,
-    required,
-    readOnly,
-    before,
-    after,
-    rows,
-    ...rest
-  } = props
-
-  const { field, fieldState, formState } = useController({ ...rest })
-
-  let contentBefore: ReactNode
-  let contentAfter: ReactNode
-  if (Component === Input) {
-    contentBefore = typeof before === 'function'
-      ? before({ field, fieldState, formState })
-      : before
-    contentAfter = typeof after === 'function'
-      ? after({ field, fieldState, formState })
-      : after
-  }
-
-  const isError = !!fieldState.error
-  const isValid = fieldState.isDirty && !fieldState.invalid
-
-  return (
-    <Field
-      size="large"
-      label={<Locale mapping={labelMapping} />}
-      validationState={isError ? 'error' : isValid ? 'success' : 'none'}
-      validationMessage={
-        isError
-          ? fieldState.error!.message
-          : isValid
-            ? <Locale mapping={['components.accounts.facetView.createAccountDialog.form.valid']} />
-            : undefined
-      }
-      required={required}
-    >
-      <Component
-        autoComplete="off"
-        appearance="filled-darker"
-        placeholder={acceptLocale(t, placeholderMapping)}
-        required={required}
-        readOnly={readOnly}
-        {...(Component === Input
-          ? {
-              contentBefore: { children: contentBefore },
-              contentAfter: { children: contentAfter }
-            }
-          : Component === Textarea
-            ? { rows }
-            : undefined
-        )}
-        {...field}
-        disabled={field.disabled || formState.isSubmitting}
-      />
-    </Field>
   )
 }
