@@ -25,28 +25,28 @@ const useStyles = makeStyles({
   gameDataDir: {
     display: 'flex',
     flexDirection: 'column',
-    rowGap: tokens.spacingHorizontalS,
-    '> .btns': {
-      display: 'flex',
-      flexDirection: 'row',
-      columnGap: tokens.spacingHorizontalS,
-      '> .fui-Button': {
-        minHeight: '1.5rem',
-        minWidth: '4rem',
-        '> .fui-Button__icon': {
-          fontSize: '1.25rem',
-          width: '1.25rem',
-          height: '1.25rem'
-        }
-      },
-      '> .btn-auto-find:not([disabled])': {
-        color: tokens.colorPaletteBerryForeground1,
-        ...shorthands.border(tokens.strokeWidthThin, 'solid', tokens.colorPaletteBerryForeground1)
-      },
-      '> .btn-manual-find:not([disabled])': {
-        color: tokens.colorPaletteGreenForeground1,
-        ...shorthands.border(tokens.strokeWidthThin, 'solid', tokens.colorPaletteGreenForeground1)
+    rowGap: tokens.spacingHorizontalS
+  },
+  gameDataDirBtns: {
+    display: 'flex',
+    flexDirection: 'row',
+    columnGap: tokens.spacingHorizontalS,
+    '> .fui-Button': {
+      minHeight: '1.5rem',
+      minWidth: '4rem',
+      '> .fui-Button__icon': {
+        fontSize: '1.25rem',
+        width: '1.25rem',
+        height: '1.25rem'
       }
+    },
+    '> .btn-auto-find:not([disabled])': {
+      color: tokens.colorPaletteBerryForeground1,
+      ...shorthands.border(tokens.strokeWidthThin, 'solid', tokens.colorPaletteBerryForeground1)
+    },
+    '> .btn-manual-find:not([disabled])': {
+      color: tokens.colorPaletteGreenForeground1,
+      ...shorthands.border(tokens.strokeWidthThin, 'solid', tokens.colorPaletteGreenForeground1)
     }
   },
   actions: {
@@ -69,7 +69,7 @@ interface Props {
 export default function AddOrEditForm (props: Props) {
   const { edit, onCancel, onSuccess } = props
   const { keyOfFacets, facet } = useAccountsFacetView()
-  const { data } = useAccountsQuery()
+  const { data: accounts } = useAccountsQuery()
   const { notifyLocale } = useToaster()
   const { t } = useTranslation()
 
@@ -240,7 +240,7 @@ export default function AddOrEditForm (props: Props) {
           },
           validate (value) {
             if (isEditMode) return
-            if (value && data?.find((v) => v.uid === +value)) {
+            if (value && accounts?.find((v) => v.uid === +value)) {
               return t('components.accounts.facetView.addOrEditForm.uid.alreadyExists')
             }
           }
@@ -290,7 +290,7 @@ export default function AddOrEditForm (props: Props) {
           readOnly
           rows={3}
         />
-        <div className="btns">
+        <div className={classes.gameDataDirBtns}>
           <Locale
             className="btn-auto-find"
             appearance="secondary"
