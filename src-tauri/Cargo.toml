@@ -8,7 +8,7 @@ homepage = "https://github.com/lgou2w/HoYo.Gacha#readme"
 repository = "https://github.com/lgou2w/HoYo.Gacha"
 readme = "../README.md"
 license = "MIT OR Apache-2.0"
-build = "build.rs"
+build = "src/build.rs"
 publish = false
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
