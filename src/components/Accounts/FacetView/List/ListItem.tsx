@@ -4,8 +4,8 @@ import { PeopleEditRegular, ServerRegular } from '@fluentui/react-icons'
 import { Account, AccountServer, detectServer } from '@/api/interfaces/account'
 import AddOrEditDialog from '@/components/Accounts/FacetView/AddOrEditDialog'
 import useAccountsFacetView from '@/components/Accounts/FacetView/useAccountsFacetView'
+import PlayerAvatar from '@/components/Accounts/PlayerAvatar'
 import Locale from '@/components/Core/Locale'
-import PlayerAvatar from '@/components/Facet/PlayerAvatar'
 
 const useStyles = makeStyles({
   root: {
