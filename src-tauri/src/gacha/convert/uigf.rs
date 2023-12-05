@@ -194,7 +194,7 @@ impl GachaConverter for UIGFGachaConverter {
       let count = provide
         .count
         .as_deref()
-        .unwrap_or("0")
+        .unwrap_or("1")
         .parse::<u32>()
         .map_err(|inner| UIGFGachaConverterError::FieldParseInt {
           field: "count",
