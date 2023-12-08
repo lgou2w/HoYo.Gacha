@@ -15,7 +15,14 @@ fn read_dictionaries<'a>(
   //   "category": "character",
   //   "category_name": "角色",
   //   "entries": {
-  //     "神里绫华": ["10000002", "5"],
+  //     "神里绫华": ["10000002", 5]
+  //   }
+  // }
+  // {
+  //   "category": "weapon",
+  //   "category_name": "武器",
+  //   "entries": {
+  //     "雾切之回光": ["11509", 5]
   //   }
   // }
   #[derive(Deserialize)]
