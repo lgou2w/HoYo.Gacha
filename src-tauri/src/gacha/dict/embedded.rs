@@ -5,7 +5,7 @@ use paste::paste;
 use serde::Deserialize;
 
 use crate::database::AccountFacet;
-use crate::gacha::dict::{Category, GachaDictionaryEntry};
+use crate::gacha::dict::{Category, GachaDictionary, GachaDictionaryEntry};
 
 fn read_dictionaries<'a>(
   lang: &'a str,
@@ -73,12 +73,10 @@ macro_rules! embedded {
           use crate::gacha::dict::GachaDictionary;
           use crate::gacha::dict::embedded::read_dictionaries;
 
-          #[allow(unused)]
           pub const FACET: &'static AccountFacet = &AccountFacet::$facet;
 
           $(
-            #[allow(unused)]
-            pub static $field: Lazy<GachaDictionary> = Lazy::new(|| {
+            pub static [<LANG_ $field>]: Lazy<GachaDictionary> = Lazy::new(|| {
               let entries = match read_dictionaries($lang, &include_bytes!($file)[..]) {
                 Ok(v) => v,
                 Err(error) => {
@@ -90,22 +88,31 @@ macro_rules! embedded {
             });
           )*
 
-          pub fn dictionary(lang: &str) -> Option<&'static GachaDictionary<'static>> {
-            match lang {
-              $($lang => Some(&$field),)*
-              _ => None
-            }
-          }
-
           /// `cfg(test)`: Dereference, triggering lazy load
           #[cfg(test)]
           pub fn validation_lazy_read() {
             $(
-              let _ = *$field;
+              let _ = *[<LANG_ $field>];
             )*
           }
         }
       )*
+
+      pub fn dictionary(
+        facet: &AccountFacet,
+        lang: &str
+      ) -> Option<&'static GachaDictionary<'static>> {
+        match facet {
+          $(
+            $embedded::FACET => {
+              match lang {
+                $($lang => Some(&$embedded::[<LANG_ $field>]),)*
+                _ => None
+              }
+            },
+          )*
+        }
+      }
     }
   };
 }
@@ -146,27 +153,19 @@ embedded!(
 );
 
 pub fn name(
-  facet: &'static AccountFacet,
+  facet: &AccountFacet,
   lang: &str,
   item_name: &str,
 ) -> Option<&'static GachaDictionaryEntry<'static>> {
-  match *facet {
-    AccountFacet::GenshinImpact => genshin_impact::dictionary(lang),
-    AccountFacet::HonkaiStarRail => honkai_star_rail::dictionary(lang),
-  }
-  .and_then(|dictionary| dictionary.name(item_name))
+  dictionary(facet, lang).and_then(|dictionary| dictionary.name(item_name))
 }
 
 pub fn id(
-  facet: &'static AccountFacet,
+  facet: &AccountFacet,
   lang: &str,
   item_id: &str,
 ) -> Option<&'static GachaDictionaryEntry<'static>> {
-  match *facet {
-    AccountFacet::GenshinImpact => genshin_impact::dictionary(lang),
-    AccountFacet::HonkaiStarRail => honkai_star_rail::dictionary(lang),
-  }
-  .and_then(|dictionary| dictionary.id(item_id))
+  dictionary(facet, lang).and_then(|dictionary| dictionary.id(item_id))
 }
 
 // Tests
