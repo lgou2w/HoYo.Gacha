@@ -20,7 +20,7 @@ pub struct GachaDictionaryEntry<'a> {
   pub category_name: &'a str,
   pub item_name: Cow<'a, str>,
   pub item_id: &'a str,
-  pub rank_type: &'a str,
+  pub rank_type: u8,
 }
 
 #[derive(Debug)]

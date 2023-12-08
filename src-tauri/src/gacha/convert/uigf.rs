@@ -205,30 +205,28 @@ impl GachaConverter for UIGFGachaConverter {
       let lang = provide.lang.unwrap_or(self.lang.clone());
       let item_id = provide.item_id;
 
-      let rank_type: String;
       let name: String;
       let item_type: String;
+      let rank_type: u8;
 
       if provide.rank_type.is_none() || provide.name.is_none() || provide.item_type.is_none() {
         let entry = GachaDictionaryEmbedded::id(Self::TARGET_FACET, &lang, &item_id).ok_or(
           UIGFGachaConverterError::MissingDictionary(format!("lang({lang}), item_id({item_id})")),
         )?;
-        rank_type = entry.rank_type.to_owned();
         name = entry.item_name.to_string();
         item_type = entry.category_name.to_owned();
+        rank_type = entry.rank_type;
       } else {
-        rank_type = provide.rank_type.unwrap();
+        // unwrap is SAFETY
         name = provide.name.unwrap();
         item_type = provide.item_type.unwrap();
-      }
-
-      let rank_type =
-        rank_type
-          .parse::<u8>()
-          .map_err(|inner| UIGFGachaConverterError::FieldParseInt {
+        rank_type = provide.rank_type.unwrap().parse::<u8>().map_err(|inner| {
+          UIGFGachaConverterError::FieldParseInt {
             field: "rank_type",
             inner,
-          })?;
+          }
+        })?;
+      }
 
       let rank_type = GachaRecordRankType::try_from_primitive(rank_type)
         .map_err(|_| UIGFGachaConverterError::InvalidRankType(rank_type))?;

@@ -22,7 +22,7 @@ fn read_dictionaries<'a>(
   struct DictionaryObject<'a> {
     category: Category,
     category_name: &'a str,
-    entries: HashMap<Cow<'a, str>, (&'a str, &'a str)>,
+    entries: HashMap<Cow<'a, str>, (&'a str, u8)>,
   }
 
   let objects: Vec<DictionaryObject> = serde_json::from_slice(bytes)?;
