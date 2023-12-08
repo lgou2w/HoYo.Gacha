@@ -73,6 +73,7 @@ macro_rules! embedded {
           use crate::gacha::dict::GachaDictionary;
           use crate::gacha::dict::embedded::read_dictionaries;
 
+          #[allow(unused)]
           pub const FACET: &'static AccountFacet = &AccountFacet::$facet;
 
           $(
@@ -109,39 +110,40 @@ macro_rules! embedded {
   };
 }
 
-embedded!(genshin_impact {
-  GenshinImpact,
-  ZH_CHS = "zh-cn" -> "./genshin_impact/zh-chs.json",
-  ZH_CHT = "zh-tw" -> "./genshin_impact/zh-cht.json",
-  DE_DE  = "de-de" -> "./genshin_impact/de-de.json",
-  EN_US  = "en-us" -> "./genshin_impact/en-us.json",
-  ES_ES  = "es-es" -> "./genshin_impact/es-es.json",
-  FR_FR  = "fr-fr" -> "./genshin_impact/fr-fr.json",
-  ID_ID  = "id-id" -> "./genshin_impact/id-id.json",
-  JA_JP  = "ja-jp" -> "./genshin_impact/ja-jp.json",
-  KO_KR  = "ko-kr" -> "./genshin_impact/ko-kr.json",
-  PT_PT  = "pt-pt" -> "./genshin_impact/pt-pt.json",
-  RU_RU  = "ru-ru" -> "./genshin_impact/ru-ru.json",
-  TH_TH  = "th-th" -> "./genshin_impact/th-th.json",
-  VI_VN  = "vi-vn" -> "./genshin_impact/vi-vn.json"
-});
-
-embedded!(honkai_star_rail {
-  HonkaiStarRail,
-  ZH_CHS = "zh-cn" -> "./honkai_star_rail/zh-chs.json",
-  ZH_CHT = "zh-tw" -> "./honkai_star_rail/zh-cht.json",
-  DE_DE  = "de-de" -> "./honkai_star_rail/de-de.json",
-  EN_US  = "en-us" -> "./honkai_star_rail/en-us.json",
-  ES_ES  = "es-es" -> "./honkai_star_rail/es-es.json",
-  FR_FR  = "fr-fr" -> "./honkai_star_rail/fr-fr.json",
-  ID_ID  = "id-id" -> "./honkai_star_rail/id-id.json",
-  JA_JP  = "ja-jp" -> "./honkai_star_rail/ja-jp.json",
-  KO_KR  = "ko-kr" -> "./honkai_star_rail/ko-kr.json",
-  PT_PT  = "pt-pt" -> "./honkai_star_rail/pt-pt.json",
-  RU_RU  = "ru-ru" -> "./honkai_star_rail/ru-ru.json",
-  TH_TH  = "th-th" -> "./honkai_star_rail/th-th.json",
-  VI_VN  = "vi-vn" -> "./honkai_star_rail/vi-vn.json"
-});
+embedded!(
+  genshin_impact {
+    GenshinImpact,
+    ZH_CHS = "zh-cn" -> "./genshin_impact/zh-chs.json",
+    ZH_CHT = "zh-tw" -> "./genshin_impact/zh-cht.json",
+    DE_DE  = "de-de" -> "./genshin_impact/de-de.json",
+    EN_US  = "en-us" -> "./genshin_impact/en-us.json",
+    ES_ES  = "es-es" -> "./genshin_impact/es-es.json",
+    FR_FR  = "fr-fr" -> "./genshin_impact/fr-fr.json",
+    ID_ID  = "id-id" -> "./genshin_impact/id-id.json",
+    JA_JP  = "ja-jp" -> "./genshin_impact/ja-jp.json",
+    KO_KR  = "ko-kr" -> "./genshin_impact/ko-kr.json",
+    PT_PT  = "pt-pt" -> "./genshin_impact/pt-pt.json",
+    RU_RU  = "ru-ru" -> "./genshin_impact/ru-ru.json",
+    TH_TH  = "th-th" -> "./genshin_impact/th-th.json",
+    VI_VN  = "vi-vn" -> "./genshin_impact/vi-vn.json"
+  },
+  honkai_star_rail {
+    HonkaiStarRail,
+    ZH_CHS = "zh-cn" -> "./honkai_star_rail/zh-chs.json",
+    ZH_CHT = "zh-tw" -> "./honkai_star_rail/zh-cht.json",
+    DE_DE  = "de-de" -> "./honkai_star_rail/de-de.json",
+    EN_US  = "en-us" -> "./honkai_star_rail/en-us.json",
+    ES_ES  = "es-es" -> "./honkai_star_rail/es-es.json",
+    FR_FR  = "fr-fr" -> "./honkai_star_rail/fr-fr.json",
+    ID_ID  = "id-id" -> "./honkai_star_rail/id-id.json",
+    JA_JP  = "ja-jp" -> "./honkai_star_rail/ja-jp.json",
+    KO_KR  = "ko-kr" -> "./honkai_star_rail/ko-kr.json",
+    PT_PT  = "pt-pt" -> "./honkai_star_rail/pt-pt.json",
+    RU_RU  = "ru-ru" -> "./honkai_star_rail/ru-ru.json",
+    TH_TH  = "th-th" -> "./honkai_star_rail/th-th.json",
+    VI_VN  = "vi-vn" -> "./honkai_star_rail/vi-vn.json"
+  }
+);
 
 pub fn name(
   facet: &'static AccountFacet,
