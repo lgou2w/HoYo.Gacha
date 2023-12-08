@@ -5,6 +5,7 @@ use futures_util::future::BoxFuture;
 
 use crate::database::GachaRecord;
 
+pub mod srgf;
 pub mod uigf;
 
 pub trait GachaConverter {
