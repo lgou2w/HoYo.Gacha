@@ -208,14 +208,23 @@ impl GachaConverter for UIGFGachaConverter {
       let name: String;
       let item_type: String;
       let rank_type: u8;
-
-      if provide.rank_type.is_none() || provide.name.is_none() || provide.item_type.is_none() {
+      if provide.name.is_none() || provide.item_type.is_none() || provide.rank_type.is_none() {
         let entry = GachaDictionaryEmbedded::id(Self::TARGET_FACET, &lang, &item_id).ok_or(
           UIGFGachaConverterError::MissingDictionary(format!("lang({lang}), item_id({item_id})")),
         )?;
-        name = entry.item_name.to_string();
-        item_type = entry.category_name.to_owned();
-        rank_type = entry.rank_type;
+        name = provide.name.unwrap_or(entry.item_name.to_string());
+        item_type = provide.item_type.unwrap_or(entry.category_name.to_owned());
+        rank_type = provide
+          .rank_type
+          .map(|v| {
+            v.parse::<u8>()
+              .map_err(|inner| UIGFGachaConverterError::FieldParseInt {
+                field: "rank_type",
+                inner,
+              })
+          })
+          .transpose()?
+          .unwrap_or(entry.rank_type);
       } else {
         // unwrap is SAFETY
         name = provide.name.unwrap();
