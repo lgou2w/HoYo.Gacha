@@ -15,7 +15,7 @@ use crate::gacha::dict::embedded as GachaDictionaryEmbedded;
 // SRGF for Honkai: Star Rail
 // See: https://uigf.org/zh/standards/SRGF.html
 
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct SRGFInfo {
   pub uid: String,
   pub lang: String,
@@ -26,7 +26,7 @@ pub struct SRGFInfo {
   pub region_time_zone: i8,
 }
 
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct SRGFItem {
   pub id: String,
   pub uid: Option<String>,
@@ -42,7 +42,7 @@ pub struct SRGFItem {
 }
 
 #[allow(clippy::upper_case_acronyms)]
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct SRGF {
   pub info: SRGFInfo,
   pub list: Vec<SRGFItem>,
@@ -104,8 +104,13 @@ impl SRGFGachaConverter {
 impl GachaConverter for SRGFGachaConverter {
   type Error = SRGFGachaConverterError;
   type Provided = Vec<SRGFItem>;
+  type Context = SRGFInfo;
 
-  fn convert(&self, records: Vec<GachaRecord>) -> Result<Self::Provided, Self::Error> {
+  fn convert(
+    &self,
+    records: Vec<GachaRecord>,
+    _context: &Self::Context,
+  ) -> Result<Self::Provided, Self::Error> {
     let mut provided = Vec::with_capacity(records.len());
     for record in records {
       if record.facet != *Self::TARGET_FACET {
@@ -139,7 +144,11 @@ impl GachaConverter for SRGFGachaConverter {
     Ok(provided)
   }
 
-  fn deconvert(&self, provided: Self::Provided) -> Result<Vec<GachaRecord>, Self::Error> {
+  fn deconvert(
+    &self,
+    provided: Self::Provided,
+    _context: &Self::Context,
+  ) -> Result<Vec<GachaRecord>, Self::Error> {
     let mut records = Vec::with_capacity(provided.len());
     for provide in provided {
       let uid = provide
@@ -289,7 +298,7 @@ impl GachaRecordsWriter for SRGFGachaRecordsWriter {
   ) -> BoxFuture<'a, Result<(), Self::Error>> {
     async move {
       let info = self.construct_srgf_info();
-      let list = self.converter.convert(records)?;
+      let list = self.converter.convert(records, &info)?;
 
       let srgf = SRGF { info, list };
       srgf.to_json(output, self.pretty)?;
@@ -327,10 +336,10 @@ impl GachaRecordsReader for SRGFGachaRecordsReader {
 
       // Modify the uid and lang values in this converter
       let converter = &mut self.converter;
-      converter.uid = srgf.info.uid;
-      converter.lang = srgf.info.lang;
+      converter.uid = srgf.info.uid.clone();
+      converter.lang = srgf.info.lang.clone();
 
-      let records = converter.deconvert(srgf.list)?;
+      let records = converter.deconvert(srgf.list, &srgf.info)?;
       Ok(records)
     }
     .boxed()

@@ -6,6 +6,7 @@ use futures_util::future::BoxFuture;
 use futures_util::FutureExt;
 use num_enum::TryFromPrimitive;
 use once_cell::sync::Lazy;
+use regex::Regex;
 use serde::{Deserialize, Serialize};
 use time::format_description::FormatItem;
 use time::macros::format_description;
@@ -19,7 +20,62 @@ use crate::gacha::dict::embedded as GachaDictionaryEmbedded;
 // UIGF for Genshin Impact
 // See: https://uigf.org/zh/standards/UIGF.html
 
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
+pub struct UIGFVersion {
+  pub major: u8,
+  pub minor: u8,
+}
+
+static REGEX_VERSION: Lazy<Regex> =
+  Lazy::new(|| Regex::new(r"^v(?<major>\d+)\.(?<minor>\d+)$").unwrap());
+
+impl UIGFVersion {
+  pub const V2_2: UIGFVersion = UIGFVersion { major: 2, minor: 2 };
+  pub const V2_3: UIGFVersion = UIGFVersion { major: 2, minor: 3 };
+  pub const V2_4: UIGFVersion = UIGFVersion { major: 2, minor: 4 };
+
+  pub fn parse(str: impl AsRef<str>) -> Result<Self, String> {
+    if let Some(captures) = REGEX_VERSION.captures(str.as_ref()) {
+      let major = captures["major"].parse().unwrap();
+      let minor = captures["minor"].parse().unwrap();
+      Ok(Self { major, minor })
+    } else {
+      Err(format!(
+        "Invalid version format: {} (Expected: {})",
+        str.as_ref(),
+        REGEX_VERSION.as_str()
+      ))
+    }
+  }
+}
+
+impl ToString for UIGFVersion {
+  fn to_string(&self) -> String {
+    format!("v{}.{}", self.major, self.minor)
+  }
+}
+
+impl Serialize for UIGFVersion {
+  fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+  where
+    S: serde::Serializer,
+  {
+    serializer.serialize_str(&self.to_string())
+  }
+}
+
+impl<'de> Deserialize<'de> for UIGFVersion {
+  fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+  where
+    D: serde::Deserializer<'de>,
+  {
+    let str = String::deserialize(deserializer)?;
+    let verion = Self::parse(str).map_err(serde::de::Error::custom)?;
+    Ok(verion)
+  }
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct UIGFInfo {
   pub uid: String,
   pub lang: String,
@@ -27,27 +83,31 @@ pub struct UIGFInfo {
   pub export_timestamp: Option<u64>,
   pub export_app: Option<String>,
   pub export_app_version: Option<String>,
-  pub uigf_version: String,
+  pub uigf_version: UIGFVersion,
+  // UIGF v2.4 -> required
   pub region_time_zone: Option<i8>,
 }
 
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct UIGFItem {
   pub id: String,
   pub uid: Option<String>,
   pub gacha_type: String,
-  pub item_id: String,
+  // UIGF v2.2 -> is null or empty string | v2.3 -> required
+  pub item_id: Option<String>,
   pub count: Option<String>,
   pub time: String,
+  // UIGF v2.2 -> required | v2.3 -> nullable
   pub name: Option<String>,
   pub lang: Option<String>,
+  // UIGF v2.2 -> required | v2.3 -> nullable
   pub item_type: Option<String>,
   pub rank_type: Option<String>,
   pub uigf_gacha_type: String,
 }
 
 #[allow(clippy::upper_case_acronyms)]
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct UIGF {
   pub info: UIGFInfo,
   pub list: Vec<UIGFItem>,
@@ -104,6 +164,9 @@ pub enum UIGFGachaConverterError {
   #[error("Missing dictionary data: {0}")]
   MissingDictionary(String),
 
+  #[error("Missing required fields: {0}")]
+  RequiredFields(&'static str),
+
   #[error("Invalid rank type: {0}")]
   InvalidRankType(u8),
 
@@ -127,8 +190,13 @@ impl UIGFGachaConverter {
 impl GachaConverter for UIGFGachaConverter {
   type Error = UIGFGachaConverterError;
   type Provided = Vec<UIGFItem>;
+  type Context = UIGFInfo;
 
-  fn convert(&self, records: Vec<GachaRecord>) -> Result<Self::Provided, Self::Error> {
+  fn convert(
+    &self,
+    records: Vec<GachaRecord>,
+    _context: &Self::Context,
+  ) -> Result<Self::Provided, Self::Error> {
     let mut provided = Vec::with_capacity(records.len());
     for record in records {
       if record.facet != *Self::TARGET_FACET {
@@ -158,7 +226,7 @@ impl GachaConverter for UIGFGachaConverter {
         id: record.id,
         uid: Some(record.uid.to_string()),
         gacha_type: record.gacha_type.to_string(),
-        item_id,
+        item_id: Some(item_id),
         count: Some(record.count.to_string()),
         time: record.time,
         name: Some(record.name),
@@ -172,9 +240,22 @@ impl GachaConverter for UIGFGachaConverter {
     Ok(provided)
   }
 
-  fn deconvert(&self, provided: Self::Provided) -> Result<Vec<GachaRecord>, Self::Error> {
+  fn deconvert(
+    &self,
+    provided: Self::Provided,
+    context: &Self::Context,
+  ) -> Result<Vec<GachaRecord>, Self::Error> {
     let mut records = Vec::with_capacity(provided.len());
-    for provide in provided {
+    for mut provide in provided {
+      // Validation required fields
+      if context.uigf_version <= UIGFVersion::V2_2
+        && (provide.name.is_none() || provide.item_type.is_none())
+      {
+        return Err(UIGFGachaConverterError::RequiredFields("name, item_type"));
+      } else if context.uigf_version >= UIGFVersion::V2_3 && provide.item_id.is_none() {
+        return Err(UIGFGachaConverterError::RequiredFields("item_id"));
+      }
+
       let uid = provide
         .uid
         .as_deref()
@@ -203,7 +284,23 @@ impl GachaConverter for UIGFGachaConverter {
         })?;
 
       let lang = provide.lang.unwrap_or(self.lang.clone());
-      let item_id = provide.item_id;
+      let mut item_id = provide.item_id.unwrap_or_default();
+
+      // UIGF v2.2
+      if item_id.is_empty() {
+        if let Some(item_name) = &provide.name {
+          let entry = GachaDictionaryEmbedded::name(Self::TARGET_FACET, &lang, item_name).ok_or(
+            UIGFGachaConverterError::MissingDictionary(format!("lang({lang}), name({item_name})")),
+          )?;
+          item_id = entry.item_id.to_owned();
+          provide
+            .item_type
+            .get_or_insert(entry.category_name.to_owned());
+          provide.rank_type.get_or_insert(entry.rank_type.to_string());
+        } else {
+          return Err(UIGFGachaConverterError::RequiredFields("name"));
+        }
+      }
 
       let name: String;
       let item_type: String;
@@ -268,10 +365,7 @@ pub struct UIGFGachaRecordsWriter {
   pretty: bool,
 }
 
-// TODO: Support v2.2
-
 impl UIGFGachaRecordsWriter {
-  pub const UIGF_VERSION: &'static str = "v2.4";
   pub const EXPORT_APP: &'static str = constants::ID;
   pub const EXPORT_APP_VERSION: &'static str = constants::VERSION;
   const TIME_FORMAT: &'static [FormatItem<'static>] =
@@ -305,14 +399,14 @@ impl UIGFGachaRecordsWriter {
       export_timestamp: Some(export_timestamp),
       export_app: Some(Self::EXPORT_APP.to_owned()),
       export_app_version: Some(Self::EXPORT_APP_VERSION.to_owned()),
-      uigf_version: Self::UIGF_VERSION.to_owned(),
+      uigf_version: UIGFVersion::V2_4,
       region_time_zone: Some(self.region_time_zone.whole_hours()),
     }
   }
 }
 
 impl GachaRecordsWriter for UIGFGachaRecordsWriter {
-  type Error = <UIGFGachaConverter as GachaConverter>::Error;
+  type Error = UIGFGachaConverterError;
 
   fn write<'a>(
     &'a mut self,
@@ -321,7 +415,7 @@ impl GachaRecordsWriter for UIGFGachaRecordsWriter {
   ) -> BoxFuture<'a, Result<(), Self::Error>> {
     async move {
       let info = self.construct_uigf_info();
-      let list = self.converter.convert(records)?;
+      let list = self.converter.convert(records, &info)?;
 
       let uigf = UIGF { info, list };
       uigf.to_json(output, self.pretty)?;
@@ -359,10 +453,10 @@ impl GachaRecordsReader for UIGFGachaRecordsReader {
 
       // Modify the uid and lang values in this converter
       let converter = &mut self.converter;
-      converter.uid = uigf.info.uid;
-      converter.lang = uigf.info.lang;
+      converter.uid = uigf.info.uid.clone();
+      converter.lang = uigf.info.lang.clone();
 
-      let records = converter.deconvert(uigf.list)?;
+      let records = converter.deconvert(uigf.list, &uigf.info)?;
       Ok(records)
     }
     .boxed()
@@ -373,11 +467,14 @@ impl GachaRecordsReader for UIGFGachaRecordsReader {
 
 #[cfg(test)]
 mod tests {
+  use std::fs::File;
+  use std::path::PathBuf;
+
   use time::UtcOffset;
 
   use super::{
     GachaRecordsReader, GachaRecordsWriter, UIGFGachaConverterError, UIGFGachaRecordsReader,
-    UIGFGachaRecordsWriter, UIGF,
+    UIGFGachaRecordsWriter, UIGFVersion, UIGF,
   };
   use crate::database::{AccountFacet, GachaRecord, GachaRecordRankType};
 
@@ -422,7 +519,7 @@ mod tests {
       uigf.info.export_app_version.as_deref(),
       Some(UIGFGachaRecordsWriter::EXPORT_APP_VERSION)
     );
-    assert_eq!(uigf.info.uigf_version, UIGFGachaRecordsWriter::UIGF_VERSION);
+    assert_eq!(uigf.info.uigf_version, UIGFVersion::V2_4);
     assert_eq!(
       uigf.info.region_time_zone,
       Some(region_time_zone.whole_hours())
@@ -441,42 +538,70 @@ mod tests {
     assert_eq!(item.item_type, Some(record.item_type));
 
     assert_eq!(record.item_id, None);
-    assert_eq!(item.item_id, "15304"); // auto dictionary
+    assert_eq!(item.item_id.as_deref(), Some("15304")); // auto dictionary
 
     Ok(())
+  }
+
+  fn generate_uigf_json_str(
+    version: &UIGFVersion,
+    name: Option<&str>,
+    item_type: Option<&str>,
+    item_id: Option<&str>,
+  ) -> String {
+    fn option_or_null(s: Option<&str>) -> String {
+      if let Some(s) = s {
+        format!("\"{s}\"")
+      } else {
+        "null".into()
+      }
+    }
+
+    format!(
+      r#"
+    {{
+      "info": {{
+        "uid": "100000001",
+        "lang": "zh-cn",
+        "export_time": "2023-12-05 20:00:00",
+        "export_timestamp": 1701777600,
+        "export_app": "some app",
+        "export_app_version": "1.0.0",
+        "uigf_version": "{}",
+        "region_time_zone": 8
+      }},
+      "list": [
+        {{
+          "id": "1675850760000000000",
+          "uid": "100000001",
+          "gacha_type": "400",
+          "rank_type": "3",
+          "count": "1",
+          "time": "2023-01-01 00:00:00",
+          "lang": "zh-cn",
+          "name": {},
+          "item_type": {},
+          "item_id": {},
+          "uigf_gacha_type": "301"
+        }}
+      ]
+    }}
+    "#,
+      version.to_string(),
+      option_or_null(name),
+      option_or_null(item_type),
+      option_or_null(item_id)
+    )
   }
 
   #[tokio::test]
   async fn test_reader() -> Result<(), UIGFGachaConverterError> {
-    let json = r#"
-    {
-      "info": {
-        "uid": "100000001",
-        "lang": "zh-cn",
-        "export_time": "2023-12-05 20:00:00",
-        "export_timestamp": 1701777600,
-        "export_app": "some app",
-        "export_app_version": "1.0.0",
-        "uigf_version": "v2.4",
-        "region_time_zone": 8
-      },
-      "list": [
-        {
-          "id": "1675850760000000000",
-          "uid": "100000001",
-          "gacha_type": "400",
-          "rank_type": "3",
-          "count": "1",
-          "time": "2023-01-01 00:00:00",
-          "lang": "zh-cn",
-          "name": "弹弓",
-          "item_type": "武器",
-          "item_id": "15304",
-          "uigf_gacha_type": "301"
-        }
-      ]
-    }
-    "#;
+    let json = generate_uigf_json_str(
+      &UIGFVersion::V2_4,
+      Some("弹弓"),
+      Some("武器"),
+      Some("15304"),
+    );
 
     let mut reader = UIGFGachaRecordsReader::new();
     let records = reader.read(json.as_bytes()).await?;
@@ -499,41 +624,20 @@ mod tests {
     Ok(())
   }
 
-  #[ignore = "Not yet compatible with UIGF v2.2"]
+  #[tokio::test]
+  async fn test_reader_v2_4_required_item_id() {
+    let json = generate_uigf_json_str(&UIGFVersion::V2_4, Some("弹弓"), Some("武器"), None);
+
+    let mut reader = UIGFGachaRecordsReader::new();
+    let result = reader.read(json.as_bytes()).await;
+
+    assert!(result.is_err());
+    assert!(result.is_err_and(|e| matches!(e, UIGFGachaConverterError::RequiredFields(_))));
+  }
+
   #[tokio::test]
   async fn test_reader_v2_2() -> Result<(), UIGFGachaConverterError> {
-    // TODO: UIGF v2.2
-    //  `item_id`   : is null or empty string
-    //  `name`      : must not be null
-    //  `item_type` : must not be null
-    let json = r#"
-    {
-      "info": {
-        "uid": "100000001",
-        "lang": "zh-cn",
-        "export_time": "2023-12-05 20:00:00",
-        "export_timestamp": 1701777600,
-        "export_app": "some app",
-        "export_app_version": "1.0.0",
-        "uigf_version": "v2.2"
-      },
-      "list": [
-        {
-          "id": "1675850760000000000",
-          "uid": "100000001",
-          "gacha_type": "400",
-          "rank_type": "3",
-          "count": "1",
-          "time": "2023-01-01 00:00:00",
-          "lang": "zh-cn",
-          "name": "弹弓",
-          "item_type": "武器",
-          "item_id": null,
-          "uigf_gacha_type": "301"
-        }
-      ]
-    }
-    "#;
+    let json = generate_uigf_json_str(&UIGFVersion::V2_2, Some("弹弓"), Some("武器"), None);
 
     let mut reader = UIGFGachaRecordsReader::new();
     let records = reader.read(json.as_bytes()).await?;
@@ -554,5 +658,31 @@ mod tests {
     assert_eq!(record.item_id.as_deref(), Some("15304"));
 
     Ok(())
+  }
+
+  #[tokio::test]
+  async fn test_reader_v2_2_required_name_and_item_type() {
+    let json = generate_uigf_json_str(&UIGFVersion::V2_2, None, None, None);
+
+    let mut reader = UIGFGachaRecordsReader::new();
+    let result = reader.read(json.as_bytes()).await;
+
+    assert!(result.is_err());
+    assert!(result.is_err_and(|e| matches!(e, UIGFGachaConverterError::RequiredFields(_))));
+  }
+
+  #[ignore = "Because the file is hard-coded, it is for manual testing only"]
+  #[tokio::test]
+  async fn test_reader_v2_2_local_file() {
+    let path = PathBuf::from(std::env::var("USERPROFILE").unwrap())
+      .join("Desktop")
+      .join("tmp/HoYo.Gacha/HoYo.Gacha_原神祈愿记录_UIGF_20231108_222127.json");
+
+    let file = File::open(path).unwrap();
+
+    let mut reader = UIGFGachaRecordsReader::new();
+    let result = reader.read(file).await;
+
+    assert!(result.is_ok());
   }
 }

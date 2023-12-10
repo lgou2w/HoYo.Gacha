@@ -11,9 +11,19 @@ pub mod uigf;
 pub trait GachaConverter {
   type Error: Debug + Send + Sync;
   type Provided: Sized;
+  type Context;
 
-  fn convert(&self, records: Vec<GachaRecord>) -> Result<Self::Provided, Self::Error>;
-  fn deconvert(&self, provided: Self::Provided) -> Result<Vec<GachaRecord>, Self::Error>;
+  fn convert(
+    &self,
+    records: Vec<GachaRecord>,
+    context: &Self::Context,
+  ) -> Result<Self::Provided, Self::Error>;
+
+  fn deconvert(
+    &self,
+    provided: Self::Provided,
+    context: &Self::Context,
+  ) -> Result<Vec<GachaRecord>, Self::Error>;
 }
 
 pub trait GachaRecordsWriter {
