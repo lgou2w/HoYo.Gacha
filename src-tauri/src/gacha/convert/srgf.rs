@@ -122,16 +122,12 @@ impl GachaConverter for SRGFGachaConverter {
         .ok_or(SRGFGachaConverterError::RequiredFields("gacha_id"))?
         .to_string();
 
-      let item_id = record
-        .item_id
-        .ok_or(SRGFGachaConverterError::RequiredFields("item_id"))?;
-
       provided.push(SRGFItem {
         id: record.id,
         uid: Some(record.uid.to_string()),
         gacha_type: record.gacha_type.to_string(),
         gacha_id,
-        item_id,
+        item_id: record.item_id,
         count: Some(record.count.to_string()),
         time: record.time,
         name: Some(record.name),
@@ -235,7 +231,7 @@ impl GachaConverter for SRGFGachaConverter {
         lang,
         name,
         item_type,
-        item_id: Some(item_id),
+        item_id,
       })
     }
 
@@ -374,7 +370,7 @@ mod tests {
       lang: lang.to_owned(),
       name: "灵钥".into(),
       item_type: "光锥".into(),
-      item_id: Some("20013".into()),
+      item_id: "20013".into(),
     };
 
     let region_time_zone = UtcOffset::from_hms(8, 0, 0).unwrap();
@@ -412,7 +408,7 @@ mod tests {
     assert_eq!(item.lang, Some(record.lang));
     assert_eq!(item.name, Some(record.name));
     assert_eq!(item.item_type, Some(record.item_type));
-    assert_eq!(item.item_id, record.item_id.unwrap());
+    assert_eq!(item.item_id, record.item_id);
 
     Ok(())
   }
@@ -464,7 +460,7 @@ mod tests {
     assert_eq!(record.lang, "zh-cn");
     assert_eq!(record.name, "灵钥");
     assert_eq!(record.item_type, "光锥");
-    assert_eq!(record.item_id.as_deref(), Some("20013"));
+    assert_eq!(record.item_id, "20013");
 
     Ok(())
   }

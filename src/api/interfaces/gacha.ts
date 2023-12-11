@@ -15,9 +15,9 @@ export type RankType = typeof RankTypes[keyof typeof RankTypes]
 
 // Stricter type inference based on facet
 //   ON `facet` = 0 -> `gachaType` = 100 | 200 | 301 | 400 | 302
-//                  -> `gachaId` and `itemId` === null
+//                  -> `gachaId` === null
 //   ON `facet` = 1 -> `gachaType` = 1 | 2 | 11 | 12
-//                  -> `gachaId` and `itemId` !== null
+//                  -> `gachaId` !== null
 export type GachaRecord<Facet = AccountFacet> = {
   id: string
   facet: Facet
@@ -30,19 +30,17 @@ export type GachaRecord<Facet = AccountFacet> = {
   lang: string
   name: string
   itemType: string
-  itemId: string | null
+  itemId: string
 } & (
   // Genshin Impact
   Facet extends 0 ? {
     gachaType: 100 | 200 | 301 | 400 | 302
     gachaId: null
-    itemId: null
   }
   // Honkai: Star Rail
   : Facet extends 1 ? {
     gachaType: 1 | 2 | 11 | 12
     gachaId: number
-    itemId: string
   }
   : NonNullable<unknown>
 )

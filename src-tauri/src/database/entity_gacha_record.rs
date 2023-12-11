@@ -65,7 +65,7 @@ impl<'r> Decode<'r, Sqlite> for GachaRecordRankType {
 //     "lang"       : "zh-cn",
 //     "name"       : "弹弓",
 //     "item_type"  : "武器",
-//     "item_id"    : ""
+//     "item_id"    : "15304"
 //   }
 //   Honkai: Star Rail: ON "facet" = 1
 //   {
@@ -99,7 +99,7 @@ generate_entity!({
     pub lang: String,                   // zh-cn                   | // TODO: Internationalization (GachaRecord.lang)
     pub name: String,                   //                         | // TODO: Internationalization (GachaRecord.name)
     pub item_type: String,              //                         | // TODO: Internationalization (GachaRecord.item_type)
-    pub item_id: Option<String>,        //                    None | Some(_)
+    pub item_id: String,                // See: src/gacha/dict/embedded.rs
   },
   questioner {
     initialize => "
@@ -115,11 +115,12 @@ generate_entity!({
         `lang`       TEXT    NOT NULL,
         `name`       TEXT    NOT NULL,
         `item_type`  TEXT    NOT NULL,
-        `item_id`    TEXT
+        `item_id`    TEXT    NOT NULL
       );
       CREATE UNIQUE INDEX IF NOT EXISTS `hg.gacha_records.id_idx`                    ON `hg.gacha_records` (`id`);
       CREATE        INDEX IF NOT EXISTS `hg.gacha_records.facet_idx`                 ON `hg.gacha_records` (`facet`);
       CREATE        INDEX IF NOT EXISTS `hg.gacha_records.uid_idx`                   ON `hg.gacha_records` (`uid`);
+      CREATE        INDEX IF NOT EXISTS `hg.gacha_records.item_id_idx`               ON `hg.gacha_records` (`item_id`);
       CREATE        INDEX IF NOT EXISTS `hg.gacha_records.facet_uid_idx`             ON `hg.gacha_records` (`facet`, `uid`);
       CREATE        INDEX IF NOT EXISTS `hg.gacha_records.gacha_type_idx`            ON `hg.gacha_records` (`gacha_type`);
       CREATE        INDEX IF NOT EXISTS `hg.gacha_records.rank_type_idx`             ON `hg.gacha_records` (`rank_type`);
@@ -216,13 +217,13 @@ mod tests {
       lang: "zh-cn".into(),
       name: "弹弓".into(),
       item_type: "武器".into(),
-      item_id: None,
+      item_id: "15304".into(),
     };
 
     assert!(matches!(
       to_json(&record).as_deref(),
       Ok(
-        r#"{"id":"1675850760000000000","facet":0,"uid":100000001,"gachaType":400,"gachaId":null,"rankType":3,"count":1,"time":"2023-01-01 00:00:00","lang":"zh-cn","name":"弹弓","itemType":"武器","itemId":null}"#
+        r#"{"id":"1675850760000000000","facet":0,"uid":100000001,"gachaType":400,"gachaId":null,"rankType":3,"count":1,"time":"2023-01-01 00:00:00","lang":"zh-cn","name":"弹弓","itemType":"武器","itemId":"15304"}"#
       )
     ));
   }
@@ -242,7 +243,7 @@ mod tests {
         "lang": "zh-cn",
         "name": "弹弓",
         "itemType": "武器",
-        "itemId": null
+        "itemId": "15304"
       }
     "#;
 
@@ -261,6 +262,6 @@ mod tests {
     assert_eq!(record.lang, "zh-cn");
     assert_eq!(record.name, "弹弓");
     assert_eq!(record.item_type, "武器");
-    assert_eq!(record.item_id, None);
+    assert_eq!(record.item_id, "15304");
   }
 }

@@ -210,8 +210,8 @@ impl GachaConverter for UIGFGachaConverter {
         ))?
         .to_string();
 
-      let item_id = if let Some(item_id) = record.item_id {
-        item_id
+      let item_id = if !record.item_id.is_empty() {
+        record.item_id
       } else {
         GachaDictionaryEmbedded::name(Self::TARGET_FACET, &self.lang, &record.name)
           .ok_or(UIGFGachaConverterError::MissingDictionary(format!(
@@ -349,7 +349,7 @@ impl GachaConverter for UIGFGachaConverter {
         lang,
         name,
         item_type,
-        item_id: Some(item_id),
+        item_id,
       })
     }
 
@@ -494,7 +494,7 @@ mod tests {
       lang: lang.to_owned(),
       name: "弹弓".into(),
       item_type: "武器".into(),
-      item_id: None,
+      item_id: "".into(),
     };
 
     let region_time_zone = UtcOffset::from_hms(8, 0, 0).unwrap();
@@ -537,8 +537,9 @@ mod tests {
     assert_eq!(item.name, Some(record.name));
     assert_eq!(item.item_type, Some(record.item_type));
 
-    assert_eq!(record.item_id, None);
-    assert_eq!(item.item_id.as_deref(), Some("15304")); // auto dictionary
+    // auto dictionary
+    assert_eq!(record.item_id, "");
+    assert_eq!(item.item_id.as_deref(), Some("15304"));
 
     Ok(())
   }
@@ -619,7 +620,7 @@ mod tests {
     assert_eq!(record.lang, "zh-cn");
     assert_eq!(record.name, "弹弓");
     assert_eq!(record.item_type, "武器");
-    assert_eq!(record.item_id.as_deref(), Some("15304"));
+    assert_eq!(record.item_id, "15304");
 
     Ok(())
   }
@@ -655,7 +656,7 @@ mod tests {
     assert_eq!(record.lang, "zh-cn");
     assert_eq!(record.name, "弹弓");
     assert_eq!(record.item_type, "武器");
-    assert_eq!(record.item_id.as_deref(), Some("15304"));
+    assert_eq!(record.item_id, "15304");
 
     Ok(())
   }

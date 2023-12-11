@@ -28,6 +28,7 @@ use url::Url;
 use crate::constants;
 use crate::database::{AccountFacet, GachaRecord, GachaRecordRankType};
 use crate::diskcache::{BlockFile, IndexFile};
+use crate::gacha::dict::embedded as GachaDictionaryEmbedded;
 use crate::utilities::paths::{cognosphere_dir, mihoyo_dir};
 
 mod plugin;
@@ -639,6 +640,22 @@ pub trait GachaRecordsFetcher: FacetDeclare + Send + Sync {
     let facet = self.facet();
     let mut records = Vec::with_capacity(pagination.list.len());
     for value in pagination.list {
+      // If `item_id` is not available,
+      // then look up the mapping of `name` from the embedded dictionary.
+      let item_id = if let Some(item_id) = value.item_id {
+        item_id
+      } else if let Some(entry) = GachaDictionaryEmbedded::name(facet, &value.lang, &value.name) {
+        entry.item_id.to_owned()
+      } else {
+        // If the embedded dictionary does not have a mapping for `name`,
+        // then a warning is issued and the empty string is used.
+        warn!(
+          "Missing entry in embedded dictionary: facet({facet:?}), lang({}), lang({})",
+          value.lang, value.name
+        );
+        String::default()
+      };
+
       records.push(GachaRecord {
         id: value.id,
         facet: *facet,
@@ -651,7 +668,7 @@ pub trait GachaRecordsFetcher: FacetDeclare + Send + Sync {
         lang: value.lang,
         name: value.name,
         item_type: value.item_type,
-        item_id: value.item_id,
+        item_id,
       })
     }
 
