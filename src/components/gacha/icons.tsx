@@ -34,6 +34,7 @@ import GenshinCharacter10000084 from '@/assets/images/genshin/character/10000084
 import GenshinCharacter10000086 from '@/assets/images/genshin/character/10000086.png'
 import GenshinCharacter10000087 from '@/assets/images/genshin/character/10000087.png'
 import GenshinCharacter10000089 from '@/assets/images/genshin/character/10000089.png'
+import GenshinCharacter10000091 from '@/assets/images/genshin/character/10000091.png'
 import GenshinWeapon11501 from '@/assets/images/genshin/weapon/11501.png'
 import GenshinWeapon11502 from '@/assets/images/genshin/weapon/11502.png'
 import GenshinWeapon11503 from '@/assets/images/genshin/weapon/11503.png'
@@ -50,6 +51,7 @@ import GenshinWeapon12503 from '@/assets/images/genshin/weapon/12503.png'
 import GenshinWeapon12504 from '@/assets/images/genshin/weapon/12504.png'
 import GenshinWeapon12510 from '@/assets/images/genshin/weapon/12510.png'
 import GenshinWeapon12511 from '@/assets/images/genshin/weapon/12511.png'
+import GenshinWeapon12512 from '@/assets/images/genshin/weapon/12512.png'
 import GenshinWeapon13501 from '@/assets/images/genshin/weapon/13501.png'
 import GenshinWeapon13502 from '@/assets/images/genshin/weapon/13502.png'
 import GenshinWeapon13504 from '@/assets/images/genshin/weapon/13504.png'
@@ -153,7 +155,8 @@ const Genshin = {
     林尼: [10000084, GenshinCharacter10000084],
     莱欧斯利: [10000086, GenshinCharacter10000086],
     那维莱特: [10000087, GenshinCharacter10000087],
-    芙宁娜: [10000089, GenshinCharacter10000089]
+    芙宁娜: [10000089, GenshinCharacter10000089],
+    娜维娅: [10000091, GenshinCharacter10000091]
   },
   weapon: {
     风鹰剑: [11501, GenshinWeapon11501],
@@ -172,6 +175,7 @@ const Genshin = {
     无工之剑: [12504, GenshinWeapon12504],
     赤角石溃杵: [12510, GenshinWeapon12510],
     苇海信标: [12511, GenshinWeapon12511],
+    裁断: [12512, GenshinWeapon12512],
     护摩之杖: [13501, GenshinWeapon13501],
     天空之脊: [13502, GenshinWeapon13502],
     贯虹之槊: [13504, GenshinWeapon13504],
