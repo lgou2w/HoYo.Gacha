@@ -96,6 +96,8 @@ import StarRailCharacter1212 from '@/assets/images/starrail/character/1212.png'
 import StarRailCharacter1213 from '@/assets/images/starrail/character/1213.png'
 import StarRailCharacter1217 from '@/assets/images/starrail/character/1217.png'
 import StarRailCharacter1302 from '@/assets/images/starrail/character/1302.png'
+import StarRailCharacter1303 from '@/assets/images/starrail/character/1303.png'
+import StarRailCharacter1305 from '@/assets/images/starrail/character/1305.png'
 import StarRailWeapon23000 from '@/assets/images/starrail/weapon/23000.png'
 import StarRailWeapon23001 from '@/assets/images/starrail/weapon/23001.png'
 import StarRailWeapon23002 from '@/assets/images/starrail/weapon/23002.png'
@@ -115,6 +117,8 @@ import StarRailWeapon23015 from '@/assets/images/starrail/weapon/23015.png'
 import StarRailWeapon23016 from '@/assets/images/starrail/weapon/23016.png'
 import StarRailWeapon23017 from '@/assets/images/starrail/weapon/23017.png'
 import StarRailWeapon23018 from '@/assets/images/starrail/weapon/23018.png'
+import StarRailWeapon23019 from '@/assets/images/starrail/weapon/23019.png'
+import StarRailWeapon23020 from '@/assets/images/starrail/weapon/23020.png'
 
 // HACK: These static resources only contain five-star!
 
@@ -224,7 +228,9 @@ const StarRail = {
     1212: [1212, StarRailCharacter1212],
     1213: [1213, StarRailCharacter1213],
     1217: [1217, StarRailCharacter1217],
-    1302: [1302, StarRailCharacter1302]
+    1302: [1302, StarRailCharacter1302],
+    1303: [1303, StarRailCharacter1303],
+    1305: [1305, StarRailCharacter1305]
   },
   weapon: {
     23000: [23000, StarRailWeapon23000],
@@ -245,7 +251,9 @@ const StarRail = {
     23015: [23015, StarRailWeapon23015],
     23016: [23016, StarRailWeapon23016],
     23017: [23017, StarRailWeapon23017],
-    23018: [23018, StarRailWeapon23018]
+    23018: [23018, StarRailWeapon23018],
+    23019: [23019, StarRailWeapon23019],
+    23020: [23020, StarRailWeapon23020]
   }
 } as const
 
