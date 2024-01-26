@@ -12,6 +12,11 @@
 <br />
 <img src="src-tauri/icons/icon.png" style="width:256px;" />
 
+> [!IMPORTANT]
+> 全新版本 v1.0.0 正在重构制作中。查看分支：[v1](https://github.com/lgou2w/HoYo.Gacha/tree/v1)
+> 
+>  <a href="https://github.com/lgou2w/HoYo.Gacha/tree/v1"><img src="https://img.shields.io/github/last-commit/lgou2w/HoYo.Gacha/v1?style=flat-square&logo=github"/></a>
+
 ## 功能
 
 - [x] 支持 **`原神`** 和 **`崩坏：星穹铁道`** 游戏抽卡记录。
