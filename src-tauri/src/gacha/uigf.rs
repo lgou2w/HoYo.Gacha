@@ -48,7 +48,7 @@ pub struct UIGF {
 }
 
 impl UIGF {
-  const FORMAT_TIME: &str = "[year]-[month]-[day] [hour]:[minute]:[second]";
+  const FORMAT_TIME: &'static str = "[year]-[month]-[day] [hour]:[minute]:[second]";
   pub fn new(uid: String, lang: String, time: &OffsetDateTime, list: UIGFList) -> Result<Self> {
     let format = format_description::parse(Self::FORMAT_TIME).map_err(time::Error::from)?;
     let export_time = time.format(&format).map_err(time::Error::from)?;

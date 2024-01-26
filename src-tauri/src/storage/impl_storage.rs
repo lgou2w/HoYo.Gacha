@@ -494,7 +494,7 @@ pub struct StoragePluginBuilder {
 }
 
 impl StoragePluginBuilder {
-  const PLUGIN_NAME: &str = "storage";
+  const PLUGIN_NAME: &'static str = "storage";
 
   pub fn new() -> Self {
     Self::default()
