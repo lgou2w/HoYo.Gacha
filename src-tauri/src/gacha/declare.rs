@@ -101,7 +101,7 @@ pub trait GachaRecordFetcherChannel<T: GachaRecord + Sized + Serialize + Send + 
     gacha_type: &str,
     last_end_id: Option<&str>,
   ) -> Result<()> {
-    const SLEEPING: u64 = 3;
+    const SLEEPING_MILLIS: u64 = 500;
 
     sender
       .send(GachaRecordFetcherChannelFragment::Ready(
@@ -109,7 +109,7 @@ pub trait GachaRecordFetcherChannel<T: GachaRecord + Sized + Serialize + Send + 
       ))
       .await
       .map_err(|_| Error::GachaRecordFetcherChannelSend)?;
-    tokio::time::sleep(tokio::time::Duration::from_secs(SLEEPING)).await;
+    tokio::time::sleep(tokio::time::Duration::from_millis(SLEEPING_MILLIS)).await;
 
     let mut end_id = String::from("0");
     let mut pagination: u32 = 1;
@@ -120,7 +120,7 @@ pub trait GachaRecordFetcherChannel<T: GachaRecord + Sized + Serialize + Send + 
           .send(GachaRecordFetcherChannelFragment::Sleeping)
           .await
           .map_err(|_| Error::GachaRecordFetcherChannelSend)?;
-        tokio::time::sleep(tokio::time::Duration::from_secs(SLEEPING)).await;
+        tokio::time::sleep(tokio::time::Duration::from_millis(SLEEPING_MILLIS)).await;
       }
 
       sender
@@ -159,7 +159,7 @@ pub trait GachaRecordFetcherChannel<T: GachaRecord + Sized + Serialize + Send + 
           if should_break {
             break;
           } else {
-            tokio::time::sleep(tokio::time::Duration::from_secs(SLEEPING)).await;
+            tokio::time::sleep(tokio::time::Duration::from_millis(SLEEPING_MILLIS)).await;
             continue;
           }
         }

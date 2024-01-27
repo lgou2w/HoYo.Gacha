@@ -3,6 +3,9 @@ use crate::constants;
 use crate::disk_cache::{BlockFile, EntryStore, IndexFile};
 use crate::error::{Error, Result};
 use crate::storage::entity_account::AccountFacet;
+use exponential_backoff::Backoff;
+use futures::future::BoxFuture;
+use futures::FutureExt;
 use once_cell::sync::Lazy;
 use reqwest::Client as Reqwest;
 use serde::de::DeserializeOwned;
@@ -13,9 +16,11 @@ use std::fs::File;
 use std::io::{prelude::BufRead, BufReader};
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
+use std::time::Duration;
 use time::{OffsetDateTime, UtcOffset};
 use tokio::sync::Mutex;
-use tracing::debug;
+use tokio::time::sleep;
+use tracing::{debug, warn};
 use url::Url;
 
 pub(super) fn create_default_reqwest() -> Result<reqwest::Client> {
@@ -246,7 +251,7 @@ pub(super) struct GachaResponse<T> {
   pub data: Option<T>,
 }
 
-pub(super) async fn fetch_gacha_records<T: Sized + DeserializeOwned>(
+pub(super) async fn fetch_gacha_records<T: Sized + DeserializeOwned + Send>(
   reqwest: &Reqwest,
   endpoint: &str,
   gacha_url: &str,
@@ -286,20 +291,69 @@ pub(super) async fn fetch_gacha_records<T: Sized + DeserializeOwned>(
     url.query_pairs_mut().append_pair("end_id", end_id);
   }
 
-  let response: GachaResponse<T> = reqwest.get(url).send().await?.json().await?;
+  let response: GachaResponse<T> = request_gacha_url_with_retry(reqwest, url, None).await?;
+  Ok(response)
+}
 
+async fn request_gacha_url<T: Sized + DeserializeOwned>(
+  reqwest: &Reqwest,
+  url: Url,
+) -> Result<GachaResponse<T>> {
+  let response: GachaResponse<T> = reqwest.get(url).send().await?.json().await?;
   if response.retcode != 0 {
-    if response.retcode == -101 {
-      Err(Error::TimeoutdGachaUrl)
-    } else {
-      Err(Error::GachaRecordRetcode {
+    match response.retcode {
+      -101 => Err(Error::TimeoutdGachaUrl),
+      -110 => Err(Error::VisitTooFrequentlyGachaUrl),
+      _ => Err(Error::GachaRecordRetcode {
         retcode: response.retcode,
         message: response.message,
-      })
+      }),
     }
   } else {
     Ok(response)
   }
+}
+
+fn request_gacha_url_with_retry<T: Sized + DeserializeOwned + Send>(
+  reqwest: &Reqwest,
+  url: Url,
+  retries: Option<u8>,
+) -> BoxFuture<'_, Result<GachaResponse<T>>> {
+  // HACK: Default maximum 5 attempts
+  const RETRIES: u8 = 5;
+
+  let min = Duration::from_millis(200); // Min: 0.2s
+  let max = Duration::from_millis(10_000); // Max: 10s
+
+  let retries = retries.unwrap_or(RETRIES);
+  let backoff = Backoff::new(retries as u32, min, max);
+
+  async move {
+    for duration in &backoff {
+      match request_gacha_url(reqwest, url.clone()).await {
+        // okay
+        Ok(response) => return Ok(response),
+
+        // Wait and retry only if the error is VisitTooFrequently.
+        Err(Error::VisitTooFrequentlyGachaUrl) => {
+          warn!(
+            "Requesting gacha url visit too frequently, wait({}s) and retry...",
+            duration.as_secs_f32()
+          );
+          sleep(duration).await;
+          continue;
+        }
+
+        // Other errors are returned
+        Err(error) => return Err(error),
+      }
+    }
+
+    // Maximum number of retries reached
+    warn!("Maximum number of retries exceeded: {retries}");
+    Err(Error::VisitTooFrequentlyGachaUrl)
+  }
+  .boxed()
 }
 
 //- Find the Gacha url and validate consistency
