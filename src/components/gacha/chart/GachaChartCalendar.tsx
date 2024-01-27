@@ -96,8 +96,10 @@ export default function GachaChartCalendar () {
               : `${month} 月`
           }}
           theme={{
-            fontFamily: 'inherit',
-            fontSize: 14,
+            text: {
+              fontFamily: 'inherit',
+              fontSize: 14
+            },
             tooltip: {
               // See: https://github.com/plouc/nivo/blob/0f0a926627c370f4ae0ca435a91573a16d96affc/packages/tooltip/src/TooltipWrapper.tsx#L79-L83
               // eslint-disable-next-line @typescript-eslint/ban-ts-comment

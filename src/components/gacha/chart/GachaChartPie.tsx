@@ -75,8 +75,10 @@ export default function GachaChartCalendar () {
 
 const PieProps: Partial<PieSvgProps<MayHaveLabel & Record<string, unknown>>> = {
   theme: {
-    fontFamily: 'inherit',
-    fontSize: 14
+    text: {
+      fontFamily: 'inherit',
+      fontSize: 14
+    }
   },
   margin: { top: 36, right: 36, bottom: 60, left: 36 },
   colors: ['#0288d188', '#9c27b088', '#ed6c0288', '#f4433688'],
