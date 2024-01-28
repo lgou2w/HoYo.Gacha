@@ -7,7 +7,7 @@
   },
   "package": {
     "productName": "HoYo_Gacha",
-    "version": "0.3.7"
+    "version": "0.3.8"
   },
   "tauri": {
     "allowlist": {
@@ -43,7 +43,7 @@
         "signingIdentity": null
       },
       "resources": [],
-      "shortDescription": "An unofficial tool for managing and analyzing your miHoYo gacha records",
+      "shortDescription": "HoYo.Gacha",
       "targets": "all",
       "windows": {
         "certificateThumbprint": null,
