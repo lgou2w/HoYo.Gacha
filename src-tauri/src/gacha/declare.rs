@@ -101,7 +101,7 @@ pub trait GachaRecordFetcherChannel<T: GachaRecord + Sized + Serialize + Send + 
     gacha_type: &str,
     last_end_id: Option<&str>,
   ) -> Result<()> {
-    const SLEEPING_MILLIS: u64 = 500;
+    const SLEEPING_MILLIS: u64 = 200;
 
     sender
       .send(GachaRecordFetcherChannelFragment::Ready(
