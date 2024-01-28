@@ -50,6 +50,10 @@ export default function GachaOverviewTags () {
     }
   }, [aggregatedValues])
 
+  if (!luck && !unluck && !related && !crazy) {
+    return null
+  }
+
   return (
     <Box>
       <Typography variant="body1" gutterBottom>
