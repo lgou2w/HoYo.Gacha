@@ -241,7 +241,7 @@ function AccountMenuDialogForm (props: AccountMenuDialogFormProps) {
         InputProps={{
           ...register('uid', {
             required: '请填写账号 UID 字段！',
-            validate: value => /\d+/.test(value) || '请输入正确的 UID 值！'
+            validate: value => /^[1-9][0-9]{8}$/.test(value) || '请输入正确的 UID 值！'
           }),
           onKeyPress: numericOnly,
           startAdornment: (
