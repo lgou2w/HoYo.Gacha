@@ -35,6 +35,7 @@ import GenshinCharacter10000086 from '@/assets/images/genshin/character/10000086
 import GenshinCharacter10000087 from '@/assets/images/genshin/character/10000087.png'
 import GenshinCharacter10000089 from '@/assets/images/genshin/character/10000089.png'
 import GenshinCharacter10000091 from '@/assets/images/genshin/character/10000091.png'
+import GenshinCharacter10000093 from '@/assets/images/genshin/character/10000093.png'
 import GenshinWeapon11501 from '@/assets/images/genshin/weapon/11501.png'
 import GenshinWeapon11502 from '@/assets/images/genshin/weapon/11502.png'
 import GenshinWeapon11503 from '@/assets/images/genshin/weapon/11503.png'
@@ -69,6 +70,7 @@ import GenshinWeapon14511 from '@/assets/images/genshin/weapon/14511.png'
 import GenshinWeapon14512 from '@/assets/images/genshin/weapon/14512.png'
 import GenshinWeapon14513 from '@/assets/images/genshin/weapon/14513.png'
 import GenshinWeapon14514 from '@/assets/images/genshin/weapon/14514.png'
+import GenshinWeapon14515 from '@/assets/images/genshin/weapon/14515.png'
 import GenshinWeapon15501 from '@/assets/images/genshin/weapon/15501.png'
 import GenshinWeapon15502 from '@/assets/images/genshin/weapon/15502.png'
 import GenshinWeapon15503 from '@/assets/images/genshin/weapon/15503.png'
@@ -160,7 +162,8 @@ const Genshin = {
     莱欧斯利: [10000086, GenshinCharacter10000086],
     那维莱特: [10000087, GenshinCharacter10000087],
     芙宁娜: [10000089, GenshinCharacter10000089],
-    娜维娅: [10000091, GenshinCharacter10000091]
+    娜维娅: [10000091, GenshinCharacter10000091],
+    闲云: [10000093, GenshinCharacter10000093]
   },
   weapon: {
     风鹰剑: [11501, GenshinWeapon11501],
@@ -197,6 +200,7 @@ const Genshin = {
     图莱杜拉的回忆: [14512, GenshinWeapon14512],
     金流监督: [14513, GenshinWeapon14513],
     万世流涌大典: [14514, GenshinWeapon14514],
+    鹤鸣余音: [14515, GenshinWeapon14515],
     天空之翼: [15501, GenshinWeapon15501],
     阿莫斯之弓: [15502, GenshinWeapon15502],
     终末嗟叹之诗: [15503, GenshinWeapon15503],
