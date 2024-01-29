@@ -39,6 +39,9 @@ pub enum Error {
   #[error("Timeoutd Gacha Url")]
   TimeoutdGachaUrl,
 
+  #[error("Visit too frequently Gacha Url")]
+  VisitTooFrequentlyGachaUrl,
+
   #[error("Gacha record response: {retcode:?} {message:?}")]
   GachaRecordRetcode { retcode: i32, message: String },
 
@@ -88,6 +91,7 @@ impl_error_identifiers! {
   IllegalGachaUrl               => ILLEGAL_GACHA_URL,
   VacantGachaUrl                => VACANT_GACHA_URL,
   TimeoutdGachaUrl              => TIMEOUTD_GACHA_URL,
+  VisitTooFrequentlyGachaUrl    => VISIT_TOO_FREQUENTLY_GACHA_URL,
   GachaRecordRetcode            => GACHA_RECORD_RETCODE,
   GachaRecordFetcherChannelSend => GACHA_RECORD_FETCHER_CHANNEL_SEND,
   GachaRecordFetcherChannelJoin => GACHA_RECORD_FETCHER_CHANNEL_JOIN,

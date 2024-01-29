@@ -216,7 +216,7 @@ async fn export_gacha_records(
 pub struct GachaPluginBuilder {}
 
 impl GachaPluginBuilder {
-  const PLUGIN_NAME: &str = "gacha";
+  const PLUGIN_NAME: &'static str = "gacha";
 
   pub fn new() -> Self {
     Self::default()

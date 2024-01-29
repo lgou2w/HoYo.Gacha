@@ -52,7 +52,7 @@ export default function GachaItemView (props: GachaItemViewProps) {
 }
 
 function getRemoteResourceSrc (facet: AccountFacet, category: string, itemIdOrName: string) {
-  return `https://hoyo-gacha.lgou2w.com/static/${facet}/${category}/${itemIdOrName}.png`
+  return `https://hoyo-gacha.lgou2w.com/static/${facet}/${category}/cutted/${itemIdOrName}.png`
 }
 
 const GachaItemViewCls = 'gacha-item-view'

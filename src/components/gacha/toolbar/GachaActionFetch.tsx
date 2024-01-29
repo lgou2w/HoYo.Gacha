@@ -1,8 +1,8 @@
 import React from 'react'
 import { useImmer } from 'use-immer'
-import { resolveCurrency } from '@/interfaces/account'
+import { AccountFacet, resolveCurrency } from '@/interfaces/account'
 import { useUpdateAccountGachaUrlFn, useUpdateAccountPropertiesFn } from '@/hooks/useStatefulAccount'
-import { GachaRecords, useRefetchGachaRecordsFn } from '@/hooks/useGachaRecordsQuery'
+import { GachaRecords, NamedGachaRecords, useRefetchGachaRecordsFn } from '@/hooks/useGachaRecordsQuery'
 import { useGachaLayoutContext } from '@/components/gacha/GachaLayoutContext'
 import useGachaRecordsFetcher from '@/hooks/useGachaRecordsFetcher'
 import Box from '@mui/material/Box'
@@ -36,13 +36,14 @@ export default function GachaActionFetch () {
     const { facet, uid, gachaUrl } = selectedAccount
     try {
       const { namedValues: { character, weapon, permanent, newbie } } = gachaRecords
+      const pullNewbie = shouldPullNewbie(facet, newbie)
       await pull(facet, uid, {
         gachaUrl,
         gachaTypeAndLastEndIdMappings: {
           [character.gachaType]: character.lastEndId ?? null,
           [weapon.gachaType]: weapon.lastEndId ?? null,
           [permanent.gachaType]: permanent.lastEndId ?? null,
-          [newbie.gachaType]: newbie.lastEndId ?? null
+          ...(pullNewbie || {})
         },
         eventChannel: 'gachaRecords-fetcher-event-channel',
         saveToStorage: true
@@ -129,5 +130,23 @@ function stringifyFragment (
   } else {
     // Should never reach here
     return `Unknown fragment: ${JSON.stringify(fragment)}`
+  }
+}
+
+function shouldPullNewbie (
+  facet: AccountFacet,
+  newbie: NamedGachaRecords
+): Record<string, string | null> | null {
+  // HACK:
+  //   Genshin Impact    : Newbie Gacha Pool = 20 times
+  //   Honkai: Star Rail :                   = 50 times
+  if (facet === AccountFacet.Genshin && newbie.total >= 20) {
+    return null
+  } else if (facet === AccountFacet.StarRail && newbie.total >= 50) {
+    return null
+  } else {
+    return {
+      [newbie.gachaType]: newbie.lastEndId ?? null
+    }
   }
 }
