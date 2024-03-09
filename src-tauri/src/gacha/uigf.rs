@@ -91,12 +91,13 @@ impl UIGF {
  *       302             |       302
  */
 pub static GACHA_TYPE_UIGF_MAPPINGS: Lazy<HashMap<&str, &str>> = Lazy::new(|| {
-  let mut m = HashMap::with_capacity(5);
+  let mut m = HashMap::with_capacity(6);
   m.insert("100", "100");
   m.insert("200", "200");
   m.insert("301", "301");
   m.insert("400", "301"); // 400 -> 301
   m.insert("302", "302");
+  m.insert("500", "500");
   m
 });
 
