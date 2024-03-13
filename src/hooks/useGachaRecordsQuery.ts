@@ -15,7 +15,8 @@ export interface GachaRecords {
   readonly uid: Account['uid']
   readonly gachaTypeToCategoryMappings: Record<GachaRecord['gacha_type'], NamedGachaRecords['category']>
   readonly values: Partial<Record<GachaRecord['gacha_type'], GachaRecord[]>>
-  readonly namedValues: Record<NamedGachaRecords['category'], NamedGachaRecords>
+  readonly namedValues: Omit<Record<NamedGachaRecords['category'], NamedGachaRecords>, 'anthology'>
+    & { 'anthology'?: NamedGachaRecords } // Genshin Impact only
   readonly aggregatedValues: Omit<NamedGachaRecords, 'category' | 'categoryTitle' | 'gachaType' | 'lastEndId'>
   readonly total: number
   readonly firstTime?: GachaRecord['time']
@@ -23,7 +24,7 @@ export interface GachaRecords {
 }
 
 export interface NamedGachaRecords {
-  category: 'newbie' | 'permanent' | 'character' | 'weapon'
+  category: 'newbie' | 'permanent' | 'character' | 'weapon' | 'anthology'
   categoryTitle: string
   gachaType: GachaRecord['gacha_type']
   lastEndId?: GachaRecord['id']
@@ -144,7 +145,8 @@ const KnownGenshinGachaTypes: Record<GenshinGachaRecord['gacha_type'], NamedGach
   100: 'newbie',
   200: 'permanent',
   301: 'character', // include 400
-  302: 'weapon'
+  302: 'weapon',
+  500: 'anthology'
 }
 
 const KnownStarRailGachaTypes: Record<StarRailGachaRecord['gacha_type'], NamedGachaRecords['category']> = {
@@ -156,12 +158,14 @@ const KnownStarRailGachaTypes: Record<StarRailGachaRecord['gacha_type'], NamedGa
 
 const KnownCategoryTitles: Record<AccountFacet, Record<NamedGachaRecords['category'], string>> = {
   [AccountFacet.Genshin]: {
+    anthology: '集录',
     character: '角色活动',
     weapon: '武器活动',
     permanent: '常驻',
     newbie: '新手'
   },
   [AccountFacet.StarRail]: {
+    anthology: '', // Useless
     character: '角色活动',
     weapon: '光锥活动',
     permanent: '常驻',
@@ -236,22 +240,41 @@ function computeAggregatedGachaRecords (
   const total = data.length
   const firstTime = data[0]?.time
   const lastTime = data[total - 1]?.time
-  const { newbie, permanent, character, weapon } = namedValues
+  const { newbie, permanent, character, weapon, anthology } = namedValues
 
-  const blueSum = newbie.metadata.blue.sum + permanent.metadata.blue.sum + character.metadata.blue.sum + weapon.metadata.blue.sum
+  const blueSum =
+    newbie.metadata.blue.sum +
+    permanent.metadata.blue.sum +
+    character.metadata.blue.sum +
+    weapon.metadata.blue.sum +
+    (anthology ? anthology.metadata.blue.sum : 0)
+
   const blueSumPercentage = blueSum > 0 ? Math.round(blueSum / total * 10000) / 100 : 0
   const blueValues = data.filter(isRankTypeOfBlue)
 
-  const purpleSum = newbie.metadata.purple.sum + permanent.metadata.purple.sum + character.metadata.purple.sum + weapon.metadata.purple.sum
+  const purpleSum =
+    newbie.metadata.purple.sum +
+    permanent.metadata.purple.sum +
+    character.metadata.purple.sum +
+    weapon.metadata.purple.sum +
+    (anthology ? anthology.metadata.purple.sum : 0)
+
   const purpleSumPercentage = purpleSum > 0 ? Math.round(purpleSum / total * 10000) / 100 : 0
   const purpleValues = data.filter(isRankTypeOfPurple)
 
-  const goldenSum = newbie.metadata.golden.sum + permanent.metadata.golden.sum + character.metadata.golden.sum + weapon.metadata.golden.sum
+  const goldenSum =
+    newbie.metadata.golden.sum +
+    permanent.metadata.golden.sum +
+    character.metadata.golden.sum +
+    weapon.metadata.golden.sum +
+    (anthology ? anthology.metadata.golden.sum : 0)
+
   const goldenSumPercentage = goldenSum > 0 ? Math.round(goldenSum / total * 10000) / 100 : 0
   const goldenValues = Array.from(newbie.metadata.golden.values)
     .concat(Array.from(permanent.metadata.golden.values))
     .concat(Array.from(character.metadata.golden.values))
     .concat(Array.from(weapon.metadata.golden.values))
+    .concat(anthology ? Array.from(anthology.metadata.golden.values) : [])
     .sort(sortGachaRecordById)
 
   const { goldenSumRestricted, goldenUsedPitySum } = goldenValues.reduce((acc, record) => {

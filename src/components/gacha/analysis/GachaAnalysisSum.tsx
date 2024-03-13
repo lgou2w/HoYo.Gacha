@@ -8,7 +8,7 @@ import Typography from '@mui/material/Typography'
 
 export default function GachaAnalysisSum () {
   const { gachaRecords } = useGachaLayoutContext()
-  const { namedValues: { character, weapon, permanent, newbie }, aggregatedValues } = gachaRecords
+  const { namedValues: { character, weapon, permanent, newbie, anthology }, aggregatedValues } = gachaRecords
 
   return (
     <Box className={GachaAnalysisSumCls} sx={GachaAnalysisSumSx}>
@@ -25,6 +25,7 @@ export default function GachaAnalysisSum () {
         />
         <GachaAnalysisSumCol title={character.categoryTitle} values={computeNamedGachaRecordsValues(character)} />
         <GachaAnalysisSumCol title={weapon.categoryTitle} values={computeNamedGachaRecordsValues(weapon)} />
+        {anthology && anthology.total > 0 && <GachaAnalysisSumCol title={anthology.categoryTitle} values={computeNamedGachaRecordsValues(anthology)} />}
         <GachaAnalysisSumCol title={permanent.categoryTitle} values={computeNamedGachaRecordsValues(permanent)} />
         {newbie.total > 0 && <GachaAnalysisSumCol title={newbie.categoryTitle} values={computeNamedGachaRecordsValues(newbie)} />}
         <GachaAnalysisSumCol title="合计" values={computeNamedGachaRecordsValues(aggregatedValues)} />

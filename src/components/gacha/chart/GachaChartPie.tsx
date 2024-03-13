@@ -8,7 +8,7 @@ import Box from '@mui/material/Box'
 import Typography from '@mui/material/Typography'
 
 export default function GachaChartCalendar () {
-  const { facet, gachaRecords: { aggregatedValues, namedValues: { character, weapon, permanent, newbie } } } = useGachaLayoutContext()
+  const { facet, gachaRecords: { aggregatedValues, namedValues: { character, weapon, permanent, newbie, anthology } } } = useGachaLayoutContext()
 
   const itemTypesData = aggregatedValues.values.reduce((acc, cur) => {
     const key = cur.item_type
@@ -25,6 +25,7 @@ export default function GachaChartCalendar () {
       <Typography variant="h6" gutterBottom>❖ 多维饼图</Typography>
       <Grid container>
         <Grid sm={4} item>
+          <Typography variant="subtitle1" textAlign="center" gutterBottom>➤ 星级</Typography>
           <Box width="100%" height={256}>
             <ResponsivePie
               {...PieProps}
@@ -37,6 +38,7 @@ export default function GachaChartCalendar () {
           </Box>
         </Grid>
         <Grid sm={4} item>
+          <Typography variant="subtitle1" textAlign="center" gutterBottom>➤ 类别</Typography>
           <Box width="100%" height={256}>
             <ResponsivePie
               {...PieProps}
@@ -51,19 +53,21 @@ export default function GachaChartCalendar () {
           </Box>
         </Grid>
         <Grid sm={4} item>
+          <Typography variant="subtitle1" textAlign="center" gutterBottom>➤ 卡池</Typography>
           <Box width="100%" height={256} overflow="hidden">
             <ResponsivePie
               {...PieProps}
               arcLabelsSkipAngle={10}
               arcLinkLabelsSkipAngle={10}
               data={[
-                { id: '角色池', value: character.total },
+                { id: '角色', value: character.total },
                 {
-                  id: facet === AccountFacet.Genshin ? '武器池' : '光锥池',
+                  id: facet === AccountFacet.Genshin ? '武器' : '光锥',
                   value: weapon.total
                 },
-                { id: '常驻池', value: permanent.total },
-                { id: '新手池', value: newbie.total }
+                { id: '常驻', value: permanent.total },
+                { id: '新手', value: newbie.total },
+                ...(anthology ? [{ id: '集录', value: anthology.total }] : [])
               ]}
             />
           </Box>
@@ -81,7 +85,7 @@ const PieProps: Partial<PieSvgProps<MayHaveLabel & Record<string, unknown>>> = {
     }
   },
   margin: { top: 36, right: 36, bottom: 60, left: 36 },
-  colors: ['#0288d188', '#9c27b088', '#ed6c0288', '#f4433688'],
+  colors: ['#0288d188', '#9c27b088', '#ed6c0288', '#f4433688', '#003cff88'],
   fill: [{ id: 'lines', match: '*' }],
   defs: [
     {
@@ -100,7 +104,7 @@ const PieProps: Partial<PieSvgProps<MayHaveLabel & Record<string, unknown>>> = {
       direction: 'row',
       translateY: 56,
       translateX: 0,
-      itemWidth: 72,
+      itemWidth: 64,
       itemHeight: 14,
       symbolSize: 14,
       symbolShape: 'square'

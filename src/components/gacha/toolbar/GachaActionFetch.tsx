@@ -35,7 +35,7 @@ export default function GachaActionFetch () {
 
     const { facet, uid, gachaUrl } = selectedAccount
     try {
-      const { namedValues: { character, weapon, permanent, newbie } } = gachaRecords
+      const { namedValues: { character, weapon, permanent, newbie, anthology } } = gachaRecords
       const pullNewbie = shouldPullNewbie(facet, newbie)
       await pull(facet, uid, {
         gachaUrl,
@@ -43,6 +43,7 @@ export default function GachaActionFetch () {
           [character.gachaType]: character.lastEndId ?? null,
           [weapon.gachaType]: weapon.lastEndId ?? null,
           [permanent.gachaType]: permanent.lastEndId ?? null,
+          ...(anthology ? { [anthology.gachaType]: anthology.lastEndId ?? null } : {}),
           ...(pullNewbie || {})
         },
         eventChannel: 'gachaRecords-fetcher-event-channel',
@@ -119,7 +120,7 @@ function stringifyFragment (
   } else if ('ready' in fragment) {
     const gachaType = fragment.ready
     const category = gachaRecords.gachaTypeToCategoryMappings[gachaType]
-    const categoryTitle = gachaRecords.namedValues[category].categoryTitle
+    const categoryTitle = gachaRecords.namedValues[category]?.categoryTitle || category
     return `开始获取数据：${categoryTitle}`
   } else if ('pagination' in fragment) {
     const pagination = fragment.pagination

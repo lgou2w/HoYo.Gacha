@@ -13,7 +13,8 @@ import dayjs from '@/utilities/dayjs'
 
 export default function GachaOverviewGrid () {
   const { facet, gachaRecords } = useGachaLayoutContext()
-  const { namedValues: { character, weapon, permanent, newbie }, aggregatedValues } = gachaRecords
+  const { namedValues: { character, weapon, permanent, newbie, anthology }, aggregatedValues } = gachaRecords
+  const hasAnthology = !!anthology && anthology.total > 0
 
   return (
     <Box>
@@ -27,7 +28,12 @@ export default function GachaOverviewGrid () {
         <Grid xs={6} item>
           <GachaOverviewGridCard facet={facet} value={permanent} />
         </Grid>
-        <Grid xs={6} item>
+        {hasAnthology && (
+          <Grid xs={6} item>
+            <GachaOverviewGridCard facet={facet} value={anthology} />
+          </Grid>
+        )}
+        <Grid xs={hasAnthology ? 12 : 6} item>
           <GachaOverviewGridCard facet={facet} value={aggregatedValues} newbie={newbie} />
         </Grid>
       </Grid>

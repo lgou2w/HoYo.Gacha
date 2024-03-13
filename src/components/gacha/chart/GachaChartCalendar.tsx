@@ -109,11 +109,8 @@ export default function GachaChartCalendar () {
           }}
           tooltip={({ color, day, value }) => (
             <Box component={Paper}
-              position="absolute"
               bgcolor="white"
               width={120}
-              top={0}
-              right="0.5rem"
               paddingY={0.5}
               paddingX={1}
               elevation={5}
