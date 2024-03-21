@@ -113,6 +113,14 @@ pre {
 }
 
 .fui-FluentProvider
+.fui-MenuButton
+.fui-MenuButton__menuIcon {
+  font-size: 0.75rem;
+  width: 0.75rem;
+  height: 0.75rem;
+}
+
+.fui-FluentProvider
 .fui-MenuPopover {
   padding: 0.25rem;
   min-width: 8.625rem;

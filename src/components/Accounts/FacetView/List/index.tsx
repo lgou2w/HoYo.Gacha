@@ -1,7 +1,7 @@
 import React from 'react'
 import { Text, makeStyles, shorthands, tokens } from '@fluentui/react-components'
 import { useAccountsQuery } from '@/api/queries/account'
-import useAccountsFacetView from '@/components/Accounts/FacetView/useAccountsFacetView'
+import useAccountFacet from '@/components/AccountFacet/useAccountFacet'
 import AccountsFacetViewListItem from './ListItem'
 
 const useStyles = makeStyles({
@@ -15,7 +15,7 @@ const useStyles = makeStyles({
 })
 
 export default function AccountsFacetViewList () {
-  const { facet } = useAccountsFacetView()
+  const { facet } = useAccountFacet()
   const { data: accounts } = useAccountsQuery()
   const classes = useStyles()
 

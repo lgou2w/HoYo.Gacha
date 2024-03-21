@@ -8,7 +8,7 @@ use sqlx::error::BoxDynError;
 use sqlx::sqlite::{SqliteTypeInfo, SqliteValueRef};
 use sqlx::{Decode, Encode, Sqlite, Type};
 
-use super::{AccountFacet, Database, DatabaseError};
+use super::{AccountFacet, AccountUid, Database, DatabaseError};
 use crate::generate_entity;
 
 // Gacha Rank Type
@@ -35,6 +35,10 @@ pub enum GachaRecordRankType {
 impl Type<Sqlite> for GachaRecordRankType {
   fn type_info() -> SqliteTypeInfo {
     u8::type_info()
+  }
+
+  fn compatible(ty: &SqliteTypeInfo) -> bool {
+    u8::compatible(ty)
   }
 }
 
@@ -90,7 +94,7 @@ generate_entity!({
     //   and Id can only use String.
     pub id: String,                     // 1675850760000000000     | <-
     pub facet: AccountFacet,            //                       0 | 1
-    pub uid: u32,                       // 100000001               | <-
+    pub uid: AccountUid,                // 100000001               | <-
     pub gacha_type: u32,                // 100, 200, 301, 400, 302 | 1, 2, 11, 12
     pub gacha_id: Option<u32>,          //                    None | Some(_)
     pub rank_type: GachaRecordRankType, // 3, 4, 5                 | <-
@@ -208,7 +212,7 @@ mod tests {
     let record = GachaRecord {
       id: "1675850760000000000".into(),
       facet: AccountFacet::GenshinImpact,
-      uid: 100_000_001,
+      uid: 100_000_001.into(),
       gacha_type: 400,
       gacha_id: None,
       rank_type: GachaRecordRankType::Blue,

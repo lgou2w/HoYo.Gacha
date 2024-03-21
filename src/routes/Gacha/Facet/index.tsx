@@ -1,22 +1,11 @@
-import React, { Fragment, Suspense } from 'react'
-import { Await } from 'react-router-dom'
+import React from 'react'
 import { useQueryLoaderFunctionData } from '@/api/store'
+import GachaFacetView from '@/components/Gacha/FacetView'
 import loader from './loader'
 
 export default function GachaFacet () {
-  const data = useQueryLoaderFunctionData<typeof loader>()
+  const { keyOfFacets, facet } = useQueryLoaderFunctionData<typeof loader>()
   return (
-    <Fragment>
-      <p>Facet: {data.facet}</p>
-      <Suspense fallback="Loading...">
-        <Await resolve={data.records}>
-          {(records) => (
-            <div>
-              {records}
-            </div>
-          )}
-        </Await>
-      </Suspense>
-    </Fragment>
+    <GachaFacetView keyOfFacets={keyOfFacets} facet={facet} />
   )
 }

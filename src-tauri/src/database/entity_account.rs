@@ -41,6 +41,10 @@ impl Type<Sqlite> for AccountFacet {
   fn type_info() -> SqliteTypeInfo {
     u8::type_info()
   }
+
+  fn compatible(ty: &SqliteTypeInfo) -> bool {
+    u8::compatible(ty)
+  }
 }
 
 impl<'r> Encode<'r, Sqlite> for AccountFacet {
@@ -52,6 +56,104 @@ impl<'r> Encode<'r, Sqlite> for AccountFacet {
 impl<'r> Decode<'r, Sqlite> for AccountFacet {
   fn decode(value: SqliteValueRef) -> Result<Self, BoxDynError> {
     AccountFacet::try_from(u8::decode(value)?).map_err(Into::into)
+  }
+}
+
+// UID
+
+#[allow(clippy::upper_case_acronyms)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+#[repr(u8)]
+pub enum AccountServer {
+  Official = 1,
+  Channel,
+  USA = 10,
+  Euro,
+  Asia,
+  Cht,
+}
+
+impl AccountServer {
+  pub fn is_oversea(&self) -> bool {
+    matches!(self, Self::USA | Self::Euro | Self::Asia | Self::Cht)
+  }
+}
+
+#[derive(Copy, Clone, Debug, Deserialize, Serialize, PartialEq, Eq, PartialOrd, Ord)]
+#[serde(transparent)]
+pub struct AccountUid(pub u32);
+
+impl AccountUid {
+  pub const MIN: AccountUid = AccountUid(100_000_000);
+  pub const MAX: AccountUid = AccountUid(999_999_999);
+
+  pub fn is_correct(&self) -> bool {
+    self >= &Self::MIN && self <= &Self::MAX
+  }
+
+  /// Returns `1` to `9` if the uid is correct, otherwise returns `None`.
+  pub fn first_digit(&self) -> Option<u8> {
+    if self.is_correct() {
+      Some((self.0 as f32 / Self::MIN.0 as f32).floor() as u8)
+    } else {
+      None
+    }
+  }
+
+  pub fn detect_server(&self) -> Option<AccountServer> {
+    if let Some(first_digit) = self.first_digit() {
+      match first_digit {
+        1..=4 => Some(AccountServer::Official),
+        5 => Some(AccountServer::Channel),
+        6 => Some(AccountServer::USA),
+        7 => Some(AccountServer::Euro),
+        8 => Some(AccountServer::Asia),
+        9 => Some(AccountServer::Cht),
+        _ => unreachable!(), // SAFETY
+      }
+    } else {
+      None
+    }
+  }
+}
+
+impl PartialEq<u32> for AccountUid {
+  fn eq(&self, other: &u32) -> bool {
+    self.0.eq(other)
+  }
+}
+
+impl From<u32> for AccountUid {
+  fn from(value: u32) -> Self {
+    Self(value)
+  }
+}
+
+impl ToString for AccountUid {
+  fn to_string(&self) -> String {
+    self.0.to_string()
+  }
+}
+
+impl Type<Sqlite> for AccountUid {
+  fn type_info() -> SqliteTypeInfo {
+    u32::type_info()
+  }
+
+  fn compatible(ty: &SqliteTypeInfo) -> bool {
+    u32::compatible(ty)
+  }
+}
+
+impl<'r> Encode<'r, Sqlite> for AccountUid {
+  fn encode_by_ref(&self, buf: &mut <Sqlite as HasArguments<'r>>::ArgumentBuffer) -> IsNull {
+    self.0.encode_by_ref(buf)
+  }
+}
+
+impl<'r> Decode<'r, Sqlite> for AccountUid {
+  fn decode(value: SqliteValueRef) -> Result<Self, BoxDynError> {
+    Ok(AccountUid::from(u32::decode(value)?))
   }
 }
 
@@ -80,6 +182,10 @@ impl Type<Sqlite> for AccountProperties {
   fn type_info() -> SqliteTypeInfo {
     String::type_info()
   }
+
+  fn compatible(ty: &SqliteTypeInfo) -> bool {
+    String::compatible(ty)
+  }
 }
 
 impl<'r> Encode<'r, Sqlite> for AccountProperties {
@@ -105,7 +211,7 @@ generate_entity!({
   pub struct Account {
     pub id: u32,
     pub facet: AccountFacet,
-    pub uid: u32,
+    pub uid: AccountUid,
     pub game_data_dir: String,
     pub gacha_url: Option<String>,
     #[serde(with = "rfc3339::option")]
@@ -134,7 +240,7 @@ generate_entity!({
     find_one_by_id { id: u32 } => "SELECT * FROM `hg.accounts` WHERE `id` = ?;",
     find_one_by_facet_and_uid {
       facet: AccountFacet,
-      uid: u32
+      uid: AccountUid
     } => "SELECT * FROM `hg.accounts` WHERE `facet` = ? AND `uid` = ?;",
 
     find_many {} => "SELECT * FROM `hg.accounts`;",
@@ -142,7 +248,7 @@ generate_entity!({
 
     create_one {
       facet: AccountFacet,
-      uid: u32,
+      uid: AccountUid,
       game_data_dir: String,
       properties: Option<AccountProperties>
     } => "INSERT INTO `hg.accounts` (`facet`, `uid`, `game_data_dir`, `properties`) VALUES (?, ?, ?, ?) RETURNING *;",
@@ -207,14 +313,14 @@ mod tests {
   use serde_json::{from_str as from_json, to_string as to_json, Number, Value};
   use time::macros::datetime;
 
-  use super::{Account, AccountFacet};
+  use super::{Account, AccountFacet, AccountUid};
 
   #[test]
   fn test_serialize() {
     let mut account = Account {
       id: 1,
       facet: AccountFacet::GenshinImpact,
-      uid: 100_000_001,
+      uid: AccountUid::from(100_000_001),
       game_data_dir: "empty".into(),
       gacha_url: None,
       gacha_url_updated_at: None,

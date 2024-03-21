@@ -1,8 +1,8 @@
 import React from 'react'
 import { Button, Subtitle2, Tooltip, makeStyles, shorthands, tokens } from '@fluentui/react-components'
 import { PeopleAddRegular, PeopleListRegular } from '@fluentui/react-icons'
+import useAccountFacet from '@/components/AccountFacet/useAccountFacet'
 import AddOrEditDialog from '@/components/Accounts/FacetView/AddOrEditDialog'
-import useAccountsFacetView from '@/components/Accounts/FacetView/useAccountsFacetView'
 import Locale from '@/components/Core/Locale'
 
 const useStyles = makeStyles({
@@ -41,7 +41,7 @@ const useStyles = makeStyles({
 })
 
 export default function AccountsFacetViewToolbar () {
-  const { keyOfFacets } = useAccountsFacetView()
+  const { keyOfFacets } = useAccountFacet()
   const classes = useStyles()
   return (
     <div className={classes.root}>

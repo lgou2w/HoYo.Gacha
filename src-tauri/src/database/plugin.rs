@@ -72,7 +72,8 @@ mod handler {
 
   use super::DatabasePluginState;
   use crate::database::{
-    Account, AccountFacet, AccountProperties, AccountQuestioner, GachaRecord, GachaRecordQuestioner,
+    Account, AccountFacet, AccountProperties, AccountQuestioner, AccountUid, GachaRecord,
+    GachaRecordQuestioner,
   };
 
   generate_handlers!(AccountQuestioner, {
@@ -88,12 +89,12 @@ mod handler {
 
     find_account_by_facet_and_uid {
       facet: AccountFacet,
-      uid: u32
+      uid: AccountUid
     } find_one_by_facet_and_uid and fetch_optional => Option<Account>,
 
     create_account {
       facet: AccountFacet,
-      uid: u32,
+      uid: AccountUid,
       game_data_dir: String,
       properties: Option<AccountProperties>
     } create_one and fetch_one => Account,

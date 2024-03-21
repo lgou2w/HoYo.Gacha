@@ -9,12 +9,11 @@ export default function Accounts () {
     <Fragment>
       <Locale component={Subtitle1} as="h5" mapping={['components.accounts.title']} />
       {Object.entries(AccountFacets).map(([key, value]) => (
-        <Fragment key={key}>
-          <AccountsFacetView
-            keyOfFacets={key as keyof typeof AccountFacets}
-            facet={value}
-          />
-        </Fragment>
+        <AccountsFacetView
+          key={key}
+          keyOfFacets={key as keyof typeof AccountFacets}
+          facet={value}
+        />
       ))}
     </Fragment>
   )

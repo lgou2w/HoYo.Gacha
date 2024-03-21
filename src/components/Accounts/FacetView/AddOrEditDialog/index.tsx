@@ -1,7 +1,7 @@
 import React, { ComponentProps, ReactElement, useState } from 'react'
 import { Dialog, DialogBody, DialogContent, DialogSurface, DialogTitle, DialogTrigger } from '@fluentui/react-components'
+import useAccountFacet from '@/components/AccountFacet/useAccountFacet'
 import AddOrEditForm from '@/components/Accounts/FacetView/AddOrEditForm'
-import useAccountsFacetView from '@/components/Accounts/FacetView/useAccountsFacetView'
 import Locale from '@/components/Core/Locale'
 
 interface Props {
@@ -11,7 +11,7 @@ interface Props {
 
 export default function AddOrEditDialog (props: Props) {
   const { edit, trigger } = props
-  const { keyOfFacets } = useAccountsFacetView()
+  const { keyOfFacets } = useAccountFacet()
   const [open, setOpen] = useState(false)
   return (
     <Dialog

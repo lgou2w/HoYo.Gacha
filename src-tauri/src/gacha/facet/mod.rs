@@ -26,7 +26,7 @@ use tracing::{info, warn};
 use url::Url;
 
 use crate::constants;
-use crate::database::{AccountFacet, GachaRecord, GachaRecordRankType};
+use crate::database::{AccountFacet, AccountUid, GachaRecord, GachaRecordRankType};
 use crate::diskcache::{BlockFile, IndexFile};
 use crate::gacha::dict::embedded as GachaDictionaryEmbedded;
 use crate::utilities::paths::{cognosphere_dir, mihoyo_dir};
@@ -659,7 +659,7 @@ pub trait GachaRecordsFetcher: FacetDeclare + Send + Sync {
       records.push(GachaRecord {
         id: value.id,
         facet: *facet,
-        uid: value.uid,
+        uid: AccountUid::from(value.uid),
         gacha_type: value.gacha_type,
         gacha_id: value.gacha_id,
         rank_type: GachaRecordRankType::try_from(value.rank_type).unwrap(), // FIXME: SAFETY?

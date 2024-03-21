@@ -9,7 +9,7 @@ import { Account, UidRegex, isCorrectUid, isOverseaServer } from '@/api/interfac
 import { DataDirectory } from '@/api/interfaces/gacha-facet'
 import { GachaFacetPlugin, isDatabaseError, isGachaFacetError, stringifyGachaFacetErrorKind } from '@/api/plugins'
 import { useAccountsQuery, useCreateAccountMutation, useUpdateAccountGameDataDirAndPropertiesMutation } from '@/api/queries/account'
-import useAccountsFacetView from '@/components/Accounts/FacetView/useAccountsFacetView'
+import useAccountFacet from '@/components/AccountFacet/useAccountFacet'
 import Locale from '@/components/Core/Locale'
 import useToaster from '@/components/Core/Toaster/useToaster'
 import { IdentifierRegular } from '@/components/Utilities/Icons'
@@ -68,7 +68,7 @@ interface Props {
 
 export default function AddOrEditForm (props: Props) {
   const { edit, onCancel, onSuccess } = props
-  const { keyOfFacets, facet } = useAccountsFacetView()
+  const { keyOfFacets, facet } = useAccountFacet()
   const { data: accounts } = useAccountsQuery()
   const { notifyLocale } = useToaster()
   const { t } = useTranslation()
@@ -89,7 +89,7 @@ export default function AddOrEditForm (props: Props) {
       gameDataDir: ''
     },
     values: {
-      uid: edit?.uid.toString() || '',
+      uid: edit?.uid?.toString() || '',
       displayName: edit?.properties?.displayName || '',
       gameDataDir: edit?.gameDataDir || ''
     }
@@ -326,7 +326,11 @@ export default function AddOrEditForm (props: Props) {
           mapping={['components.accounts.facetView.addOrEditForm.submitBtn']}
           appearance="primary"
           type="submit"
-          disabled={!isDirty || !isValid || isSubmitting}
+          disabled={
+            isEditMode
+              ? !isDirty || !isValid || isSubmitting
+              : !isValid || isSubmitting
+          }
         />
       </div>
     </form>

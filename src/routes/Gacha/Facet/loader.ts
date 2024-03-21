@@ -1,29 +1,19 @@
-import { AccountFacet, AccountFacets } from '@/api/interfaces/account'
+import { AccountFacets } from '@/api/interfaces/account'
 import { DeferredData, QueryLoaderFunction, defer } from '@/api/store'
+import { AccountFacetContextState } from '@/components/AccountFacet/Context'
 
-const loader: QueryLoaderFunction<DeferredData<{
-  facet: AccountFacet
-  records: Promise<string[]>
-}>> = () => (args) => {
-  const keyOfAccountFacets = args.params.facet as keyof typeof AccountFacets | undefined
-  const facet = keyOfAccountFacets && AccountFacets[keyOfAccountFacets]
+const loader: QueryLoaderFunction<DeferredData<AccountFacetContextState>> = () => (args) => {
+  const keyOfFacets = args.params.facet as keyof typeof AccountFacets | undefined
+  const facet = keyOfFacets && AccountFacets[keyOfFacets]
 
   // HACK: Can't use `!facet` because zero is also the correct value.
-  if (facet === null || typeof facet === 'undefined') {
-    throw new Error(`Unknown account facets key: ${keyOfAccountFacets}`)
+  if (!keyOfFacets || facet === null || typeof facet === 'undefined') {
+    throw new Error(`Unknown account facets key: ${keyOfFacets}`)
   }
 
-  // load gacha records
-
-  // etc..
-
   return defer({
-    facet,
-    records: new Promise((resolve) => {
-      setTimeout(() => {
-        resolve(['a', 'b'])
-      }, 0)
-    })
+    keyOfFacets,
+    facet
   })
 }
 

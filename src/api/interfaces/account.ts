@@ -10,6 +10,12 @@ export const AccountFacets = {
 
 export type AccountFacet = typeof AccountFacets[keyof typeof AccountFacets]
 
+export const ReversedAccountFacets: Readonly<Record<AccountFacet, keyof typeof AccountFacets>> =
+  Object.entries(AccountFacets).reduce((acc, [key, value]) => {
+    acc[value] = key as keyof typeof AccountFacets
+    return acc
+  }, {} as Record<AccountFacet, keyof typeof AccountFacets>)
+
 export interface KnownAccountProperties {
   displayName: string | null
 }

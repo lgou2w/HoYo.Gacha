@@ -1,9 +1,8 @@
 import React from 'react'
 import { Button, Divider, Text, Tooltip, makeStyles, shorthands, tokens } from '@fluentui/react-components'
 import { PeopleEditRegular, ServerRegular } from '@fluentui/react-icons'
-import { Account, AccountServer, detectServer } from '@/api/interfaces/account'
+import { Account, AccountServer, ReversedAccountFacets, detectServer } from '@/api/interfaces/account'
 import AddOrEditDialog from '@/components/Accounts/FacetView/AddOrEditDialog'
-import useAccountsFacetView from '@/components/Accounts/FacetView/useAccountsFacetView'
 import PlayerAvatar from '@/components/Accounts/PlayerAvatar'
 import Locale from '@/components/Core/Locale'
 
@@ -70,8 +69,6 @@ interface Props {
 
 export default function AccountsFacetViewListItem (props: Props) {
   const { account } = props
-  const { keyOfFacets } = useAccountsFacetView()
-
   const classes = useStyles()
   return (
     <div className={classes.root}>
@@ -95,7 +92,7 @@ export default function AccountsFacetViewListItem (props: Props) {
             truncate
             mapping={(t) => {
               return account.properties?.displayName as string ||
-                t(`common.facet.${keyOfFacets}.player`)
+                t(`common.facet.${ReversedAccountFacets[account.facet]}.player`)
             }}
           />
           <Text className="uid" as="p" font="numeric" size={200} weight="semibold">
@@ -127,7 +124,7 @@ export default function AccountsFacetViewListItem (props: Props) {
             mapping={[
               'components.accounts.facetView.listItem.server',
               {
-                facet: keyOfFacets,
+                facet: ReversedAccountFacets[account.facet],
                 path: AccountServerLocaleKeyMappings[detectServer(account.uid)]
               }
             ]}

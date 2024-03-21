@@ -14,7 +14,7 @@ use time::{OffsetDateTime, UtcOffset};
 
 use super::{GachaConverter, GachaRecordsReader, GachaRecordsWriter};
 use crate::constants;
-use crate::database::{AccountFacet, GachaRecord, GachaRecordRankType};
+use crate::database::{AccountFacet, AccountUid, GachaRecord, GachaRecordRankType};
 use crate::gacha::dict::embedded as GachaDictionaryEmbedded;
 
 // UIGF for Genshin Impact
@@ -151,6 +151,9 @@ pub static UIGF_GACHA_TYPE_MAPPINGS: Lazy<HashMap<u32, &str>> = Lazy::new(|| {
 pub enum UIGFGachaConverterError {
   #[error("Incompatible facet exists for records: {0:?}")]
   IncompatibleFacet(AccountFacet),
+
+  #[error("Inconsistent with expected uid. (Expected: {expected}, Actual: {actual})")]
+  InconsistentUid { expected: String, actual: String },
 
   #[error("Error while parsing field '{field}' as integer: {inner}")]
   FieldParseInt {
@@ -340,7 +343,7 @@ impl GachaConverter for UIGFGachaConverter {
       records.push(GachaRecord {
         id: provide.id,
         facet: *Self::TARGET_FACET,
-        uid,
+        uid: AccountUid::from(uid),
         gacha_type,
         gacha_id: None,
         rank_type,
@@ -379,8 +382,8 @@ impl UIGFGachaRecordsWriter {
     }
   }
 
-  pub fn pretty(&mut self) -> &mut Self {
-    self.pretty = true;
+  pub fn pretty(&mut self, pretty: bool) -> &mut Self {
+    self.pretty = pretty;
     self
   }
 
@@ -406,7 +409,7 @@ impl UIGFGachaRecordsWriter {
 }
 
 impl GachaRecordsWriter for UIGFGachaRecordsWriter {
-  type Error = UIGFGachaConverterError;
+  type Error = <UIGFGachaConverter as GachaConverter>::Error;
 
   fn write<'a>(
     &'a mut self,
@@ -444,12 +447,23 @@ impl UIGFGachaRecordsReader {
 impl GachaRecordsReader for UIGFGachaRecordsReader {
   type Error = <UIGFGachaConverter as GachaConverter>::Error;
 
-  fn read<'a>(
+  fn read_with_validation<'a>(
     &'a mut self,
     input: impl Read + Send + Sync + 'a,
+    expected_uid: Option<String>,
   ) -> BoxFuture<'a, Result<Vec<GachaRecord>, Self::Error>> {
     async move {
       let uigf = UIGF::from_json(input)?;
+
+      // Validation
+      if let Some(uid) = expected_uid {
+        if uid != uigf.info.uid {
+          return Err(UIGFGachaConverterError::InconsistentUid {
+            expected: uid,
+            actual: uigf.info.uid,
+          });
+        }
+      }
 
       // Modify the uid and lang values in this converter
       let converter = &mut self.converter;
@@ -476,7 +490,7 @@ mod tests {
     GachaRecordsReader, GachaRecordsWriter, UIGFGachaConverterError, UIGFGachaRecordsReader,
     UIGFGachaRecordsWriter, UIGFVersion, UIGF,
   };
-  use crate::database::{AccountFacet, GachaRecord, GachaRecordRankType};
+  use crate::database::{AccountFacet, AccountUid, GachaRecord, GachaRecordRankType};
 
   #[tokio::test]
   async fn test_writer() -> Result<(), UIGFGachaConverterError> {
@@ -485,7 +499,7 @@ mod tests {
     let record = GachaRecord {
       id: "1675850760000000000".into(),
       facet: AccountFacet::GenshinImpact,
-      uid,
+      uid: AccountUid::from(uid),
       gacha_type: 400,
       gacha_id: None,
       rank_type: GachaRecordRankType::Blue,

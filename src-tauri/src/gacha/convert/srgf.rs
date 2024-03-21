@@ -9,7 +9,7 @@ use time::{OffsetDateTime, UtcOffset};
 
 use super::{GachaConverter, GachaRecordsReader, GachaRecordsWriter};
 use crate::constants;
-use crate::database::{AccountFacet, GachaRecord, GachaRecordRankType};
+use crate::database::{AccountFacet, AccountUid, GachaRecord, GachaRecordRankType};
 use crate::gacha::dict::embedded as GachaDictionaryEmbedded;
 
 // SRGF for Honkai: Star Rail
@@ -68,6 +68,9 @@ impl SRGF {
 pub enum SRGFGachaConverterError {
   #[error("Incompatible facet exists for records: {0:?}")]
   IncompatibleFacet(AccountFacet),
+
+  #[error("Inconsistent with expected uid. (Expected: {expected}, Actual: {actual})")]
+  InconsistentUid { expected: String, actual: String },
 
   #[error("Error while parsing field '{field}' as integer: {inner}")]
   FieldParseInt {
@@ -222,7 +225,7 @@ impl GachaConverter for SRGFGachaConverter {
       records.push(GachaRecord {
         id: provide.id,
         facet: *Self::TARGET_FACET,
-        uid,
+        uid: AccountUid::from(uid),
         gacha_type,
         gacha_id: Some(gacha_id),
         rank_type,
@@ -260,8 +263,8 @@ impl SRGFGachaRecordsWriter {
     }
   }
 
-  pub fn pretty(&mut self) -> &mut Self {
-    self.pretty = true;
+  pub fn pretty(&mut self, pretty: bool) -> &mut Self {
+    self.pretty = pretty;
     self
   }
 
@@ -323,12 +326,23 @@ impl SRGFGachaRecordsReader {
 impl GachaRecordsReader for SRGFGachaRecordsReader {
   type Error = <SRGFGachaConverter as GachaConverter>::Error;
 
-  fn read<'a>(
+  fn read_with_validation<'a>(
     &'a mut self,
     input: impl Read + Send + Sync + 'a,
+    expected_uid: Option<String>,
   ) -> BoxFuture<'a, Result<Vec<GachaRecord>, Self::Error>> {
     async move {
       let srgf = SRGF::from_json(input)?;
+
+      // Validation
+      if let Some(uid) = expected_uid {
+        if uid != srgf.info.uid {
+          return Err(SRGFGachaConverterError::InconsistentUid {
+            expected: uid,
+            actual: srgf.info.uid,
+          });
+        }
+      }
 
       // Modify the uid and lang values in this converter
       let converter = &mut self.converter;
@@ -352,7 +366,7 @@ mod tests {
     GachaRecordsReader, GachaRecordsWriter, SRGFGachaConverterError, SRGFGachaRecordsReader,
     SRGFGachaRecordsWriter, SRGF,
   };
-  use crate::database::{AccountFacet, GachaRecord, GachaRecordRankType};
+  use crate::database::{AccountFacet, AccountUid, GachaRecord, GachaRecordRankType};
 
   #[tokio::test]
   async fn test_writer() -> Result<(), SRGFGachaConverterError> {
@@ -361,7 +375,7 @@ mod tests {
     let record = GachaRecord {
       id: "1683774600000000000".into(),
       facet: AccountFacet::HonkaiStarRail,
-      uid,
+      uid: AccountUid::from(uid),
       gacha_type: 1,
       gacha_id: Some(1001),
       rank_type: GachaRecordRankType::Blue,

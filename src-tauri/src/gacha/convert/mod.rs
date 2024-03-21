@@ -5,8 +5,11 @@ use futures_util::future::BoxFuture;
 
 use crate::database::GachaRecord;
 
+mod plugin;
 pub mod srgf;
 pub mod uigf;
+
+pub use plugin::*;
 
 pub trait GachaConverter {
   type Error: Debug + Send + Sync;
@@ -42,5 +45,13 @@ pub trait GachaRecordsReader {
   fn read<'a>(
     &'a mut self,
     input: impl Read + Send + Sync + 'a,
+  ) -> BoxFuture<'a, Result<Vec<GachaRecord>, Self::Error>> {
+    self.read_with_validation(input, None)
+  }
+
+  fn read_with_validation<'a>(
+    &'a mut self,
+    input: impl Read + Send + Sync + 'a,
+    expected_uid: Option<String>,
   ) -> BoxFuture<'a, Result<Vec<GachaRecord>, Self::Error>>;
 }

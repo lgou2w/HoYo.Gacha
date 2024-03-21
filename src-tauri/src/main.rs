@@ -27,6 +27,7 @@ mod gacha;
 mod utilities;
 
 use crate::database::{Database, DatabasePluginBuilder};
+use crate::gacha::convert::GachaConvertPluginBuilder;
 use crate::gacha::facet::GachaFacetPluginBuilder;
 use crate::utilities::paths::appdata_roaming;
 
@@ -148,6 +149,7 @@ async fn start(database: Arc<Database>) {
   let mut app = TauriBuilder::default()
     .plugin(DatabasePluginBuilder::new(database).build())
     .plugin(GachaFacetPluginBuilder::new().build())
+    .plugin(GachaConvertPluginBuilder::new().build())
     .setup(|app| {
       let window = WindowBuilder::new(app, "main", WindowUrl::App("index.html".into()))
         .center()
