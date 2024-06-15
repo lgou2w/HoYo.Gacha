@@ -14,28 +14,28 @@ publish = false
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [build-dependencies]
-tauri-build = { version = "1.5.1", features = [] }
+tauri-build = { version = "1.5.2", features = [] }
 
 [dependencies]
-async-trait = "0.1.78"
+async-trait = "0.1.80"
 exponential-backoff = "1.2.0"
 futures-util = "0.3.30"
-human-panic = "1.2.3"
+human-panic = "2.0.0"
 num_enum = "0.7.2"
 once_cell = "1.19.0"
-paste = "1.0.14"
-regex = "1.10.3"
-reqwest = { version = "0.12.0", features = ["json"] }
-serde = { version = "1.0.197", features = ["derive"] }
-serde_json = { version = "1.0.114", features = ["preserve_order"] }
-serde_repr = "0.1.18"
-thiserror = "1.0.58"
-time = { version = "0.3.34", features = ["formatting", "local-offset", "macros", "serde", "serde-human-readable"] }
-tokio = { version = "1.36.0", features = ["macros", "rt", "rt-multi-thread"] }
+paste = "1.0.15"
+regex = "1.10.5"
+reqwest = { version = "0.12.4", features = ["json"] }
+serde = { version = "1.0.203", features = ["derive"] }
+serde_json = { version = "1.0.117", features = ["preserve_order"] }
+serde_repr = "0.1.19"
+thiserror = "1.0.61"
+time = { version = "0.3.36", features = ["formatting", "local-offset", "macros", "serde", "serde-human-readable"] }
+tokio = { version = "1.38.0", features = ["macros", "rt", "rt-multi-thread"] }
 tracing = "0.1.40"
 tracing-appender = "0.2.3"
 tracing-subscriber = { version = "0.3.18", features = ["env-filter", "local-time"] }
-url = "2.5.0"
+url = "2.5.1"
 
 [dependencies.sqlx]
 version = "0.7.4"
@@ -48,7 +48,7 @@ features = [
 ]
 
 [dependencies.tauri]
-version = "1.6.1"
+version = "1.6.8"
 features = [
   "devtools",
   "dialog-all",
@@ -63,10 +63,10 @@ features = [
 
 [target.'cfg(windows)'.dependencies]
 raw-window-handle = "0.5.2"
-windows-version = "0.1.0"
+windows-version = "0.1.1"
 
 [target.'cfg(windows)'.dependencies.windows]
-version = "0.54.0"
+version = "0.57.0"
 features = [
   "Win32_Foundation",
   "Win32_Graphics",
