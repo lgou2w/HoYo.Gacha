@@ -134,7 +134,7 @@ pub trait GachaRecordFetcherChannel<T: GachaRecord + Sized + Serialize + Send + 
 
       if let Some(gacha_records) = gacha_records {
         if !gacha_records.is_empty() {
-          end_id = gacha_records.last().unwrap().id().to_owned();
+          gacha_records.last().unwrap().id().clone_into(&mut end_id);
 
           let mut should_break = false;
           let data = if let Some(last) = last_end_id {
