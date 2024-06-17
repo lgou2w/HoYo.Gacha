@@ -37,7 +37,7 @@ export default function GachaActionFetch () {
     try {
       const { namedValues: { character, weapon, permanent, newbie, anthology } } = gachaRecords
       const pullNewbie = shouldPullNewbie(facet, newbie)
-      await pull(facet, uid, {
+      const fragments = await pull(facet, uid, {
         gachaUrl,
         gachaTypeAndLastEndIdMappings: {
           [character.gachaType]: character.lastEndId ?? null,
@@ -54,7 +54,16 @@ export default function GachaActionFetch () {
         lastGachaUpdated: new Date().toISOString()
       })
       await refetchGachaRecords(facet, uid)
-      alert(null, '记录更新成功！')
+
+      const total = fragments
+        .reduce((acc, curr) => {
+          if (typeof curr === 'object' && 'data' in curr) {
+            acc += curr.data.length
+          }
+          return acc
+        }, 0)
+
+      alert(null, `记录更新成功！新增 ${total} 条数据。`)
     } catch (e) {
       // TODO: optimize error handling
       const isTimeoutdGachaUrlError = e && (e instanceof Error || typeof e === 'object')

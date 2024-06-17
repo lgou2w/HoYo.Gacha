@@ -7,7 +7,7 @@
   },
   "package": {
     "productName": "HoYo_Gacha",
-    "version": "0.3.9"
+    "version": "0.3.10"
   },
   "tauri": {
     "allowlist": {
@@ -67,7 +67,9 @@
         "resizable": true,
         "center": true,
         "title": "HoYo.Gacha",
-        "width": 1152
+        "width": 1152,
+        "minHeight": 864,
+        "minWidth": 1152
       }
     ]
   }

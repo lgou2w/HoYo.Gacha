@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use std::io::{Read, Write};
 use time::OffsetDateTime;
 
-// See: https://uigf.org/zh/standards/SRGF.html
+// See: https://uigf.org/zh/standards/srgf.html
 
 const SRGF_VERSION: &str = "v1.0";
 

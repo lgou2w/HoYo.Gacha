@@ -12,11 +12,9 @@ type Fragment =
   'finished'
 
 export default function useGachaRecordsFetcher () {
-  const [{ fragments, current }, produceState] = useImmer<{
-    fragments: Fragment[]
+  const [{ current }, produceState] = useImmer<{
     current: 'idle' | Fragment
   }>({
-    fragments: [],
     current: 'idle'
   })
 
@@ -25,15 +23,15 @@ export default function useGachaRecordsFetcher () {
   ) => {
     // reset state
     produceState((draft) => {
-      draft.fragments = []
       draft.current = 'idle'
     })
 
+    const fragments: Fragment[] = []
     const [,, { eventChannel }] = args
     try {
       const unlisten = await event.listen<Fragment>(eventChannel, ({ payload }) => {
         produceState((draft) => {
-          draft.fragments.push(payload)
+          fragments.push(payload)
           draft.current = payload
         })
       })
@@ -43,13 +41,13 @@ export default function useGachaRecordsFetcher () {
       } finally {
         unlisten()
       }
+      return fragments
     } catch (error) {
       return Promise.reject(error)
     }
   }, [produceState])
 
   return {
-    fragments,
     currentFragment: current,
     pull
   }

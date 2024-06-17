@@ -91,14 +91,14 @@ export default function Index () {
           </li>
           <li>
             {'实现 '}
-            <MuiLink href="https://uigf.org/zh/standards/UIGF.html" target="_blank" underline="hover">
+            <MuiLink href="https://uigf.org/zh/standards/uigf.html" target="_blank" underline="hover">
               <code>UIGF</code>
             </MuiLink>
             {' 统一可交换祈愿记录标准。'}
           </li>
           <li>
             {'实现 '}
-            <MuiLink href="https://uigf.org/zh/standards/SRGF.html" target="_blank" underline="hover">
+            <MuiLink href="https://uigf.org/zh/standards/srgf.html" target="_blank" underline="hover">
               <code>SRGF</code>
             </MuiLink>
             {' 星穹铁道抽卡记录标准'}
