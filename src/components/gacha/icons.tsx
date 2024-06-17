@@ -109,6 +109,8 @@ import StarRailCharacter1306 from '@/assets/images/starrail/character/1306.png'
 import StarRailCharacter1307 from '@/assets/images/starrail/character/1307.png'
 import StarRailCharacter1308 from '@/assets/images/starrail/character/1308.png'
 import StarRailCharacter1309 from '@/assets/images/starrail/character/1309.png'
+import StarRailCharacter1310 from '@/assets/images/starrail/character/1310.png'
+import StarRailCharacter1314 from '@/assets/images/starrail/character/1314.png'
 import StarRailCharacter1315 from '@/assets/images/starrail/character/1315.png'
 import StarRailWeapon23000 from '@/assets/images/starrail/weapon/23000.png'
 import StarRailWeapon23001 from '@/assets/images/starrail/weapon/23001.png'
@@ -135,8 +137,10 @@ import StarRailWeapon23021 from '@/assets/images/starrail/weapon/23021.png'
 import StarRailWeapon23022 from '@/assets/images/starrail/weapon/23022.png'
 import StarRailWeapon23023 from '@/assets/images/starrail/weapon/23023.png'
 import StarRailWeapon23024 from '@/assets/images/starrail/weapon/23024.png'
+import StarRailWeapon23025 from '@/assets/images/starrail/weapon/23025.png'
 import StarRailWeapon23026 from '@/assets/images/starrail/weapon/23026.png'
 import StarRailWeapon23027 from '@/assets/images/starrail/weapon/23027.png'
+import StarRailWeapon23028 from '@/assets/images/starrail/weapon/23028.png'
 
 // HACK: These static resources only contain five-star!
 
@@ -260,6 +264,8 @@ const StarRail = {
     1307: [1307, StarRailCharacter1307],
     1308: [1308, StarRailCharacter1308],
     1309: [1309, StarRailCharacter1309],
+    1310: [1310, StarRailCharacter1310],
+    1314: [1314, StarRailCharacter1314],
     1315: [1315, StarRailCharacter1315]
   },
   weapon: {
@@ -288,8 +294,10 @@ const StarRail = {
     23022: [23022, StarRailWeapon23022],
     23023: [23023, StarRailWeapon23023],
     23024: [23024, StarRailWeapon23024],
+    23025: [23025, StarRailWeapon23025],
     23026: [23026, StarRailWeapon23026],
-    23027: [23027, StarRailWeapon23027]
+    23027: [23027, StarRailWeapon23027],
+    23028: [23028, StarRailWeapon23028]
   }
 } as const
 
