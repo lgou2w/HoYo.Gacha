@@ -8,7 +8,7 @@ use std::io::{Read, Write};
 use time::format_description;
 use time::OffsetDateTime;
 
-// See: https://uigf.org/zh/standards/UIGF.html
+// See: https://uigf.org/zh/standards/uigf.html
 
 const UIGF_VERSION: &str = "v2.2";
 
