@@ -37,7 +37,9 @@ import GenshinCharacter10000089 from '@/assets/images/genshin/character/10000089
 import GenshinCharacter10000091 from '@/assets/images/genshin/character/10000091.png'
 import GenshinCharacter10000093 from '@/assets/images/genshin/character/10000093.png'
 import GenshinCharacter10000094 from '@/assets/images/genshin/character/10000094.png'
+import GenshinCharacter10000095 from '@/assets/images/genshin/character/10000095.png'
 import GenshinCharacter10000096 from '@/assets/images/genshin/character/10000096.png'
+import GenshinCharacter10000098 from '@/assets/images/genshin/character/10000098.png'
 import GenshinWeapon11501 from '@/assets/images/genshin/weapon/11501.png'
 import GenshinWeapon11502 from '@/assets/images/genshin/weapon/11502.png'
 import GenshinWeapon11503 from '@/assets/images/genshin/weapon/11503.png'
@@ -49,6 +51,7 @@ import GenshinWeapon11511 from '@/assets/images/genshin/weapon/11511.png'
 import GenshinWeapon11512 from '@/assets/images/genshin/weapon/11512.png'
 import GenshinWeapon11513 from '@/assets/images/genshin/weapon/11513.png'
 import GenshinWeapon11514 from '@/assets/images/genshin/weapon/11514.png'
+import GenshinWeapon11515 from '@/assets/images/genshin/weapon/11515.png'
 import GenshinWeapon12501 from '@/assets/images/genshin/weapon/12501.png'
 import GenshinWeapon12502 from '@/assets/images/genshin/weapon/12502.png'
 import GenshinWeapon12503 from '@/assets/images/genshin/weapon/12503.png'
@@ -83,6 +86,7 @@ import GenshinWeapon15508 from '@/assets/images/genshin/weapon/15508.png'
 import GenshinWeapon15509 from '@/assets/images/genshin/weapon/15509.png'
 import GenshinWeapon15511 from '@/assets/images/genshin/weapon/15511.png'
 import GenshinWeapon15512 from '@/assets/images/genshin/weapon/15512.png'
+import GenshinWeapon15513 from '@/assets/images/genshin/weapon/15513.png'
 import StarRailCharacter1003 from '@/assets/images/starrail/character/1003.png'
 import StarRailCharacter1004 from '@/assets/images/starrail/character/1004.png'
 import StarRailCharacter1005 from '@/assets/images/starrail/character/1005.png'
@@ -185,7 +189,9 @@ const Genshin = {
     娜维娅: [10000091, GenshinCharacter10000091],
     闲云: [10000093, GenshinCharacter10000093],
     千织: [10000094, GenshinCharacter10000094],
-    阿蕾奇诺: [10000096, GenshinCharacter10000096]
+    希格雯: [10000095, GenshinCharacter10000095],
+    阿蕾奇诺: [10000096, GenshinCharacter10000096],
+    克洛琳德: [10000098, GenshinCharacter10000098]
   },
   weapon: {
     风鹰剑: [11501, GenshinWeapon11501],
@@ -199,6 +205,7 @@ const Genshin = {
     裁叶萃光: [11512, GenshinWeapon11512],
     静水流涌之辉: [11513, GenshinWeapon11513],
     有乐御簾切: [11514, GenshinWeapon11514],
+    赦罪: [11515, GenshinWeapon11515],
     天空之傲: [12501, GenshinWeapon12501],
     狼的末路: [12502, GenshinWeapon12502],
     松籁响起之时: [12503, GenshinWeapon12503],
@@ -232,7 +239,8 @@ const Genshin = {
     若水: [15508, GenshinWeapon15508],
     飞雷之弦振: [15509, GenshinWeapon15509],
     猎人之径: [15511, GenshinWeapon15511],
-    最初的大魔术: [15512, GenshinWeapon15512]
+    最初的大魔术: [15512, GenshinWeapon15512],
+    白雨心弦: [15513, GenshinWeapon15513]
   }
 } as const
 
