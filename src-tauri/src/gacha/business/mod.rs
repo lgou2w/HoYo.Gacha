@@ -846,7 +846,7 @@ impl Deref for GachaBusiness {
   }
 }
 
-static GACHA_BUSINESS: Lazy<HashMap<&AccountBusiness, GachaBusiness>> = Lazy::new(|| {
+static GACHA_BUSINESSES: Lazy<HashMap<&AccountBusiness, GachaBusiness>> = Lazy::new(|| {
   let mut m = HashMap::with_capacity(2);
   m.insert(
     &AccountBusiness::GenshinImpact,
@@ -861,8 +861,8 @@ static GACHA_BUSINESS: Lazy<HashMap<&AccountBusiness, GachaBusiness>> = Lazy::ne
 
 impl GachaBusiness {
   fn ref_by(business: &AccountBusiness) -> &'static Self {
-    // `unwrap` Make sure there is a corresponding mapping for `GACHA_BUSINESS`.
-    GACHA_BUSINESS.get(business).unwrap()
+    // `unwrap` Make sure there is a corresponding mapping for `GACHA_BUSINESSES`.
+    GACHA_BUSINESSES.get(business).unwrap()
   }
 }
 
