@@ -26,7 +26,30 @@ pub enum GachaRecordRank {
   Orange = 5,
 }
 
-// Known data structures
+// HACK: Known gacha record data structures.
+//
+//              | Genshin Impact                    | Honkai: Star Rail                     |
+// |------------|-----------------------------------|---------------------------------------|
+// | id         | 1675850760000000000               | <-                                    |
+// | business   | 0                                 | 1                                     |
+// | uid        | 100000001                         | <-                                    |
+// | gacha_type | 100, 200, 301, 400, 302, 500      | 1, 2, 11, 12                          |
+// | gacha_id   | Null                              | Some                                  |
+// | rank_type  | 3, 4, 5                           | <-                                    |
+// | count      | 1                                 | <-                                    |
+// | lang       | zh-cn, en-us                      | <-                                    |
+// | time       | 2023-01-01 00:00:00               | <-                                    |
+// | name       | Some                              | <-                                    |
+// | item_type  | [角色 | 武器], [Character, Weapon] | [角色 | 光锥], [Character, Light Cone] |
+// | item_id    | Empty                             | Some                                  |
+// |------------|------------------------------     |---------------------------------------|
+//
+// Note:
+//   `<-`    : Same as the left side.
+//   `Null`  : This field does not exist.
+//   `Some`  : Have values and are different.
+//   `Empty` : Is the empty string.
+//
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
