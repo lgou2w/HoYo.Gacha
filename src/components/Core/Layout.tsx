@@ -15,7 +15,7 @@ const useStyles = makeStyles({
     display: 'block',
     width: 'inherit',
     height: `calc(100vh - ${TitleBarHeight})`,
-    ...shorthands.overflow('hidden', 'auto')
+    overflow: 'hidden auto'
   },
   main: {
     display: 'flex',

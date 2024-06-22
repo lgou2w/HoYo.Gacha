@@ -3,7 +3,7 @@ use std::io::{Read, Write};
 
 use futures_util::future::BoxFuture;
 
-use crate::database::GachaRecord;
+use crate::models::GachaRecord;
 
 mod plugin;
 pub mod srgf;
@@ -42,6 +42,7 @@ pub trait GachaRecordsWriter {
 pub trait GachaRecordsReader {
   type Error: Debug + Send + Sync;
 
+  #[allow(dead_code)]
   fn read<'a>(
     &'a mut self,
     input: impl Read + Send + Sync + 'a,

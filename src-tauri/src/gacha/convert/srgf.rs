@@ -9,8 +9,8 @@ use time::{OffsetDateTime, UtcOffset};
 
 use super::{GachaConverter, GachaRecordsReader, GachaRecordsWriter};
 use crate::constants;
-use crate::database::{AccountFacet, AccountUid, GachaRecord, GachaRecordRankType};
 use crate::gacha::dict::embedded as GachaDictionaryEmbedded;
+use crate::models::{AccountBusiness, AccountIdentifier, GachaRecord, GachaRecordRank};
 
 // SRGF for Honkai: Star Rail
 // See: https://uigf.org/zh/standards/SRGF.html
@@ -66,11 +66,14 @@ impl SRGF {
 
 #[derive(Debug, thiserror::Error)]
 pub enum SRGFGachaConverterError {
-  #[error("Incompatible facet exists for records: {0:?}")]
-  IncompatibleFacet(AccountFacet),
+  #[error("Incompatible business exists for records: {0:?}")]
+  IncompatibleBusiness(AccountBusiness),
 
   #[error("Inconsistent with expected uid. (Expected: {expected}, Actual: {actual})")]
   InconsistentUid { expected: String, actual: String },
+
+  #[error("{0}")]
+  IncorrectUid(String),
 
   #[error("Error while parsing field '{field}' as integer: {inner}")]
   FieldParseInt {
@@ -97,7 +100,7 @@ pub struct SRGFGachaConverter {
 }
 
 impl SRGFGachaConverter {
-  const TARGET_FACET: &'static AccountFacet = &AccountFacet::HonkaiStarRail;
+  const TARGET_BUSINESS: &'static AccountBusiness = &AccountBusiness::HonkaiStarRail;
 
   pub fn new(uid: String, lang: String) -> Self {
     Self { uid, lang }
@@ -116,8 +119,10 @@ impl GachaConverter for SRGFGachaConverter {
   ) -> Result<Self::Provided, Self::Error> {
     let mut provided = Vec::with_capacity(records.len());
     for record in records {
-      if record.facet != *Self::TARGET_FACET {
-        return Err(SRGFGachaConverterError::IncompatibleFacet(record.facet));
+      if record.business != *Self::TARGET_BUSINESS {
+        return Err(SRGFGachaConverterError::IncompatibleBusiness(
+          record.business,
+        ));
       }
 
       let gacha_id = record
@@ -150,7 +155,7 @@ impl GachaConverter for SRGFGachaConverter {
   ) -> Result<Vec<GachaRecord>, Self::Error> {
     let mut records = Vec::with_capacity(provided.len());
     for provide in provided {
-      let uid = provide
+      let uid: AccountIdentifier = provide
         .uid
         .as_deref()
         .unwrap_or(&self.uid)
@@ -158,7 +163,9 @@ impl GachaConverter for SRGFGachaConverter {
         .map_err(|inner| SRGFGachaConverterError::FieldParseInt {
           field: "uid",
           inner,
-        })?;
+        })?
+        .try_into()
+        .map_err(SRGFGachaConverterError::IncorrectUid)?;
 
       let gacha_type = provide.gacha_type.parse::<u32>().map_err(|inner| {
         SRGFGachaConverterError::FieldParseInt {
@@ -191,7 +198,7 @@ impl GachaConverter for SRGFGachaConverter {
       let item_type: String;
       let rank_type: u8;
       if provide.name.is_none() || provide.item_type.is_none() || provide.rank_type.is_none() {
-        let entry = GachaDictionaryEmbedded::id(Self::TARGET_FACET, &lang, &item_id).ok_or(
+        let entry = GachaDictionaryEmbedded::id(Self::TARGET_BUSINESS, &lang, &item_id).ok_or(
           SRGFGachaConverterError::MissingDictionary(format!("lang({lang}), item_id({item_id})")),
         )?;
         name = provide.name.unwrap_or(entry.item_name.to_string());
@@ -219,13 +226,13 @@ impl GachaConverter for SRGFGachaConverter {
         })?;
       }
 
-      let rank_type = GachaRecordRankType::try_from_primitive(rank_type)
+      let rank_type = GachaRecordRank::try_from_primitive(rank_type)
         .map_err(|_| SRGFGachaConverterError::InvalidRankType(rank_type))?;
 
       records.push(GachaRecord {
         id: provide.id,
-        facet: *Self::TARGET_FACET,
-        uid: AccountUid::from(uid),
+        business: *Self::TARGET_BUSINESS,
+        uid,
         gacha_type,
         gacha_id: Some(gacha_id),
         rank_type,
@@ -346,8 +353,8 @@ impl GachaRecordsReader for SRGFGachaRecordsReader {
 
       // Modify the uid and lang values in this converter
       let converter = &mut self.converter;
-      converter.uid = srgf.info.uid.clone();
-      converter.lang = srgf.info.lang.clone();
+      converter.uid.clone_from(&srgf.info.uid);
+      converter.lang.clone_from(&srgf.info.lang);
 
       let records = converter.deconvert(srgf.list, &srgf.info)?;
       Ok(records)
@@ -366,7 +373,7 @@ mod tests {
     GachaRecordsReader, GachaRecordsWriter, SRGFGachaConverterError, SRGFGachaRecordsReader,
     SRGFGachaRecordsWriter, SRGF,
   };
-  use crate::database::{AccountFacet, AccountUid, GachaRecord, GachaRecordRankType};
+  use crate::models::{AccountBusiness, AccountIdentifier, GachaRecord, GachaRecordRank};
 
   #[tokio::test]
   async fn test_writer() -> Result<(), SRGFGachaConverterError> {
@@ -374,11 +381,11 @@ mod tests {
     let lang = "zh-cn";
     let record = GachaRecord {
       id: "1683774600000000000".into(),
-      facet: AccountFacet::HonkaiStarRail,
-      uid: AccountUid::from(uid),
+      business: AccountBusiness::HonkaiStarRail,
+      uid: AccountIdentifier::try_from(uid).unwrap(),
       gacha_type: 1,
       gacha_id: Some(1001),
-      rank_type: GachaRecordRankType::Blue,
+      rank_type: GachaRecordRank::Blue,
       count: 1,
       time: "2023-01-01 00:00:00".into(),
       lang: lang.to_owned(),
@@ -464,11 +471,11 @@ mod tests {
     assert_eq!(records.len(), 1);
     let record = records.first().unwrap();
     assert_eq!(record.id, "1683774600000000000");
-    assert_eq!(record.facet, AccountFacet::HonkaiStarRail);
+    assert_eq!(record.business, AccountBusiness::HonkaiStarRail);
     assert_eq!(record.uid, 100_000_001);
     assert_eq!(record.gacha_type, 1);
     assert_eq!(record.gacha_id, Some(1003));
-    assert_eq!(record.rank_type, GachaRecordRankType::Blue);
+    assert_eq!(record.rank_type, GachaRecordRank::Blue);
     assert_eq!(record.count, 1);
     assert_eq!(record.time, "2023-01-01 00:00:00");
     assert_eq!(record.lang, "zh-cn");

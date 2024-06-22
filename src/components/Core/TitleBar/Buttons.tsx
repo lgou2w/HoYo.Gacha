@@ -39,9 +39,9 @@ function createButtonStyles ([hover, pressed]: [string, string]): GriffelStyle {
       backgroundColor: pressed
     },
     '> .fui-Button__icon': {
-      fontSize: '1.25rem',
-      width: '1.25rem',
-      height: '1.25rem'
+      fontSize: tokens.fontSizeBase500,
+      width: tokens.fontSizeBase500,
+      height: tokens.fontSizeBase500
     }
   }
 }

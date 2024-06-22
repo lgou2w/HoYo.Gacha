@@ -13,14 +13,14 @@ impl GachaConvertPluginBuilder {
   pub fn build(self) -> TauriPlugin<Wry> {
     TauriPluginBuilder::new(Self::PLUGIN_NAME)
       .invoke_handler(generate_handler![
-        handler::export_gacha_records,
-        handler::import_gacha_records
+        handlers::export_gacha_records,
+        handlers::import_gacha_records
       ])
       .build()
   }
 }
 
-mod handler {
+mod handlers {
   use std::fs::File;
 
   use serde::ser::SerializeStruct;
@@ -29,8 +29,7 @@ mod handler {
   use time::UtcOffset;
 
   use crate::database::{
-    AccountFacet, AccountServer, DatabaseError, DatabaseGachaRecordAdditions, DatabasePluginState,
-    GachaRecordQuestioner,
+    DatabaseError, DatabasePluginState, GachaRecordQuestioner, GachaRecordQuestionerAdditions,
   };
   use crate::gacha::convert::srgf::{
     SRGFGachaConverterError, SRGFGachaRecordsReader, SRGFGachaRecordsWriter,
@@ -39,9 +38,13 @@ mod handler {
     UIGFGachaConverterError, UIGFGachaRecordsReader, UIGFGachaRecordsWriter,
   };
   use crate::gacha::convert::{GachaRecordsReader, GachaRecordsWriter};
+  use crate::models::{AccountBusiness, AccountIdentifier, AccountServer};
 
   #[derive(Debug, thiserror::Error)]
   pub enum GachaConvertError {
+    #[error("{0}")]
+    IncorrectUid(String),
+
     #[error("Error while creating output file: {0}")]
     CreateOutput(std::io::Error),
 
@@ -73,48 +76,47 @@ mod handler {
   #[tauri::command]
   pub async fn export_gacha_records(
     database: DatabasePluginState<'_>,
-    facet: AccountFacet,
+    business: AccountBusiness,
     uid: u32,
     output: String,
     pretty: Option<bool>,
   ) -> Result<(), GachaConvertError> {
+    let uid = AccountIdentifier::try_from(uid).map_err(GachaConvertError::IncorrectUid)?;
     let output = File::create(output).map_err(GachaConvertError::CreateOutput)?;
-    let gacha_records = GachaRecordQuestioner
-      .find_many_by_facet_and_uid(facet, uid, None)
-      .fetch_all(database.executor())
-      .await
-      .map_err(DatabaseError::from)?;
+    let records = GachaRecordQuestioner::find_gacha_records_by_business_and_uid(
+      database.as_ref(),
+      business,
+      uid,
+    )
+    .await?;
 
-    if gacha_records.is_empty() {
+    if records.is_empty() {
       return Ok(());
     }
 
-    let (uid, lang) = gacha_records
-      .first()
-      .map(|v| (v.uid, v.lang.clone()))
-      .unwrap();
+    let (uid, lang) = records.first().map(|v| (v.uid, v.lang.clone())).unwrap();
 
     const OFFSET_AMERICA: UtcOffset = offset!(-05:00:00);
     const OFFSET_EUROPE: UtcOffset = offset!(+01:00:00);
     const OFFSET_COMMON: UtcOffset = offset!(+08:00:00);
 
     let region_time_zone = match uid.detect_server() {
-      Some(AccountServer::USA) => OFFSET_AMERICA,
-      Some(AccountServer::Euro) => OFFSET_EUROPE,
+      AccountServer::USA => OFFSET_AMERICA,
+      AccountServer::Euro => OFFSET_EUROPE,
       _ => OFFSET_COMMON,
     };
 
-    match facet {
-      AccountFacet::GenshinImpact => {
+    match business {
+      AccountBusiness::GenshinImpact => {
         UIGFGachaRecordsWriter::new(uid.to_string(), lang, region_time_zone)
           .pretty(pretty.unwrap_or(false))
-          .write(gacha_records, output)
+          .write(records, output)
           .await?;
       }
-      AccountFacet::HonkaiStarRail => {
+      AccountBusiness::HonkaiStarRail => {
         SRGFGachaRecordsWriter::new(uid.to_string(), lang, region_time_zone)
           .pretty(pretty.unwrap_or(false))
-          .write(gacha_records, output)
+          .write(records, output)
           .await?;
       }
     };
@@ -125,25 +127,25 @@ mod handler {
   #[tauri::command]
   pub async fn import_gacha_records(
     database: DatabasePluginState<'_>,
-    facet: AccountFacet,
+    business: AccountBusiness,
     uid: u32,
     input: String,
   ) -> Result<u64, GachaConvertError> {
     let input = File::open(input).map_err(GachaConvertError::OpenInput)?;
-    let gacha_records = match facet {
-      AccountFacet::GenshinImpact => {
+    let records = match business {
+      AccountBusiness::GenshinImpact => {
         UIGFGachaRecordsReader::new()
           .read_with_validation(input, Some(uid.to_string()))
           .await?
       }
-      AccountFacet::HonkaiStarRail => {
+      AccountBusiness::HonkaiStarRail => {
         SRGFGachaRecordsReader::new()
           .read_with_validation(input, Some(uid.to_string()))
           .await?
       }
     };
 
-    let changes = database.save_gacha_records(gacha_records).await?;
+    let changes = GachaRecordQuestioner::create_gacha_records(database.as_ref(), records).await?;
     Ok(changes)
   }
 }

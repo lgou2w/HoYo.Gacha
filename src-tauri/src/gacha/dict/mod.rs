@@ -15,7 +15,9 @@ pub enum Category {
 
 #[derive(Debug)]
 pub struct GachaDictionaryEntry<'a> {
+  #[allow(unused)]
   pub lang: &'a str,
+  #[allow(unused)]
   pub category: Category,
   pub category_name: &'a str,
   pub item_name: Cow<'a, str>,

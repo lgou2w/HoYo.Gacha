@@ -1,3 +1,3 @@
 export * from './database'
-export * from './gacha-facet'
+export * from './gacha-business'
 export * from './gacha-convert'

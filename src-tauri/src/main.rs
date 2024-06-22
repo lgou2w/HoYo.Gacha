@@ -24,11 +24,12 @@ mod database;
 mod diskcache;
 mod error;
 mod gacha;
+mod models;
 mod utilities;
 
 use crate::database::{Database, DatabasePluginBuilder};
+use crate::gacha::business::GachaBusinessPluginBuilder;
 use crate::gacha::convert::GachaConvertPluginBuilder;
-use crate::gacha::facet::GachaFacetPluginBuilder;
 use crate::utilities::paths::appdata_roaming;
 
 fn welcome() {
@@ -148,7 +149,7 @@ async fn start(database: Arc<Database>) {
   info!("Starting Tauri application...");
   let mut app = TauriBuilder::default()
     .plugin(DatabasePluginBuilder::new(database).build())
-    .plugin(GachaFacetPluginBuilder::new().build())
+    .plugin(GachaBusinessPluginBuilder::new().build())
     .plugin(GachaConvertPluginBuilder::new().build())
     .setup(|app| {
       let window = WindowBuilder::new(app, "main", WindowUrl::App("index.html".into()))
@@ -248,7 +249,9 @@ async fn main() {
   start(Arc::clone(&database)).await;
 
   // Wait for database to close
-  database.close().await;
+  if let Some(inner) = Arc::into_inner(database) {
+    inner.close().await;
+  }
 
   info!("bye!");
 

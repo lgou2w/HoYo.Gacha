@@ -4,8 +4,8 @@ use std::collections::HashMap;
 use paste::paste;
 use serde::Deserialize;
 
-use crate::database::AccountFacet;
 use crate::gacha::dict::{Category, GachaDictionary, GachaDictionaryEntry};
+use crate::models::AccountBusiness;
 
 fn read_dictionaries<'a>(
   lang: &'a str,
@@ -65,7 +65,7 @@ fn read_dictionaries<'a>(
 macro_rules! embedded {
   ($(
     $embedded:ident {
-      $facet:ident,
+      $business:ident,
       $(
         $field:ident = $lang:literal -> $file:expr
       ),*
@@ -76,11 +76,11 @@ macro_rules! embedded {
         pub mod $embedded {
           use once_cell::sync::Lazy;
 
-          use crate::database::AccountFacet;
           use crate::gacha::dict::GachaDictionary;
           use crate::gacha::dict::embedded::read_dictionaries;
+          use crate::models::AccountBusiness;
 
-          pub const FACET: &'static AccountFacet = &AccountFacet::$facet;
+          pub const BUSINESS: &'static AccountBusiness = &AccountBusiness::$business;
 
           $(
             pub static [<LANG_ $field>]: Lazy<GachaDictionary> = Lazy::new(|| {
@@ -106,12 +106,12 @@ macro_rules! embedded {
       )*
 
       pub fn dictionary(
-        facet: &AccountFacet,
+        business: &AccountBusiness,
         lang: &str
       ) -> Option<&'static GachaDictionary<'static>> {
-        match facet {
+        match business {
           $(
-            $embedded::FACET => {
+            $embedded::BUSINESS => {
               match lang {
                 $($lang => Some(&$embedded::[<LANG_ $field>]),)*
                 _ => None
@@ -160,33 +160,36 @@ embedded!(
 );
 
 pub fn name(
-  facet: &AccountFacet,
+  business: &AccountBusiness,
   lang: &str,
   item_name: &str,
 ) -> Option<&'static GachaDictionaryEntry<'static>> {
-  dictionary(facet, lang).and_then(|dictionary| dictionary.name(item_name))
+  dictionary(business, lang).and_then(|dictionary| dictionary.name(item_name))
 }
 
 pub fn id(
-  facet: &AccountFacet,
+  business: &AccountBusiness,
   lang: &str,
   item_id: &str,
 ) -> Option<&'static GachaDictionaryEntry<'static>> {
-  dictionary(facet, lang).and_then(|dictionary| dictionary.id(item_id))
+  dictionary(business, lang).and_then(|dictionary| dictionary.id(item_id))
 }
 
 // Tests
 
 #[cfg(test)]
 mod tests {
-  use crate::database::AccountFacet;
+  use crate::models::AccountBusiness;
 
   #[test]
   fn test_lazy_read() {
-    assert_eq!(super::genshin_impact::FACET, &AccountFacet::GenshinImpact);
     assert_eq!(
-      super::honkai_star_rail::FACET,
-      &AccountFacet::HonkaiStarRail
+      super::genshin_impact::BUSINESS,
+      &AccountBusiness::GenshinImpact
+    );
+    assert_eq!(
+      super::honkai_star_rail::BUSINESS,
+      &AccountBusiness::HonkaiStarRail
     );
     super::genshin_impact::validation_lazy_read();
     super::honkai_star_rail::validation_lazy_read();

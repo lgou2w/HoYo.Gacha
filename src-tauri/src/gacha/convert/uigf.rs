@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::fmt;
 use std::io::{Read, Write};
 use std::num::ParseIntError;
 
@@ -14,8 +15,8 @@ use time::{OffsetDateTime, UtcOffset};
 
 use super::{GachaConverter, GachaRecordsReader, GachaRecordsWriter};
 use crate::constants;
-use crate::database::{AccountFacet, AccountUid, GachaRecord, GachaRecordRankType};
 use crate::gacha::dict::embedded as GachaDictionaryEmbedded;
+use crate::models::{AccountBusiness, AccountIdentifier, GachaRecord, GachaRecordRank};
 
 // UIGF for Genshin Impact
 // See: https://uigf.org/zh/standards/UIGF.html
@@ -30,9 +31,12 @@ static REGEX_VERSION: Lazy<Regex> =
   Lazy::new(|| Regex::new(r"^v(?<major>\d+)\.(?<minor>\d+)$").unwrap());
 
 impl UIGFVersion {
-  pub const V2_2: UIGFVersion = UIGFVersion { major: 2, minor: 2 };
-  pub const V2_3: UIGFVersion = UIGFVersion { major: 2, minor: 3 };
-  pub const V2_4: UIGFVersion = UIGFVersion { major: 2, minor: 4 };
+  pub const V2_2: Self = Self { major: 2, minor: 2 };
+  pub const V2_3: Self = Self { major: 2, minor: 3 };
+  #[allow(unused)]
+  pub const V2_4: Self = Self { major: 2, minor: 4 };
+  pub const V3_0: Self = Self { major: 3, minor: 0 };
+  pub const CURRENT: Self = Self::V3_0;
 
   pub fn parse(str: impl AsRef<str>) -> Result<Self, String> {
     if let Some(captures) = REGEX_VERSION.captures(str.as_ref()) {
@@ -49,9 +53,9 @@ impl UIGFVersion {
   }
 }
 
-impl ToString for UIGFVersion {
-  fn to_string(&self) -> String {
-    format!("v{}.{}", self.major, self.minor)
+impl fmt::Display for UIGFVersion {
+  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    f.write_fmt(format_args!("v{}.{}", self.major, self.minor))
   }
 }
 
@@ -136,24 +140,29 @@ impl UIGF {
  *       301             |       301
  *       400             |       301
  *       302             |       302
+ *       500             |       500
  */
 pub static UIGF_GACHA_TYPE_MAPPINGS: Lazy<HashMap<u32, &str>> = Lazy::new(|| {
-  let mut m = HashMap::with_capacity(5);
+  let mut m = HashMap::with_capacity(6);
   m.insert(100, "100");
   m.insert(200, "200");
   m.insert(301, "301");
   m.insert(400, "301"); // 400 -> 301
   m.insert(302, "302");
+  m.insert(500, "500");
   m
 });
 
 #[derive(Debug, thiserror::Error)]
 pub enum UIGFGachaConverterError {
-  #[error("Incompatible facet exists for records: {0:?}")]
-  IncompatibleFacet(AccountFacet),
+  #[error("Incompatible business exists for records: {0:?}")]
+  IncompatibleBusiness(AccountBusiness),
 
   #[error("Inconsistent with expected uid. (Expected: {expected}, Actual: {actual})")]
   InconsistentUid { expected: String, actual: String },
+
+  #[error("{0}")]
+  IncorrectUid(String),
 
   #[error("Error while parsing field '{field}' as integer: {inner}")]
   FieldParseInt {
@@ -183,7 +192,7 @@ pub struct UIGFGachaConverter {
 }
 
 impl UIGFGachaConverter {
-  const TARGET_FACET: &'static AccountFacet = &AccountFacet::GenshinImpact;
+  const TARGET_BUSINESS: &'static AccountBusiness = &AccountBusiness::GenshinImpact;
 
   pub fn new(uid: String, lang: String) -> Self {
     Self { uid, lang }
@@ -202,8 +211,10 @@ impl GachaConverter for UIGFGachaConverter {
   ) -> Result<Self::Provided, Self::Error> {
     let mut provided = Vec::with_capacity(records.len());
     for record in records {
-      if record.facet != *Self::TARGET_FACET {
-        return Err(UIGFGachaConverterError::IncompatibleFacet(record.facet));
+      if record.business != *Self::TARGET_BUSINESS {
+        return Err(UIGFGachaConverterError::IncompatibleBusiness(
+          record.business,
+        ));
       }
 
       let uigf_gacha_type = UIGF_GACHA_TYPE_MAPPINGS
@@ -216,7 +227,7 @@ impl GachaConverter for UIGFGachaConverter {
       let item_id = if !record.item_id.is_empty() {
         record.item_id
       } else {
-        GachaDictionaryEmbedded::name(Self::TARGET_FACET, &self.lang, &record.name)
+        GachaDictionaryEmbedded::name(Self::TARGET_BUSINESS, &self.lang, &record.name)
           .ok_or(UIGFGachaConverterError::MissingDictionary(format!(
             "lang({}), name({})",
             self.lang, record.name
@@ -259,7 +270,7 @@ impl GachaConverter for UIGFGachaConverter {
         return Err(UIGFGachaConverterError::RequiredFields("item_id"));
       }
 
-      let uid = provide
+      let uid: AccountIdentifier = provide
         .uid
         .as_deref()
         .unwrap_or(&self.uid)
@@ -267,7 +278,9 @@ impl GachaConverter for UIGFGachaConverter {
         .map_err(|inner| UIGFGachaConverterError::FieldParseInt {
           field: "uid",
           inner,
-        })?;
+        })?
+        .try_into()
+        .map_err(UIGFGachaConverterError::IncorrectUid)?;
 
       let gacha_type = provide.gacha_type.parse::<u32>().map_err(|inner| {
         UIGFGachaConverterError::FieldParseInt {
@@ -292,10 +305,11 @@ impl GachaConverter for UIGFGachaConverter {
       // UIGF v2.2
       if item_id.is_empty() {
         if let Some(item_name) = &provide.name {
-          let entry = GachaDictionaryEmbedded::name(Self::TARGET_FACET, &lang, item_name).ok_or(
-            UIGFGachaConverterError::MissingDictionary(format!("lang({lang}), name({item_name})")),
-          )?;
-          item_id = entry.item_id.to_owned();
+          let entry = GachaDictionaryEmbedded::name(Self::TARGET_BUSINESS, &lang, item_name)
+            .ok_or(UIGFGachaConverterError::MissingDictionary(format!(
+              "lang({lang}), name({item_name})"
+            )))?;
+          entry.item_id.clone_into(&mut item_id);
           provide
             .item_type
             .get_or_insert(entry.category_name.to_owned());
@@ -309,7 +323,7 @@ impl GachaConverter for UIGFGachaConverter {
       let item_type: String;
       let rank_type: u8;
       if provide.name.is_none() || provide.item_type.is_none() || provide.rank_type.is_none() {
-        let entry = GachaDictionaryEmbedded::id(Self::TARGET_FACET, &lang, &item_id).ok_or(
+        let entry = GachaDictionaryEmbedded::id(Self::TARGET_BUSINESS, &lang, &item_id).ok_or(
           UIGFGachaConverterError::MissingDictionary(format!("lang({lang}), item_id({item_id})")),
         )?;
         name = provide.name.unwrap_or(entry.item_name.to_string());
@@ -337,13 +351,13 @@ impl GachaConverter for UIGFGachaConverter {
         })?;
       }
 
-      let rank_type = GachaRecordRankType::try_from_primitive(rank_type)
+      let rank_type = GachaRecordRank::try_from_primitive(rank_type)
         .map_err(|_| UIGFGachaConverterError::InvalidRankType(rank_type))?;
 
       records.push(GachaRecord {
         id: provide.id,
-        facet: *Self::TARGET_FACET,
-        uid: AccountUid::from(uid),
+        business: *Self::TARGET_BUSINESS,
+        uid,
         gacha_type,
         gacha_id: None,
         rank_type,
@@ -402,7 +416,7 @@ impl UIGFGachaRecordsWriter {
       export_timestamp: Some(export_timestamp),
       export_app: Some(Self::EXPORT_APP.to_owned()),
       export_app_version: Some(Self::EXPORT_APP_VERSION.to_owned()),
-      uigf_version: UIGFVersion::V2_4,
+      uigf_version: UIGFVersion::CURRENT,
       region_time_zone: Some(self.region_time_zone.whole_hours()),
     }
   }
@@ -467,8 +481,8 @@ impl GachaRecordsReader for UIGFGachaRecordsReader {
 
       // Modify the uid and lang values in this converter
       let converter = &mut self.converter;
-      converter.uid = uigf.info.uid.clone();
-      converter.lang = uigf.info.lang.clone();
+      converter.uid.clone_from(&uigf.info.uid);
+      converter.lang.clone_from(&uigf.info.lang);
 
       let records = converter.deconvert(uigf.list, &uigf.info)?;
       Ok(records)
@@ -490,7 +504,7 @@ mod tests {
     GachaRecordsReader, GachaRecordsWriter, UIGFGachaConverterError, UIGFGachaRecordsReader,
     UIGFGachaRecordsWriter, UIGFVersion, UIGF,
   };
-  use crate::database::{AccountFacet, AccountUid, GachaRecord, GachaRecordRankType};
+  use crate::models::{AccountBusiness, AccountIdentifier, GachaRecord, GachaRecordRank};
 
   #[tokio::test]
   async fn test_writer() -> Result<(), UIGFGachaConverterError> {
@@ -498,11 +512,11 @@ mod tests {
     let lang = "zh-cn";
     let record = GachaRecord {
       id: "1675850760000000000".into(),
-      facet: AccountFacet::GenshinImpact,
-      uid: AccountUid::from(uid),
+      business: AccountBusiness::GenshinImpact,
+      uid: AccountIdentifier::try_from(uid).unwrap(),
       gacha_type: 400,
       gacha_id: None,
-      rank_type: GachaRecordRankType::Blue,
+      rank_type: GachaRecordRank::Blue,
       count: 1,
       time: "2023-01-01 00:00:00".into(),
       lang: lang.to_owned(),
@@ -533,7 +547,7 @@ mod tests {
       uigf.info.export_app_version.as_deref(),
       Some(UIGFGachaRecordsWriter::EXPORT_APP_VERSION)
     );
-    assert_eq!(uigf.info.uigf_version, UIGFVersion::V2_4);
+    assert_eq!(uigf.info.uigf_version, UIGFVersion::CURRENT);
     assert_eq!(
       uigf.info.region_time_zone,
       Some(region_time_zone.whole_hours())
@@ -602,7 +616,7 @@ mod tests {
       ]
     }}
     "#,
-      version.to_string(),
+      version,
       option_or_null(name),
       option_or_null(item_type),
       option_or_null(item_id)
@@ -624,11 +638,11 @@ mod tests {
     assert_eq!(records.len(), 1);
     let record = records.first().unwrap();
     assert_eq!(record.id, "1675850760000000000");
-    assert_eq!(record.facet, AccountFacet::GenshinImpact);
+    assert_eq!(record.business, AccountBusiness::GenshinImpact);
     assert_eq!(record.uid, 100_000_001);
     assert_eq!(record.gacha_type, 400);
     assert_eq!(record.gacha_id, None);
-    assert_eq!(record.rank_type, GachaRecordRankType::Blue);
+    assert_eq!(record.rank_type, GachaRecordRank::Blue);
     assert_eq!(record.count, 1);
     assert_eq!(record.time, "2023-01-01 00:00:00");
     assert_eq!(record.lang, "zh-cn");
@@ -660,11 +674,11 @@ mod tests {
     assert_eq!(records.len(), 1);
     let record = records.first().unwrap();
     assert_eq!(record.id, "1675850760000000000");
-    assert_eq!(record.facet, AccountFacet::GenshinImpact);
+    assert_eq!(record.business, AccountBusiness::GenshinImpact);
     assert_eq!(record.uid, 100_000_001);
     assert_eq!(record.gacha_type, 400);
     assert_eq!(record.gacha_id, None);
-    assert_eq!(record.rank_type, GachaRecordRankType::Blue);
+    assert_eq!(record.rank_type, GachaRecordRank::Blue);
     assert_eq!(record.count, 1);
     assert_eq!(record.time, "2023-01-01 00:00:00");
     assert_eq!(record.lang, "zh-cn");

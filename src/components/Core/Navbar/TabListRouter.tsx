@@ -2,16 +2,16 @@ import React, { ReactNode, createRef, useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { Tab, TabList, Tooltip, makeStyles, shorthands, tokens } from '@fluentui/react-components'
 import { SparkleRegular, SparkleFilled, BoardRegular, BoardFilled, PersonCircleRegular, PersonCircleFilled, SettingsRegular, SettingsFilled } from '@fluentui/react-icons'
-import { AccountFacet, AccountFacets } from '@/api/interfaces/account'
+import { AccountBusiness, AccountBusinesses } from '@/api/interfaces/account'
 import Locale from '@/components/Core/Locale'
 import { TrainRegular } from '@/components/Utilities/Icons'
 
-export const ButtonSize = '2.25rem'
+export const ButtonSize = tokens.fontSizeHero900
 const useStyles = makeStyles({
   root: { height: '100%' },
   tab: {
+    borderRadius: tokens.borderRadiusSmall,
     ...shorthands.padding(tokens.spacingVerticalM, tokens.spacingHorizontalM),
-    ...shorthands.borderRadius(tokens.borderRadiusSmall),
     ':hover': { backgroundColor: tokens.colorNeutralBackground2Hover },
     ':active': { backgroundColor: tokens.colorNeutralBackground2Pressed },
     '[aria-selected=true]': { backgroundColor: tokens.colorBrandBackground2Hover },
@@ -32,12 +32,12 @@ const useStyles = makeStyles({
 type NavIcon = { normal: ReactNode, selected?: ReactNode }
 type NavItem = { path: string, icon: NavIcon } | { spacing: true }
 
-const AccountFacetIconMappings: Record<AccountFacet, NavIcon> = {
-  [AccountFacets.GenshinImpact]: {
+const AccountBusinessIconMappings: Record<AccountBusiness, NavIcon> = {
+  [AccountBusinesses.GenshinImpact]: {
     normal: <SparkleRegular />,
     selected: <SparkleFilled />
   },
-  [AccountFacets.HonkaiStarRail]: {
+  [AccountBusinesses.HonkaiStarRail]: {
     normal: <TrainRegular />
   }
 }
@@ -50,10 +50,10 @@ const Navs: NavItem[] = [
       selected: <BoardFilled />
     }
   },
-  ...Object.entries(AccountFacets).map(([key, value]) => {
+  ...Object.entries(AccountBusinesses).map(([key, value]) => {
     return {
       path: `/gacha/${key}`,
-      icon: AccountFacetIconMappings[value]
+      icon: AccountBusinessIconMappings[value]
     } as NavItem
   }),
   { spacing: true },

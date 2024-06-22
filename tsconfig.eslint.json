@@ -1,0 +1,15 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "types": ["@types/node"],
+    "noEmit": true,
+    "allowJs": true
+  },
+  "include": [
+    "src",
+    ".eslintrc.cjs",
+    "jest.config.cjs",
+    "jest.setup.ts",
+    "vite.config.ts",
+  ]
+}

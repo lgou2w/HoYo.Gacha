@@ -1,7 +1,7 @@
 import React, { ReactNode } from 'react'
 import { Body1Strong, Caption1, makeStyles, shorthands, tokens } from '@fluentui/react-components'
 
-const IconSize = '2.25rem'
+const IconSize = tokens.fontSizeHero800
 const useStyle = makeStyles({
   root: {
     display: 'flex',
@@ -9,7 +9,7 @@ const useStyle = makeStyles({
     alignItems: 'center',
     boxShadow: tokens.shadow4,
     columnGap: tokens.spacingVerticalM,
-    ...shorthands.borderRadius(tokens.borderRadiusMedium),
+    borderRadius: tokens.borderRadiusMedium,
     ...shorthands.padding(tokens.spacingVerticalM, tokens.spacingHorizontalM)
   },
   icon: {

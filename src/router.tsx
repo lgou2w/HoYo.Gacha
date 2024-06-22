@@ -3,8 +3,8 @@ import { createBrowserRouter } from 'react-router-dom'
 import { queryClient } from '@/api/store'
 import Accounts from '@/routes/Accounts'
 import ErrorPage from '@/routes/ErrorPage'
-import GachaFacet from '@/routes/Gacha/Facet'
-import gachaFacetLoader from '@/routes/Gacha/Facet/loader'
+import GachaBusiness from '@/routes/Gacha/Business'
+import gachaBusinessLoader from '@/routes/Gacha/Business/loader'
 import RootGacha from '@/routes/Gacha/Root'
 import rootGachaLoader from '@/routes/Gacha/Root/loader'
 import Home from '@/routes/Home'
@@ -27,9 +27,9 @@ const router = createBrowserRouter([
         loader: rootGachaLoader(queryClient),
         children: [
           {
-            path: '/gacha/:facet',
-            element: <GachaFacet />,
-            loader: gachaFacetLoader(queryClient)
+            path: '/gacha/:business',
+            element: <GachaBusiness />,
+            loader: gachaBusinessLoader(queryClient)
           }
         ]
       }

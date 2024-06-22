@@ -1,5 +1,3 @@
-#![cfg(windows)]
-
 use raw_window_handle::{HasRawWindowHandle, RawWindowHandle};
 use windows::Win32::Foundation::HWND;
 use windows::Win32::Graphics::Dwm::DwmExtendFrameIntoClientArea;

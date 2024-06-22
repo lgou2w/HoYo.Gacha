@@ -9,10 +9,12 @@ module.exports = {
   parser: '@typescript-eslint/parser',
   parserOptions: {
     ecmaVersion: 'latest',
-    sourceType: 'module'
+    sourceType: 'module',
+    project: './tsconfig.eslint.json'
   },
   plugins: [
     '@typescript-eslint',
+    'deprecation',
     'import',
     'promise',
     'react',
@@ -26,6 +28,7 @@ module.exports = {
     'standard',
     'eslint:recommended',
     'plugin:@typescript-eslint/recommended',
+    'plugin:deprecation/recommended',
     'plugin:import/recommended',
     'plugin:promise/recommended',
     'plugin:react/recommended',
@@ -56,6 +59,7 @@ module.exports = {
   rules: {
     semi: ['error', 'never'],
     'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
+    'deprecation/deprecation': 'error',
     'import/no-unresolved': 'error',
     'import/default': 'off',
     'import/no-named-as-default': 'off',

@@ -121,6 +121,7 @@ macro_rules! impl_int {
   ($($num:ty),*) => {
     paste! {
       $(
+        #[allow(unused)]
         fn [<read_ $num>](&mut self) -> Result<$num> {
           const SIZE: usize = std::mem::size_of::<$num>();
 
@@ -128,6 +129,7 @@ macro_rules! impl_int {
           Ok($num::from_le_bytes(bytes)) // Little-Endian
         }
 
+        #[allow(unused)]
         fn [<read_ $num _into>]<const LENGTH: usize>(&mut self) -> Result<[$num; LENGTH]> {
           let mut dst: [$num; LENGTH] = [$num::default(); LENGTH];
           {
@@ -179,6 +181,7 @@ trait DiskCacheRead: Read {
     Ok(buf)
   }
 
+  #[allow(unused)]
   fn read_u8_vec(&mut self, length: usize) -> Result<Vec<u8>> {
     let mut vec = vec![0; length];
     self.read_exact(&mut vec)?;
@@ -213,6 +216,7 @@ const INDEX_VERSION3_0: u32 = 0x30000;
 #[allow(unused)]
 const INDEX_TABLE_SIZE: u32 = 0x10000;
 
+#[allow(dead_code)] // HACK: multiple fields are never read
 #[derive(Debug)]
 pub struct IndexFileHeader {
   pub magic: u32,
@@ -233,6 +237,7 @@ pub struct IndexFileHeader {
 
 #[derive(Debug)]
 pub struct IndexFile {
+  #[allow(dead_code)]
   pub header: IndexFileHeader,
   pub table: Vec<CacheAddr>,
 }
@@ -314,6 +319,7 @@ const BLOCK_VERSION3_0: u32 = 0x30000;
 const BLOCK_HEADER_SIZE: u32 = 8192;
 const BLOCK_MAX_BLOCKS: u32 = (BLOCK_HEADER_SIZE - 80) * 8;
 
+#[allow(dead_code)] // HACK: multiple fields are never read
 #[derive(Debug)]
 pub struct BlockFileHeader {
   pub magic: u32,
@@ -454,6 +460,7 @@ impl BlockFile {
 
 const BLOCK_KEY_SIZE: usize = 256 - 24 * 4;
 
+#[allow(dead_code)] // HACK: multiple fields are never read
 #[derive(Debug)]
 pub struct EntryStore {
   pub hash: u32,

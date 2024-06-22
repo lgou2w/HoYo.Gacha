@@ -1,30 +1,30 @@
-import { AccountFacet, AccountFacets } from './account'
+import { AccountBusiness, AccountBusinesses } from './account'
 
 // GachaRecord
-//   See: src-tauri/src/database/entity_gacha_record.rs
+//   See: src-tauri/src/models/gacha_record.rs
 
 // Declares
 
-export const RankTypes = {
+export const GachaRecordRanks = {
   Blue: 3,
   Purple: 4,
-  Golden: 5
+  Orange: 5
 } as const
 
-export type RankType = typeof RankTypes[keyof typeof RankTypes]
+export type GachaRecordRank = typeof GachaRecordRanks[keyof typeof GachaRecordRanks]
 
-// Stricter type inference based on facet
-//   ON `facet` = 0 -> `gachaType` = 100 | 200 | 301 | 400 | 302
+// Stricter type inference based on business
+//   ON `business` = 0 -> `gachaType` = 100 | 200 | 301 | 400 | 302
 //                  -> `gachaId` === null
-//   ON `facet` = 1 -> `gachaType` = 1 | 2 | 11 | 12
+//   ON `business` = 1 -> `gachaType` = 1 | 2 | 11 | 12
 //                  -> `gachaId` !== null
-export type GachaRecord<Facet = AccountFacet> = {
+export type GachaRecord<Business = AccountBusiness> = {
   id: string
-  facet: Facet
+  business: Business
   uid: number
   gachaType: number
   gachaId: number | null
-  rankType: RankType
+  rankType: GachaRecordRank
   count: number
   time: string
   lang: string
@@ -33,39 +33,46 @@ export type GachaRecord<Facet = AccountFacet> = {
   itemId: string
 } & (
   // Genshin Impact
-  Facet extends 0 ? {
+  Business extends 0 ? {
     gachaType: 100 | 200 | 301 | 400 | 302
     gachaId: null
   }
   // Honkai: Star Rail
-  : Facet extends 1 ? {
+  : Business extends 1 ? {
     gachaType: 1 | 2 | 11 | 12
     gachaId: number
   }
+  // Zenless Zone Zero
+  // : Business extends 2 ? {}
   : NonNullable<unknown>
 )
 
 export type GenshinImpactGachaRecord = GachaRecord<0>
 export type HonkaiStarRailGachaRecord = GachaRecord<1>
+// export type ZenlessZoneZeroGachaRecord = GachaRecord<2>
 
 // Utilities
 
 export function isGenshinImpactGachaRecord (record: GachaRecord): record is GenshinImpactGachaRecord {
-  return record.facet === AccountFacets.GenshinImpact
+  return record.business === AccountBusinesses.GenshinImpact
 }
 
 export function isHonkaiStarRailGachaRecord (record: GachaRecord): record is HonkaiStarRailGachaRecord {
-  return record.facet === AccountFacets.HonkaiStarRail
+  return record.business === AccountBusinesses.HonkaiStarRail
 }
 
+// export function isZenlessZoneZeroGachaRecord (record: GachaRecord): record is ZenlessZoneZeroGachaRecord {
+//   return record.business === AccountBusinesses.ZenlessZoneZero
+// }
+
 export function isRankBlueGachaRecord (record: GachaRecord): boolean {
-  return record.rankType === RankTypes.Blue
+  return record.rankType === GachaRecordRanks.Blue
 }
 
 export function isRankPurpleGachaRecord (record: GachaRecord): boolean {
-  return record.rankType === RankTypes.Purple
+  return record.rankType === GachaRecordRanks.Purple
 }
 
-export function isRankGoldenGachaRecord (record: GachaRecord): boolean {
-  return record.rankType === RankTypes.Golden
+export function isRankOrangeGachaRecord (record: GachaRecord): boolean {
+  return record.rankType === GachaRecordRanks.Orange
 }

@@ -1,6 +1,6 @@
 export default {
   common: {
-    facet: {
+    business: {
       GenshinImpact: {
         name: 'Genshin Impact',
         player: 'Traveler',
@@ -48,9 +48,9 @@ export default {
       title: 'Oops! An critical Database error occurred:',
       formattingMessage: 'An unexpected critical Database error has occurred: {{message}} ({{code}})'
     },
-    gachaFacet: {
-      title: 'Oops! An GachaFacet error occurred:',
-      formattingMessage: 'An unexpected GachaFacet error has occurred: {{message}} ({{kind}})'
+    gachaBusiness: {
+      title: 'Oops! An GachaBusiness error occurred:',
+      formattingMessage: 'An unexpected GachaBusiness error has occurred: {{message}} ({{kind}})'
     },
     unexpected: {
       title: 'An unexpected error has occurred:',
@@ -68,14 +68,14 @@ export default {
           '/': 'Home',
           '/accounts': 'Accounts',
           '/settings': 'Settings',
-          '/gacha/GenshinImpact': '$t(common.facet.GenshinImpact.name)',
-          '/gacha/HonkaiStarRail': '$t(common.facet.HonkaiStarRail.name)'
+          '/gacha/GenshinImpact': '$t(common.business.GenshinImpact.name)',
+          '/gacha/HonkaiStarRail': '$t(common.business.HonkaiStarRail.name)'
         }
       }
     },
     accounts: {
       title: 'Accounts management',
-      facetView: {
+      businessView: {
         addOrEditForm: {
           cancelBtn: 'Cancel',
           submitBtn: 'Confirm',
@@ -96,25 +96,28 @@ export default {
           },
           gameDataDir: {
             label: 'Game Data Folder',
-            placeholder: 'Full path to the game data folder. \nFor example: $t(common.facet.{{facet}}.gameDataDir.example)',
+            placeholder: 'Full path to the game data folder. \nFor example: $t(common.business.{{business}}.gameDataDir.example)',
             required: 'Please set the game data folder.',
             autoFindBtn: 'Auto Find',
             manualFindBtn: 'Manual Choice',
-            emptyFind: 'A valid game data folder was not found. Please check that the game is installed and running.',
-            manualFindTitle: 'Please choice the game data directory manually:'
+            manualFindTitle: 'Please choice the game data directory manually:',
+            emptyFind: 'A valid game data folder was not found. Please check that the game is installed and running.'
           }
         },
         addOrEditDialog: {
-          addTitle: 'Add new account: $t(common.facet.{{facet}}.name)',
-          editTitle: 'Edit account: $t(common.facet.{{facet}}.name)'
+          addTitle: 'Add new account: $t(common.business.{{business}}.name)',
+          editTitle: 'Edit account: $t(common.business.{{business}}.name)'
         },
         toolbar: {
-          title: '$t(common.facet.{{facet}}.name)',
+          title: '$t(common.business.{{business}}.name)',
           addAccountBtn: 'Add account'
+        },
+        list: {
+          empty: 'No accounts added.'
         },
         listItem: {
           editAccountBtn: 'Edit account',
-          server: 'Server: $t(common.facet.{{facet}}.servers.{{path}})'
+          server: 'Server: $t(common.business.{{business}}.servers.{{path}})'
         }
       }
     },

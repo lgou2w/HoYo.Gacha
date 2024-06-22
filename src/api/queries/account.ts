@@ -65,10 +65,10 @@ const DeleteAccountMutationKey: UseMutationOptions['mutationKey'] = ['accounts',
 const DeleteAccountMutationOptions: UseMutationOptions<
   Account | null,
   DatabaseError | Error,
-  PickParametersFirst<typeof DatabasePlugin.deleteAccount>
+  PickParametersFirst<typeof DatabasePlugin.deleteAccountById>
 > = {
   mutationKey: DeleteAccountMutationKey,
-  mutationFn: DatabasePlugin.deleteAccount,
+  mutationFn: DatabasePlugin.deleteAccountById,
   onSuccess (data) {
     if (!data) return
     setAccountsQueryData((prev) => {
@@ -91,10 +91,10 @@ const UpdateAccountGameDataDirAndPropertiesMutationKey: UseMutationOptions['muta
 const UpdateAccountGameDataDirAndPropertiesMutation: UseMutationOptions<
   Account | null,
   DatabaseError | Error,
-  PickParametersFirst<typeof DatabasePlugin.updateAccountGameDataDirAndProperties>
+  PickParametersFirst<typeof DatabasePlugin.updateAccountGameDataDirAndPropertiesById>
 > = {
   mutationKey: UpdateAccountGameDataDirAndPropertiesMutationKey,
-  mutationFn: DatabasePlugin.updateAccountGameDataDirAndProperties,
+  mutationFn: DatabasePlugin.updateAccountGameDataDirAndPropertiesById,
   onSuccess (data) {
     if (!data) return
     setAccountsQueryData((prev) => {

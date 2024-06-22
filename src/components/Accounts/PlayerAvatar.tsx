@@ -1,6 +1,6 @@
 import React from 'react'
 import { Image, ImageProps } from '@fluentui/react-components'
-import { AccountFacet, AccountFacets } from '@/api/interfaces/account'
+import { AccountBusiness, AccountBusinesses } from '@/api/interfaces/account'
 import GenshinImpactAvatarTravelerBoy from '@/assets/images/GenshinImpact/Avatar/Traveler_Boy.png'
 import GenshinImpactAvatarTravelerGirl from '@/assets/images/GenshinImpact/Avatar/Traveler_Girl.png'
 import HonkaiStarRailAvatarTravelerBoy1 from '@/assets/images/HonkaiStarRail/Avatar/Trailblazer_Boy_1.png'
@@ -12,14 +12,14 @@ import HonkaiStarRailAvatarTravelerGirl2 from '@/assets/images/HonkaiStarRail/Av
 
 type Avatar = { boy: string, girl: string }
 
-const EmbeddedAvatars: Record<AccountFacet, Avatar[]> = {
-  [AccountFacets.GenshinImpact]: [
+const EmbeddedAvatars: Record<AccountBusiness, Avatar[]> = {
+  [AccountBusinesses.GenshinImpact]: [
     {
       boy: GenshinImpactAvatarTravelerBoy,
       girl: GenshinImpactAvatarTravelerGirl
     }
   ],
-  [AccountFacets.HonkaiStarRail]: [
+  [AccountBusinesses.HonkaiStarRail]: [
     {
       boy: HonkaiStarRailAvatarTravelerBoy1,
       girl: HonkaiStarRailAvatarTravelerGirl1
@@ -32,13 +32,13 @@ const EmbeddedAvatars: Record<AccountFacet, Avatar[]> = {
 }
 
 interface Props extends Omit<ImageProps, 'alt' | 'src'> {
-  facet: AccountFacet
+  business: AccountBusiness
   type: [number, keyof Avatar]
 }
 
 export default function PlayerAvatar (props: Props) {
-  const { facet, type: [set, gender], ...rest } = props
-  const src = EmbeddedAvatars[facet][set]?.[gender]
+  const { business, type: [set, gender], ...rest } = props
+  const src = EmbeddedAvatars[business][set]?.[gender]
   return (
     <Image alt="Avatar" src={src} {...rest} />
   )

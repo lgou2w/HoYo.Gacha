@@ -1,6 +1,6 @@
 export default {
   common: {
-    facet: {
+    business: {
       GenshinImpact: {
         name: '原神',
         player: '旅行者',
@@ -48,9 +48,9 @@ export default {
       title: '哎呀！發生意外嚴重的資料庫錯誤：',
       formattingMessage: '發生意外嚴重的資料庫錯誤：{{message}} ({{code}})'
     },
-    gachaFacet: {
-      title: '哎呀！發生意外的 GachaFacet 錯誤：',
-      formattingMessage: '發生意外的 GachaFacet 錯誤：{{message}} ({{kind}})'
+    gachaBusiness: {
+      title: '哎呀！發生意外的 GachaBusiness 錯誤：',
+      formattingMessage: '發生意外的 GachaBusiness 錯誤：{{message}} ({{kind}})'
     },
     unexpected: {
       title: '發生意外錯誤：',
@@ -68,14 +68,14 @@ export default {
           '/': '主頁',
           '/accounts': '賬戶',
           '/settings': '設定',
-          '/gacha/GenshinImpact': '$t(common.facet.GenshinImpact.name)',
-          '/gacha/HonkaiStarRail': '$t(common.facet.HonkaiStarRail.name)'
+          '/gacha/GenshinImpact': '$t(common.business.GenshinImpact.name)',
+          '/gacha/HonkaiStarRail': '$t(common.business.HonkaiStarRail.name)'
         }
       }
     },
     accounts: {
       title: '帳戶管理',
-      facetView: {
+      businessView: {
         addOrEditForm: {
           cancelBtn: '取消',
           submitBtn: '確認',
@@ -96,24 +96,28 @@ export default {
           },
           gameDataDir: {
             label: '遊戲數據目錄',
-            placeholder: '遊戲數據目錄的完整路徑。\n例如：$t(common.facet.{{facet}}.gameDataDir.example)',
+            placeholder: '遊戲數據目錄的完整路徑。\n例如：$t(common.business.{{business}}.gameDataDir.example)',
             required: '請設定遊戲數據目錄。',
             autoFindBtn: '自動查找',
             manualFindBtn: '手動選擇',
+            manualFindTitle: '請手動選擇遊戲數據目錄：',
             emptyFind: '未找到有效的遊戲數據目錄。 請檢查遊戲是否安裝並運行。'
           }
         },
         addOrEditDialog: {
-          addTitle: '添加新帳戶：$t(common.facet.{{facet}}.name)',
-          editTitle: '編輯帳戶：$t(common.facet.{{facet}}.name)'
+          addTitle: '添加新帳戶：$t(common.business.{{business}}.name)',
+          editTitle: '編輯帳戶：$t(common.business.{{business}}.name)'
         },
         toolbar: {
-          title: '$t(common.facet.{{facet}}.name)',
+          title: '$t(common.business.{{business}}.name)',
           addAccountBtn: '添加帳戶'
+        },
+        list: {
+          empty: '尚未添加任何帳戶。'
         },
         listItem: {
           editAccountBtn: '編輯帳戶',
-          server: '服務器：$t(common.facet.{{facet}}.servers.{{path}})'
+          server: '服務器：$t(common.business.{{business}}.servers.{{path}})'
         }
       }
     },
