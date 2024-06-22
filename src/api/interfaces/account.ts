@@ -97,5 +97,5 @@ export function detectServer (uid: string | number): AccountServer {
 }
 
 export function isOverseaServer (uid: string | number): boolean {
-  return uidFirstDigit(uid) >= 5
+  return uidFirstDigit(uid) >= 6
 }
