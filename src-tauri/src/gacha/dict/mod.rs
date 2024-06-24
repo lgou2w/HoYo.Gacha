@@ -21,8 +21,29 @@ pub struct GachaDictionaryEntry<'a> {
   pub category: Category,
   pub category_name: &'a str,
   pub item_name: Cow<'a, str>,
-  pub item_id: &'a str,
+  pub item_id: GachaDictionaryEntryItemId<'a>,
   pub rank_type: u8,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(untagged)]
+pub enum GachaDictionaryEntryItemId<'a> {
+  Unique(&'a str),
+  Many(Vec<&'a str>),
+}
+
+impl<'a> GachaDictionaryEntryItemId<'a> {
+  #[allow(unused)]
+  pub fn has_many(&self) -> bool {
+    matches!(self, Self::Many(_))
+  }
+
+  pub fn acceptance(&self) -> &str {
+    match self {
+      Self::Unique(one) => one,
+      Self::Many(vec) => vec.last().unwrap(), // HACK: embedded resource
+    }
+  }
 }
 
 #[derive(Debug)]
@@ -46,14 +67,22 @@ impl<'a> GachaDictionary<'a> {
   pub fn id(&self, item_id: &str) -> Option<&GachaDictionaryEntry> {
     self
       .reverses
-      .get_or_init(|| {
-        self
-          .entries
-          .iter()
-          .map(|(item_name, entry)| (entry.item_id, item_name.clone()))
-          .collect()
-      })
+      .get_or_init(|| self.init_reverses())
       .get(item_id)
       .and_then(|item_name| self.entries.get(item_name))
+  }
+
+  // private
+  fn init_reverses(&self) -> HashMap<&'a str, Cow<'a, str>> {
+    self
+      .entries
+      .iter()
+      .flat_map(|(item_name, entry)| match &entry.item_id {
+        GachaDictionaryEntryItemId::Unique(one) => vec![(*one, item_name.clone())],
+        GachaDictionaryEntryItemId::Many(vec) => {
+          vec.iter().map(|e| (*e, item_name.clone())).collect()
+        }
+      })
+      .collect()
   }
 }

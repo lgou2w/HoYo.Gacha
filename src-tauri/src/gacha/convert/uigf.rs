@@ -233,6 +233,7 @@ impl GachaConverter for UIGFGachaConverter {
             self.lang, record.name
           )))?
           .item_id
+          .acceptance()
           .to_owned()
       };
 
@@ -309,7 +310,7 @@ impl GachaConverter for UIGFGachaConverter {
             .ok_or(UIGFGachaConverterError::MissingDictionary(format!(
               "lang({lang}), name({item_name})"
             )))?;
-          entry.item_id.clone_into(&mut item_id);
+          entry.item_id.acceptance().clone_into(&mut item_id);
           provide
             .item_type
             .get_or_insert(entry.category_name.to_owned());

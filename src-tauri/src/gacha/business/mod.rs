@@ -662,7 +662,7 @@ pub trait GachaRecordsFetcher: BusinessDeclare + Send + Sync {
         item_id
       } else if let Some(entry) = GachaDictionaryEmbedded::name(business, &value.lang, &value.name)
       {
-        entry.item_id.to_owned()
+        entry.item_id.acceptance().to_owned()
       } else {
         // If the embedded dictionary does not have a mapping for `name`,
         // then a warning is issued and the empty string is used.

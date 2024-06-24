@@ -4,7 +4,9 @@ use std::collections::HashMap;
 use paste::paste;
 use serde::Deserialize;
 
-use crate::gacha::dict::{Category, GachaDictionary, GachaDictionaryEntry};
+use crate::gacha::dict::{
+  Category, GachaDictionary, GachaDictionaryEntry, GachaDictionaryEntryItemId,
+};
 use crate::models::AccountBusiness;
 
 fn read_dictionaries<'a>(
@@ -15,7 +17,8 @@ fn read_dictionaries<'a>(
   //   "category": "character",
   //   "category_name": "角色",
   //   "entries": {
-  //     "神里绫华": ["10000002", 5]
+  //     "神里绫华": ["10000002", 5],
+  //     "旅行者": [["10000005", "10000007"], 5]
   //   }
   // }
   // {
@@ -29,7 +32,7 @@ fn read_dictionaries<'a>(
   struct DictionaryObject<'a> {
     category: Category,
     category_name: &'a str,
-    entries: HashMap<Cow<'a, str>, (&'a str, u8)>,
+    entries: HashMap<Cow<'a, str>, (GachaDictionaryEntryItemId<'a>, u8)>,
   }
 
   let objects: Vec<DictionaryObject> = serde_json::from_slice(bytes)?;
@@ -134,11 +137,13 @@ embedded!(
     ES_ES  = "es-es" -> "./genshin_impact/es-es.json",
     FR_FR  = "fr-fr" -> "./genshin_impact/fr-fr.json",
     ID_ID  = "id-id" -> "./genshin_impact/id-id.json",
+    IT_IT  = "it-it" -> "./genshin_impact/it-it.json",
     JA_JP  = "ja-jp" -> "./genshin_impact/ja-jp.json",
     KO_KR  = "ko-kr" -> "./genshin_impact/ko-kr.json",
     PT_PT  = "pt-pt" -> "./genshin_impact/pt-pt.json",
     RU_RU  = "ru-ru" -> "./genshin_impact/ru-ru.json",
     TH_TH  = "th-th" -> "./genshin_impact/th-th.json",
+    TR_TR  = "tr-tr" -> "./genshin_impact/tr-tr.json",
     VI_VN  = "vi-vn" -> "./genshin_impact/vi-vn.json"
   },
   honkai_star_rail {
@@ -151,6 +156,8 @@ embedded!(
     FR_FR  = "fr-fr" -> "./honkai_star_rail/fr-fr.json",
     ID_ID  = "id-id" -> "./honkai_star_rail/id-id.json",
     JA_JP  = "ja-jp" -> "./honkai_star_rail/ja-jp.json",
+    // Regexp: \{RUBY_(B|E)[^}]*(?=\})\}
+    // JA_JP_RUBY = "ja-jp-ruby" -> "./honkai_star_rail/ja-jp-ruby.json",
     KO_KR  = "ko-kr" -> "./honkai_star_rail/ko-kr.json",
     PT_PT  = "pt-pt" -> "./honkai_star_rail/pt-pt.json",
     RU_RU  = "ru-ru" -> "./honkai_star_rail/ru-ru.json",
