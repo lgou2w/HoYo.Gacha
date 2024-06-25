@@ -70,7 +70,7 @@ macro_rules! embedded {
     $embedded:ident {
       $business:ident,
       $(
-        $field:ident = $lang:literal -> $file:expr
+        $field:ident = $lang:literal -> $file:literal
       ),*
     }
   ),*) => {
@@ -78,6 +78,7 @@ macro_rules! embedded {
       $(
         pub mod $embedded {
           use once_cell::sync::Lazy;
+          use tracing::info;
 
           use crate::gacha::dict::GachaDictionary;
           use crate::gacha::dict::embedded::read_dictionaries;
@@ -87,12 +88,15 @@ macro_rules! embedded {
 
           $(
             pub static [<LANG_ $field>]: Lazy<GachaDictionary> = Lazy::new(|| {
-              let entries = match read_dictionaries($lang, &include_bytes!($file)[..]) {
-                Ok(v) => v,
-                Err(error) => {
-                  panic!("Embedded dictionary file '{}' serialization error on read: {error}", $file)
-                }
-              };
+              info!(
+                message = "Initialize the embedded dictionary file...",
+                business = %AccountBusiness::$business,
+                lang = $lang,
+                file = $file
+              );
+
+              let entries = read_dictionaries($lang, &include_bytes!($file)[..])
+                .expect("Error initializing embedded dictionary file");
 
               GachaDictionary::new(entries)
             });

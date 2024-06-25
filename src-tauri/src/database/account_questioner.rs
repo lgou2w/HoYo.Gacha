@@ -164,7 +164,7 @@ impl Type<Sqlite> for AccountProperties {
 impl<'r> Encode<'r, Sqlite> for AccountProperties {
   fn encode_by_ref(&self, buf: &mut <Sqlite as HasArguments<'r>>::ArgumentBuffer) -> IsNull {
     serde_json::to_string(self)
-      .unwrap_or_else(|e| panic!("Failed when serializing account properties: {e}"))
+      .expect("Failed when serializing account properties")
       .encode_by_ref(buf)
   }
 }

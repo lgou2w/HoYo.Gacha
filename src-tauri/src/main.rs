@@ -14,10 +14,10 @@ use tracing::info;
 use tracing_appender::non_blocking as non_blocking_appender;
 use tracing_appender::non_blocking::WorkerGuard;
 use tracing_appender::rolling::RollingFileAppender;
-use tracing_subscriber::filter::LevelFilter;
 use tracing_subscriber::fmt::time::LocalTime;
 use tracing_subscriber::fmt::writer::MakeWriterExt;
-use tracing_subscriber::{fmt, EnvFilter};
+use tracing_subscriber::layer::SubscriberExt;
+use tracing_subscriber::EnvFilter;
 
 mod constants;
 mod database;
@@ -50,41 +50,32 @@ fn welcome() {
   )
 }
 
-fn initialize_tracing() -> Result<Option<WorkerGuard>, Box<dyn Error>> {
-  let filter = EnvFilter::builder()
-    .from_env_lossy()
-    .add_directive("hyper=error".parse()?)
-    .add_directive("reqwest=error".parse()?)
-    .add_directive("tao::platform_impl=error".parse()?)
-    .add_directive("wry::webview=error".parse()?)
-    .add_directive(
-      if cfg!(debug_assertions) {
-        LevelFilter::TRACE
-      } else {
-        LevelFilter::INFO
-      }
-      .into(),
-    );
-
+fn initialize_tracing() -> Option<WorkerGuard> {
   const TRACING_TIME_FORMAT: &[FormatItem<'_>] =
     format_description!("[year]-[month]-[day] [hour]:[minute]:[second].[subsecond digits:9]");
 
-  let subscriber = fmt()
-    .with_env_filter(filter)
-    .with_thread_ids(false)
-    .with_thread_names(true)
-    .with_timer(LocalTime::new(TRACING_TIME_FORMAT))
-    .log_internal_errors(true);
+  let filter = EnvFilter::builder()
+    .from_env_lossy()
+    .add_directive("hyper=error".parse().unwrap())
+    .add_directive("reqwest=error".parse().unwrap())
+    .add_directive("tao::platform_impl=error".parse().unwrap())
+    .add_directive("wry::webview=error".parse().unwrap());
 
   // Use stdout in debug, otherwise use a rolling file appender
-  let appender_guard = if cfg!(debug_assertions) {
-    subscriber
-      .with_ansi(true)
-      .with_line_number(true)
-      .with_file(true)
-      .with_thread_ids(true)
-      .pretty()
-      .init();
+  if cfg!(debug_assertions) {
+    tracing_subscriber::registry()
+      .with(
+        tracing_subscriber::fmt::layer()
+          .with_ansi(true)
+          .with_line_number(true)
+          .with_file(true)
+          .with_thread_ids(true)
+          .with_thread_names(true)
+          .with_timer(LocalTime::new(TRACING_TIME_FORMAT))
+          .log_internal_errors(true)
+          .pretty(),
+      )
+      .with(filter);
 
     None
   } else {
@@ -95,7 +86,7 @@ fn initialize_tracing() -> Result<Option<WorkerGuard>, Box<dyn Error>> {
       .join(constants::LOGS_DIRECTORY);
 
     if !logs_dir.exists() {
-      create_dir_all(&logs_dir).unwrap_or_else(|e| panic!("Failed to create logs directory: {e}"));
+      create_dir_all(&logs_dir).expect("Failed to create logs directory");
     }
 
     let file_appender = RollingFileAppender::builder()
@@ -103,18 +94,23 @@ fn initialize_tracing() -> Result<Option<WorkerGuard>, Box<dyn Error>> {
       .max_log_files(constants::LOGS_MAX_FILES)
       .filename_prefix(constants::LOGS_FILE_NAME_PREFIX)
       .filename_suffix(constants::LOGS_FILE_NAME_SUFFIX)
-      .build(logs_dir)?;
+      .build(logs_dir)
+      .expect("failed to initialize rolling file appender");
 
     let (non_blocking, appender_guard) = non_blocking_appender(file_appender);
-    subscriber
-      .with_ansi(false)
-      .with_writer(std::io::stdout.and(non_blocking))
-      .init();
+
+    tracing_subscriber::registry()
+      .with(
+        tracing_subscriber::fmt::layer()
+          .with_thread_ids(false)
+          .with_thread_names(true)
+          .with_timer(LocalTime::new(TRACING_TIME_FORMAT))
+          .with_writer(std::io::stdout.and(non_blocking)),
+      )
+      .with(filter);
 
     Some(appender_guard)
-  };
-
-  Ok(appender_guard)
+  }
 }
 
 async fn initialize_database() -> Result<Database, Box<dyn Error>> {
@@ -128,8 +124,9 @@ async fn initialize_database() -> Result<Database, Box<dyn Error>> {
   } else {
     let app_dir = appdata_roaming().join(constants::ID);
     if !app_dir.exists() {
-      create_dir(&app_dir).unwrap_or_else(|e| panic!("Failed to create app directory: {e}"));
+      create_dir(&app_dir).expect("Failed to create app directory");
     }
+
     app_dir.join(constants::DATABASE)
   };
 
@@ -199,7 +196,7 @@ async fn start(database: Arc<Database>) {
       Ok(())
     })
     .build(tauri::generate_context!())
-    .unwrap_or_else(|e| panic!("error while running Tauri application: {e}"));
+    .expect("error while running Tauri application");
 
   info!("Waiting for the Tauri event loop...");
   loop {
@@ -217,8 +214,7 @@ async fn main() {
   welcome();
 
   // Initialize Tracing and appender
-  let appender_guard =
-    initialize_tracing().unwrap_or_else(|e| panic!("Failed to initialize Tracing: {e}"));
+  let appender_guard = initialize_tracing();
   info!("Tracing initialized");
 
   // App env
@@ -240,7 +236,8 @@ async fn main() {
   // Connect database
   let database = initialize_database()
     .await
-    .unwrap_or_else(|e| panic!("Failed to initialize database: {e}"));
+    .expect("Failed to initialize database");
+
   info!("Database initialized");
 
   let database = Arc::new(database);
