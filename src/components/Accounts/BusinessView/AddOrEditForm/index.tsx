@@ -249,8 +249,6 @@ export default function AddOrEditForm (props: Props) {
         placeholderMapping={['components.accounts.businessView.addOrEditForm.uid.placeholder']}
         before={<IdentifierRegular />}
         required
-        // FIXME: https://github.com/orgs/react-hook-form/discussions/10964
-        // Warning: Cannot update a component (`AddOrEditForm`) while rendering a different component (`AddOrEditFormField`). To locate the bad setState() call inside `AddOrEditFormField`, follow the stack trace as described in https://reactjs.org/link/setstate-in-render
         disabled={isEditMode}
       />
       <AddOrEditFormField

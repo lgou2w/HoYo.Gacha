@@ -32,6 +32,10 @@ export default function AddOrEditFormField (props: AddOrEditFormFieldProps) {
     before,
     after,
     rows,
+    // HACK: https://github.com/orgs/react-hook-form/discussions/10964
+    //   Warning: Cannot update a component (`AddOrEditForm`) while rendering a different component (`AddOrEditFormField`). To locate the bad setState() call inside `AddOrEditFormField`, follow the stack trace as described in https://reactjs.org/link/setstate-in-render
+    //   Solution: https://github.com/orgs/react-hook-form/discussions/10964#discussioncomment-9610656
+    disabled,
     ...rest
   } = props
 
@@ -73,6 +77,7 @@ export default function AddOrEditFormField (props: AddOrEditFormFieldProps) {
         placeholder={acceptLocale(t, placeholderMapping)}
         required={required}
         readOnly={readOnly}
+        disabled={disabled || formState.isSubmitting}
         {...(Component === Input
           ? {
               contentBefore: { children: contentBefore },
