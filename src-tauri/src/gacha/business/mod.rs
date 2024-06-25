@@ -189,8 +189,8 @@ pub trait DataDirectoryFinder: BusinessDeclare {
   fn find_data_dir(&self, is_oversea: bool) -> Result<Option<DataDirectory>, GachaBusinessError>;
   fn find_data_dirs(&self) -> Result<Vec<DataDirectory>, GachaBusinessError> {
     info!(
-      "Finding the Business({:?}) data directories...",
-      self.business()
+      message = "Finding the data directories...",
+      business = %self.business()
     );
     let mut paths = Vec::with_capacity(2);
 
@@ -215,8 +215,9 @@ pub trait DataDirectoryFinder: BusinessDeclare {
     game_data_dir: &DataDirectory,
   ) -> Result<Vec<WebCachesVersion>, GachaBusinessError> {
     info!(
-      "Finding the Business({:?}) webCaches versions: {game_data_dir:?}",
-      self.business()
+      message = "Finding the webCaches versions...",
+      business = %self.business(),
+      ?game_data_dir
     );
 
     let web_caches_dir = game_data_dir.path.join("webCaches");
@@ -244,8 +245,9 @@ pub trait DataDirectoryFinder: BusinessDeclare {
     game_data_dir: &DataDirectory,
   ) -> Result<Option<PathBuf>, GachaBusinessError> {
     info!(
-      "Finding the latest version of the Business({:?}) webCaches data directory: {game_data_dir:?}",
-      self.business()
+      message = "Finding the latest version of the webCaches data directory...",
+      business = %self.business(),
+      ?game_data_dir
     );
 
     let mut web_caches_versions = self.find_web_caches_versions(game_data_dir)?;
@@ -310,8 +312,10 @@ pub trait GachaUrlFinder: BusinessDeclare + DataDirectoryFinder {
     skip_expired: bool,
   ) -> Result<Option<Vec<GachaUrl>>, GachaBusinessError> {
     info!(
-      "Finding the Business({:?}) gacha urls: DataDirectory={game_data_dir:?}, SkipExpired={skip_expired}",
-      self.business()
+      message = "Finding the gacha urls...",
+      business = %self.business(),
+      ?game_data_dir,
+      skip_expired
     );
 
     let cache_data_dir = self.find_web_caches_latest_data_dir(game_data_dir)?;
@@ -386,10 +390,14 @@ pub trait GachaUrlFinder: BusinessDeclare + DataDirectoryFinder {
         continue; // It's expired
       }
 
-      info!("Valid gacha url exist in the cache address: {addr:?}");
-      info!("Long key: {:?}", entry_store.long_key);
-      info!("Creation time: {creation_time:?}");
-      info!("Url: {url}");
+      info!(
+        message = "Valid game url exist in the cache address",
+        ?addr,
+        ?entry_store.long_key,
+        ?creation_time,
+        url
+      );
+
       urls.push(GachaUrl {
         addr: addr.0,
         long_key: entry_store.long_key.0,
@@ -630,8 +638,10 @@ pub trait GachaRecordsFetcher: BusinessDeclare + Send + Sync {
     end_id: Option<&str>,
   ) -> Result<Option<Vec<GachaRecord>>, GachaBusinessError> {
     info!(
-      "Fetching the Business({:?}) gacha records: GachaType={gacha_type:?}, EndId={end_id:?}",
-      self.business()
+      message = "Fetching the gacha records...",
+      business = %self.business(),
+      ?gacha_type,
+      ?end_id,
     );
 
     let gacha_url = parse_gacha_url(gacha_url, gacha_type, end_id)?;
@@ -667,8 +677,10 @@ pub trait GachaRecordsFetcher: BusinessDeclare + Send + Sync {
         // If the embedded dictionary does not have a mapping for `name`,
         // then a warning is issued and the empty string is used.
         warn!(
-          "Missing entry in embedded dictionary: business({business:?}), lang({}), lang({})",
-          value.lang, value.name
+          message = "Missing entry in embedded dictionary",
+          %business,
+          lang = value.lang,
+          name = value.name
         );
         String::default()
       };
@@ -741,8 +753,9 @@ fn lookup_path_line_from_keyword(
   let keyword_len = keyword.len();
 
   info!(
-    "Starting from the log file: {:?}, look for the keyword: {keyword}",
-    log_file.as_ref()
+    message = "Start looking for keyword from the log file...",
+    log_file = ?log_file.as_ref(),
+    keyword
   );
 
   for line in reader.lines() {
@@ -785,7 +798,11 @@ macro_rules! generate_business {
 
       impl DataDirectoryFinder for $business {
         fn find_data_dir(&self, is_oversea: bool) -> Result<Option<DataDirectory>, GachaBusinessError> {
-          info!("Finding the Business({:?}) data directory: IsOversea={is_oversea}", self.business());
+          info!(
+            message = "Finding the data directory...",
+            business = %self.business(),
+            is_oversea
+          );
 
           let path = match is_oversea {
             false => lookup_path_line_from_keyword($business_cn_log_file, $business_cn_data_dir_keyword),
@@ -832,9 +849,13 @@ pub struct GachaBusiness(Box<dyn GachaBusinessInner>);
 
 impl fmt::Debug for GachaBusiness {
   fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-    f.debug_tuple("GachaBusiness")
-      .field(self.0.business())
-      .finish()
+    self.0.business().fmt(f)
+  }
+}
+
+impl fmt::Display for GachaBusiness {
+  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    self.0.business().fmt(f)
   }
 }
 
@@ -897,9 +918,12 @@ where
     return Ok(());
   }
 
-  info!("Creating a Gacha Records Fetcher Channel:");
-  info!("Gacha url: {gacha_url}");
-  info!("Gacha type and Last end id mappings: {gacha_type_and_last_end_id_mappings:?}");
+  info!(
+    message = "Creating a Gacha Records Fetcher Channel",
+    %business,
+    gacha_url,
+    mappings = ?gacha_type_and_last_end_id_mappings
+  );
 
   // Internal Abbreviations
   type Fragment = GachaRecordsFetcherChannelFragment;
@@ -965,7 +989,13 @@ async fn pull_gacha_records(
   // Internal Abbreviations
   type Fragment = GachaRecordsFetcherChannelFragment;
 
-  info!("Start pulling {gacha_type} Gacha type, Last end id: {last_end_id:?}");
+  info!(
+    message = "Start pulling gacha records...",
+    %business,
+    // gacha_url,
+    gacha_type,
+    ?last_end_id
+  );
   sender
     .send(Fragment::Ready(gacha_type.to_owned()))
     .await

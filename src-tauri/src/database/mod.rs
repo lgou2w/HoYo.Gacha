@@ -50,7 +50,7 @@ impl Database {
     macro_rules! initialize {
       ($db:expr, $($emodule:ident::$equestioner:ident),*) => {
         $(
-          info!("Initialize entity: {}", $equestioner::entity_name());
+          info!(message = "Initialize entity", name = $equestioner::entity_name());
           $emodule::$equestioner::initialize($db).await?;
         )*
       };
