@@ -1,5 +1,5 @@
 import React, { PropsWithChildren, useEffect } from 'react'
-import { FluentProvider, Theme } from '@fluentui/react-components'
+import { FluentProvider, Theme as FluentTheme } from '@fluentui/react-components'
 import { useImmer } from 'use-immer'
 import { ThemeContext, ThemeContextState } from './Context'
 import { Themes } from './declares'
@@ -87,7 +87,7 @@ export default function Theme (props: PropsWithChildren) {
     }
   }
 
-  const theme: Theme | undefined = Themes[state.space]?.[state.color]
+  const theme: FluentTheme | undefined = Themes[state.space]?.[state.color]
   if (!theme) {
     throw new Error(`Unknown theme space value: ${state.space}.${state.color}`)
   }
