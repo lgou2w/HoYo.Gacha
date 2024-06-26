@@ -2,22 +2,12 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use std::error::Error;
-use std::fs::{create_dir, create_dir_all};
+use std::fs::create_dir;
 use std::path::PathBuf;
 use std::sync::Arc;
 
-use human_panic::setup_panic;
 use tauri::{Builder as TauriBuilder, WindowBuilder, WindowUrl};
-use time::format_description::FormatItem;
-use time::macros::format_description;
 use tracing::info;
-use tracing_appender::non_blocking as non_blocking_appender;
-use tracing_appender::non_blocking::WorkerGuard;
-use tracing_appender::rolling::RollingFileAppender;
-use tracing_subscriber::fmt::time::LocalTime;
-use tracing_subscriber::fmt::writer::MakeWriterExt;
-use tracing_subscriber::layer::SubscriberExt;
-use tracing_subscriber::EnvFilter;
 
 mod constants;
 mod database;
@@ -30,6 +20,7 @@ mod utilities;
 use crate::database::{Database, DatabasePluginBuilder};
 use crate::gacha::business::GachaBusinessPluginBuilder;
 use crate::gacha::convert::GachaConvertPluginBuilder;
+use crate::utilities::commons::{initialize_tracing, setup_panic_hook};
 use crate::utilities::paths::appdata_roaming;
 
 fn welcome() {
@@ -48,69 +39,6 @@ fn welcome() {
     authors = constants::AUTHORS,
     git = constants::REPOSITORY
   )
-}
-
-fn initialize_tracing() -> Option<WorkerGuard> {
-  const TRACING_TIME_FORMAT: &[FormatItem<'_>] =
-    format_description!("[year]-[month]-[day] [hour]:[minute]:[second].[subsecond digits:9]");
-
-  let filter = EnvFilter::builder()
-    .from_env_lossy()
-    .add_directive("hyper=error".parse().unwrap())
-    .add_directive("reqwest=error".parse().unwrap())
-    .add_directive("tao::platform_impl=error".parse().unwrap())
-    .add_directive("wry::webview=error".parse().unwrap());
-
-  // Use stdout in debug, otherwise use a rolling file appender
-  if cfg!(debug_assertions) {
-    tracing_subscriber::registry()
-      .with(
-        tracing_subscriber::fmt::layer()
-          .with_ansi(true)
-          .with_line_number(true)
-          .with_file(true)
-          .with_thread_ids(true)
-          .with_thread_names(true)
-          .with_timer(LocalTime::new(TRACING_TIME_FORMAT))
-          .log_internal_errors(true)
-          .pretty(),
-      )
-      .with(filter);
-
-    None
-  } else {
-    // In release mode, flush logs to app local directory
-    let appdata_local = utilities::paths::appdata_local();
-    let logs_dir = appdata_local
-      .join(constants::ID)
-      .join(constants::LOGS_DIRECTORY);
-
-    if !logs_dir.exists() {
-      create_dir_all(&logs_dir).expect("Failed to create logs directory");
-    }
-
-    let file_appender = RollingFileAppender::builder()
-      .rotation(constants::LOGS_ROTATION)
-      .max_log_files(constants::LOGS_MAX_FILES)
-      .filename_prefix(constants::LOGS_FILE_NAME_PREFIX)
-      .filename_suffix(constants::LOGS_FILE_NAME_SUFFIX)
-      .build(logs_dir)
-      .expect("failed to initialize rolling file appender");
-
-    let (non_blocking, appender_guard) = non_blocking_appender(file_appender);
-
-    tracing_subscriber::registry()
-      .with(
-        tracing_subscriber::fmt::layer()
-          .with_thread_ids(false)
-          .with_thread_names(true)
-          .with_timer(LocalTime::new(TRACING_TIME_FORMAT))
-          .with_writer(std::io::stdout.and(non_blocking)),
-      )
-      .with(filter);
-
-    Some(appender_guard)
-  }
 }
 
 async fn initialize_database() -> Result<Database, Box<dyn Error>> {
@@ -210,8 +138,8 @@ async fn start(database: Arc<Database>) {
 
 #[tokio::main(flavor = "multi_thread")]
 async fn main() {
-  setup_panic!();
   welcome();
+  setup_panic_hook();
 
   // Initialize Tracing and appender
   let appender_guard = initialize_tracing();
