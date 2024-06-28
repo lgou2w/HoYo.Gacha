@@ -76,10 +76,11 @@ export default function AccountsBusinessViewListItem (props: Props) {
       <div className={classes.header}>
         <div className={classes.avatar}>
           <PlayerAvatar
+            business={account.business}
+            gender="Girl"
+            set={1}
             shape="circular"
             bordered
-            business={account.business}
-            type={[0, 'girl']}
           />
         </div>
         <div className={classes.identifier}>

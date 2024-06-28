@@ -43,18 +43,19 @@ type Props = {
 }
 
 export default function GachaBusinessViewAccountSelectItem (props: Props) {
+  const classes = useStyle()
   const { account } = props
   const business = !account ? props.business : account.business
 
-  const classes = useStyle()
   return (
     <div className={classes.root}>
       <div className={classes.avatar}>
         {account
           ? <PlayerAvatar
-              shape="circular"
               business={business}
-              type={[0, 'girl']}
+              gender="Girl"
+              set={1}
+              shape="circular"
             />
           : <QuestionRegular />
         }

@@ -1,6 +1,5 @@
 import React, { useEffect, useRef } from 'react'
 import { Image, Subtitle2Stronger, makeStyles, tokens } from '@fluentui/react-components'
-import Logo from '@/assets/images/Logo.png'
 import TitleBarButtons from './Buttons'
 
 export const Height = '2.5rem'
@@ -58,7 +57,7 @@ export default function TitleBar () {
   return (
     <React.Fragment>
       <div className={classes.root} ref={containerRef}>
-        <Image className={classes.brand} src={Logo} shape="square" />
+        <Image className={classes.brand} src="/Logo.png" shape="square" />
         <Subtitle2Stronger className={classes.title} as="h1">{Title}</Subtitle2Stronger>
         <TitleBarButtons />
       </div>

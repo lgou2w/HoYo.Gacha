@@ -1,44 +1,29 @@
-import React from 'react'
+import React, { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Image, ImageProps } from '@fluentui/react-components'
-import { Business, Businesses } from '@/api/interfaces/account'
-import GenshinImpactAvatarTravelerBoy from '@/assets/images/GenshinImpact/Avatar/Traveler_Boy.png'
-import GenshinImpactAvatarTravelerGirl from '@/assets/images/GenshinImpact/Avatar/Traveler_Girl.png'
-import HonkaiStarRailAvatarTravelerBoy1 from '@/assets/images/HonkaiStarRail/Avatar/Trailblazer_Boy_1.png'
-import HonkaiStarRailAvatarTravelerBoy2 from '@/assets/images/HonkaiStarRail/Avatar/Trailblazer_Boy_2.png'
-import HonkaiStarRailAvatarTravelerGirl1 from '@/assets/images/HonkaiStarRail/Avatar/Trailblazer_Girl_1.png'
-import HonkaiStarRailAvatarTravelerGirl2 from '@/assets/images/HonkaiStarRail/Avatar/Trailblazer_Girl_2.png'
+import { Business, ReversedBusinesses } from '@/api/interfaces/account'
 
 // TODO: Support custom player avatar
 
-type Avatar = { boy: string, girl: string }
-
-const EmbeddedAvatars: Record<Business, Avatar[]> = {
-  [Businesses.GenshinImpact]: [
-    {
-      boy: GenshinImpactAvatarTravelerBoy,
-      girl: GenshinImpactAvatarTravelerGirl
-    }
-  ],
-  [Businesses.HonkaiStarRail]: [
-    {
-      boy: HonkaiStarRailAvatarTravelerBoy1,
-      girl: HonkaiStarRailAvatarTravelerGirl1
-    },
-    {
-      boy: HonkaiStarRailAvatarTravelerBoy2,
-      girl: HonkaiStarRailAvatarTravelerGirl2
-    }
-  ]
+interface Props<T extends Business> extends Omit<ImageProps, 'alt' | 'src'> {
+  business: T
+  gender: 'Boy' | 'Girl'
+  set:
+      T extends 0 ? 1
+    : T extends 1 ? 1 | 2 | 3
+    : never
 }
 
-interface Props extends Omit<ImageProps, 'alt' | 'src'> {
-  business: Business
-  type: [number, keyof Avatar]
-}
+export default function PlayerAvatar<T extends Business> (props: Props<T>) {
+  const { business, gender, set, ...rest } = props
 
-export default function PlayerAvatar (props: Props) {
-  const { business, type: [set, gender], ...rest } = props
-  const src = EmbeddedAvatars[business][set]?.[gender]
+  const { t } = useTranslation()
+  const src = useMemo(() => {
+    const keyOfBusinesses = ReversedBusinesses[business]
+    const player = t(`Business.${keyOfBusinesses}.Player`)
+    return `/${keyOfBusinesses}/Avatar/${player}_${gender}_${set}.png`
+  }, [business, gender, set, t])
+
   return (
     <Image alt="Avatar" src={src} {...rest} />
   )
