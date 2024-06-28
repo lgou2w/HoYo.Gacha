@@ -38,7 +38,7 @@ mod handlers {
     UIGFGachaConverterError, UIGFGachaRecordsReader, UIGFGachaRecordsWriter,
   };
   use crate::gacha::convert::{GachaRecordsReader, GachaRecordsWriter};
-  use crate::models::{Business, AccountIdentifier, AccountServer};
+  use crate::models::{AccountIdentifier, AccountServer, Business};
 
   #[derive(Debug, thiserror::Error)]
   pub enum GachaConvertError {
@@ -80,7 +80,7 @@ mod handlers {
     uid: u32,
     output: String,
     pretty: Option<bool>,
-  ) -> Result<(), GachaConvertError> {
+  ) -> Result<u64, GachaConvertError> {
     let uid = AccountIdentifier::try_from(uid).map_err(GachaConvertError::IncorrectUid)?;
     let output = File::create(output).map_err(GachaConvertError::CreateOutput)?;
     let records = GachaRecordQuestioner::find_gacha_records_by_business_and_uid(
@@ -91,9 +91,10 @@ mod handlers {
     .await?;
 
     if records.is_empty() {
-      return Ok(());
+      return Ok(0);
     }
 
+    let total = records.len();
     let (uid, lang) = records.first().map(|v| (v.uid, v.lang.clone())).unwrap();
 
     const OFFSET_AMERICA: UtcOffset = offset!(-05:00:00);
@@ -121,7 +122,7 @@ mod handlers {
       }
     };
 
-    Ok(())
+    Ok(total as _)
   }
 
   #[tauri::command]

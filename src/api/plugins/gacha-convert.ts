@@ -35,7 +35,7 @@ export const GachaConvertPlugin = {
   exportGachaRecords: bind<Pick<Account, 'business' | 'uid'> & {
     output: string
     pretty: boolean | null
-  }>('export_gacha_records'),
+  }, number>('export_gacha_records'),
   importGachaRecords: bind<Pick<Account, 'business' | 'uid'> & {
     input: string
   }, number>('import_gacha_records')
