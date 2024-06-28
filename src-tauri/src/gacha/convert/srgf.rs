@@ -10,7 +10,7 @@ use time::{OffsetDateTime, UtcOffset};
 use super::{GachaConverter, GachaRecordsReader, GachaRecordsWriter};
 use crate::constants;
 use crate::gacha::dict::embedded as GachaDictionaryEmbedded;
-use crate::models::{AccountBusiness, AccountIdentifier, GachaRecord, GachaRecordRank};
+use crate::models::{Business, AccountIdentifier, GachaRecord, GachaRecordRank};
 
 // SRGF for Honkai: Star Rail
 // See: https://uigf.org/zh/standards/SRGF.html
@@ -67,7 +67,7 @@ impl SRGF {
 #[derive(Debug, thiserror::Error)]
 pub enum SRGFGachaConverterError {
   #[error("Incompatible business exists for records: {0:?}")]
-  IncompatibleBusiness(AccountBusiness),
+  IncompatibleBusiness(Business),
 
   #[error("Inconsistent with expected uid. (Expected: {expected}, Actual: {actual})")]
   InconsistentUid { expected: String, actual: String },
@@ -100,7 +100,7 @@ pub struct SRGFGachaConverter {
 }
 
 impl SRGFGachaConverter {
-  const TARGET_BUSINESS: &'static AccountBusiness = &AccountBusiness::HonkaiStarRail;
+  const TARGET_BUSINESS: &'static Business = &Business::HonkaiStarRail;
 
   pub fn new(uid: String, lang: String) -> Self {
     Self { uid, lang }
@@ -373,7 +373,7 @@ mod tests {
     GachaRecordsReader, GachaRecordsWriter, SRGFGachaConverterError, SRGFGachaRecordsReader,
     SRGFGachaRecordsWriter, SRGF,
   };
-  use crate::models::{AccountBusiness, AccountIdentifier, GachaRecord, GachaRecordRank};
+  use crate::models::{Business, AccountIdentifier, GachaRecord, GachaRecordRank};
 
   #[tokio::test]
   async fn test_writer() -> Result<(), SRGFGachaConverterError> {
@@ -381,7 +381,7 @@ mod tests {
     let lang = "zh-cn";
     let record = GachaRecord {
       id: "1683774600000000000".into(),
-      business: AccountBusiness::HonkaiStarRail,
+      business: Business::HonkaiStarRail,
       uid: AccountIdentifier::try_from(uid).unwrap(),
       gacha_type: 1,
       gacha_id: Some(1001),
@@ -471,7 +471,7 @@ mod tests {
     assert_eq!(records.len(), 1);
     let record = records.first().unwrap();
     assert_eq!(record.id, "1683774600000000000");
-    assert_eq!(record.business, AccountBusiness::HonkaiStarRail);
+    assert_eq!(record.business, Business::HonkaiStarRail);
     assert_eq!(record.uid, 100_000_001);
     assert_eq!(record.gacha_type, 1);
     assert_eq!(record.gacha_id, Some(1003));

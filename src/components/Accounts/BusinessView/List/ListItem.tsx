@@ -1,7 +1,7 @@
 import React from 'react'
 import { Button, Divider, Text, Tooltip, makeStyles, shorthands, tokens } from '@fluentui/react-components'
 import { PeopleEditRegular, ServerRegular } from '@fluentui/react-icons'
-import { Account, AccountServer, ReversedAccountBusinesses, detectServer } from '@/api/interfaces/account'
+import { Account, AccountServer, ReversedBusinesses, detectServer } from '@/api/interfaces/account'
 import AddOrEditDialog from '@/components/Accounts/BusinessView/AddOrEditDialog'
 import PlayerAvatar from '@/components/Accounts/PlayerAvatar'
 import Locale from '@/components/Core/Locale'
@@ -92,7 +92,7 @@ export default function AccountsBusinessViewListItem (props: Props) {
             truncate
             mapping={(t) => {
               return account.properties?.displayName as string ||
-                t(`common.business.${ReversedAccountBusinesses[account.business]}.player`)
+                t(`business.${ReversedBusinesses[account.business]}.player`)
             }}
           />
           <Text className="uid" as="p" font="numeric" size={200} weight="semibold">
@@ -124,7 +124,7 @@ export default function AccountsBusinessViewListItem (props: Props) {
             mapping={[
               'components.accounts.businessView.listItem.server',
               {
-                business: ReversedAccountBusinesses[account.business],
+                business: ReversedBusinesses[account.business],
                 path: AccountServerLocaleKeyMappings[detectServer(account.uid)]
               }
             ]}

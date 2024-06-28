@@ -38,7 +38,7 @@ mod handlers {
     UIGFGachaConverterError, UIGFGachaRecordsReader, UIGFGachaRecordsWriter,
   };
   use crate::gacha::convert::{GachaRecordsReader, GachaRecordsWriter};
-  use crate::models::{AccountBusiness, AccountIdentifier, AccountServer};
+  use crate::models::{Business, AccountIdentifier, AccountServer};
 
   #[derive(Debug, thiserror::Error)]
   pub enum GachaConvertError {
@@ -76,7 +76,7 @@ mod handlers {
   #[tauri::command]
   pub async fn export_gacha_records(
     database: DatabasePluginState<'_>,
-    business: AccountBusiness,
+    business: Business,
     uid: u32,
     output: String,
     pretty: Option<bool>,
@@ -107,13 +107,13 @@ mod handlers {
     };
 
     match business {
-      AccountBusiness::GenshinImpact => {
+      Business::GenshinImpact => {
         UIGFGachaRecordsWriter::new(uid.to_string(), lang, region_time_zone)
           .pretty(pretty.unwrap_or(false))
           .write(records, output)
           .await?;
       }
-      AccountBusiness::HonkaiStarRail => {
+      Business::HonkaiStarRail => {
         SRGFGachaRecordsWriter::new(uid.to_string(), lang, region_time_zone)
           .pretty(pretty.unwrap_or(false))
           .write(records, output)
@@ -127,18 +127,18 @@ mod handlers {
   #[tauri::command]
   pub async fn import_gacha_records(
     database: DatabasePluginState<'_>,
-    business: AccountBusiness,
+    business: Business,
     uid: u32,
     input: String,
   ) -> Result<u64, GachaConvertError> {
     let input = File::open(input).map_err(GachaConvertError::OpenInput)?;
     let records = match business {
-      AccountBusiness::GenshinImpact => {
+      Business::GenshinImpact => {
         UIGFGachaRecordsReader::new()
           .read_with_validation(input, Some(uid.to_string()))
           .await?
       }
-      AccountBusiness::HonkaiStarRail => {
+      Business::HonkaiStarRail => {
         SRGFGachaRecordsReader::new()
           .read_with_validation(input, Some(uid.to_string()))
           .await?

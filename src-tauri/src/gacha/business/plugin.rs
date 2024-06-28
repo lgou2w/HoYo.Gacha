@@ -33,14 +33,14 @@ mod handlers {
     create_gacha_records_fetcher_channel, DataDirectory, GachaBusiness, GachaBusinessError,
     GachaRecordsFetcherChannelFragment, GachaUrl, GachaUrlMetadata,
   };
-  use crate::models::AccountBusiness;
+  use crate::models::Business;
 
   #[cfg(windows)]
   use crate::utilities::windows::{set_progress_bar, ProgressState};
 
   #[tauri::command]
   pub async fn find_data_dir(
-    business: AccountBusiness,
+    business: Business,
     is_oversea: bool,
   ) -> Result<Option<DataDirectory>, GachaBusinessError> {
     GachaBusiness::ref_by(&business).find_data_dir(is_oversea)
@@ -48,14 +48,14 @@ mod handlers {
 
   #[tauri::command]
   pub async fn find_data_dirs(
-    business: AccountBusiness,
+    business: Business,
   ) -> Result<Vec<DataDirectory>, GachaBusinessError> {
     GachaBusiness::ref_by(&business).find_data_dirs()
   }
 
   #[tauri::command]
   pub async fn find_gacha_urls(
-    business: AccountBusiness,
+    business: Business,
     data_directory: DataDirectory,
     skip_expired: bool,
   ) -> Result<Option<Vec<GachaUrl>>, GachaBusinessError> {
@@ -64,7 +64,7 @@ mod handlers {
 
   #[tauri::command]
   pub async fn fetch_gacha_url_metadata(
-    business: AccountBusiness,
+    business: Business,
     gacha_url: String,
   ) -> Result<Option<GachaUrlMetadata>, GachaBusinessError> {
     GachaBusiness::ref_by(&business)
@@ -77,7 +77,7 @@ mod handlers {
   pub async fn create_account_gacha_records_fetcher_channel(
     window: Window,
     database: DatabasePluginState<'_>,
-    business: AccountBusiness,
+    business: Business,
     #[allow(unused)] uid: u32, // explained below ↓
     gacha_url: String,
     gacha_type_and_last_end_id_mappings: Vec<(String, Option<String>)>,

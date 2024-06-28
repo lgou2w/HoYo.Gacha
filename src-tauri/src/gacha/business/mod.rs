@@ -28,7 +28,7 @@ use url::Url;
 use crate::constants;
 use crate::diskcache::{BlockFile, IndexFile};
 use crate::gacha::dict::embedded as GachaDictionaryEmbedded;
-use crate::models::{AccountBusiness, AccountIdentifier, GachaRecord, GachaRecordRank};
+use crate::models::{AccountIdentifier, Business, GachaRecord, GachaRecordRank};
 use crate::utilities::paths::{cognosphere_dir, mihoyo_dir};
 
 mod plugin;
@@ -139,7 +139,7 @@ impl GachaRecordsResponseKind {
 // Business
 
 pub trait BusinessDeclare {
-  fn business(&self) -> &'static AccountBusiness;
+  fn business(&self) -> &'static Business;
 }
 
 /// `Web Caches` version number. For example: `x.y.z` or `x.y.z.a`
@@ -791,8 +791,8 @@ macro_rules! generate_business {
 
       impl BusinessDeclare for $business {
         #[inline]
-        fn business(&self) -> &'static AccountBusiness {
-          &AccountBusiness::$business
+        fn business(&self) -> &'static Business {
+          &Business::$business
         }
       }
 
@@ -867,21 +867,21 @@ impl Deref for GachaBusiness {
   }
 }
 
-static GACHA_BUSINESSES: Lazy<HashMap<&AccountBusiness, GachaBusiness>> = Lazy::new(|| {
+static GACHA_BUSINESSES: Lazy<HashMap<&Business, GachaBusiness>> = Lazy::new(|| {
   let mut m = HashMap::with_capacity(2);
   m.insert(
-    &AccountBusiness::GenshinImpact,
+    &Business::GenshinImpact,
     GachaBusiness(Box::new(GenshinImpact)),
   );
   m.insert(
-    &AccountBusiness::HonkaiStarRail,
+    &Business::HonkaiStarRail,
     GachaBusiness(Box::new(HonkaiStarRail)),
   );
   m
 });
 
 impl GachaBusiness {
-  fn ref_by(business: &AccountBusiness) -> &'static Self {
+  fn ref_by(business: &Business) -> &'static Self {
     // `unwrap` Make sure there is a corresponding mapping for `GACHA_BUSINESSES`.
     GACHA_BUSINESSES.get(business).unwrap()
   }
@@ -1088,7 +1088,7 @@ async fn pull_gacha_records(
 #[cfg(test)]
 mod tests {
   use super::{create_gacha_records_fetcher_channel, GachaBusiness, GachaBusinessError, GachaUrl};
-  use crate::models::AccountBusiness;
+  use crate::models::Business;
 
   fn install_tracing() {
     tracing_subscriber::fmt()
@@ -1120,7 +1120,7 @@ mod tests {
   #[tokio::test]
   async fn test_fetch_gacha_records() -> Result<(), Box<dyn std::error::Error>> {
     install_tracing();
-    let business = GachaBusiness::ref_by(&AccountBusiness::GenshinImpact);
+    let business = GachaBusiness::ref_by(&Business::GenshinImpact);
     if let Some(gacha_urls) = find_gacha_urls(business)? {
       let gacha_url = gacha_urls.first().expect("No valid Gacha url available");
       println!(
@@ -1142,7 +1142,7 @@ mod tests {
   #[tokio::test]
   async fn test_fetcher_channel() -> Result<(), Box<dyn std::error::Error>> {
     install_tracing();
-    let business = GachaBusiness::ref_by(&AccountBusiness::GenshinImpact);
+    let business = GachaBusiness::ref_by(&Business::GenshinImpact);
     if let Some(gacha_urls) = find_gacha_urls(business)? {
       let gacha_url = gacha_urls.first().expect("No valid Gacha url available");
       create_gacha_records_fetcher_channel(

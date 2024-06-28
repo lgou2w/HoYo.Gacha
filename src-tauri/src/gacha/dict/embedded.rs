@@ -7,7 +7,7 @@ use serde::Deserialize;
 use crate::gacha::dict::{
   Category, GachaDictionary, GachaDictionaryEntry, GachaDictionaryEntryItemId,
 };
-use crate::models::AccountBusiness;
+use crate::models::Business;
 
 fn read_dictionaries<'a>(
   lang: &'a str,
@@ -82,15 +82,15 @@ macro_rules! embedded {
 
           use crate::gacha::dict::GachaDictionary;
           use crate::gacha::dict::embedded::read_dictionaries;
-          use crate::models::AccountBusiness;
+          use crate::models::Business;
 
-          pub const BUSINESS: &'static AccountBusiness = &AccountBusiness::$business;
+          pub const BUSINESS: &'static Business = &Business::$business;
 
           $(
             pub static [<LANG_ $field>]: Lazy<GachaDictionary> = Lazy::new(|| {
               info!(
                 message = "Initialize the embedded dictionary file...",
-                business = %AccountBusiness::$business,
+                business = %Business::$business,
                 lang = $lang,
                 file = $file
               );
@@ -113,7 +113,7 @@ macro_rules! embedded {
       )*
 
       pub fn dictionary(
-        business: &AccountBusiness,
+        business: &Business,
         lang: &str
       ) -> Option<&'static GachaDictionary<'static>> {
         match business {
@@ -171,7 +171,7 @@ embedded!(
 );
 
 pub fn name(
-  business: &AccountBusiness,
+  business: &Business,
   lang: &str,
   item_name: &str,
 ) -> Option<&'static GachaDictionaryEntry<'static>> {
@@ -179,7 +179,7 @@ pub fn name(
 }
 
 pub fn id(
-  business: &AccountBusiness,
+  business: &Business,
   lang: &str,
   item_id: &str,
 ) -> Option<&'static GachaDictionaryEntry<'static>> {
@@ -190,18 +190,12 @@ pub fn id(
 
 #[cfg(test)]
 mod tests {
-  use crate::models::AccountBusiness;
+  use crate::models::Business;
 
   #[test]
   fn test_lazy_read() {
-    assert_eq!(
-      super::genshin_impact::BUSINESS,
-      &AccountBusiness::GenshinImpact
-    );
-    assert_eq!(
-      super::honkai_star_rail::BUSINESS,
-      &AccountBusiness::HonkaiStarRail
-    );
+    assert_eq!(super::genshin_impact::BUSINESS, &Business::GenshinImpact);
+    assert_eq!(super::honkai_star_rail::BUSINESS, &Business::HonkaiStarRail);
     super::genshin_impact::validation_lazy_read();
     super::honkai_star_rail::validation_lazy_read();
   }

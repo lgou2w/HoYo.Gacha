@@ -16,7 +16,7 @@ use time::{OffsetDateTime, UtcOffset};
 use super::{GachaConverter, GachaRecordsReader, GachaRecordsWriter};
 use crate::constants;
 use crate::gacha::dict::embedded as GachaDictionaryEmbedded;
-use crate::models::{AccountBusiness, AccountIdentifier, GachaRecord, GachaRecordRank};
+use crate::models::{Business, AccountIdentifier, GachaRecord, GachaRecordRank};
 
 // UIGF for Genshin Impact
 // See: https://uigf.org/zh/standards/UIGF.html
@@ -156,7 +156,7 @@ pub static UIGF_GACHA_TYPE_MAPPINGS: Lazy<HashMap<u32, &str>> = Lazy::new(|| {
 #[derive(Debug, thiserror::Error)]
 pub enum UIGFGachaConverterError {
   #[error("Incompatible business exists for records: {0:?}")]
-  IncompatibleBusiness(AccountBusiness),
+  IncompatibleBusiness(Business),
 
   #[error("Inconsistent with expected uid. (Expected: {expected}, Actual: {actual})")]
   InconsistentUid { expected: String, actual: String },
@@ -192,7 +192,7 @@ pub struct UIGFGachaConverter {
 }
 
 impl UIGFGachaConverter {
-  const TARGET_BUSINESS: &'static AccountBusiness = &AccountBusiness::GenshinImpact;
+  const TARGET_BUSINESS: &'static Business = &Business::GenshinImpact;
 
   pub fn new(uid: String, lang: String) -> Self {
     Self { uid, lang }
@@ -505,7 +505,7 @@ mod tests {
     GachaRecordsReader, GachaRecordsWriter, UIGFGachaConverterError, UIGFGachaRecordsReader,
     UIGFGachaRecordsWriter, UIGFVersion, UIGF,
   };
-  use crate::models::{AccountBusiness, AccountIdentifier, GachaRecord, GachaRecordRank};
+  use crate::models::{Business, AccountIdentifier, GachaRecord, GachaRecordRank};
 
   #[tokio::test]
   async fn test_writer() -> Result<(), UIGFGachaConverterError> {
@@ -513,7 +513,7 @@ mod tests {
     let lang = "zh-cn";
     let record = GachaRecord {
       id: "1675850760000000000".into(),
-      business: AccountBusiness::GenshinImpact,
+      business: Business::GenshinImpact,
       uid: AccountIdentifier::try_from(uid).unwrap(),
       gacha_type: 400,
       gacha_id: None,
@@ -639,7 +639,7 @@ mod tests {
     assert_eq!(records.len(), 1);
     let record = records.first().unwrap();
     assert_eq!(record.id, "1675850760000000000");
-    assert_eq!(record.business, AccountBusiness::GenshinImpact);
+    assert_eq!(record.business, Business::GenshinImpact);
     assert_eq!(record.uid, 100_000_001);
     assert_eq!(record.gacha_type, 400);
     assert_eq!(record.gacha_id, None);
@@ -675,7 +675,7 @@ mod tests {
     assert_eq!(records.len(), 1);
     let record = records.first().unwrap();
     assert_eq!(record.id, "1675850760000000000");
-    assert_eq!(record.business, AccountBusiness::GenshinImpact);
+    assert_eq!(record.business, Business::GenshinImpact);
     assert_eq!(record.uid, 100_000_001);
     assert_eq!(record.gacha_type, 400);
     assert_eq!(record.gacha_id, None);

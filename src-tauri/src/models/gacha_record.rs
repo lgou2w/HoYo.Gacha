@@ -2,7 +2,7 @@ use num_enum::{IntoPrimitive, TryFromPrimitive};
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 
-use super::{AccountBusiness, AccountIdentifier};
+use super::{Business, AccountIdentifier};
 
 /// Rank of Gacha Record
 
@@ -57,7 +57,7 @@ pub struct GachaRecord {
   // HACK: SQLite cannot store u64,
   //   and Id can only use String.
   pub id: String,                 // 1675850760000000000          | <-
-  pub business: AccountBusiness,  //                            0 | 1
+  pub business: Business,  //                            0 | 1
   pub uid: AccountIdentifier,     // 100000001                    | <-
   pub gacha_type: u32,            // 100, 200, 301, 400, 302, 500 | 1, 2, 11, 12
   pub gacha_id: Option<u32>,      //                         None | Some(_)

@@ -1,6 +1,6 @@
 import React from 'react'
 import { Text, makeStyles, tokens } from '@fluentui/react-components'
-import { Account, AccountBusiness, ReversedAccountBusinesses } from '@/api/interfaces/account'
+import { Account, Business, ReversedBusinesses } from '@/api/interfaces/account'
 import PlayerAvatar from '@/components/Accounts/PlayerAvatar'
 import Locale from '@/components/Core/Locale'
 
@@ -28,7 +28,7 @@ const useStyle = makeStyles({
 })
 
 type Props = {
-  business: AccountBusiness
+  business: Business
   account: null
 } | {
   account: Account
@@ -60,7 +60,7 @@ export default function GachaBusinessViewAccountSelectItem (props: Props) {
           truncate
           mapping={(t) => {
             return account?.properties?.displayName as string ||
-              t(`common.business.${ReversedAccountBusinesses[business]}.player`)
+              t(`business.${ReversedBusinesses[business]}.player`)
           }}
         />
         <Text className="uid" as="p" font="numeric" size={200} weight="semibold">

@@ -3,19 +3,19 @@
 
 // Declares
 
-export const AccountBusinesses = {
+export const Businesses = {
   GenshinImpact: 0,
   HonkaiStarRail: 1
   // ZenlessZoneZero: 2
 } as const
 
-export type AccountBusiness = typeof AccountBusinesses[keyof typeof AccountBusinesses]
+export type Business = typeof Businesses[keyof typeof Businesses]
 
-export const ReversedAccountBusinesses: Readonly<Record<AccountBusiness, keyof typeof AccountBusinesses>> =
-  Object.entries(AccountBusinesses).reduce((acc, [key, value]) => {
-    acc[value] = key as keyof typeof AccountBusinesses
+export const ReversedBusinesses: Readonly<Record<Business, keyof typeof Businesses>> =
+  Object.entries(Businesses).reduce((acc, [key, value]) => {
+    acc[value] = key as keyof typeof Businesses
     return acc
-  }, {} as Record<AccountBusiness, keyof typeof AccountBusinesses>)
+  }, {} as Record<Business, keyof typeof Businesses>)
 
 export interface KnownAccountProperties {
   displayName: string | null
@@ -23,7 +23,7 @@ export interface KnownAccountProperties {
 
 export interface Account {
   id: number
-  business: AccountBusiness
+  business: Business
   uid: number
   gameDataDir: string
   gachaUrl: string | null
@@ -35,15 +35,15 @@ export interface Account {
 // Utilities
 
 export function isGenshinImpactAccount (account: Account): boolean {
-  return account.business === AccountBusinesses.GenshinImpact
+  return account.business === Businesses.GenshinImpact
 }
 
 export function isHonkaiStarRailAccount (account: Account): boolean {
-  return account.business === AccountBusinesses.HonkaiStarRail
+  return account.business === Businesses.HonkaiStarRail
 }
 
 // export function isZenlessZoneZeroAccount (account: Account): boolean {
-//   return account.business === AccountBusinesses.ZenlessZoneZero
+//   return account.business === Businesses.ZenlessZoneZero
 // }
 
 export enum AccountServer {

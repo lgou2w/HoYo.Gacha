@@ -1,6 +1,6 @@
 import React from 'react'
 import { makeStyles, tokens } from '@fluentui/react-components'
-import AccountBusiness, { AccountBusinessContextState } from '@/components/AccountBusiness'
+import BusinessProvider, { BusinessContextState } from '@/components/BusinessProvider'
 import AccountsBusinessViewList from './List'
 import AccountsBusinessViewToolbar from './Toolbar'
 
@@ -12,15 +12,15 @@ const useStyles = makeStyles({
   }
 })
 
-export default function AccountsBusinessView (props: AccountBusinessContextState) {
+export default function AccountsBusinessView (props: BusinessContextState) {
   const { keyOfBusinesses, business } = props
   const classes = useStyles()
   return (
     <section className={classes.root}>
-      <AccountBusiness keyOfBusinesses={keyOfBusinesses} business={business}>
+      <BusinessProvider keyOfBusinesses={keyOfBusinesses} business={business}>
         <AccountsBusinessViewToolbar />
         <AccountsBusinessViewList />
-      </AccountBusiness>
+      </BusinessProvider>
     </section>
   )
 }

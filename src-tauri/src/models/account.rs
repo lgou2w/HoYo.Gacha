@@ -24,31 +24,31 @@ use time::OffsetDateTime;
   Hash,
 )]
 #[repr(u8)]
-pub enum AccountBusiness {
+pub enum Business {
   GenshinImpact = 0,
   HonkaiStarRail = 1,
   // ZenlessZoneZero = 2, // TODO: 07/04
 }
 
-impl AccountBusiness {
+impl Business {
   pub fn name(&self) -> &'static str {
     match *self {
-      AccountBusiness::GenshinImpact => "Genshin Impact",
-      AccountBusiness::HonkaiStarRail => "Honkai: Star Rail",
-      // AccountBusiness::ZenlessZoneZero => "Zenless Zone Zero",
+      Business::GenshinImpact => "Genshin Impact",
+      Business::HonkaiStarRail => "Honkai: Star Rail",
+      // Business::ZenlessZoneZero => "Zenless Zone Zero",
     }
   }
 
   pub fn codename(&self) -> &'static str {
     match *self {
-      AccountBusiness::GenshinImpact => "hk4e",
-      AccountBusiness::HonkaiStarRail => "hkrpg",
-      // AccountBusiness::ZenlessZoneZero => "nap",
+      Business::GenshinImpact => "hk4e",
+      Business::HonkaiStarRail => "hkrpg",
+      // Business::ZenlessZoneZero => "nap",
     }
   }
 }
 
-impl fmt::Display for AccountBusiness {
+impl fmt::Display for Business {
   fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
     write!(f, "{}", self.name())
   }
@@ -166,7 +166,7 @@ impl DerefMut for AccountProperties {
 #[serde(rename_all = "camelCase")]
 pub struct Account {
   pub id: u32,
-  pub business: AccountBusiness,
+  pub business: Business,
   pub uid: AccountIdentifier,
   pub game_data_dir: String,
   pub gacha_url: Option<String>,
@@ -210,7 +210,7 @@ mod tests {
   fn test_serialize() {
     let mut account = Account {
       id: 1,
-      business: AccountBusiness::GenshinImpact,
+      business: Business::GenshinImpact,
       uid: AccountIdentifier::try_from(100_000_001).unwrap(),
       game_data_dir: "empty".into(),
       gacha_url: None,
@@ -263,7 +263,7 @@ mod tests {
 
     let account = from_json::<Account>(json).unwrap();
     assert_eq!(account.id, 1);
-    assert_eq!(account.business, AccountBusiness::GenshinImpact);
+    assert_eq!(account.business, Business::GenshinImpact);
     assert_eq!(account.uid, 100_000_001);
     assert_eq!(account.game_data_dir, "some game data dir");
     assert_eq!(account.gacha_url.as_deref(), Some("some gacha url"));

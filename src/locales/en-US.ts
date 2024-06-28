@@ -1,45 +1,43 @@
 export default {
-  common: {
-    business: {
-      GenshinImpact: {
-        name: 'Genshin Impact',
-        player: 'Traveler',
-        servers: {
-          official: 'Celestia (CN)',
-          channel: 'Irminsul (CN)',
-          oversea: {
-            usa: 'America',
-            euro: 'Europe',
-            asia: 'Asia',
-            cht: 'TW,HK,MO'
-          }
-        },
-        gacha: {
-          name: 'Wish'
-        },
-        gameDataDir: {
-          example: 'X:/Genshin Impact/Genshin Impact Game/GenshinImpact_Data'
+  business: {
+    GenshinImpact: {
+      name: 'Genshin Impact',
+      player: 'Traveler',
+      servers: {
+        official: 'Celestia (CN)',
+        channel: 'Irminsul (CN)',
+        oversea: {
+          usa: 'America',
+          euro: 'Europe',
+          asia: 'Asia',
+          cht: 'TW,HK,MO'
         }
       },
-      HonkaiStarRail: {
-        name: 'Honkai: Star Rail',
-        player: 'Trailblazer',
-        servers: {
-          official: 'Astral Express (CN)',
-          channel: 'The Nameless (CN)',
-          oversea: {
-            usa: 'America',
-            euro: 'Europe',
-            asia: 'Asia',
-            cht: 'TW,HK,MO'
-          }
-        },
-        gacha: {
-          name: 'Wrap'
-        },
-        gameDataDir: {
-          example: 'X:/Star Rail/Game/StarRail_Data'
+      gacha: {
+        name: 'Wish'
+      },
+      gameDataDir: {
+        example: 'X:/Genshin Impact/Genshin Impact Game/GenshinImpact_Data'
+      }
+    },
+    HonkaiStarRail: {
+      name: 'Honkai: Star Rail',
+      player: 'Trailblazer',
+      servers: {
+        official: 'Astral Express (CN)',
+        channel: 'The Nameless (CN)',
+        oversea: {
+          usa: 'America',
+          euro: 'Europe',
+          asia: 'Asia',
+          cht: 'TW,HK,MO'
         }
+      },
+      gacha: {
+        name: 'Wrap'
+      },
+      gameDataDir: {
+        example: 'X:/Star Rail/Game/StarRail_Data'
       }
     }
   },
@@ -68,8 +66,8 @@ export default {
           '/': 'Home',
           '/accounts': 'Accounts',
           '/settings': 'Settings',
-          '/gacha/GenshinImpact': '$t(common.business.GenshinImpact.name)',
-          '/gacha/HonkaiStarRail': '$t(common.business.HonkaiStarRail.name)'
+          '/gacha/GenshinImpact': '$t(business.GenshinImpact.name)',
+          '/gacha/HonkaiStarRail': '$t(business.HonkaiStarRail.name)'
         }
       }
     },
@@ -96,7 +94,7 @@ export default {
           },
           gameDataDir: {
             label: 'Game Data Folder',
-            placeholder: 'Full path to the game data folder. \nFor example: $t(common.business.{{business}}.gameDataDir.example)',
+            placeholder: 'Full path to the game data folder. \nFor example: $t(business.{{business}}.gameDataDir.example)',
             required: 'Please set the game data folder.',
             autoFindBtn: 'Auto Find',
             manualFindBtn: 'Manual Choice',
@@ -105,11 +103,11 @@ export default {
           }
         },
         addOrEditDialog: {
-          addTitle: 'Add new account: $t(common.business.{{business}}.name)',
-          editTitle: 'Edit account: $t(common.business.{{business}}.name)'
+          addTitle: 'Add new account: $t(business.{{business}}.name)',
+          editTitle: 'Edit account: $t(business.{{business}}.name)'
         },
         toolbar: {
-          title: '$t(common.business.{{business}}.name)',
+          title: '$t(business.{{business}}.name)',
           addAccountBtn: 'Add account'
         },
         list: {
@@ -117,7 +115,7 @@ export default {
         },
         listItem: {
           editAccountBtn: 'Edit account',
-          server: 'Server: $t(common.business.{{business}}.servers.{{path}})'
+          server: 'Server: $t(business.{{business}}.servers.{{path}})'
         }
       }
     },

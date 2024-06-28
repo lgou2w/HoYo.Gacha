@@ -1,45 +1,43 @@
 export default {
-  common: {
-    business: {
-      GenshinImpact: {
-        name: '原神',
-        player: '旅行者',
-        servers: {
-          official: '天空島',
-          channel: '世界樹',
-          oversea: {
-            usa: '美服',
-            euro: '歐服',
-            asia: '亞服',
-            cht: '港澳台服'
-          }
-        },
-        gacha: {
-          name: '祈願'
-        },
-        gameDataDir: {
-          example: 'X:/Genshin Impact/Genshin Impact Game/GenshinImpact_Data'
+  business: {
+    GenshinImpact: {
+      name: '原神',
+      player: '旅行者',
+      servers: {
+        official: '天空島',
+        channel: '世界樹',
+        oversea: {
+          usa: '美服',
+          euro: '歐服',
+          asia: '亞服',
+          cht: '港澳台服'
         }
       },
-      HonkaiStarRail: {
-        name: '崩壞：星穹鐵道',
-        player: '開拓者',
-        servers: {
-          official: '星穹列車',
-          channel: '無名客',
-          oversea: {
-            usa: '美服',
-            euro: '歐服',
-            asia: '亞服',
-            cht: '港澳台服'
-          }
-        },
-        gacha: {
-          name: '躍遷'
-        },
-        gameDataDir: {
-          example: 'X:/Star Rail/Game/StarRail_Data'
+      gacha: {
+        name: '祈願'
+      },
+      gameDataDir: {
+        example: 'X:/Genshin Impact/Genshin Impact Game/GenshinImpact_Data'
+      }
+    },
+    HonkaiStarRail: {
+      name: '崩壞：星穹鐵道',
+      player: '開拓者',
+      servers: {
+        official: '星穹列車',
+        channel: '無名客',
+        oversea: {
+          usa: '美服',
+          euro: '歐服',
+          asia: '亞服',
+          cht: '港澳台服'
         }
+      },
+      gacha: {
+        name: '躍遷'
+      },
+      gameDataDir: {
+        example: 'X:/Star Rail/Game/StarRail_Data'
       }
     }
   },
@@ -68,8 +66,8 @@ export default {
           '/': '主頁',
           '/accounts': '賬戶',
           '/settings': '設定',
-          '/gacha/GenshinImpact': '$t(common.business.GenshinImpact.name)',
-          '/gacha/HonkaiStarRail': '$t(common.business.HonkaiStarRail.name)'
+          '/gacha/GenshinImpact': '$t(business.GenshinImpact.name)',
+          '/gacha/HonkaiStarRail': '$t(business.HonkaiStarRail.name)'
         }
       }
     },
@@ -96,7 +94,7 @@ export default {
           },
           gameDataDir: {
             label: '遊戲數據目錄',
-            placeholder: '遊戲數據目錄的完整路徑。\n例如：$t(common.business.{{business}}.gameDataDir.example)',
+            placeholder: '遊戲數據目錄的完整路徑。\n例如：$t(business.{{business}}.gameDataDir.example)',
             required: '請設定遊戲數據目錄。',
             autoFindBtn: '自動查找',
             manualFindBtn: '手動選擇',
@@ -105,11 +103,11 @@ export default {
           }
         },
         addOrEditDialog: {
-          addTitle: '添加新帳戶：$t(common.business.{{business}}.name)',
-          editTitle: '編輯帳戶：$t(common.business.{{business}}.name)'
+          addTitle: '添加新帳戶：$t(business.{{business}}.name)',
+          editTitle: '編輯帳戶：$t(business.{{business}}.name)'
         },
         toolbar: {
-          title: '$t(common.business.{{business}}.name)',
+          title: '$t(business.{{business}}.name)',
           addAccountBtn: '添加帳戶'
         },
         list: {
@@ -117,7 +115,7 @@ export default {
         },
         listItem: {
           editAccountBtn: '編輯帳戶',
-          server: '服務器：$t(common.business.{{business}}.servers.{{path}})'
+          server: '服務器：$t(business.{{business}}.servers.{{path}})'
         }
       }
     },

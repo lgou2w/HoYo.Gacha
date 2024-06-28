@@ -2,7 +2,7 @@ import React from 'react'
 import { Text, makeStyles, shorthands, tokens } from '@fluentui/react-components'
 import { ErrorCircleRegular } from '@fluentui/react-icons'
 import { useAccountsQuery } from '@/api/queries/account'
-import useAccountBusiness from '@/components/AccountBusiness/useAccountBusiness'
+import useBusiness from '@/components/BusinessProvider/useBusiness'
 import Locale from '@/components/Core/Locale'
 import AccountsBusinessViewListItem from './ListItem'
 
@@ -28,7 +28,7 @@ const useStyles = makeStyles({
 })
 
 export default function AccountsBusinessViewList () {
-  const { business } = useAccountBusiness()
+  const { business } = useBusiness()
   const { data: accounts } = useAccountsQuery()
   const classes = useStyles()
 

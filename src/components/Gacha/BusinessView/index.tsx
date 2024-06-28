@@ -1,14 +1,14 @@
 import React from 'react'
-import AccountBusiness, { AccountBusinessContextState } from '@/components/AccountBusiness'
+import BusinessProvider, { BusinessContextState } from '@/components/BusinessProvider'
 import GachaBusinessViewAccountSelect from './AccountSelect'
 
-export default function GachaBusinessView (props: AccountBusinessContextState) {
+export default function GachaBusinessView (props: BusinessContextState) {
   const { keyOfBusinesses, business } = props
   return (
-    <AccountBusiness keyOfBusinesses={keyOfBusinesses} business={business}>
+    <BusinessProvider keyOfBusinesses={keyOfBusinesses} business={business}>
       <div>
         <GachaBusinessViewAccountSelect />
       </div>
-    </AccountBusiness>
+    </BusinessProvider>
   )
 }

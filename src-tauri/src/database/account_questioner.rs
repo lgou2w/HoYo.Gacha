@@ -6,7 +6,7 @@ use sqlx::{Decode, Encode, FromRow, Row, Sqlite, Type};
 use time::OffsetDateTime;
 
 use super::macros::declare_entity_with_handlers;
-use crate::models::{Account, AccountBusiness, AccountIdentifier, AccountProperties};
+use crate::models::{Account, AccountIdentifier, AccountProperties, Business};
 
 declare_entity_with_handlers! {
   Account,
@@ -32,7 +32,7 @@ declare_entity_with_handlers! {
 
   "SELECT * FROM `hg.accounts` WHERE `business` = ?;"
     = find_accounts_by_business {
-        business: AccountBusiness
+        business: Business
       } and fetch_all -> Vec<Account>,
 
   "SELECT * FROM `hg.accounts` WHERE `id` = ?;"
@@ -40,13 +40,13 @@ declare_entity_with_handlers! {
 
   "SELECT * FROM `hg.accounts` WHERE `business` = ? AND `uid` = ?;"
     = find_account_by_business_and_uid {
-      business: AccountBusiness,
+      business: Business,
         uid: AccountIdentifier
       } and fetch_optional -> Option<Account>,
 
   "INSERT INTO `hg.accounts` (`business`, `uid`, `game_data_dir`, `properties`) VALUES (?, ?, ?, ?) RETURNING *;"
     = create_account {
-        business: AccountBusiness,
+        business: Business,
         uid: AccountIdentifier,
         game_data_dir: String,
         properties: Option<AccountProperties>
@@ -103,7 +103,7 @@ impl<'r> FromRow<'r, SqliteRow> for Account {
 
 // Account Business
 
-impl Type<Sqlite> for AccountBusiness {
+impl Type<Sqlite> for Business {
   fn type_info() -> SqliteTypeInfo {
     u8::type_info()
   }
@@ -113,15 +113,15 @@ impl Type<Sqlite> for AccountBusiness {
   }
 }
 
-impl<'r> Encode<'r, Sqlite> for AccountBusiness {
+impl<'r> Encode<'r, Sqlite> for Business {
   fn encode_by_ref(&self, buf: &mut <Sqlite as HasArguments<'r>>::ArgumentBuffer) -> IsNull {
     u8::from(*self).encode_by_ref(buf)
   }
 }
 
-impl<'r> Decode<'r, Sqlite> for AccountBusiness {
+impl<'r> Decode<'r, Sqlite> for Business {
   fn decode(value: SqliteValueRef) -> Result<Self, BoxDynError> {
-    AccountBusiness::try_from(u8::decode(value)?).map_err(Into::into)
+    Business::try_from(u8::decode(value)?).map_err(Into::into)
   }
 }
 

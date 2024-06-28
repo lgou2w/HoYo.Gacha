@@ -1,7 +1,7 @@
 import React, { ComponentProps, ReactElement, useState } from 'react'
 import { Dialog, DialogBody, DialogContent, DialogSurface, DialogTitle, DialogTrigger } from '@fluentui/react-components'
-import useAccountBusiness from '@/components/AccountBusiness/useAccountBusiness'
 import AddOrEditForm from '@/components/Accounts/BusinessView/AddOrEditForm'
+import useBusiness from '@/components/BusinessProvider/useBusiness'
 import Locale from '@/components/Core/Locale'
 
 interface Props {
@@ -11,7 +11,7 @@ interface Props {
 
 export default function AddOrEditDialog (props: Props) {
   const { edit, trigger } = props
-  const { keyOfBusinesses } = useAccountBusiness()
+  const { keyOfBusinesses } = useBusiness()
   const [open, setOpen] = useState(false)
   return (
     <Dialog

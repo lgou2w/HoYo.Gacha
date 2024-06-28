@@ -2,7 +2,7 @@ import React, { MouseEventHandler, useCallback } from 'react'
 import { Menu, MenuButton, MenuItem, MenuList, MenuPopover, MenuTrigger, makeStyles, shorthands, tokens } from '@fluentui/react-components'
 import { useAccountsQuery } from '@/api/queries/account'
 import { useGachaSelectedAccountQuery, setGachaSelectedAccount } from '@/api/queries/gacha'
-import useAccountBusiness from '@/components/AccountBusiness/useAccountBusiness'
+import useBusiness from '@/components/BusinessProvider/useBusiness'
 import GachaBusinessViewAccountSelectItem from './Item'
 
 const border = shorthands.border(tokens.strokeWidthThin, 'solid', tokens.colorNeutralStroke1)
@@ -16,7 +16,7 @@ const useStyle = makeStyles({
 })
 
 export default function GachaBusinessViewAccountSelect () {
-  const { keyOfBusinesses, business } = useAccountBusiness()
+  const { keyOfBusinesses, business } = useBusiness()
   const { data: accounts } = useAccountsQuery()
   const { data: gachaAccountSelectedId } = useGachaSelectedAccountQuery(keyOfBusinesses)
   const classes = useStyle()

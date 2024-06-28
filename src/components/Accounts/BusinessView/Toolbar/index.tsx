@@ -1,8 +1,8 @@
 import React from 'react'
 import { Button, Subtitle2, Tooltip, makeStyles, shorthands, tokens } from '@fluentui/react-components'
 import { PeopleAddRegular, PeopleListRegular } from '@fluentui/react-icons'
-import useAccountBusiness from '@/components/AccountBusiness/useAccountBusiness'
 import AddOrEditDialog from '@/components/Accounts/BusinessView/AddOrEditDialog'
+import useBusiness from '@/components/BusinessProvider/useBusiness'
 import Locale from '@/components/Core/Locale'
 
 const useStyles = makeStyles({
@@ -41,7 +41,7 @@ const useStyles = makeStyles({
 })
 
 export default function AccountsBusinessViewToolbar () {
-  const { keyOfBusinesses } = useAccountBusiness()
+  const { keyOfBusinesses } = useBusiness()
   const classes = useStyles()
   return (
     <div className={classes.root}>

@@ -9,7 +9,7 @@ import { Account, UidRegex, isCorrectUid, isOverseaServer } from '@/api/interfac
 import { DataDirectory } from '@/api/interfaces/gacha-business'
 import { GachaBusinessPlugin, isDatabaseError, isGachaBusinessError, stringifyGachaBusinessErrorKind } from '@/api/plugins'
 import { useAccountsQuery, useCreateAccountMutation, useUpdateAccountGameDataDirAndPropertiesMutation } from '@/api/queries/account'
-import useAccountBusiness from '@/components/AccountBusiness/useAccountBusiness'
+import useBusiness from '@/components/BusinessProvider/useBusiness'
 import Locale from '@/components/Core/Locale'
 import useToaster from '@/components/Core/Toaster/useToaster'
 import { IdentifierRegular } from '@/components/Utilities/Icons'
@@ -67,7 +67,7 @@ interface Props {
 
 export default function AddOrEditForm (props: Props) {
   const { edit, onCancel, onSuccess } = props
-  const { keyOfBusinesses, business } = useAccountBusiness()
+  const { keyOfBusinesses, business } = useBusiness()
   const { data: accounts } = useAccountsQuery()
   const { notifyLocale } = useToaster()
   const { t } = useTranslation()

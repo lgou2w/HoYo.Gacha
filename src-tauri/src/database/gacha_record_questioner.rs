@@ -8,7 +8,7 @@ use sqlx::{Decode, Encode, FromRow, Row, Sqlite, SqlitePool, Type};
 
 use super::macros::declare_entity_with_handlers;
 use super::DatabaseError;
-use crate::models::{AccountBusiness, AccountIdentifier, GachaRecord, GachaRecordRank};
+use crate::models::{AccountIdentifier, Business, GachaRecord, GachaRecordRank};
 
 declare_entity_with_handlers! {
   GachaRecord,
@@ -40,13 +40,13 @@ declare_entity_with_handlers! {
 
   "SELECT * FROM `hg.gacha_records` WHERE `business` = ? AND `uid` = ?;"
     = find_gacha_records_by_business_and_uid {
-        business: AccountBusiness,
+        business: Business,
         uid: AccountIdentifier
       } and fetch_all -> Vec<GachaRecord>,
 
   "SELECT * FROM `hg.gacha_records` WHERE `business` = ? AND `uid` = ? AND `gacha_type` = ?;"
     = find_gacha_records_by_business_and_uid_with_gacha_type {
-        business: AccountBusiness,
+        business: Business,
         uid: AccountIdentifier,
         gacha_type: u32
       } and fetch_all -> Vec<GachaRecord>,

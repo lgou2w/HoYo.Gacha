@@ -1,4 +1,4 @@
-import { AccountBusiness, AccountBusinesses } from './account'
+import { Business, Businesses } from './account'
 
 // GachaRecord
 //   See: src-tauri/src/models/gacha_record.rs
@@ -15,10 +15,10 @@ export type GachaRecordRank = typeof GachaRecordRanks[keyof typeof GachaRecordRa
 
 // Stricter type inference based on business
 //   ON `business` = 0 -> `gachaType` = 100 | 200 | 301 | 400 | 302
-//                  -> `gachaId` === null
+//                     -> `gachaId` === null
 //   ON `business` = 1 -> `gachaType` = 1 | 2 | 11 | 12
-//                  -> `gachaId` !== null
-export type GachaRecord<Business = AccountBusiness> = {
+//                     -> `gachaId` !== null
+export type GachaRecord<T = Business> = {
   id: string
   business: Business
   uid: number
@@ -33,7 +33,7 @@ export type GachaRecord<Business = AccountBusiness> = {
   itemId: string
 } & (
   // Genshin Impact
-  Business extends 0 ? {
+  T extends 0 ? {
     gachaType: 100 | 200 | 301 | 400 | 302
     gachaId: null
   }
@@ -54,15 +54,15 @@ export type HonkaiStarRailGachaRecord = GachaRecord<1>
 // Utilities
 
 export function isGenshinImpactGachaRecord (record: GachaRecord): record is GenshinImpactGachaRecord {
-  return record.business === AccountBusinesses.GenshinImpact
+  return record.business === Businesses.GenshinImpact
 }
 
 export function isHonkaiStarRailGachaRecord (record: GachaRecord): record is HonkaiStarRailGachaRecord {
-  return record.business === AccountBusinesses.HonkaiStarRail
+  return record.business === Businesses.HonkaiStarRail
 }
 
 // export function isZenlessZoneZeroGachaRecord (record: GachaRecord): record is ZenlessZoneZeroGachaRecord {
-//   return record.business === AccountBusinesses.ZenlessZoneZero
+//   return record.business === Businesses.ZenlessZoneZero
 // }
 
 export function isRankBlueGachaRecord (record: GachaRecord): boolean {

@@ -1,6 +1,6 @@
 import React from 'react'
 import { Image, ImageProps } from '@fluentui/react-components'
-import { AccountBusiness, AccountBusinesses } from '@/api/interfaces/account'
+import { Business, Businesses } from '@/api/interfaces/account'
 import GenshinImpactAvatarTravelerBoy from '@/assets/images/GenshinImpact/Avatar/Traveler_Boy.png'
 import GenshinImpactAvatarTravelerGirl from '@/assets/images/GenshinImpact/Avatar/Traveler_Girl.png'
 import HonkaiStarRailAvatarTravelerBoy1 from '@/assets/images/HonkaiStarRail/Avatar/Trailblazer_Boy_1.png'
@@ -12,14 +12,14 @@ import HonkaiStarRailAvatarTravelerGirl2 from '@/assets/images/HonkaiStarRail/Av
 
 type Avatar = { boy: string, girl: string }
 
-const EmbeddedAvatars: Record<AccountBusiness, Avatar[]> = {
-  [AccountBusinesses.GenshinImpact]: [
+const EmbeddedAvatars: Record<Business, Avatar[]> = {
+  [Businesses.GenshinImpact]: [
     {
       boy: GenshinImpactAvatarTravelerBoy,
       girl: GenshinImpactAvatarTravelerGirl
     }
   ],
-  [AccountBusinesses.HonkaiStarRail]: [
+  [Businesses.HonkaiStarRail]: [
     {
       boy: HonkaiStarRailAvatarTravelerBoy1,
       girl: HonkaiStarRailAvatarTravelerGirl1
@@ -32,7 +32,7 @@ const EmbeddedAvatars: Record<AccountBusiness, Avatar[]> = {
 }
 
 interface Props extends Omit<ImageProps, 'alt' | 'src'> {
-  business: AccountBusiness
+  business: Business
   type: [number, keyof Avatar]
 }
 

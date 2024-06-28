@@ -2,7 +2,7 @@ import React, { ReactNode, createRef, useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { Tab, TabList, Tooltip, makeStyles, shorthands, tokens } from '@fluentui/react-components'
 import { SparkleRegular, SparkleFilled, BoardRegular, BoardFilled, PersonCircleRegular, PersonCircleFilled, SettingsRegular, SettingsFilled } from '@fluentui/react-icons'
-import { AccountBusiness, AccountBusinesses } from '@/api/interfaces/account'
+import { Business, Businesses } from '@/api/interfaces/account'
 import Locale from '@/components/Core/Locale'
 import { TrainRegular } from '@/components/Utilities/Icons'
 
@@ -32,12 +32,12 @@ const useStyles = makeStyles({
 type NavIcon = { normal: ReactNode, selected?: ReactNode }
 type NavItem = { path: string, icon: NavIcon } | { spacing: true }
 
-const AccountBusinessIconMappings: Record<AccountBusiness, NavIcon> = {
-  [AccountBusinesses.GenshinImpact]: {
+const AccountBusinessIconMappings: Record<Business, NavIcon> = {
+  [Businesses.GenshinImpact]: {
     normal: <SparkleRegular />,
     selected: <SparkleFilled />
   },
-  [AccountBusinesses.HonkaiStarRail]: {
+  [Businesses.HonkaiStarRail]: {
     normal: <TrainRegular />
   }
 }
@@ -50,7 +50,7 @@ const Navs: NavItem[] = [
       selected: <BoardFilled />
     }
   },
-  ...Object.entries(AccountBusinesses).map(([key, value]) => {
+  ...Object.entries(Businesses).map(([key, value]) => {
     return {
       path: `/gacha/${key}`,
       icon: AccountBusinessIconMappings[value]
