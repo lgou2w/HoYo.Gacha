@@ -16,10 +16,13 @@ const useStyle = makeStyles({
 })
 
 export default function GachaBusinessViewAccountSelect () {
+  const classes = useStyle()
   const { keyOfBusinesses, business } = useBusiness()
   const { data: accounts } = useAccountsQuery()
-  const { data: gachaAccountSelectedId } = useGachaSelectedAccountQuery(keyOfBusinesses)
-  const classes = useStyle()
+  const {
+    data: gachaAccountSelectedId,
+    isLoading: gachaAccountSelectedIdIsLoading
+  } = useGachaSelectedAccountQuery(keyOfBusinesses)
 
   const handleClickItem = useCallback<MouseEventHandler<HTMLDivElement>>((evt) => {
     evt.preventDefault()
@@ -33,6 +36,8 @@ export default function GachaBusinessViewAccountSelect () {
   }, [keyOfBusinesses, accounts, gachaAccountSelectedId])
 
   if (!accounts) return null
+  if (gachaAccountSelectedIdIsLoading) return null
+
   const accountsOfBusiness = accounts.filter((account) => account.business === business)
 
   let gachaAccountSelected = accountsOfBusiness.find((account) => account.id === gachaAccountSelectedId) || null
@@ -48,6 +53,7 @@ export default function GachaBusinessViewAccountSelect () {
       <MenuTrigger disableButtonEnhancement>
         <MenuButton
           className={classes.trigger}
+          disabled={!accountsOfBusiness.length}
           appearance="subtle"
         >
           <GachaBusinessViewAccountSelectItem

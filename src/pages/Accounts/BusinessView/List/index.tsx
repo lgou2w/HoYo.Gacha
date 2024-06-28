@@ -28,9 +28,9 @@ const useStyles = makeStyles({
 })
 
 export default function AccountsBusinessViewList () {
+  const classes = useStyles()
   const { business } = useBusiness()
   const { data: accounts } = useAccountsQuery()
-  const classes = useStyles()
 
   if (!accounts) return null
   const accountsOfBusiness = accounts.filter((account) => account.business === business)

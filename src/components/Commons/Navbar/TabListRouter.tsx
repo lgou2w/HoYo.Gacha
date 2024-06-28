@@ -74,6 +74,10 @@ const Navs: NavItem[] = [
 ]
 
 export default function NavbarTabListRouter () {
+  const classes = useStyles()
+  const location = useLocation()
+  const navigate = useNavigate()
+
   // HACK: Development only!
   //   This side effect is used to observe the height of
   //   the Tanstack Query Devtools panel and apply it to the TabList.
@@ -120,10 +124,8 @@ export default function NavbarTabListRouter () {
       observer.disconnect()
     }
   }, [tabListRef])
+  //
 
-  const location = useLocation()
-  const navigate = useNavigate()
-  const classes = useStyles()
   return (
     <TabList
       ref={tabListRef}

@@ -46,6 +46,7 @@ const AttrTauriDragRegion = 'data-tauri-drag-region'
 const Title = `HoYo.Gacha - v${__APP_VERSION__}`
 
 export default function TitleBar () {
+  const classes = useStyles()
   const containerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -54,7 +55,6 @@ export default function TitleBar () {
     containerRef.current.setAttribute(AttrTauriDragRegion, '')
   }, [containerRef])
 
-  const classes = useStyles()
   return (
     <React.Fragment>
       <div className={classes.root} ref={containerRef}>

@@ -121,6 +121,13 @@ export default {
         }
       }
     },
+    Gacha: {
+      BusinessView: {
+        AccountSelect: {
+          Empty: 'No accounts'
+        }
+      }
+    },
     Settings: {
       Title: 'Settings',
       General: {

@@ -68,8 +68,9 @@ interface Props {
 }
 
 export default function AccountsBusinessViewListItem (props: Props) {
-  const { account } = props
   const classes = useStyles()
+  const { account } = props
+
   return (
     <div className={classes.root}>
       <div className={classes.header}>

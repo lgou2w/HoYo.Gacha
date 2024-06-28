@@ -66,6 +66,7 @@ interface Props {
 }
 
 export default function AddOrEditForm (props: Props) {
+  const classes = useStyles()
   const { edit, onCancel, onSuccess } = props
   const { keyOfBusinesses, business } = useBusiness()
   const { data: accounts } = useAccountsQuery()
@@ -200,8 +201,8 @@ export default function AddOrEditForm (props: Props) {
     onSuccess?.(account)
     notifyLocale([
       !edit
-        ? 'Pages.Accounts.BusinessView.AddOrEditForm.successAdded'
-        : 'Pages.Accounts.BusinessView.AddOrEditForm.successEdited',
+        ? 'Pages.Accounts.BusinessView.AddOrEditForm.SuccessAdded'
+        : 'Pages.Accounts.BusinessView.AddOrEditForm.SuccessEdited',
       { uid: account.uid }
     ], {
       intent: 'success',
@@ -218,7 +219,6 @@ export default function AddOrEditForm (props: Props) {
     notifyLocale
   ])
 
-  const classes = useStyles()
   return (
     <form
       className={classes.root}

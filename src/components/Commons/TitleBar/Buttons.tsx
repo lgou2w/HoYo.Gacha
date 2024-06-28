@@ -47,6 +47,7 @@ function createButtonStyles ([hover, pressed]: [string, string]): GriffelStyle {
 }
 
 export default function TitleBarButtons () {
+  const classes = useStyles()
   const [maximized, setMaximized] = useState(false)
   const updateMaximized = useCallback(async () => {
     const isMaximized = await appWindow.isMaximized()
@@ -70,7 +71,6 @@ export default function TitleBarButtons () {
     }
   }, [updateMaximized])
 
-  const classes = useStyles()
   return (
     <div className={classes.root}>
       <Button

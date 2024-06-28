@@ -1,5 +1,6 @@
-import React from 'react'
-import { Text, makeStyles, tokens } from '@fluentui/react-components'
+import React, { Fragment } from 'react'
+import { Text, makeStyles, tokens, shorthands } from '@fluentui/react-components'
+import { QuestionRegular } from '@fluentui/react-icons'
 import { Account, Business, ReversedBusinesses } from '@/api/interfaces/account'
 import Locale from '@/components/Commons/Locale'
 import PlayerAvatar from '@/pages/Accounts/PlayerAvatar'
@@ -9,21 +10,28 @@ const useStyle = makeStyles({
     display: 'flex',
     flexDirection: 'row',
     alignItems: 'center',
-    columnGap: tokens.spacingVerticalS
+    columnGap: tokens.spacingVerticalS,
+    minHeight: '2.5rem'
   },
   avatar: {
     display: 'inline-flex',
     maxWidth: '2rem',
     maxHeight: '2rem',
-    '> img': {
+    borderRadius: tokens.borderRadiusCircular,
+    ...shorthands.border(tokens.strokeWidthThin, 'solid', tokens.colorNeutralStroke1),
+    '> img, svg': {
       width: '100%',
       height: '100%'
+    },
+    '> svg': {
+      fontSize: tokens.fontSizeHero800
     }
   },
   identifier: {
     display: 'inline-flex',
     flexDirection: 'column',
-    width: '4.5rem'
+    minWidth: '4.5rem',
+    maxWidth: '5rem'
   }
 })
 
@@ -42,30 +50,45 @@ export default function GachaBusinessViewAccountSelectItem (props: Props) {
   return (
     <div className={classes.root}>
       <div className={classes.avatar}>
-        <PlayerAvatar
-          shape="circular"
-          bordered
-          business={business}
-          type={[0, 'girl']}
-        />
+        {account
+          ? <PlayerAvatar
+              shape="circular"
+              business={business}
+              type={[0, 'girl']}
+            />
+          : <QuestionRegular />
+        }
       </div>
       <div className={classes.identifier}>
-        <Locale
-          className="displayName"
-          component={Text}
-          as="p"
-          font="base"
-          size={300}
-          wrap={false}
-          truncate
-          mapping={(t) => {
-            return account?.properties?.displayName as string ||
-              t(`Business.${ReversedBusinesses[business]}.Player`)
-          }}
-        />
-        <Text className="uid" as="p" font="numeric" size={200} weight="semibold">
-          {account?.uid || 'NULL'}
-        </Text>
+        {account
+          ? <Fragment>
+              <Locale
+                className="displayName"
+                component={Text}
+                as="p"
+                font="base"
+                size={300}
+                wrap={false}
+                truncate
+                mapping={(t) => {
+                  return account.properties?.displayName ||
+                    t(`Business.${ReversedBusinesses[business]}.Player`)
+                }}
+              />
+              <Text className="uid" as="p" font="numeric" size={200} weight="semibold">
+                {account.uid}
+              </Text>
+            </Fragment>
+          : <Locale
+              component={Text}
+              as="p"
+              font="base"
+              size={300}
+              wrap={false}
+              truncate
+              mapping={['Pages.Gacha.BusinessView.AccountSelect.Empty']}
+            />
+        }
       </div>
     </div>
   )

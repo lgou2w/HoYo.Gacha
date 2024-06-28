@@ -41,8 +41,9 @@ const useStyles = makeStyles({
 })
 
 export default function AccountsBusinessViewToolbar () {
-  const { keyOfBusinesses } = useBusiness()
   const classes = useStyles()
+  const { keyOfBusinesses } = useBusiness()
+
   return (
     <div className={classes.root}>
       <div className={classes.icon}>

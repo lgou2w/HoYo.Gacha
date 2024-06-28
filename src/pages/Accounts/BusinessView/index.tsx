@@ -13,8 +13,8 @@ const useStyles = makeStyles({
 })
 
 export default function AccountsBusinessView (props: BusinessContextState) {
-  const { keyOfBusinesses, business } = props
   const classes = useStyles()
+  const { keyOfBusinesses, business } = props
   return (
     <section className={classes.root}>
       <BusinessProvider keyOfBusinesses={keyOfBusinesses} business={business}>
