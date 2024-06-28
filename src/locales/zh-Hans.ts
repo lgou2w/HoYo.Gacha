@@ -3,6 +3,7 @@ export default {
     GenshinImpact: {
       Name: '原神',
       Player: '旅行者',
+      Currency: '原石',
       Servers: {
         Official: '天空岛',
         Channel: '世界树',
@@ -23,6 +24,7 @@ export default {
     HonkaiStarRail: {
       Name: '崩坏：星穹铁道',
       Player: '开拓者',
+      Currency: '星琼',
       Servers: {
         Official: '星穹列车',
         Channel: '无名客',

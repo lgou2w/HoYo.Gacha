@@ -3,11 +3,12 @@ export default {
     GenshinImpact: {
       Name: 'Genshin Impact',
       Player: 'Traveler',
+      Currency: 'Primogem',
       Servers: {
         Official: 'Celestia (CN)',
         Channel: 'Irminsul (CN)',
         Oversea: {
-          Usa: 'America',
+          USA: 'America',
           Euro: 'Europe',
           Asia: 'Asia',
           Cht: 'TW,HK,MO'
@@ -23,11 +24,12 @@ export default {
     HonkaiStarRail: {
       Name: 'Honkai: Star Rail',
       Player: 'Trailblazer',
+      Currency: 'Stellar Jade',
       Servers: {
         Official: 'Astral Express (CN)',
         Channel: 'The Nameless (CN)',
         Oversea: {
-          Usa: 'America',
+          USA: 'America',
           Euro: 'Europe',
           Asia: 'Asia',
           Cht: 'TW,HK,MO'

@@ -3,11 +3,12 @@ export default {
     GenshinImpact: {
       Name: '原神',
       Player: '旅行者',
+      Currency: '原石',
       Servers: {
         Official: '天空島',
         Channel: '世界樹',
         Oversea: {
-          Usa: '美服',
+          USA: '美服',
           Euro: '歐服',
           Asia: '亞服',
           Cht: '港澳台服'
@@ -23,11 +24,12 @@ export default {
     HonkaiStarRail: {
       Name: '崩壞：星穹鐵道',
       Player: '開拓者',
+      Currency: '星琼',
       Servers: {
         Official: '星穹列車',
         Channel: '無名客',
         Oversea: {
-          Usa: '美服',
+          USA: '美服',
           Euro: '歐服',
           Asia: '亞服',
           Cht: '港澳台服'
