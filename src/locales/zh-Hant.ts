@@ -49,8 +49,8 @@ export default {
       FormattingMessage: '發生意外嚴重的資料庫錯誤：{{message}} ({{code}})'
     },
     GachaBusiness: {
-      Title: '哎呀！發生意外的 GachaBusiness 錯誤：',
-      FormattingMessage: '發生意外的 GachaBusiness 錯誤：{{message}} ({{kind}})'
+      Title: '哎呀！發生意外的業務錯誤：',
+      FormattingMessage: '發生意外的業務錯誤：{{message}} ({{kind}})'
     },
     Unexpected: {
       Title: '發生意外錯誤：',

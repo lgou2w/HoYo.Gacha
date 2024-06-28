@@ -49,8 +49,8 @@ export default {
       FormattingMessage: 'An unexpected critical Database error has Occurred: {{message}} ({{code}})'
     },
     GachaBusiness: {
-      Title: 'Oops! An GachaBusiness error Occurred:',
-      FormattingMessage: 'An unexpected GachaBusiness error has Occurred: {{message}} ({{kind}})'
+      Title: 'Oops! An Business error Occurred:',
+      FormattingMessage: 'An unexpected Business error has Occurred: {{message}} ({{kind}})'
     },
     Unexpected: {
       Title: 'An unexpected error has Occurred:',
