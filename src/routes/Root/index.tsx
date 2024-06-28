@@ -1,7 +1,7 @@
 import React, { Suspense } from 'react'
 import { Await, Outlet } from 'react-router-dom'
 import { useQueryLoaderFunctionData } from '@/api/store'
-import Layout from '@/components/Core/Layout'
+import Layout from '@/components/Commons/Layout'
 import loader from './loader'
 
 export default function Root () {

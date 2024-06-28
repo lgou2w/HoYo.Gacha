@@ -8,7 +8,7 @@ const loader: QueryLoaderFunction<DeferredData<BusinessContextState>> = () => (a
 
   // HACK: Can't use `!business` because zero is also the correct value.
   if (!keyOfBusinesses || business === null || typeof business === 'undefined') {
-    throw new Error(`Unknown account businesses key: ${keyOfBusinesses}`)
+    throw new Error(`Unknown businesses key: ${keyOfBusinesses}`)
   }
 
   return defer({

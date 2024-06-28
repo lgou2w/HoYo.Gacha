@@ -3,8 +3,8 @@ import { RouterProvider } from 'react-router-dom'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { queryClient } from '@/api/store'
-import Theme from '@/components/Core/Theme'
-import TitleBar from '@/components/Core/TitleBar'
+import ThemeProvider from '@/components/Commons/Theme'
+import TitleBar from '@/components/Commons/TitleBar'
 import router from '@/router'
 import '@/assets/global.css'
 import '@/locales/init'
@@ -12,10 +12,10 @@ import '@/locales/init'
 export default function App () {
   return (
     <QueryClientProvider client={queryClient}>
-      <Theme>
+      <ThemeProvider>
         <TitleBar />
         <RouterProvider router={router} />
-      </Theme>
+      </ThemeProvider>
       <ReactQueryDevtools />
     </QueryClientProvider>
   )
