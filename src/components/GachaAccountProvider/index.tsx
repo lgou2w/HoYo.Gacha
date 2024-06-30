@@ -3,11 +3,11 @@ import { Account } from '@/api/interfaces/account'
 import { useAccountsQuery } from '@/api/queries/account'
 import { useGachaSelectedAccountQuery, setGachaSelectedAccount } from '@/api/queries/gacha'
 import { BusinessContextState } from '@/components/BusinessProvider'
-import { GachaStatefulAccountContext, GachaStatefulAccountContextState } from './Context'
+import { GachaAccountContext, GachaAccountContextState } from './Context'
 
-export type { GachaStatefulAccountContextState as StatefulAccountContextState }
+export type { GachaAccountContextState }
 
-export default function GachaStatefulAccountProvider (
+export default function GachaAccountProvider (
   props: PropsWithChildren<BusinessContextState>
 ) {
   const { keyofBusinesses, business, children } = props
@@ -54,8 +54,8 @@ export default function GachaStatefulAccountProvider (
   }
 
   return (
-    <GachaStatefulAccountContext.Provider value={state}>
+    <GachaAccountContext.Provider value={state}>
       {children}
-    </GachaStatefulAccountContext.Provider>
+    </GachaAccountContext.Provider>
   )
 }

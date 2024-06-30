@@ -1,6 +1,6 @@
 import React, { MouseEventHandler, useCallback } from 'react'
 import { Menu, MenuButton, MenuItem, MenuList, MenuPopover, MenuTrigger, makeStyles, shorthands, tokens } from '@fluentui/react-components'
-import useGachaStatefulAccount from '@/components/GachaStatefulAccountProvider/useStatefulAccount'
+import useGachaAccount from '@/components/GachaAccountProvider/useGachaAccount'
 import GachaBusinessViewAccountSelectItem from './Item'
 
 const border = shorthands.border(tokens.strokeWidthThin, 'solid', tokens.colorNeutralStroke1)
@@ -20,7 +20,7 @@ export default function GachaBusinessViewAccountSelect () {
     accountsOfBusiness,
     selectedAccount,
     setSelectedAccount
-  } = useGachaStatefulAccount()
+  } = useGachaAccount()
 
   const handleClickItem = useCallback<MouseEventHandler<HTMLDivElement>>((evt) => {
     evt.preventDefault()

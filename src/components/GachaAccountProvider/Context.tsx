@@ -1,7 +1,7 @@
 import React from 'react'
 import { Account, Business, KeyofBusinesses } from '@/api/interfaces/account'
 
-export interface GachaStatefulAccountContextState {
+export interface GachaAccountContextState {
   keyofBusinesses: KeyofBusinesses
   business: Business
   accounts: Account[]
@@ -10,7 +10,7 @@ export interface GachaStatefulAccountContextState {
   setSelectedAccount (id: Account['id']): void
 }
 
-export const GachaStatefulAccountContext =
-  React.createContext<GachaStatefulAccountContextState | null>(null)
+export const GachaAccountContext =
+  React.createContext<GachaAccountContextState | null>(null)
 
-GachaStatefulAccountContext.displayName = 'GachaStatefulAccountContext'
+GachaAccountContext.displayName = 'GachaAccountContext'
