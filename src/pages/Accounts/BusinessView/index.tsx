@@ -14,10 +14,10 @@ const useStyles = makeStyles({
 
 export default function AccountsBusinessView (props: BusinessContextState) {
   const classes = useStyles()
-  const { keyOfBusinesses, business } = props
+  const { keyofBusinesses, business } = props
   return (
     <section className={classes.root}>
-      <BusinessProvider keyOfBusinesses={keyOfBusinesses} business={business}>
+      <BusinessProvider keyofBusinesses={keyofBusinesses} business={business}>
         <AccountsBusinessViewToolbar />
         <AccountsBusinessViewList />
       </BusinessProvider>

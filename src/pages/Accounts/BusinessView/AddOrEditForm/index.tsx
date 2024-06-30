@@ -8,7 +8,7 @@ import { produce } from 'immer'
 import { Account, UidRegex, isCorrectUid, isOverseaServer } from '@/api/interfaces/account'
 import { DataDirectory } from '@/api/interfaces/gacha-business'
 import { GachaBusinessPlugin, isDatabaseError, isGachaBusinessError, stringifyGachaBusinessErrorKind } from '@/api/plugins'
-import { useAccountsQuery, useCreateAccountMutation, useUpdateAccountGameDataDirAndPropertiesMutation } from '@/api/queries/account'
+import { useAccountsQuery, useCreateAccountMutation, useUpdateAccountGameDataDirAndPropertiesByIdMutation } from '@/api/queries/account'
 import useBusiness from '@/components/BusinessProvider/useBusiness'
 import { IdentifierRegular } from '@/components/Commons/Icons'
 import Locale from '@/components/Commons/Locale'
@@ -68,7 +68,7 @@ interface Props {
 export default function AddOrEditForm (props: Props) {
   const classes = useStyles()
   const { edit, onCancel, onSuccess } = props
-  const { keyOfBusinesses, business } = useBusiness()
+  const { keyofBusinesses, business } = useBusiness()
   const { data: accounts } = useAccountsQuery()
   const { notifyLocale } = useToaster()
   const { t } = useTranslation()
@@ -158,7 +158,7 @@ export default function AddOrEditForm (props: Props) {
   }, [t, setValue])
 
   const createAccountMutation = useCreateAccountMutation()
-  const updateAccountGameDataDirAndPropertiesMutation = useUpdateAccountGameDataDirAndPropertiesMutation()
+  const updateAccountGameDataDirAndPropertiesMutation = useUpdateAccountGameDataDirAndPropertiesByIdMutation()
   const onSubmit = useCallback<SubmitHandler<FormData>>(async (data) => {
     let account: Account
     try {
@@ -283,7 +283,7 @@ export default function AddOrEditForm (props: Props) {
           labelMapping={['Pages.Accounts.BusinessView.AddOrEditForm.GameDataDir.Label']}
           placeholderMapping={[
             'Pages.Accounts.BusinessView.AddOrEditForm.GameDataDir.Placeholder',
-            { business: keyOfBusinesses }
+            { business: keyofBusinesses }
           ]}
           required
           readOnly

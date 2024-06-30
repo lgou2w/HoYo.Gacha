@@ -4,10 +4,10 @@ import GachaBusinessView from '@/pages/Gacha/BusinessView'
 import loader from './loader'
 
 export default function GachaBusiness () {
-  const { keyOfBusinesses, business } = useQueryLoaderFunctionData<typeof loader>()
+  const { keyofBusinesses, business } = useQueryLoaderFunctionData<typeof loader>()
   return (
     <GachaBusinessView
-      keyOfBusinesses={keyOfBusinesses}
+      keyofBusinesses={keyofBusinesses}
       business={business}
     />
   )

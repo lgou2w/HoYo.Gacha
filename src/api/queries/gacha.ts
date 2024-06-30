@@ -1,57 +1,57 @@
 import { FetchQueryOptions, useQuery } from '@tanstack/react-query'
-import { Account, Businesses } from '@/api/interfaces/account'
+import { Account, Businesses, KeyofBusinesses } from '@/api/interfaces/account'
 import { OmitParametersFirst } from '@/api/interfaces/declares'
 import { GachaRecord } from '@/api/interfaces/gacha'
 import { DatabasePlugin, DatabaseError } from '@/api/plugins'
 import { queryClient } from '@/api/store'
 
-type GachaSelectedAccountQueryKey = ['gacha', 'selectedAccount', keyof typeof Businesses]
+type GachaSelectedAccountQueryKey = ['gacha', 'selectedAccount', KeyofBusinesses]
 
-function selectedAccountStorageKey (keyOfBusinesses: keyof typeof Businesses): string {
-  return `HG_GACHA_SELECTEDACCOUNT:${keyOfBusinesses}`
+function selectedAccountStorageKey (keyofBusinesses: KeyofBusinesses): string {
+  return `HG_GACHA_SELECTEDACCOUNT:${keyofBusinesses}`
 }
 
-const GachaSelectedAccountQueryOptions: (keyOfBusinesses: keyof typeof Businesses) => FetchQueryOptions<
+const GachaSelectedAccountQueryOptions: (keyofBusinesses: KeyofBusinesses) => FetchQueryOptions<
   Account['id'] | null,
   Error,
   Account['id'] | null,
   GachaSelectedAccountQueryKey
-> = (keyOfBusinesses) => ({
-  queryKey: ['gacha', 'selectedAccount', keyOfBusinesses],
-  queryFn: ({ queryKey: [,, keyOfBusinesses] }) => {
-    const found = window.localStorage.getItem(selectedAccountStorageKey(keyOfBusinesses))
+> = (keyofBusinesses) => ({
+  queryKey: ['gacha', 'selectedAccount', keyofBusinesses],
+  queryFn: ({ queryKey: [,, keyofBusinesses] }) => {
+    const found = window.localStorage.getItem(selectedAccountStorageKey(keyofBusinesses))
     return found ? +found : null
   },
   gcTime: Infinity
 })
 
-export function useGachaSelectedAccountQuery (keyOfBusinesses: keyof typeof Businesses) {
+export function useGachaSelectedAccountQuery (keyofBusinesses: KeyofBusinesses) {
   return useQuery({
-    ...GachaSelectedAccountQueryOptions(keyOfBusinesses),
+    ...GachaSelectedAccountQueryOptions(keyofBusinesses),
     staleTime: Infinity,
     refetchOnWindowFocus: false
   })
 }
 
-export function getGachaSelectedAccountQueryData (keyOfBusinesses: keyof typeof Businesses) {
+export function getGachaSelectedAccountQueryData (keyofBusinesses: KeyofBusinesses) {
   return queryClient.getQueryData<
     Account['id'],
     GachaSelectedAccountQueryKey
-  >(['gacha', 'selectedAccount', keyOfBusinesses])
+  >(['gacha', 'selectedAccount', keyofBusinesses])
 }
 
 export function getGachaSelectedAccount (
-  keyOfBusinesses: keyof typeof Businesses,
+  keyofBusinesses: KeyofBusinesses,
   accountsOfBusiness: Account[]
 ) {
-  const data = getGachaSelectedAccountQueryData(keyOfBusinesses)
+  const data = getGachaSelectedAccountQueryData(keyofBusinesses)
   return data
     ? accountsOfBusiness.find((account) => account.id === data) || null
     : null
 }
 
 export function setGachaSelectedAccountQueryData (
-  keyOfBusinesses: keyof typeof Businesses,
+  keyofBusinesses: KeyofBusinesses,
   ...rest: OmitParametersFirst<
     typeof queryClient.setQueryData<
       Account['id'],
@@ -62,69 +62,69 @@ export function setGachaSelectedAccountQueryData (
   return queryClient.setQueryData<
     Account['id'],
     GachaSelectedAccountQueryKey
-  >(['gacha', 'selectedAccount', keyOfBusinesses], ...rest)
+  >(['gacha', 'selectedAccount', keyofBusinesses], ...rest)
 }
 
 export function setGachaSelectedAccount (
-  keyOfBusinesses: keyof typeof Businesses,
+  keyofBusinesses: KeyofBusinesses,
   selectedAccount: Account
 ) {
-  setGachaSelectedAccountQueryData(keyOfBusinesses, () => {
+  setGachaSelectedAccountQueryData(keyofBusinesses, () => {
     window.localStorage.setItem(
-      selectedAccountStorageKey(keyOfBusinesses),
+      selectedAccountStorageKey(keyofBusinesses),
       String(selectedAccount.id)
     )
     return selectedAccount.id
   })
 }
 
-type GachaRecordsQueryKey = ['gacha', 'records', keyof typeof Businesses, number]
+type GachaRecordsQueryKey = ['gacha', 'records', KeyofBusinesses, number]
 
-const GachaRecordsQueryOptions: (keyOfBusinesses: keyof typeof Businesses, uid: number) => FetchQueryOptions<
+const GachaRecordsQueryOptions: (keyofBusinesses: KeyofBusinesses, uid: number) => FetchQueryOptions<
   GachaRecord[],
   DatabaseError | Error,
   GachaRecord[],
   GachaRecordsQueryKey
-> = (keyOfBusinesses, uid) => ({
-  queryKey: ['gacha', 'records', keyOfBusinesses, uid],
-  queryFn: ({ queryKey: [,, keyOfBusinesses, uid] }) => DatabasePlugin.findGachaRecordsByBusinessAndUid({
-    business: Businesses[keyOfBusinesses],
+> = (keyofBusinesses, uid) => ({
+  queryKey: ['gacha', 'records', keyofBusinesses, uid],
+  queryFn: ({ queryKey: [,, keyofBusinesses, uid] }) => DatabasePlugin.findGachaRecordsByBusinessAndUid({
+    business: Businesses[keyofBusinesses],
     uid
   }),
   gcTime: Infinity
 })
 
-export function getGachaRecordsQueryData (keyOfBusinesses: keyof typeof Businesses, uid: number) {
+export function getGachaRecordsQueryData (keyofBusinesses: KeyofBusinesses, uid: number) {
   return queryClient.getQueryData<GachaRecord[], GachaRecordsQueryKey>(
-    ['gacha', 'records', keyOfBusinesses, uid]
+    ['gacha', 'records', keyofBusinesses, uid]
   )
 }
 
 export function setGachaRecordsQueryData (
-  keyOfBusinesses: keyof typeof Businesses,
+  keyofBusinesses: KeyofBusinesses,
   uid: number,
   ...rest: OmitParametersFirst<typeof queryClient.setQueryData<GachaRecord[]>>
 ) {
   return queryClient.setQueryData<GachaRecord[], GachaRecordsQueryKey>(
-    ['gacha', 'records', keyOfBusinesses, uid],
+    ['gacha', 'records', keyofBusinesses, uid],
     ...rest
   )
 }
 
-export function fetchGachaRecordsQuery (keyOfBusinesses: keyof typeof Businesses, uid: number) {
-  return queryClient.fetchQuery(GachaRecordsQueryOptions(keyOfBusinesses, uid))
+export function fetchGachaRecordsQuery (keyofBusinesses: KeyofBusinesses, uid: number) {
+  return queryClient.fetchQuery(GachaRecordsQueryOptions(keyofBusinesses, uid))
 }
 
-export function getGachaRecordsQueryDataOrFetch (keyOfBusinesses: keyof typeof Businesses, uid: number) {
-  const cache = getGachaRecordsQueryData(keyOfBusinesses, uid)
+export function getGachaRecordsQueryDataOrFetch (keyofBusinesses: KeyofBusinesses, uid: number) {
+  const cache = getGachaRecordsQueryData(keyofBusinesses, uid)
   return cache
     ? Promise.resolve(cache)
-    : fetchGachaRecordsQuery(keyOfBusinesses, uid)
+    : fetchGachaRecordsQuery(keyofBusinesses, uid)
 }
 
-export function useGachaRecordsQuery (keyOfBusinesses: keyof typeof Businesses, uid: number) {
+export function useGachaRecordsQuery (keyofBusinesses: KeyofBusinesses, uid: number) {
   return useQuery({
-    ...GachaRecordsQueryOptions(keyOfBusinesses, uid),
+    ...GachaRecordsQueryOptions(keyofBusinesses, uid),
     staleTime: Infinity,
     refetchOnWindowFocus: false
   })

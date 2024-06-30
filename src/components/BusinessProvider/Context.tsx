@@ -1,8 +1,8 @@
 import React from 'react'
-import { Business, Businesses } from '@/api/interfaces/account'
+import { Business, KeyofBusinesses } from '@/api/interfaces/account'
 
 export interface BusinessContextState {
-  keyOfBusinesses: keyof typeof Businesses
+  keyofBusinesses: KeyofBusinesses
   business: Business
 }
 

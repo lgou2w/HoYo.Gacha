@@ -61,13 +61,13 @@ export function useCreateAccountMutation () {
   return useMutation(CreateAccountMutationOptions)
 }
 
-const DeleteAccountMutationKey: UseMutationOptions['mutationKey'] = ['accounts', 'delete']
-const DeleteAccountMutationOptions: UseMutationOptions<
+const DeleteAccountByIdMutationKey: UseMutationOptions['mutationKey'] = ['accounts', 'deleteById']
+const DeleteAccountByIdMutationOptions: UseMutationOptions<
   Account | null,
   DatabaseError | Error,
   PickParametersFirst<typeof DatabasePlugin.deleteAccountById>
 > = {
-  mutationKey: DeleteAccountMutationKey,
+  mutationKey: DeleteAccountByIdMutationKey,
   mutationFn: DatabasePlugin.deleteAccountById,
   onSuccess (data) {
     if (!data) return
@@ -82,18 +82,18 @@ const DeleteAccountMutationOptions: UseMutationOptions<
   }
 }
 
-export function useDeleteAccountMutation () {
-  return useMutation(DeleteAccountMutationOptions)
+export function useDeleteAccountByIdMutation () {
+  return useMutation(DeleteAccountByIdMutationOptions)
 }
 
-const UpdateAccountGameDataDirAndPropertiesMutationKey: UseMutationOptions['mutationKey'] =
-  ['accounts', 'updateGameDataDirAndProperties']
-const UpdateAccountGameDataDirAndPropertiesMutation: UseMutationOptions<
+const UpdateAccountGameDataDirAndPropertiesByIdMutationKey: UseMutationOptions['mutationKey'] =
+  ['accounts', 'updateGameDataDirAndPropertiesById']
+const UpdateAccountGameDataDirAndPropertiesByIdMutation: UseMutationOptions<
   Account | null,
   DatabaseError | Error,
   PickParametersFirst<typeof DatabasePlugin.updateAccountGameDataDirAndPropertiesById>
 > = {
-  mutationKey: UpdateAccountGameDataDirAndPropertiesMutationKey,
+  mutationKey: UpdateAccountGameDataDirAndPropertiesByIdMutationKey,
   mutationFn: DatabasePlugin.updateAccountGameDataDirAndPropertiesById,
   onSuccess (data) {
     if (!data) return
@@ -109,6 +109,6 @@ const UpdateAccountGameDataDirAndPropertiesMutation: UseMutationOptions<
   }
 }
 
-export function useUpdateAccountGameDataDirAndPropertiesMutation () {
-  return useMutation(UpdateAccountGameDataDirAndPropertiesMutation)
+export function useUpdateAccountGameDataDirAndPropertiesByIdMutation () {
+  return useMutation(UpdateAccountGameDataDirAndPropertiesByIdMutation)
 }

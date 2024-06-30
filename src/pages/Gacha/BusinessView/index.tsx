@@ -3,9 +3,9 @@ import BusinessProvider, { BusinessContextState } from '@/components/BusinessPro
 import GachaBusinessViewAccountSelect from './AccountSelect'
 
 export default function GachaBusinessView (props: BusinessContextState) {
-  const { keyOfBusinesses, business } = props
+  const { keyofBusinesses, business } = props
   return (
-    <BusinessProvider keyOfBusinesses={keyOfBusinesses} business={business}>
+    <BusinessProvider keyofBusinesses={keyofBusinesses} business={business}>
       <div>
         <GachaBusinessViewAccountSelect />
       </div>

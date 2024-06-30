@@ -6,9 +6,9 @@ export type { BusinessContextState }
 export default function BusinessProvider (
   props: PropsWithChildren<BusinessContextState>
 ) {
-  const { keyOfBusinesses, business, children } = props
+  const { keyofBusinesses, business, children } = props
   return (
-    <BusinessContext.Provider value={{ keyOfBusinesses, business }}>
+    <BusinessContext.Provider value={{ keyofBusinesses, business }}>
       {children}
     </BusinessContext.Provider>
   )

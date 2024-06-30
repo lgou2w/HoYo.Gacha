@@ -42,7 +42,7 @@ const useStyles = makeStyles({
 
 export default function AccountsBusinessViewToolbar () {
   const classes = useStyles()
-  const { keyOfBusinesses } = useBusiness()
+  const { keyofBusinesses } = useBusiness()
 
   return (
     <div className={classes.root}>
@@ -55,7 +55,7 @@ export default function AccountsBusinessViewToolbar () {
         as="h6"
         mapping={[
           'Pages.Accounts.BusinessView.Toolbar.Title',
-          { business: keyOfBusinesses }
+          { business: keyofBusinesses }
         ]}
       />
       <div className={classes.action}>

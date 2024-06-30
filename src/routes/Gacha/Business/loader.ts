@@ -1,18 +1,18 @@
-import { Businesses } from '@/api/interfaces/account'
+import { Businesses, KeyofBusinesses } from '@/api/interfaces/account'
 import { DeferredData, QueryLoaderFunction, defer } from '@/api/store'
 import { BusinessContextState } from '@/components/BusinessProvider/Context'
 
 const loader: QueryLoaderFunction<DeferredData<BusinessContextState>> = () => (args) => {
-  const keyOfBusinesses = args.params.business as keyof typeof Businesses | undefined
-  const business = keyOfBusinesses && Businesses[keyOfBusinesses]
+  const keyofBusinesses = args.params.business as KeyofBusinesses | undefined
+  const business = keyofBusinesses && Businesses[keyofBusinesses]
 
   // HACK: Can't use `!business` because zero is also the correct value.
-  if (!keyOfBusinesses || business === null || typeof business === 'undefined') {
-    throw new Error(`Unknown businesses key: ${keyOfBusinesses}`)
+  if (!keyofBusinesses || business === null || typeof business === 'undefined') {
+    throw new Error(`Unknown businesses key: ${keyofBusinesses}`)
   }
 
   return defer({
-    keyOfBusinesses,
+    keyofBusinesses,
     business
   })
 }

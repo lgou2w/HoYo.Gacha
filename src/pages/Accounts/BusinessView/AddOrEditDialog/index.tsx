@@ -11,7 +11,7 @@ interface Props {
 
 export default function AddOrEditDialog (props: Props) {
   const { edit, trigger } = props
-  const { keyOfBusinesses } = useBusiness()
+  const { keyofBusinesses } = useBusiness()
   const [open, setOpen] = useState(false)
   return (
     <Dialog
@@ -30,7 +30,7 @@ export default function AddOrEditDialog (props: Props) {
               !edit
                 ? 'Pages.Accounts.BusinessView.AddOrEditDialog.AddTitle'
                 : 'Pages.Accounts.BusinessView.AddOrEditDialog.EditTitle',
-              { business: keyOfBusinesses }
+              { business: keyofBusinesses }
             ]}
           />
           <DialogContent>

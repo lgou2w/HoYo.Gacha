@@ -1,6 +1,6 @@
 import React, { Fragment } from 'react'
 import { Subtitle1 } from '@fluentui/react-components'
-import { Businesses } from '@/api/interfaces/account'
+import { Businesses, KeyofBusinesses } from '@/api/interfaces/account'
 import Locale from '@/components/Commons/Locale'
 import AccountsBusinessView from '@/pages/Accounts/BusinessView'
 
@@ -11,7 +11,7 @@ export default function Accounts () {
       {Object.entries(Businesses).map(([key, value]) => (
         <AccountsBusinessView
           key={key}
-          keyOfBusinesses={key as keyof typeof Businesses}
+          keyofBusinesses={key as KeyofBusinesses}
           business={value}
         />
       ))}

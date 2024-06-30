@@ -17,12 +17,12 @@ const useStyle = makeStyles({
 
 export default function GachaBusinessViewAccountSelect () {
   const classes = useStyle()
-  const { keyOfBusinesses, business } = useBusiness()
+  const { keyofBusinesses, business } = useBusiness()
   const { data: accounts } = useAccountsQuery()
   const {
     data: gachaAccountSelectedId,
     isLoading: gachaAccountSelectedIdIsLoading
-  } = useGachaSelectedAccountQuery(keyOfBusinesses)
+  } = useGachaSelectedAccountQuery(keyofBusinesses)
 
   const handleClickItem = useCallback<MouseEventHandler<HTMLDivElement>>((evt) => {
     evt.preventDefault()
@@ -30,10 +30,10 @@ export default function GachaBusinessViewAccountSelect () {
     const id = parseInt(evt.currentTarget.dataset.id)
     const account = accounts?.find((account) => account.id === id)
     if (account && account.id !== gachaAccountSelectedId) {
-      console.debug('Update selected account: [%s]', keyOfBusinesses, account)
-      setGachaSelectedAccount(keyOfBusinesses, account)
+      console.debug('Update selected account: [%s]', keyofBusinesses, account)
+      setGachaSelectedAccount(keyofBusinesses, account)
     }
-  }, [keyOfBusinesses, accounts, gachaAccountSelectedId])
+  }, [keyofBusinesses, accounts, gachaAccountSelectedId])
 
   if (!accounts) return null
   if (gachaAccountSelectedIdIsLoading) return null
@@ -43,8 +43,8 @@ export default function GachaBusinessViewAccountSelect () {
   let gachaAccountSelected = accountsOfBusiness.find((account) => account.id === gachaAccountSelectedId) || null
   if (!gachaAccountSelected && accountsOfBusiness.length > 0) {
     const first = accountsOfBusiness[0]
-    console.warn('No account selected. Use first valid value: [%s]', keyOfBusinesses, first)
-    setGachaSelectedAccount(keyOfBusinesses, first)
+    console.warn('No account selected. Use first valid value: [%s]', keyofBusinesses, first)
+    setGachaSelectedAccount(keyofBusinesses, first)
     gachaAccountSelected = first
   }
 

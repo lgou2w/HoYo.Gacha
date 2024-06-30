@@ -9,13 +9,14 @@ export const Businesses = {
   // ZenlessZoneZero: 2
 } as const
 
-export type Business = typeof Businesses[keyof typeof Businesses]
+export type KeyofBusinesses = keyof typeof Businesses
+export type Business = typeof Businesses[KeyofBusinesses]
 
-export const ReversedBusinesses: Readonly<Record<Business, keyof typeof Businesses>> =
+export const ReversedBusinesses: Readonly<Record<Business, KeyofBusinesses>> =
   Object.entries(Businesses).reduce((acc, [key, value]) => {
-    acc[value] = key as keyof typeof Businesses
+    acc[value] = key as KeyofBusinesses
     return acc
-  }, {} as Record<Business, keyof typeof Businesses>)
+  }, {} as Record<Business, KeyofBusinesses>)
 
 export interface KnownAccountProperties {
   displayName: string | null

@@ -19,9 +19,9 @@ export default function PlayerAvatar<T extends Business> (props: Props<T>) {
 
   const { t } = useTranslation()
   const src = useMemo(() => {
-    const keyOfBusinesses = ReversedBusinesses[business]
-    const player = t(`Business.${keyOfBusinesses}.Player`)
-    return `/${keyOfBusinesses}/Avatar/${player}_${gender}_${set}.png`
+    const keyofBusinesses = ReversedBusinesses[business]
+    const player = t(`Business.${keyofBusinesses}.Player`)
+    return `/${keyofBusinesses}/Avatar/${player}_${gender}_${set}.png`
   }, [business, gender, set, t])
 
   return (
