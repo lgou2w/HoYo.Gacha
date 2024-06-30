@@ -1,8 +1,6 @@
 import React, { MouseEventHandler, useCallback } from 'react'
 import { Menu, MenuButton, MenuItem, MenuList, MenuPopover, MenuTrigger, makeStyles, shorthands, tokens } from '@fluentui/react-components'
-import { useAccountsQuery } from '@/api/queries/account'
-import { useGachaSelectedAccountQuery, setGachaSelectedAccount } from '@/api/queries/gacha'
-import useBusiness from '@/components/BusinessProvider/useBusiness'
+import useGachaStatefulAccount from '@/components/GachaStatefulAccountProvider/useStatefulAccount'
 import GachaBusinessViewAccountSelectItem from './Item'
 
 const border = shorthands.border(tokens.strokeWidthThin, 'solid', tokens.colorNeutralStroke1)
@@ -17,36 +15,19 @@ const useStyle = makeStyles({
 
 export default function GachaBusinessViewAccountSelect () {
   const classes = useStyle()
-  const { keyofBusinesses, business } = useBusiness()
-  const { data: accounts } = useAccountsQuery()
   const {
-    data: gachaAccountSelectedId,
-    isLoading: gachaAccountSelectedIdIsLoading
-  } = useGachaSelectedAccountQuery(keyofBusinesses)
+    business,
+    accountsOfBusiness,
+    selectedAccount,
+    setSelectedAccount
+  } = useGachaStatefulAccount()
 
   const handleClickItem = useCallback<MouseEventHandler<HTMLDivElement>>((evt) => {
     evt.preventDefault()
-    if (!evt.currentTarget.dataset.id) return
-    const id = parseInt(evt.currentTarget.dataset.id)
-    const account = accounts?.find((account) => account.id === id)
-    if (account && account.id !== gachaAccountSelectedId) {
-      console.debug('Update selected account: [%s]', keyofBusinesses, account)
-      setGachaSelectedAccount(keyofBusinesses, account)
+    if (evt.currentTarget.dataset.id) {
+      setSelectedAccount(+evt.currentTarget.dataset.id)
     }
-  }, [keyofBusinesses, accounts, gachaAccountSelectedId])
-
-  if (!accounts) return null
-  if (gachaAccountSelectedIdIsLoading) return null
-
-  const accountsOfBusiness = accounts.filter((account) => account.business === business)
-
-  let gachaAccountSelected = accountsOfBusiness.find((account) => account.id === gachaAccountSelectedId) || null
-  if (!gachaAccountSelected && accountsOfBusiness.length > 0) {
-    const first = accountsOfBusiness[0]
-    console.warn('No account selected. Use first valid value: [%s]', keyofBusinesses, first)
-    setGachaSelectedAccount(keyofBusinesses, first)
-    gachaAccountSelected = first
-  }
+  }, [setSelectedAccount])
 
   return (
     <Menu>
@@ -58,7 +39,7 @@ export default function GachaBusinessViewAccountSelect () {
         >
           <GachaBusinessViewAccountSelectItem
             business={business}
-            account={gachaAccountSelected}
+            account={selectedAccount}
           />
         </MenuButton>
       </MenuTrigger>
