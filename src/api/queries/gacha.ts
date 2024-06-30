@@ -78,23 +78,25 @@ export function setGachaSelectedAccount (
   })
 }
 
-type GachaRecordsQueryKey = ['gacha', 'records', KeyofBusinesses, number]
+type GachaRecordsQueryKey = ['gacha', 'records', KeyofBusinesses, number | null]
 
-const GachaRecordsQueryOptions: (keyofBusinesses: KeyofBusinesses, uid: number) => FetchQueryOptions<
-  GachaRecord[],
+const GachaRecordsQueryOptions: (keyofBusinesses: KeyofBusinesses, uid: number | null) => FetchQueryOptions<
+  GachaRecord[] | null,
   DatabaseError | Error,
-  GachaRecord[],
+  GachaRecord[] | null,
   GachaRecordsQueryKey
 > = (keyofBusinesses, uid) => ({
   queryKey: ['gacha', 'records', keyofBusinesses, uid],
-  queryFn: ({ queryKey: [,, keyofBusinesses, uid] }) => DatabasePlugin.findGachaRecordsByBusinessAndUid({
-    business: Businesses[keyofBusinesses],
-    uid
-  }),
+  queryFn: ({ queryKey: [,, keyofBusinesses, uid] }) => uid
+    ? DatabasePlugin.findGachaRecordsByBusinessAndUid({
+      business: Businesses[keyofBusinesses],
+      uid
+    })
+    : null,
   gcTime: Infinity
 })
 
-export function getGachaRecordsQueryData (keyofBusinesses: KeyofBusinesses, uid: number) {
+export function getGachaRecordsQueryData (keyofBusinesses: KeyofBusinesses, uid: number | null) {
   return queryClient.getQueryData<GachaRecord[], GachaRecordsQueryKey>(
     ['gacha', 'records', keyofBusinesses, uid]
   )
@@ -102,7 +104,7 @@ export function getGachaRecordsQueryData (keyofBusinesses: KeyofBusinesses, uid:
 
 export function setGachaRecordsQueryData (
   keyofBusinesses: KeyofBusinesses,
-  uid: number,
+  uid: number | null,
   ...rest: OmitParametersFirst<typeof queryClient.setQueryData<GachaRecord[]>>
 ) {
   return queryClient.setQueryData<GachaRecord[], GachaRecordsQueryKey>(
@@ -111,18 +113,27 @@ export function setGachaRecordsQueryData (
   )
 }
 
-export function fetchGachaRecordsQuery (keyofBusinesses: KeyofBusinesses, uid: number) {
+export function fetchGachaRecordsQuery (
+  keyofBusinesses: KeyofBusinesses,
+  uid: number | null
+) {
   return queryClient.fetchQuery(GachaRecordsQueryOptions(keyofBusinesses, uid))
 }
 
-export function getGachaRecordsQueryDataOrFetch (keyofBusinesses: KeyofBusinesses, uid: number) {
+export function getGachaRecordsQueryDataOrFetch (
+  keyofBusinesses: KeyofBusinesses,
+  uid: number | null
+) {
   const cache = getGachaRecordsQueryData(keyofBusinesses, uid)
   return cache
     ? Promise.resolve(cache)
     : fetchGachaRecordsQuery(keyofBusinesses, uid)
 }
 
-export function useGachaRecordsQuery (keyofBusinesses: KeyofBusinesses, uid: number) {
+export function useGachaRecordsQuery (
+  keyofBusinesses: KeyofBusinesses,
+  uid: number | null
+) {
   return useQuery({
     ...GachaRecordsQueryOptions(keyofBusinesses, uid),
     staleTime: Infinity,

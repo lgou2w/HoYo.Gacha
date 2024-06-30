@@ -20,7 +20,7 @@ export type GachaRecordRank = typeof GachaRecordRanks[keyof typeof GachaRecordRa
 //                     -> `gachaId` !== null
 export type GachaRecord<T = Business> = {
   id: string
-  business: Business
+  business: T
   uid: number
   gachaType: number
   gachaId: number | null
@@ -65,14 +65,18 @@ export function isHonkaiStarRailGachaRecord (record: GachaRecord): record is Hon
 //   return record.business === Businesses.ZenlessZoneZero
 // }
 
-export function isRankBlueGachaRecord (record: GachaRecord): boolean {
+export function isRankBlueGachaRecord<T> (record: GachaRecord<T>): boolean {
   return record.rankType === GachaRecordRanks.Blue
 }
 
-export function isRankPurpleGachaRecord (record: GachaRecord): boolean {
+export function isRankPurpleGachaRecord<T> (record: GachaRecord<T>): boolean {
   return record.rankType === GachaRecordRanks.Purple
 }
 
-export function isRankOrangeGachaRecord (record: GachaRecord): boolean {
+export function isRankOrangeGachaRecord<T> (record: GachaRecord<T>): boolean {
   return record.rankType === GachaRecordRanks.Orange
+}
+
+export function sortGachaRecord<T> (a: GachaRecord<T>, b: GachaRecord<T>): number {
+  return a.id.localeCompare(b.id)
 }
