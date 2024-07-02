@@ -52,7 +52,7 @@ export default function GachaChartCalendar () {
                 facet === AccountFacet.Genshin
                   ? [
                       { id: '角色', value: itemTypesData['角色'] || 0 },
-                      { id: '光锥', value: itemTypesData['光锥'] || 0 }
+                      { id: '武器', value: itemTypesData['武器'] || 0 }
                     ]
                   : facet === AccountFacet.StarRail
                     ? [
