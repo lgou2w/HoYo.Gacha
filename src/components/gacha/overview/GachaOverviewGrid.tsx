@@ -39,7 +39,7 @@ export default function GachaOverviewGrid () {
             <GachaOverviewGridCard facet={facet} value={bangboo} />
           </Grid>
         )}
-        <Grid xs={hasAnthology ? 12 : 6} item>
+        <Grid xs={hasAnthology || hasBangboo ? 12 : 6} item>
           <GachaOverviewGridCard facet={facet} value={aggregatedValues} newbie={newbie} />
         </Grid>
       </Grid>
