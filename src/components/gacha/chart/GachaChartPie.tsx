@@ -8,7 +8,13 @@ import Box from '@mui/material/Box'
 import Typography from '@mui/material/Typography'
 
 export default function GachaChartCalendar () {
-  const { facet, gachaRecords: { aggregatedValues, namedValues: { character, weapon, permanent, newbie, anthology } } } = useGachaLayoutContext()
+  const {
+    facet,
+    gachaRecords: {
+      aggregatedValues,
+      namedValues: { character, weapon, permanent, newbie, anthology, bangboo }
+    }
+  } = useGachaLayoutContext()
 
   const itemTypesData = aggregatedValues.values.reduce((acc, cur) => {
     const key = cur.item_type
@@ -42,13 +48,25 @@ export default function GachaChartCalendar () {
           <Box width="100%" height={256}>
             <ResponsivePie
               {...PieProps}
-              data={[
-                { id: '角色', value: itemTypesData['角色'] || 0 },
-                {
-                  id: facet === AccountFacet.Genshin ? '武器' : '光锥',
-                  value: itemTypesData[facet === AccountFacet.Genshin ? '武器' : '光锥'] || 0
-                }
-              ]}
+              data={
+                facet === AccountFacet.Genshin
+                  ? [
+                      { id: '角色', value: itemTypesData['角色'] || 0 },
+                      { id: '光锥', value: itemTypesData['光锥'] || 0 }
+                    ]
+                  : facet === AccountFacet.StarRail
+                    ? [
+                        { id: '角色', value: itemTypesData['角色'] || 0 },
+                        { id: '光锥', value: itemTypesData['光锥'] || 0 }
+                      ]
+                    : facet === AccountFacet.ZenlessZoneZero
+                      ? [
+                          { id: '代理人', value: itemTypesData['代理人'] || 0 },
+                          { id: '音擎', value: itemTypesData['音擎'] || 0 },
+                          { id: '邦布', value: itemTypesData['邦布'] || 0 }
+                        ]
+                      : []
+              }
             />
           </Box>
         </Grid>
@@ -59,16 +77,31 @@ export default function GachaChartCalendar () {
               {...PieProps}
               arcLabelsSkipAngle={10}
               arcLinkLabelsSkipAngle={10}
-              data={[
-                { id: '角色', value: character.total },
-                {
-                  id: facet === AccountFacet.Genshin ? '武器' : '光锥',
-                  value: weapon.total
-                },
-                { id: '常驻', value: permanent.total },
-                { id: '新手', value: newbie.total },
-                ...(anthology ? [{ id: '集录', value: anthology.total }] : [])
-              ]}
+              data={
+                facet === AccountFacet.Genshin
+                  ? [
+                      { id: '角色', value: character.total },
+                      { id: '武器', value: weapon.total },
+                      { id: '常驻', value: permanent.total },
+                      { id: '新手', value: newbie.total },
+                      { id: '集录', value: anthology?.total || 0 }
+                    ]
+                  : facet === AccountFacet.StarRail
+                    ? [
+                        { id: '角色', value: character.total },
+                        { id: '光锥', value: weapon.total },
+                        { id: '常驻', value: permanent.total },
+                        { id: '新手', value: newbie.total }
+                      ]
+                    : facet === AccountFacet.ZenlessZoneZero
+                      ? [
+                          { id: '独家', value: character.total },
+                          { id: '音擎', value: weapon.total },
+                          { id: '常驻', value: permanent.total },
+                          { id: '邦布', value: bangboo?.total || 0 }
+                        ]
+                      : []
+              }
             />
           </Box>
         </Grid>

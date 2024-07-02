@@ -1,5 +1,5 @@
 import { AccountFacet, Account } from '@/interfaces/account'
-import { GenshinGachaRecord, StarRailGachaRecord } from '@/interfaces/gacha'
+import { GenshinGachaRecord, StarRailGachaRecord, ZenlessZoneZeroGachaRecord } from '@/interfaces/gacha'
 import invoke from '@/utilities/invoke'
 
 export type AccountUid = Account['uid']
@@ -7,7 +7,7 @@ export type CreateAccountPayload = Omit<Account, 'id'>
 
 export type FindGachaRecordsPayload = {
   uid: AccountUid
-  gachaType?: GenshinGachaRecord['gacha_type'] | StarRailGachaRecord['gacha_type']
+  gachaType?: GenshinGachaRecord['gacha_type'] | StarRailGachaRecord['gacha_type'] | ZenlessZoneZeroGachaRecord['gacha_type']
   limit?: number
 }
 
@@ -54,29 +54,13 @@ export async function deleteAccount (facet: AccountFacet, uid: AccountUid): Prom
 export async function findGachaRecords (
   facet: AccountFacet,
   payload: FindGachaRecordsPayload
-): Promise<Array<GenshinGachaRecord>>
-export async function findGachaRecords (
-  facet: AccountFacet,
-  payload: FindGachaRecordsPayload
-): Promise<Array<StarRailGachaRecord>>
-export async function findGachaRecords (
-  facet: AccountFacet,
-  payload: FindGachaRecordsPayload
-): Promise<Array<GenshinGachaRecord | StarRailGachaRecord>> {
+): Promise<Array<GenshinGachaRecord | StarRailGachaRecord | ZenlessZoneZeroGachaRecord>> {
   return invoke(`plugin:storage|find_${facet}_gacha_records`, payload)
 }
 
 export async function saveGachaRecords (
-  facet: AccountFacet.Genshin,
-  records: Array<GenshinGachaRecord>
-): Promise<number>
-export async function saveGachaRecords (
-  facet: AccountFacet.StarRail,
-  records: Array<StarRailGachaRecord>
-): Promise<number>
-export async function saveGachaRecords (
   facet: AccountFacet,
-  records: Array<GenshinGachaRecord | StarRailGachaRecord>
+  records: Array<GenshinGachaRecord | StarRailGachaRecord | ZenlessZoneZeroGachaRecord>
 ): Promise<number> {
   return invoke(`plugin:storage|save_${facet}_gacha_records`, { records })
 }

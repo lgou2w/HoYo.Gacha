@@ -15,6 +15,9 @@ pub enum AccountFacet {
   #[sea_orm(string_value = "starrail")]
   #[serde(rename = "starrail")]
   StarRail,
+  #[sea_orm(string_value = "zzz")]
+  #[serde(rename = "zzz")]
+  ZenlessZoneZero,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]

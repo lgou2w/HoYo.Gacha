@@ -9,6 +9,7 @@ import Stack from '@mui/material/Stack'
 import Box from '@mui/material/Box'
 import Button, { ButtonTypeMap } from '@mui/material/Button'
 import Typography from '@mui/material/Typography'
+import SvgIcon from '@mui/material/SvgIcon'
 import HomeIcon from '@mui/icons-material/Home'
 import StarIcon from '@mui/icons-material/Star'
 import DirectionsSubwayIcon from '@mui/icons-material/DirectionsSubway'
@@ -42,7 +43,14 @@ type Nav = { title: string, href: string, icon?: React.ReactNode }
 const Navs: Nav[] = [
   { title: '主页', href: '/', icon: <HomeIcon /> },
   { title: '祈愿', href: '/genshin', icon: <StarIcon /> },
-  { title: '跃迁', href: '/starrail', icon: <DirectionsSubwayIcon /> }
+  { title: '跃迁', href: '/starrail', icon: <DirectionsSubwayIcon /> },
+  {
+    title: '调频',
+    href: '/zzz',
+    icon: <SvgIcon className="zzz">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9,7V9H13L9,15V17H15V15H11L15,9V7H9Z" /></svg>
+    </SvgIcon>
+  }
 ]
 
 const NavSetting: Nav =
@@ -84,7 +92,12 @@ const NavListItemButton = styled(Button, {
   paddingY: theme.spacing(0.5),
   display: 'inline-flex',
   flexDirection: 'column',
-  '& .MuiSvgIcon-root': { fontSize: '2rem' },
+  '& .MuiSvgIcon-root': {
+    fontSize: '2rem',
+    '&.zzz': {
+      scale: '1.5'
+    }
+  },
   ...(activated && {
     color: theme.palette.primary.main,
     backgroundColor: alpha(theme.palette.primary.main, theme.palette.action.hoverOpacity + 0.05),

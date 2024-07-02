@@ -10,12 +10,16 @@ use super::entity_starrail_gacha_record::{
   ActiveModel as StarRailGachaRecordActiveModel, Column as StarRailGachaRecordColumn,
   Entity as StarRailGachaRecordEntity,
 };
+use super::entity_zzz_gacha_record::{
+  ActiveModel as ZenlessZoneZeroGachaRecordActiveModel, Column as ZenlessZoneZeroGachaRecordColumn,
+  Entity as ZenlessZoneZeroGachaRecordEntity,
+};
 use super::utilities::{
   create_index_statements, create_table_statement, execute_statements, is_constraint_unique_err,
 };
 use crate::constants::DATABASE;
 use crate::error::{Error, Result};
-use crate::gacha::{GenshinGachaRecord, StarRailGachaRecord};
+use crate::gacha::{GenshinGachaRecord, StarRailGachaRecord, ZenlessZoneZeroGachaRecord};
 use futures::TryStreamExt;
 use paste::paste;
 use sea_orm::sea_query::{Condition, Index, OnConflict};
@@ -77,18 +81,24 @@ impl Storage {
       debug!("Creating tables...");
       let statement1 = create_table_statement(GenshinGachaRecordEntity);
       let statement2 = create_table_statement(StarRailGachaRecordEntity);
-      let statement3 = create_table_statement(AccountEntity);
-      execute_statements(&self.database, &[statement1, statement2, statement3]).await?;
+      let statement3 = create_table_statement(ZenlessZoneZeroGachaRecordEntity);
+      let statement4 = create_table_statement(AccountEntity);
+      execute_statements(
+        &self.database,
+        &[statement1, statement2, statement3, statement4],
+      )
+      .await?;
     }
 
     {
       debug!("Creating indexes...");
       let statement1 = create_index_statements(GenshinGachaRecordEntity);
       let statement2 = create_index_statements(StarRailGachaRecordEntity);
-      let statement3 = create_index_statements(AccountEntity);
+      let statement3 = create_index_statements(ZenlessZoneZeroGachaRecordEntity);
+      let statement4 = create_index_statements(AccountEntity);
 
       // Account: facet + uid constraint
-      let statement4 = Index::create()
+      let statement5 = Index::create()
         .name(&format!(
           "idx-{}-{}-{}",
           EntityName::table_name(&AccountEntity),
@@ -105,7 +115,8 @@ impl Storage {
       let mut statements = statement1;
       statements.extend(statement2);
       statements.extend(statement3);
-      statements.push(statement4);
+      statements.extend(statement4);
+      statements.push(statement5);
       execute_statements(&self.database, &statements).await?;
     }
 
@@ -371,6 +382,15 @@ impl_gacha_records_crud!(
   StarRailGachaRecordColumn
 );
 
+impl_gacha_records_crud!(
+  Storage,
+  zzz,
+  ZenlessZoneZeroGachaRecord,
+  ZenlessZoneZeroGachaRecordActiveModel,
+  ZenlessZoneZeroGachaRecordEntity,
+  ZenlessZoneZeroGachaRecordColumn
+);
+
 /// Tauri commands
 
 #[tauri::command]
@@ -485,6 +505,7 @@ macro_rules! impl_gacha_records_tauri_command {
 
 impl_gacha_records_tauri_command!(genshin, GenshinGachaRecord);
 impl_gacha_records_tauri_command!(starrail, StarRailGachaRecord);
+impl_gacha_records_tauri_command!(zzz, ZenlessZoneZeroGachaRecord);
 
 /// Tauri plugin
 
@@ -536,7 +557,9 @@ impl StoragePluginBuilder {
         find_genshin_gacha_records,
         save_genshin_gacha_records,
         find_starrail_gacha_records,
-        save_starrail_gacha_records
+        save_starrail_gacha_records,
+        find_zzz_gacha_records,
+        save_zzz_gacha_records,
       ])
       .build()
   }

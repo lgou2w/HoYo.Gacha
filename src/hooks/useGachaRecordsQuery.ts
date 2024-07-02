@@ -3,10 +3,10 @@
 import React from 'react'
 import { QueryKey, FetchQueryOptions, useQuery, useQueryClient } from '@tanstack/react-query'
 import { AccountFacet, Account, resolveCurrency } from '@/interfaces/account'
-import { GenshinGachaRecord, StarRailGachaRecord } from '@/interfaces/gacha'
+import { GenshinGachaRecord, StarRailGachaRecord, ZenlessZoneZeroGachaRecord } from '@/interfaces/gacha'
 import PluginStorage from '@/utilities/plugin-storage'
 
-type GachaRecord = GenshinGachaRecord | StarRailGachaRecord
+type GachaRecord = GenshinGachaRecord | StarRailGachaRecord | ZenlessZoneZeroGachaRecord
 
 // Computed Gacha Records
 // See below
@@ -15,8 +15,9 @@ export interface GachaRecords {
   readonly uid: Account['uid']
   readonly gachaTypeToCategoryMappings: Record<GachaRecord['gacha_type'], NamedGachaRecords['category']>
   readonly values: Partial<Record<GachaRecord['gacha_type'], GachaRecord[]>>
-  readonly namedValues: Omit<Record<NamedGachaRecords['category'], NamedGachaRecords>, 'anthology'>
+  readonly namedValues: Omit<Record<NamedGachaRecords['category'], NamedGachaRecords>, 'anthology' | 'bangboo'>
     & { 'anthology'?: NamedGachaRecords } // Genshin Impact only
+    & { 'bangboo'?: NamedGachaRecords } // Zenless Zone Zero only
   readonly aggregatedValues: Omit<NamedGachaRecords, 'category' | 'categoryTitle' | 'gachaType' | 'lastEndId'>
   readonly total: number
   readonly firstTime?: GachaRecord['time']
@@ -24,7 +25,7 @@ export interface GachaRecords {
 }
 
 export interface NamedGachaRecords {
-  category: 'newbie' | 'permanent' | 'character' | 'weapon' | 'anthology'
+  category: 'newbie' | 'permanent' | 'character' | 'weapon' | 'anthology' | 'bangboo'
   categoryTitle: string
   gachaType: GachaRecord['gacha_type']
   lastEndId?: GachaRecord['id']
@@ -63,6 +64,60 @@ const gachaRecordsQueryFn: FetchQueryOptions<GachaRecords | null>['queryFn'] = a
   }
 
   const rawGachaRecords: GachaRecord[] = await PluginStorage.findGachaRecords(facet, { uid })
+
+  // FIXME: FAKE TEST
+  if (facet === AccountFacet.ZenlessZoneZero) {
+    const fake = []
+    for (let i = 0; i < 35; i++) {
+      fake.push({
+        id: i.toString(),
+        uid: '100_000_000',
+        gacha_id: 'idk',
+        gacha_type: '2001',
+        item_id: 'idk',
+        count: '1',
+        time: '2024-07-02 12:00:00',
+        name: i.toString(),
+        lang: 'zh-cn',
+        item_type: i > 0 && i % 10 === 0 ? '代理人' : '音擎',
+        rank_type: i > 0 && i % 10 === 0 ? '4' : '3'
+      })
+    }
+
+    rawGachaRecords.push(...[
+      ...fake,
+      {
+        id: (fake.length + 1).toString(),
+        uid: '100_000_000',
+        gacha_id: 'idk',
+        gacha_type: '2001',
+        item_id: 'idk',
+        count: '1',
+        time: '2024-07-02 12:00:00',
+        name: '艾莲',
+        lang: 'zh-cn',
+        item_type: '代理人',
+        rank_type: '5'
+      }
+    ])
+    rawGachaRecords.push(...[
+      {
+        id: (rawGachaRecords.length + 1).toString(),
+        uid: '100_000_000',
+        gacha_id: 'idk',
+        gacha_type: '5001',
+        item_id: 'idk',
+        count: '1',
+        time: '2024-07-02 12:00:00',
+        name: '邦布',
+        lang: 'zh-cn',
+        item_type: '邦布',
+        rank_type: '5'
+      }
+    ])
+  }
+  //
+
   return computeGachaRecords(facet, uid, rawGachaRecords)
 }
 
@@ -156,8 +211,18 @@ const KnownStarRailGachaTypes: Record<StarRailGachaRecord['gacha_type'], NamedGa
   12: 'weapon'
 }
 
+const KnownZenlessZoneZeroGachaTypes: Record<ZenlessZoneZeroGachaRecord['gacha_type'], NamedGachaRecords['category']> = {
+  0: 'newbie', // Avoid undefined metadata
+  1001: 'permanent',
+  2001: 'character',
+  3001: 'weapon',
+  4001: 'bangboo', // TODO: deprecated?
+  5001: 'bangboo'
+}
+
 const KnownCategoryTitles: Record<AccountFacet, Record<NamedGachaRecords['category'], string>> = {
   [AccountFacet.Genshin]: {
+    bangboo: '', // Useless
     anthology: '集录',
     character: '角色活动',
     weapon: '武器活动',
@@ -165,11 +230,20 @@ const KnownCategoryTitles: Record<AccountFacet, Record<NamedGachaRecords['catego
     newbie: '新手'
   },
   [AccountFacet.StarRail]: {
+    bangboo: '', // Useless
     anthology: '', // Useless
     character: '角色活动',
     weapon: '光锥活动',
     permanent: '常驻',
     newbie: '新手'
+  },
+  [AccountFacet.ZenlessZoneZero]: {
+    bangboo: '邦布频段',
+    anthology: '', // Useless
+    character: '独家频段',
+    weapon: '音擎频段',
+    permanent: '常驻频段',
+    newbie: '' // Useless
   }
 }
 
@@ -199,8 +273,22 @@ function computeNamedGachaRecords (
   facet: AccountFacet,
   values: GachaRecords['values']
 ): GachaRecords['namedValues'] {
-  const categories = facet === AccountFacet.Genshin ? KnownGenshinGachaTypes : KnownStarRailGachaTypes
   const { action: currencyAction } = resolveCurrency(facet)
+
+  let categories: Record<GachaRecord['gacha_type'], NamedGachaRecords['category']>
+  switch (facet) {
+    case AccountFacet.Genshin:
+      categories = KnownGenshinGachaTypes
+      break
+    case AccountFacet.StarRail:
+      categories = KnownStarRailGachaTypes
+      break
+    case AccountFacet.ZenlessZoneZero:
+      categories = KnownZenlessZoneZeroGachaTypes
+      break
+    default:
+      throw new Error(`Unsupported account facet: ${facet}`)
+  }
 
   return Object
     .entries(categories)
@@ -383,6 +471,9 @@ function isRestrictedGolden (
       return !KnownGenshinPermanentGoldenNames.includes(record.name)
     case AccountFacet.StarRail:
       return !KnownStarRailPermanentGoldenItemIds.includes(record.item_id)
+    case AccountFacet.ZenlessZoneZero:
+      // FIXME: TODO zzz isRestrictedGolden
+      return false
     default:
       throw new Error(`Unknown facet: ${facet}`)
   }

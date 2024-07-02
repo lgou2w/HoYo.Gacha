@@ -13,8 +13,9 @@ import dayjs from '@/utilities/dayjs'
 
 export default function GachaOverviewGrid () {
   const { facet, gachaRecords } = useGachaLayoutContext()
-  const { namedValues: { character, weapon, permanent, newbie, anthology }, aggregatedValues } = gachaRecords
+  const { namedValues: { character, weapon, permanent, newbie, anthology, bangboo }, aggregatedValues } = gachaRecords
   const hasAnthology = !!anthology && anthology.total > 0
+  const hasBangboo = facet === AccountFacet.ZenlessZoneZero && !!bangboo && bangboo.total > 0
 
   return (
     <Box>
@@ -31,6 +32,11 @@ export default function GachaOverviewGrid () {
         {hasAnthology && (
           <Grid xs={6} item>
             <GachaOverviewGridCard facet={facet} value={anthology} />
+          </Grid>
+        )}
+        {hasBangboo && (
+          <Grid xs={6} item>
+            <GachaOverviewGridCard facet={facet} value={bangboo} />
           </Grid>
         )}
         <Grid xs={hasAnthology ? 12 : 6} item>
@@ -58,6 +64,7 @@ function GachaOverviewGridCard ({ facet, value, newbie }: {
   const newbieGoldenName = newbieGolden && `${newbieGolden.name}`
 
   const aggregated = category === 'aggregated'
+  const isZZZ = facet === AccountFacet.ZenlessZoneZero
 
   return (
     <Stack sx={GachaOverviewGridCardSx}>
@@ -67,7 +74,11 @@ function GachaOverviewGridCard ({ facet, value, newbie }: {
       <Box>
         <Typography component="div" variant="h4">
           {categoryTitle}
-          {aggregated && <Typography variant="button">（包含新手）</Typography>}
+          {aggregated && (
+            <Typography variant="button">
+              {isZZZ ? '（不含邦布）' : '（包含新手）'}
+            </Typography>
+          )}
         </Typography>
         <Typography component="div" variant="caption">
           {dayjs(firstTime).format('YYYY.MM.DD')}
