@@ -311,7 +311,8 @@ const StarRail = {
 
 const Assets = {
   genshin: Genshin,
-  starrail: StarRail
+  starrail: StarRail,
+  zzz: {} // TODO: wait a minute
 }
 
 export function lookupAssetIcon (

@@ -66,7 +66,7 @@ function GachaAnalysisHistoryList ({ facet, value }: {
             key={item.id}
             name={item.name}
             id={item.item_id || item.name}
-            isWeapon={item.item_type === '武器' || item.item_type === '光锥'}
+            isWeapon={item.item_type === '武器' || item.item_type === '光锥' || item.item_type === '音擎'}
             rank={5}
             size={GachaAnalysisHistoryItemViewSize}
             usedPity={item.usedPity}

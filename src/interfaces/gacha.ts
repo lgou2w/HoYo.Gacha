@@ -34,12 +34,12 @@ export interface ZenlessZoneZeroGachaRecord {
   id: string
   uid: string
   gacha_id: string
-  gacha_type: string // 1001 | 2001 | 3001 | 4001 | 5001
+  gacha_type: string // 1 | 2 | 3 | 4 | 5
   item_id: string
   count: string      // always 1
   time: string
   name: string
   lang: string       // zh-cn
-  item_type: string  // 独家 ? 代理人 | 音擎
-  rank_type: string  // 3 | 4 | 5
+  item_type: string  // 代理人 | 音擎
+  rank_type: string  // 2 | 3 | 4
 }

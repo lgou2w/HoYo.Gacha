@@ -13,17 +13,19 @@ export interface GachaToolbarProps {
 }
 
 export default function GachaToolbar (props: GachaToolbarProps) {
-  const { ActionTabsProps } = props
+  const { facet, ActionTabsProps } = props
   return (
     <Stack direction="row" gap={2}>
       <GachaActionUrl />
       <GachaActionFetch />
       <Stack direction="row" gap={3} marginLeft="auto">
         <GachaActionTabs {...ActionTabsProps} />
-        <Stack direction="row" gap={1}>
-          <GachaActionImport />
-          <GachaActionExport />
-        </Stack>
+        {facet !== AccountFacet.ZenlessZoneZero && (
+          <Stack direction="row" gap={1}>
+            <GachaActionImport />
+            <GachaActionExport />
+          </Stack>
+        )}
       </Stack>
     </Stack>
   )

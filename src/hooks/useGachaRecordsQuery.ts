@@ -64,60 +64,6 @@ const gachaRecordsQueryFn: FetchQueryOptions<GachaRecords | null>['queryFn'] = a
   }
 
   const rawGachaRecords: GachaRecord[] = await PluginStorage.findGachaRecords(facet, { uid })
-
-  // FIXME: FAKE TEST
-  if (facet === AccountFacet.ZenlessZoneZero) {
-    const fake = []
-    for (let i = 0; i < 35; i++) {
-      fake.push({
-        id: i.toString(),
-        uid: '100_000_000',
-        gacha_id: 'idk',
-        gacha_type: '2001',
-        item_id: 'idk',
-        count: '1',
-        time: '2024-07-02 12:00:00',
-        name: i.toString(),
-        lang: 'zh-cn',
-        item_type: i > 0 && i % 10 === 0 ? '代理人' : '音擎',
-        rank_type: i > 0 && i % 10 === 0 ? '4' : '3'
-      })
-    }
-
-    rawGachaRecords.push(...[
-      ...fake,
-      {
-        id: (fake.length + 1).toString(),
-        uid: '100_000_000',
-        gacha_id: 'idk',
-        gacha_type: '2001',
-        item_id: 'idk',
-        count: '1',
-        time: '2024-07-02 12:00:00',
-        name: '艾莲',
-        lang: 'zh-cn',
-        item_type: '代理人',
-        rank_type: '5'
-      }
-    ])
-    rawGachaRecords.push(...[
-      {
-        id: (rawGachaRecords.length + 1).toString(),
-        uid: '100_000_000',
-        gacha_id: 'idk',
-        gacha_type: '5001',
-        item_id: 'idk',
-        count: '1',
-        time: '2024-07-02 12:00:00',
-        name: '邦布',
-        lang: 'zh-cn',
-        item_type: '邦布',
-        rank_type: '5'
-      }
-    ])
-  }
-  //
-
   return computeGachaRecords(facet, uid, rawGachaRecords)
 }
 
@@ -213,11 +159,11 @@ const KnownStarRailGachaTypes: Record<StarRailGachaRecord['gacha_type'], NamedGa
 
 const KnownZenlessZoneZeroGachaTypes: Record<ZenlessZoneZeroGachaRecord['gacha_type'], NamedGachaRecords['category']> = {
   0: 'newbie', // Avoid undefined metadata
-  1001: 'permanent',
-  2001: 'character',
-  3001: 'weapon',
-  4001: 'bangboo', // TODO: deprecated?
-  5001: 'bangboo'
+  1: 'permanent',
+  2: 'character',
+  3: 'weapon',
+  4: 'bangboo', // TODO: deprecated?
+  5: 'bangboo'
 }
 
 const KnownCategoryTitles: Record<AccountFacet, Record<NamedGachaRecords['category'], string>> = {
@@ -247,9 +193,13 @@ const KnownCategoryTitles: Record<AccountFacet, Record<NamedGachaRecords['catego
   }
 }
 
-const isRankTypeOfBlue = (record: GachaRecord) => record.rank_type === '3'
-const isRankTypeOfPurple = (record: GachaRecord) => record.rank_type === '4'
-const isRankTypeOfGolden = (record: GachaRecord) => record.rank_type === '5'
+const isRankTypeOfBlue = (facet: AccountFacet, record: GachaRecord) =>
+  record.rank_type === (facet === AccountFacet.ZenlessZoneZero ? '2' : '3')
+const isRankTypeOfPurple = (facet: AccountFacet, record: GachaRecord) =>
+  record.rank_type === (facet === AccountFacet.ZenlessZoneZero ? '3' : '4')
+const isRankTypeOfGolden = (facet: AccountFacet, record: GachaRecord) =>
+  record.rank_type === (facet === AccountFacet.ZenlessZoneZero ? '4' : '5')
+
 const sortGachaRecordById = (a: GachaRecord, b: GachaRecord) => a.id.localeCompare(b.id)
 
 function concatNamedGachaRecordsValues (
@@ -300,8 +250,8 @@ function computeNamedGachaRecords (
       const firstTime = data[0]?.time
       const lastTime = data[total - 1]?.time
       const metadata: NamedGachaRecords['metadata'] = {
-        blue: computeGachaRecordsMetadata(total, data.filter(isRankTypeOfBlue)),
-        purple: computeGachaRecordsMetadata(total, data.filter(isRankTypeOfPurple)),
+        blue: computeGachaRecordsMetadata(total, data.filter((v) => isRankTypeOfBlue(facet, v))),
+        purple: computeGachaRecordsMetadata(total, data.filter((v) => isRankTypeOfPurple(facet, v))),
         golden: computeGoldenGachaRecordsMetadata(facet, data)
       }
 
@@ -338,7 +288,7 @@ function computeAggregatedGachaRecords (
     (anthology ? anthology.metadata.blue.sum : 0)
 
   const blueSumPercentage = blueSum > 0 ? Math.round(blueSum / total * 10000) / 100 : 0
-  const blueValues = data.filter(isRankTypeOfBlue)
+  const blueValues = data.filter((v) => isRankTypeOfBlue(facet, v))
 
   const purpleSum =
     newbie.metadata.purple.sum +
@@ -348,7 +298,7 @@ function computeAggregatedGachaRecords (
     (anthology ? anthology.metadata.purple.sum : 0)
 
   const purpleSumPercentage = purpleSum > 0 ? Math.round(purpleSum / total * 10000) / 100 : 0
-  const purpleValues = data.filter(isRankTypeOfPurple)
+  const purpleValues = data.filter((v) => isRankTypeOfPurple(facet, v))
 
   const goldenSum =
     newbie.metadata.golden.sum +
@@ -431,7 +381,7 @@ function computeGoldenGachaRecordsMetadata (
   let sumRestricted = 0
 
   for (const record of values) {
-    const isGolden = isRankTypeOfGolden(record)
+    const isGolden = isRankTypeOfGolden(facet, record)
     pity += 1
 
     if (isGolden) {
@@ -472,8 +422,7 @@ function isRestrictedGolden (
     case AccountFacet.StarRail:
       return !KnownStarRailPermanentGoldenItemIds.includes(record.item_id)
     case AccountFacet.ZenlessZoneZero:
-      // FIXME: TODO zzz isRestrictedGolden
-      return false
+      return !KnownZenlessZoneZeroPermanentGoldenItemIds.includes(record.item_id)
     default:
       throw new Error(`Unknown facet: ${facet}`)
   }
@@ -491,4 +440,9 @@ const KnownGenshinPermanentGoldenNames: string[] = [
 const KnownStarRailPermanentGoldenItemIds: string[] = [
   '1003', '1004', '1101', '1104', '1107', '1209', '1211',
   '23000', '23002', '23003', '23004', '23005', '23012', '23013'
+]
+
+// TODO: wait a minute
+const KnownZenlessZoneZeroPermanentGoldenItemIds: string[] = [
+  '1211'
 ]

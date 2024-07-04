@@ -253,6 +253,7 @@ pub(super) struct GachaResponse<T> {
 
 pub(super) async fn fetch_gacha_records<T: Sized + DeserializeOwned + Send>(
   reqwest: &Reqwest,
+  facet: &AccountFacet,
   endpoint: &str,
   gacha_url: &str,
   gacha_type: Option<&str>,
@@ -266,14 +267,21 @@ pub(super) async fn fetch_gacha_records<T: Sized + DeserializeOwned + Send>(
     .into_owned()
     .collect();
 
+  let gacha_type_field: &'static str = if facet == &AccountFacet::ZenlessZoneZero {
+    "real_gacha_type"
+  } else {
+    "gacha_type"
+  };
+
   let origin_gacha_type = queries
-    .get("gacha_type")
+    .get(gacha_type_field)
     .cloned()
     .ok_or(Error::IllegalGachaUrl)?;
+
   let origin_end_id = queries.get("end_id").cloned();
   let gacha_type = gacha_type.unwrap_or(&origin_gacha_type);
 
-  queries.remove("gacha_type");
+  queries.remove(gacha_type_field);
   queries.remove("page");
   queries.remove("size");
   queries.remove("begin_id");
@@ -285,7 +293,7 @@ pub(super) async fn fetch_gacha_records<T: Sized + DeserializeOwned + Send>(
     .query_pairs_mut()
     .append_pair("page", "1")
     .append_pair("size", "20")
-    .append_pair("gacha_type", gacha_type);
+    .append_pair(gacha_type_field, gacha_type);
 
   if let Some(end_id) = end_id.or(origin_end_id.as_deref()) {
     url.query_pairs_mut().append_pair("end_id", end_id);

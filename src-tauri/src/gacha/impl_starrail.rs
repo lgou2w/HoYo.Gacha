@@ -7,6 +7,7 @@ use super::{
   GameDataDirectoryFinder,
 };
 use crate::error::Result;
+use crate::storage::entity_account::AccountFacet;
 use async_trait::async_trait;
 use reqwest::Client as Reqwest;
 use serde::{Deserialize, Serialize};
@@ -116,7 +117,12 @@ impl GachaRecordFetcher for StarRailGacha {
     end_id: Option<&str>,
   ) -> Result<Option<Vec<Self::Target>>> {
     let response = fetch_gacha_records::<StarRailGachaRecordPagination>(
-      reqwest, ENDPOINT, gacha_url, gacha_type, end_id,
+      reqwest,
+      &AccountFacet::StarRail,
+      ENDPOINT,
+      gacha_url,
+      gacha_type,
+      end_id,
     )
     .await?;
 

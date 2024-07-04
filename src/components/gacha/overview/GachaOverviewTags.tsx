@@ -44,7 +44,7 @@ export default function GachaOverviewTags () {
 
     return {
       luck: luck ? { name: luck.name, total: luck.usedPity } : null,
-      unluck: unluck ? { name: unluck.name, total: unluck.usedPity } : null,
+      unluck: aggregatedValues.metadata.golden.sum > 1 && unluck ? { name: unluck.name, total: unluck.usedPity } : null,
       related: related && related[1].length > 1 ? { name: related[0], total: related[1].length } : null,
       crazy: crazy ? { name: crazy.day, total: crazy.value } : null
     }
