@@ -67,8 +67,6 @@
 ## 特别感谢
 
 * [UIGF organization](https://uigf.org)
-* [DGP-Studio/Snap.Hutao](https://github.com/DGP-Studio/Snap.Hutao)
-* [YuehaiTeam/cocogoat](https://github.com/YuehaiTeam/cocogoat)
 * [vikiboss/gs-helper](https://github.com/vikiboss/gs-helper)
 
 ## 协议
@@ -76,7 +74,7 @@
 > [!NOTE]
 > MIT OR Apache-2.0 **仅供个人学习交流使用。请勿用于任何商业或违法违规用途。**
 >
-> 本软件不会收集任何用户数据。所产生的数据（包括但不限于使用数据、抽卡数据、账号信息等）均保存在用户本地。
+> 本软件不会向您索要任何关于 ©miHoYo 账户的账号密码信息，也不会收集任何用户数据。所产生的数据（包括但不限于使用数据、抽卡数据、UID 信息等）均保存在用户本地。
 
 ### 部分资源文件
 
@@ -89,5 +87,5 @@
 * [src/assets/images/Logo.png](src/assets/images/Logo.png)
 * [src/assets/images/genshin/*](src/assets/images/genshin)
 * [src/assets/images/starrail/*](src/assets/images/starrail)
-* [src/assets/images/zzz/*](src/assets/images/starrail)
+* [src/assets/images/zzz/*](src/assets/images/zzz)
 * [src-tauri/icons/*](src-tauri/icons/)
