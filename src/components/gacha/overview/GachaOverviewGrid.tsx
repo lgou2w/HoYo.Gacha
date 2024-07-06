@@ -65,6 +65,7 @@ function GachaOverviewGridCard ({ facet, value, newbie }: {
 
   const aggregated = category === 'aggregated'
   const isZZZ = facet === AccountFacet.ZenlessZoneZero
+  const isBangboo = isZZZ && category === 'bangboo'
 
   return (
     <Stack sx={GachaOverviewGridCardSx}>
@@ -101,7 +102,9 @@ function GachaOverviewGridCard ({ facet, value, newbie }: {
         </Stack>
         <Stack>
           <Chip label={`平均每金 ${golden.sumAverage} 抽`} />
-          <Chip label={`平均每金 ${golden.sumAverage * 160} ${currency}`} />
+          {!isBangboo && (
+            <Chip label={`平均每金 ${golden.sumAverage * 160} ${currency}`} />
+          )}
         </Stack>
       </Stack>
       {lastGolden && !aggregated && (
