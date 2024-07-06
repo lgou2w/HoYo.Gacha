@@ -34,8 +34,8 @@ export default function GachaChartCalendar () {
     }, [] as CalendarDatum[])
 
   const metadataByDay: Record<string, { golden: number, purple: number, blue: number }> = {}
-  Object.entries(aggregatedValues.metadata).forEach(([, value]) => {
-    for (const record of value.values) {
+  function mergeMetadataByDays (records: typeof aggregatedValues.values) {
+    for (const record of records) {
       const day = dayjs(record.time).format('YYYY-MM-DD')
       if (!metadataByDay[day]) {
         metadataByDay[day] = { golden: 0, purple: 0, blue: 0 }
@@ -48,7 +48,17 @@ export default function GachaChartCalendar () {
         metadataByDay[day].blue += 1
       }
     }
-  })
+  }
+
+  Object
+    .entries(aggregatedValues.metadata)
+    .forEach(([, value]) => {
+      mergeMetadataByDays(value.values)
+    })
+
+  if (bangboo) {
+    mergeMetadataByDays(bangboo.values)
+  }
 
   const now = dayjs()
   const from = now.subtract(1, 'year')
