@@ -1,6 +1,7 @@
 use super::srgf;
 use super::uigf;
 use super::utilities::{create_default_reqwest, find_gacha_url_and_validate_consistency};
+use super::ZenlessZoneZeroGacha;
 use super::{
   create_fetcher_channel, GachaRecordFetcherChannelFragment, GachaUrlFinder,
   GameDataDirectoryFinder, GenshinGacha, StarRailGacha,
@@ -23,6 +24,7 @@ async fn find_game_data_directories(facet: AccountFacet) -> Result<Vec<PathBuf>>
   match facet {
     AccountFacet::Genshin => GenshinGacha.find_game_data_directories(),
     AccountFacet::StarRail => StarRailGacha.find_game_data_directories(),
+    AccountFacet::ZenlessZoneZero => ZenlessZoneZeroGacha.find_game_data_directories(),
   }
 }
 
@@ -40,6 +42,11 @@ async fn find_gacha_url(
     AccountFacet::StarRail => {
       let gacha_urls = StarRailGacha.find_gacha_urls(game_data_dir)?;
       find_gacha_url_and_validate_consistency(&StarRailGacha, &facet, &uid, &gacha_urls).await?
+    }
+    AccountFacet::ZenlessZoneZero => {
+      let gacha_urls = ZenlessZoneZeroGacha.find_gacha_urls(game_data_dir)?;
+      find_gacha_url_and_validate_consistency(&ZenlessZoneZeroGacha, &facet, &uid, &gacha_urls)
+        .await?
     }
   };
 
@@ -102,6 +109,25 @@ async fn pull_all_gacha_records(
       )
       .await?
     }
+    AccountFacet::ZenlessZoneZero => {
+      create_fetcher_channel(
+        ZenlessZoneZeroGacha,
+        reqwest,
+        ZenlessZoneZeroGacha,
+        gacha_url,
+        gacha_type_and_last_end_id_mappings,
+        |fragment| async {
+          window.emit(&event_channel, &fragment)?;
+          if save_to_storage {
+            if let GachaRecordFetcherChannelFragment::Data(data) = fragment {
+              storage.save_zzz_gacha_records(&data).await?;
+            }
+          }
+          Ok(())
+        },
+      )
+      .await?
+    }
   }
 
   Ok(())
@@ -141,6 +167,10 @@ async fn import_gacha_records(
       let gacha_records = srgf::convert_srgf_to_offical(&mut srgf)?;
       storage.save_starrail_gacha_records(&gacha_records).await
     }
+    AccountFacet::ZenlessZoneZero => {
+      // TODO: Import ZZZ Gacha Records
+      todo!("Import ZZZ Gacha Records")
+    }
   }
 }
 
@@ -167,6 +197,10 @@ async fn export_gacha_records(
   let (primary, format) = match facet {
     AccountFacet::Genshin => ("原神祈愿记录", "UIGF"),
     AccountFacet::StarRail => ("星穹铁道跃迁记录", "SRGF"),
+    AccountFacet::ZenlessZoneZero => {
+      // TODO: Export ZZZ Gacha Records
+      todo!("Export ZZZ Gacha Records")
+    }
   };
   let filename = format!(
     "{}_{}_{}_{uid}_{time}.json",
@@ -204,6 +238,10 @@ async fn export_gacha_records(
       let srgf_list = srgf::convert_offical_to_srgf(&gacha_records)?;
       let srgf = srgf::SRGF::new(uid, lang, time_zone, &now, srgf_list)?;
       srgf.to_writer(writer, false)?;
+    }
+    AccountFacet::ZenlessZoneZero => {
+      // TODO: Export ZZZ Gacha Records
+      todo!("Export ZZZ Gacha Records")
     }
   }
 

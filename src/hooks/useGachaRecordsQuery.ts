@@ -3,10 +3,10 @@
 import React from 'react'
 import { QueryKey, FetchQueryOptions, useQuery, useQueryClient } from '@tanstack/react-query'
 import { AccountFacet, Account, resolveCurrency } from '@/interfaces/account'
-import { GenshinGachaRecord, StarRailGachaRecord } from '@/interfaces/gacha'
+import { GenshinGachaRecord, StarRailGachaRecord, ZenlessZoneZeroGachaRecord } from '@/interfaces/gacha'
 import PluginStorage from '@/utilities/plugin-storage'
 
-type GachaRecord = GenshinGachaRecord | StarRailGachaRecord
+type GachaRecord = GenshinGachaRecord | StarRailGachaRecord | ZenlessZoneZeroGachaRecord
 
 // Computed Gacha Records
 // See below
@@ -15,8 +15,9 @@ export interface GachaRecords {
   readonly uid: Account['uid']
   readonly gachaTypeToCategoryMappings: Record<GachaRecord['gacha_type'], NamedGachaRecords['category']>
   readonly values: Partial<Record<GachaRecord['gacha_type'], GachaRecord[]>>
-  readonly namedValues: Omit<Record<NamedGachaRecords['category'], NamedGachaRecords>, 'anthology'>
+  readonly namedValues: Omit<Record<NamedGachaRecords['category'], NamedGachaRecords>, 'anthology' | 'bangboo'>
     & { 'anthology'?: NamedGachaRecords } // Genshin Impact only
+    & { 'bangboo'?: NamedGachaRecords } // Zenless Zone Zero only
   readonly aggregatedValues: Omit<NamedGachaRecords, 'category' | 'categoryTitle' | 'gachaType' | 'lastEndId'>
   readonly total: number
   readonly firstTime?: GachaRecord['time']
@@ -24,7 +25,7 @@ export interface GachaRecords {
 }
 
 export interface NamedGachaRecords {
-  category: 'newbie' | 'permanent' | 'character' | 'weapon' | 'anthology'
+  category: 'newbie' | 'permanent' | 'character' | 'weapon' | 'anthology' | 'bangboo'
   categoryTitle: string
   gachaType: GachaRecord['gacha_type']
   lastEndId?: GachaRecord['id']
@@ -156,8 +157,17 @@ const KnownStarRailGachaTypes: Record<StarRailGachaRecord['gacha_type'], NamedGa
   12: 'weapon'
 }
 
+const KnownZenlessZoneZeroGachaTypes: Record<ZenlessZoneZeroGachaRecord['gacha_type'], NamedGachaRecords['category']> = {
+  0: 'newbie', // Avoid undefined metadata
+  1: 'permanent',
+  2: 'character',
+  3: 'weapon',
+  5: 'bangboo'
+}
+
 const KnownCategoryTitles: Record<AccountFacet, Record<NamedGachaRecords['category'], string>> = {
   [AccountFacet.Genshin]: {
+    bangboo: '', // Useless
     anthology: '集录',
     character: '角色活动',
     weapon: '武器活动',
@@ -165,17 +175,30 @@ const KnownCategoryTitles: Record<AccountFacet, Record<NamedGachaRecords['catego
     newbie: '新手'
   },
   [AccountFacet.StarRail]: {
+    bangboo: '', // Useless
     anthology: '', // Useless
     character: '角色活动',
     weapon: '光锥活动',
     permanent: '常驻',
     newbie: '新手'
+  },
+  [AccountFacet.ZenlessZoneZero]: {
+    bangboo: '邦布频段',
+    anthology: '', // Useless
+    character: '独家频段',
+    weapon: '音擎频段',
+    permanent: '常驻频段',
+    newbie: '' // Useless
   }
 }
 
-const isRankTypeOfBlue = (record: GachaRecord) => record.rank_type === '3'
-const isRankTypeOfPurple = (record: GachaRecord) => record.rank_type === '4'
-const isRankTypeOfGolden = (record: GachaRecord) => record.rank_type === '5'
+export const isRankTypeOfBlue = (facet: AccountFacet, record: GachaRecord) =>
+  record.rank_type === (facet === AccountFacet.ZenlessZoneZero ? '2' : '3')
+export const isRankTypeOfPurple = (facet: AccountFacet, record: GachaRecord) =>
+  record.rank_type === (facet === AccountFacet.ZenlessZoneZero ? '3' : '4')
+export const isRankTypeOfGolden = (facet: AccountFacet, record: GachaRecord) =>
+  record.rank_type === (facet === AccountFacet.ZenlessZoneZero ? '4' : '5')
+
 const sortGachaRecordById = (a: GachaRecord, b: GachaRecord) => a.id.localeCompare(b.id)
 
 function concatNamedGachaRecordsValues (
@@ -199,8 +222,22 @@ function computeNamedGachaRecords (
   facet: AccountFacet,
   values: GachaRecords['values']
 ): GachaRecords['namedValues'] {
-  const categories = facet === AccountFacet.Genshin ? KnownGenshinGachaTypes : KnownStarRailGachaTypes
   const { action: currencyAction } = resolveCurrency(facet)
+
+  let categories: Record<GachaRecord['gacha_type'], NamedGachaRecords['category']>
+  switch (facet) {
+    case AccountFacet.Genshin:
+      categories = KnownGenshinGachaTypes
+      break
+    case AccountFacet.StarRail:
+      categories = KnownStarRailGachaTypes
+      break
+    case AccountFacet.ZenlessZoneZero:
+      categories = KnownZenlessZoneZeroGachaTypes
+      break
+    default:
+      throw new Error(`Unsupported account facet: ${facet}`)
+  }
 
   return Object
     .entries(categories)
@@ -212,8 +249,8 @@ function computeNamedGachaRecords (
       const firstTime = data[0]?.time
       const lastTime = data[total - 1]?.time
       const metadata: NamedGachaRecords['metadata'] = {
-        blue: computeGachaRecordsMetadata(total, data.filter(isRankTypeOfBlue)),
-        purple: computeGachaRecordsMetadata(total, data.filter(isRankTypeOfPurple)),
+        blue: computeGachaRecordsMetadata(total, data.filter((v) => isRankTypeOfBlue(facet, v))),
+        purple: computeGachaRecordsMetadata(total, data.filter((v) => isRankTypeOfPurple(facet, v))),
         golden: computeGoldenGachaRecordsMetadata(facet, data)
       }
 
@@ -237,6 +274,11 @@ function computeAggregatedGachaRecords (
   data: GachaRecord[],
   namedValues: GachaRecords['namedValues']
 ): GachaRecords['aggregatedValues'] {
+  // HACK: Bangboo is a completely separate gacha pool and doesn't count towards the aggregated.
+  if (facet === AccountFacet.ZenlessZoneZero) {
+    data = data.filter((v) => v.gacha_type !== '5')
+  }
+
   const total = data.length
   const firstTime = data[0]?.time
   const lastTime = data[total - 1]?.time
@@ -250,7 +292,7 @@ function computeAggregatedGachaRecords (
     (anthology ? anthology.metadata.blue.sum : 0)
 
   const blueSumPercentage = blueSum > 0 ? Math.round(blueSum / total * 10000) / 100 : 0
-  const blueValues = data.filter(isRankTypeOfBlue)
+  const blueValues = data.filter((v) => isRankTypeOfBlue(facet, v))
 
   const purpleSum =
     newbie.metadata.purple.sum +
@@ -260,7 +302,7 @@ function computeAggregatedGachaRecords (
     (anthology ? anthology.metadata.purple.sum : 0)
 
   const purpleSumPercentage = purpleSum > 0 ? Math.round(purpleSum / total * 10000) / 100 : 0
-  const purpleValues = data.filter(isRankTypeOfPurple)
+  const purpleValues = data.filter((v) => isRankTypeOfPurple(facet, v))
 
   const goldenSum =
     newbie.metadata.golden.sum +
@@ -343,7 +385,7 @@ function computeGoldenGachaRecordsMetadata (
   let sumRestricted = 0
 
   for (const record of values) {
-    const isGolden = isRankTypeOfGolden(record)
+    const isGolden = isRankTypeOfGolden(facet, record)
     pity += 1
 
     if (isGolden) {
@@ -383,6 +425,13 @@ function isRestrictedGolden (
       return !KnownGenshinPermanentGoldenNames.includes(record.name)
     case AccountFacet.StarRail:
       return !KnownStarRailPermanentGoldenItemIds.includes(record.item_id)
+    case AccountFacet.ZenlessZoneZero:
+      // HACK: Bangboo no need!
+      if (record.gacha_type === '5') {
+        return false
+      } else {
+        return !KnownZenlessZoneZeroPermanentGoldenItemIds.includes(record.item_id)
+      }
     default:
       throw new Error(`Unknown facet: ${facet}`)
   }
@@ -400,4 +449,9 @@ const KnownGenshinPermanentGoldenNames: string[] = [
 const KnownStarRailPermanentGoldenItemIds: string[] = [
   '1003', '1004', '1101', '1104', '1107', '1209', '1211',
   '23000', '23002', '23003', '23004', '23005', '23012', '23013'
+]
+
+const KnownZenlessZoneZeroPermanentGoldenItemIds: string[] = [
+  '1021', '1041', '1101', '1141', '1181', '1211',
+  '14102', '14104', '14110', '14114', '14118', '14121'
 ]

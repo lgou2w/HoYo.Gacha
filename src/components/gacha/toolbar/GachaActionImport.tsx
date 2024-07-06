@@ -29,7 +29,8 @@ export default function GachaActionImport () {
           extensions: ['json'],
           name: {
             [AccountFacet.Genshin]: 'UIGF 统一可交换祈愿记录标准 v2.2',
-            [AccountFacet.StarRail]: 'SRGF 星穹铁道抽卡记录标准 v1.0'
+            [AccountFacet.StarRail]: 'SRGF 星穹铁道抽卡记录标准 v1.0',
+            [AccountFacet.ZenlessZoneZero]: '?'
           }[selectedAccount.facet]
         }]
       })

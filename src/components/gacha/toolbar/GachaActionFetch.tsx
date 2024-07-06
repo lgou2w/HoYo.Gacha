@@ -35,7 +35,7 @@ export default function GachaActionFetch () {
 
     const { facet, uid, gachaUrl } = selectedAccount
     try {
-      const { namedValues: { character, weapon, permanent, newbie, anthology } } = gachaRecords
+      const { namedValues: { character, weapon, permanent, newbie, anthology, bangboo } } = gachaRecords
       const pullNewbie = shouldPullNewbie(facet, newbie)
       const fragments = await pull(facet, uid, {
         gachaUrl,
@@ -44,6 +44,7 @@ export default function GachaActionFetch () {
           [weapon.gachaType]: weapon.lastEndId ?? null,
           [permanent.gachaType]: permanent.lastEndId ?? null,
           ...(anthology ? { [anthology.gachaType]: anthology.lastEndId ?? null } : {}),
+          ...(bangboo ? { [bangboo.gachaType]: bangboo.lastEndId ?? null } : {}),
           ...(pullNewbie || {})
         },
         eventChannel: 'gachaRecords-fetcher-event-channel',
@@ -150,9 +151,12 @@ function shouldPullNewbie (
   // HACK:
   //   Genshin Impact    : Newbie Gacha Pool = 20 times
   //   Honkai: Star Rail :                   = 50 times
+  //   Zenless Zone Zero : Useless
   if (facet === AccountFacet.Genshin && newbie.total >= 20) {
     return null
   } else if (facet === AccountFacet.StarRail && newbie.total >= 50) {
+    return null
+  } else if (facet === AccountFacet.ZenlessZoneZero) {
     return null
   } else {
     return {

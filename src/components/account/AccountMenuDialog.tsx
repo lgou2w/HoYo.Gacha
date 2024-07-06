@@ -207,7 +207,9 @@ function AccountMenuDialogForm (props: AccountMenuDialogFormProps) {
 
   const onSubmit = React.useCallback<SubmitHandler<IFormInput>>(async (data) => {
     const uid = Number(data.uid)
-    if (uid < 1_0000_0000) {
+
+    const isZZZ = facet === AccountFacet.ZenlessZoneZero
+    if ((isZZZ && uid < 10_000_000) || (!isZZZ && uid < 100_000_000)) {
       setError('uid', { message: '请输入正确的 UID 值！' })
       return
     }
@@ -227,7 +229,7 @@ function AccountMenuDialogForm (props: AccountMenuDialogFormProps) {
     } finally {
       setBusy(false)
     }
-  }, [setBusy, onSuccess, setError, isEdit, handleCreateAccount, handleUpdateAccount])
+  }, [facet, setBusy, onSuccess, setError, isEdit, handleCreateAccount, handleUpdateAccount])
 
   return (
     <form id={id} onSubmit={handleSubmit(onSubmit)} autoComplete="off" noValidate>
@@ -241,7 +243,13 @@ function AccountMenuDialogForm (props: AccountMenuDialogFormProps) {
         InputProps={{
           ...register('uid', {
             required: '请填写账号 UID 字段！',
-            validate: value => /^[1-9][0-9]{8}$/.test(value) || '请输入正确的 UID 值！'
+            validate: value => {
+              const isZZZ = facet === AccountFacet.ZenlessZoneZero
+              return (isZZZ
+                ? +value >= 10_000_000
+                : /^[1-9][0-9]{8}$/.test(value)
+              ) || '请输入正确的 UID 值！'
+            }
           }),
           onKeyPress: numericOnly,
           startAdornment: (
@@ -311,7 +319,8 @@ function AccountMenuDialogForm (props: AccountMenuDialogFormProps) {
 
 const FacetGameDataDirExamples: Record<AccountFacet, string> = {
   [AccountFacet.Genshin]: 'D:/Genshin Impact/Genshin Impact Game/YuanShen_Data',
-  [AccountFacet.StarRail]: 'D:/StarRail/Game/StarRail_Data'
+  [AccountFacet.StarRail]: 'D:/StarRail/Game/StarRail_Data',
+  [AccountFacet.ZenlessZoneZero]: 'D:/ZenlessZoneZero Game/ZenlessZoneZero_Data'
 }
 
 function numericOnly (evt: React.KeyboardEvent<HTMLElement>) {

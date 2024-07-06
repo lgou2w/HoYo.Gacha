@@ -28,3 +28,18 @@ export interface StarRailGachaRecord {
   item_type: string  // 角色 | 光锥
   rank_type: string  // 3 | 4 | 5
 }
+
+// See: src-tauri/src/gacha/impl_zzz.rs
+export interface ZenlessZoneZeroGachaRecord {
+  id: string
+  uid: string
+  gacha_id: string
+  gacha_type: string // 1 | 2 | 3 | 4 | 5
+  item_id: string
+  count: string      // always 1
+  time: string
+  name: string
+  lang: string       // zh-cn
+  item_type: string  // 代理人 | 音擎
+  rank_type: string  // 2 | 3 | 4
+}

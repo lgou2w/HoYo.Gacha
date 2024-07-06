@@ -76,7 +76,7 @@ export default function Index () {
       }}>
         <Divider textAlign="left" sx={DividerSx}>功能</Divider>
         <ul>
-          <li>支持 <code>原神</code> 和 <code>崩坏：星穹铁道</code> 游戏抽卡记录。</li>
+          <li>支持 <code>原神</code>、<code>崩坏：星穹铁道</code> 和 <code>绝区零</code> 游戏抽卡记录。</li>
           <li>管理游戏的多个账号。</li>
           <li>获取游戏的抽卡链接。</li>
           <li>
@@ -111,8 +111,6 @@ export default function Index () {
         <ul>
           {[
             ['https://uigf.org/', 'UIGF organization'],
-            ['https://github.com/DGP-Studio/Snap.Hutao', 'DGP-Studio/Snap.Hutao'],
-            ['https://github.com/YuehaiTeam/cocogoat', 'YuehaiTeam/cocogoat'],
             ['https://github.com/vikiboss/gs-helper', 'vikiboss/gs-helper']
           ].map(([href, title], i) => (
             <li key={i}>

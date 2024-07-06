@@ -6,9 +6,9 @@ import Typography from '@mui/material/Typography'
 import dayjs from '@/utilities/dayjs'
 
 export default function GachaOverviewTooltips () {
-  const { facet, gachaRecords } = useGachaLayoutContext()
-  const { total, firstTime, lastTime } = gachaRecords
+  const { facet, gachaRecords: { aggregatedValues } } = useGachaLayoutContext()
   const { currency, action } = resolveCurrency(facet)
+  const { total, firstTime, lastTime } = aggregatedValues
 
   return (
     <Box>

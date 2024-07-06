@@ -5,6 +5,7 @@ import AvatarGenshinLumine from '@/assets/images/genshin/UI_AvatarIcon_PlayerGir
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import AvatarGenshinAether from '@/assets/images/genshin/UI_AvatarIcon_PlayerBoy.png'
 import AvatarStarRailTrailblazer from '@/assets/images/starrail/Trailblazer.png'
+import AvatarZenlessBelle from '@/assets/images/zzz/Belle.png'
 
 export interface AccountAvatarProps extends Omit<AvatarProps, 'src'> {
   facet: AccountFacet
@@ -18,6 +19,8 @@ export default function AccountAvatar (props: AccountAvatarProps) {
         return AvatarGenshinLumine
       case AccountFacet.StarRail:
         return AvatarStarRailTrailblazer
+      case AccountFacet.ZenlessZoneZero:
+        return AvatarZenlessBelle
       default:
         return undefined
     }

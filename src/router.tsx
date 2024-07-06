@@ -6,6 +6,7 @@ import Root from '@/routes/root'
 import Index from '@/routes/index'
 import Genshin, { loader as genshinLoader } from '@/routes/genshin'
 import StarRail, { loader as starrailLoader } from '@/routes/starrail'
+import ZenlessZoneZero, { loader as zzzLoader } from '@/routes/zzz'
 import Setting from '@/routes/setting'
 
 const router = createBrowserRouter([
@@ -24,6 +25,11 @@ const router = createBrowserRouter([
         path: '/starrail',
         element: <StarRail />,
         loader: starrailLoader(queryClient)
+      },
+      {
+        path: '/zzz',
+        element: <ZenlessZoneZero />,
+        loader: zzzLoader(queryClient)
       },
       {
         path: '/setting',

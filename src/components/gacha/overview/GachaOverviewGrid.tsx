@@ -13,8 +13,9 @@ import dayjs from '@/utilities/dayjs'
 
 export default function GachaOverviewGrid () {
   const { facet, gachaRecords } = useGachaLayoutContext()
-  const { namedValues: { character, weapon, permanent, newbie, anthology }, aggregatedValues } = gachaRecords
+  const { namedValues: { character, weapon, permanent, newbie, anthology, bangboo }, aggregatedValues } = gachaRecords
   const hasAnthology = !!anthology && anthology.total > 0
+  const hasBangboo = facet === AccountFacet.ZenlessZoneZero && !!bangboo && bangboo.total > 0
 
   return (
     <Box>
@@ -33,7 +34,12 @@ export default function GachaOverviewGrid () {
             <GachaOverviewGridCard facet={facet} value={anthology} />
           </Grid>
         )}
-        <Grid xs={hasAnthology ? 12 : 6} item>
+        {hasBangboo && (
+          <Grid xs={6} item>
+            <GachaOverviewGridCard facet={facet} value={bangboo} />
+          </Grid>
+        )}
+        <Grid xs={hasAnthology || hasBangboo ? 12 : 6} item>
           <GachaOverviewGridCard facet={facet} value={aggregatedValues} newbie={newbie} />
         </Grid>
       </Grid>
@@ -58,6 +64,8 @@ function GachaOverviewGridCard ({ facet, value, newbie }: {
   const newbieGoldenName = newbieGolden && `${newbieGolden.name}`
 
   const aggregated = category === 'aggregated'
+  const isZZZ = facet === AccountFacet.ZenlessZoneZero
+  const isBangboo = isZZZ && category === 'bangboo'
 
   return (
     <Stack sx={GachaOverviewGridCardSx}>
@@ -67,12 +75,17 @@ function GachaOverviewGridCard ({ facet, value, newbie }: {
       <Box>
         <Typography component="div" variant="h4">
           {categoryTitle}
-          {aggregated && <Typography variant="button">（包含新手）</Typography>}
+          {aggregated && (
+            <Typography variant="button">
+              {isZZZ ? '（不含邦布）' : '（包含新手）'}
+            </Typography>
+          )}
         </Typography>
         <Typography component="div" variant="caption">
-          {dayjs(firstTime).format('YYYY.MM.DD')}
-          {' - '}
-          {dayjs(lastTime).format('YYYY.MM.DD')}
+          {firstTime && lastTime
+            ? dayjs(firstTime).format('YYYY.MM.DD') + ' - ' + dayjs(lastTime).format('YYYY.MM.DD')
+            : <i>&nbsp;</i>
+          }
         </Typography>
       </Box>
       <Stack className="labels">
@@ -90,7 +103,9 @@ function GachaOverviewGridCard ({ facet, value, newbie }: {
         </Stack>
         <Stack>
           <Chip label={`平均每金 ${golden.sumAverage} 抽`} />
-          <Chip label={`平均每金 ${golden.sumAverage * 160} ${currency}`} />
+          {!isBangboo && (
+            <Chip label={`平均每金 ${golden.sumAverage * 160} ${currency}`} />
+          )}
         </Stack>
       </Stack>
       {lastGolden && !aggregated && (
@@ -100,7 +115,7 @@ function GachaOverviewGridCard ({ facet, value, newbie }: {
             key={lastGolden.id}
             name={lastGolden.name}
             id={lastGolden.item_id || lastGolden.name}
-            isWeapon={lastGolden.item_type === '武器' || lastGolden.item_type === '光锥'}
+            itemType={lastGolden.item_type}
             rank={5}
             size={72}
             usedPity={lastGolden.usedPity}

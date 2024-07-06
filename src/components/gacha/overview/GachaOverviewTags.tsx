@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react'
 import { useGachaLayoutContext } from '@/components/gacha/GachaLayoutContext'
-import { resolveCurrency } from '@/interfaces/account'
+import { AccountFacet, resolveCurrency } from '@/interfaces/account'
 import { SxProps, Theme } from '@mui/material'
 import Stack from '@mui/material/Stack'
 import Box from '@mui/material/Box'
@@ -15,7 +15,7 @@ export default function GachaOverviewTags () {
     const sortByUsedPity = Array.from(aggregatedValues.metadata.golden.values).sort((a, b) => a.usedPity - b.usedPity)
 
     const luck = sortByUsedPity[0]
-    const unluck = sortByUsedPity[sortByUsedPity.length - 1]
+    const unluck = sortByUsedPity.length > 1 && sortByUsedPity[sortByUsedPity.length - 1]
 
     const countGroups = aggregatedValues.metadata.golden.values.reduce((acc, value) => {
       (acc[value.name] || (acc[value.name] = [])).push(value)
@@ -58,6 +58,9 @@ export default function GachaOverviewTags () {
     <Box>
       <Typography variant="body1" gutterBottom>
         {`❖ ${action}标签`}
+        {facet === AccountFacet.ZenlessZoneZero && (
+          <Typography component="span" variant="caption">（不含邦布）</Typography>
+        )}
       </Typography>
       <Stack sx={GachaOverviewTagsSx}>
         {luck && <Chip className="luck" label={`最幸运的五星：${luck.name}，${luck.total} 抽就出啦！`} />}

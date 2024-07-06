@@ -12,6 +12,7 @@ import Typography from '@mui/material/Typography'
 import HomeIcon from '@mui/icons-material/Home'
 import StarIcon from '@mui/icons-material/Star'
 import DirectionsSubwayIcon from '@mui/icons-material/DirectionsSubway'
+import LiveTvIcon from '@mui/icons-material/LiveTv'
 import SettingsIcon from '@mui/icons-material/Settings'
 import LogoSrc from '@/assets/images/Logo.png'
 
@@ -42,7 +43,8 @@ type Nav = { title: string, href: string, icon?: React.ReactNode }
 const Navs: Nav[] = [
   { title: '主页', href: '/', icon: <HomeIcon /> },
   { title: '祈愿', href: '/genshin', icon: <StarIcon /> },
-  { title: '跃迁', href: '/starrail', icon: <DirectionsSubwayIcon /> }
+  { title: '跃迁', href: '/starrail', icon: <DirectionsSubwayIcon /> },
+  { title: '调频', href: '/zzz', icon: <LiveTvIcon /> }
 ]
 
 const NavSetting: Nav =
@@ -84,7 +86,9 @@ const NavListItemButton = styled(Button, {
   paddingY: theme.spacing(0.5),
   display: 'inline-flex',
   flexDirection: 'column',
-  '& .MuiSvgIcon-root': { fontSize: '2rem' },
+  '& .MuiSvgIcon-root': {
+    fontSize: '2rem'
+  },
   ...(activated && {
     color: theme.palette.primary.main,
     backgroundColor: alpha(theme.palette.primary.main, theme.palette.action.hoverOpacity + 0.05),

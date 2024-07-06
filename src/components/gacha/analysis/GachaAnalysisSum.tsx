@@ -5,10 +5,12 @@ import { SxProps, Theme } from '@mui/material/styles'
 import Box from '@mui/material/Box'
 import Stack from '@mui/material/Stack'
 import Typography from '@mui/material/Typography'
+import { AccountFacet } from '@/interfaces/account'
 
 export default function GachaAnalysisSum () {
-  const { gachaRecords } = useGachaLayoutContext()
-  const { namedValues: { character, weapon, permanent, newbie, anthology }, aggregatedValues } = gachaRecords
+  const { facet, gachaRecords } = useGachaLayoutContext()
+  const { namedValues: { character, weapon, permanent, newbie, anthology, bangboo }, aggregatedValues } = gachaRecords
+  const isZZZ = facet === AccountFacet.ZenlessZoneZero
 
   return (
     <Box className={GachaAnalysisSumCls} sx={GachaAnalysisSumSx}>
@@ -27,8 +29,12 @@ export default function GachaAnalysisSum () {
         <GachaAnalysisSumCol title={weapon.categoryTitle} values={computeNamedGachaRecordsValues(weapon)} />
         {anthology && anthology.total > 0 && <GachaAnalysisSumCol title={anthology.categoryTitle} values={computeNamedGachaRecordsValues(anthology)} />}
         <GachaAnalysisSumCol title={permanent.categoryTitle} values={computeNamedGachaRecordsValues(permanent)} />
+        {bangboo && bangboo.total > 0 && <GachaAnalysisSumCol title={bangboo.categoryTitle} values={computeNamedGachaRecordsValues(bangboo)} />}
         {newbie.total > 0 && <GachaAnalysisSumCol title={newbie.categoryTitle} values={computeNamedGachaRecordsValues(newbie)} />}
-        <GachaAnalysisSumCol title="合计" values={computeNamedGachaRecordsValues(aggregatedValues)} />
+        <GachaAnalysisSumCol
+          title={isZZZ ? '合计（不含邦布）' : '合计'}
+          values={computeNamedGachaRecordsValues(aggregatedValues)}
+        />
       </Stack>
     </Box>
   )

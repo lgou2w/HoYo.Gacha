@@ -4,7 +4,8 @@
 
 export enum AccountFacet {
   Genshin = 'genshin',
-  StarRail = 'starrail'
+  StarRail = 'starrail',
+  ZenlessZoneZero = 'zzz'
 }
 
 export interface KnownAccountProperties {
@@ -30,13 +31,20 @@ export function resolveAccountDisplayName (facet: AccountFacet, account: Account
   }
 
   // TODO: Default display name i18n
-  return account?.properties?.displayName || (
-    facet === AccountFacet.Genshin
-      ? '旅行者'
-      : facet === AccountFacet.StarRail
-        ? '开拓者'
-        : 'NULL'
-  )
+  if (account?.properties?.displayName) {
+    return account.properties.displayName
+  } else {
+    switch (facet) {
+      case AccountFacet.Genshin:
+        return '旅行者'
+      case AccountFacet.StarRail:
+        return '开拓者'
+      case AccountFacet.ZenlessZoneZero:
+        return '绳匠'
+      default:
+        return 'NULL'
+    }
+  }
 }
 
 // TODO: i18n
@@ -46,6 +54,8 @@ export function resolveCurrency (facet: AccountFacet): { currency: string, actio
       return { currency: '原石', action: '祈愿' }
     case AccountFacet.StarRail:
       return { currency: '星琼', action: '跃迁' }
+    case AccountFacet.ZenlessZoneZero:
+      return { currency: '菲林', action: '调频' }
     default:
       throw new Error(`Unknown account facet: ${facet}`)
   }

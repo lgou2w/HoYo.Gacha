@@ -78,7 +78,8 @@ export default function GachaActionExport () {
           </ListItemIcon>
           {{
             [AccountFacet.Genshin]: <ListItemText>UIGF 统一可交换祈愿记录标准 v2.2</ListItemText>,
-            [AccountFacet.StarRail]: <ListItemText>SRGF 星穹铁道抽卡记录标准 v1.0</ListItemText>
+            [AccountFacet.StarRail]: <ListItemText>SRGF 星穹铁道抽卡记录标准 v1.0</ListItemText>,
+            [AccountFacet.ZenlessZoneZero]: <ListItemText>?</ListItemText>
           }[facet]}
         </MenuItem>
         {/* <MenuItem data-format="xlsx" onClick={handleExportGachaLogs}>

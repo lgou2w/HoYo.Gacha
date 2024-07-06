@@ -1,5 +1,5 @@
 import { Account, AccountFacet } from '@/interfaces/account'
-import { GenshinGachaRecord, StarRailGachaRecord } from '@/interfaces/gacha'
+import { GenshinGachaRecord, StarRailGachaRecord, ZenlessZoneZeroGachaRecord } from '@/interfaces/gacha'
 import invoke from '@/utilities/invoke'
 
 export async function findGameDataDirectories (facet: AccountFacet): Promise<string[]> {
@@ -20,8 +20,8 @@ export async function pullAllGachaRecords (
   payload: {
     gachaUrl: string
     gachaTypeAndLastEndIdMappings: Record<
-      GenshinGachaRecord['gacha_type'] | StarRailGachaRecord['gacha_type'],
-      GenshinGachaRecord['id'] | StarRailGachaRecord['id'] | null
+      GenshinGachaRecord['gacha_type'] | StarRailGachaRecord['gacha_type'] | ZenlessZoneZeroGachaRecord['gacha_type'],
+      GenshinGachaRecord['id'] | StarRailGachaRecord['id'] | ZenlessZoneZeroGachaRecord['id'] | null
     >
     eventChannel: string
     saveToStorage?: boolean

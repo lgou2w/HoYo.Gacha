@@ -1,14 +1,14 @@
 import React from 'react'
 import { event } from '@tauri-apps/api'
 import { useImmer } from 'use-immer'
-import { GenshinGachaRecord, StarRailGachaRecord } from '@/interfaces/gacha'
+import { GenshinGachaRecord, StarRailGachaRecord, ZenlessZoneZeroGachaRecord } from '@/interfaces/gacha'
 import PluginGacha from '@/utilities/plugin-gacha'
 
 type Fragment =
   'sleeping' |
   { ready: string } |
   { pagination: number } |
-  { data: Array<GenshinGachaRecord | StarRailGachaRecord> } |
+  { data: Array<GenshinGachaRecord | StarRailGachaRecord | ZenlessZoneZeroGachaRecord> } |
   'finished'
 
 export default function useGachaRecordsFetcher () {

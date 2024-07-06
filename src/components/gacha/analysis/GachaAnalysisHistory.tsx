@@ -11,7 +11,7 @@ import Divider from '@mui/material/Divider'
 
 export default function GachaAnalysisHistory () {
   const { facet, gachaRecords } = useGachaLayoutContext()
-  const { namedValues: { character, weapon, permanent, newbie, anthology } } = gachaRecords
+  const { namedValues: { character, weapon, permanent, newbie, anthology, bangboo } } = gachaRecords
 
   return (
     <Box>
@@ -30,6 +30,9 @@ export default function GachaAnalysisHistory () {
           <GachaAnalysisHistoryList facet={facet} value={anthology} />
         )}
         <GachaAnalysisHistoryList facet={facet} value={permanent} />
+        {bangboo && bangboo.metadata.golden.sum > 0 && (
+          <GachaAnalysisHistoryList facet={facet} value={bangboo} />
+        )}
         {newbie.metadata.golden.sum > 0 && (
           <GachaAnalysisHistoryList facet={facet} value={newbie} />
         )}
@@ -49,7 +52,7 @@ function GachaAnalysisHistoryList ({ facet, value }: {
       <Box className={`${GachaAnalysisHistoryListCls}-title`}>
         <Typography variant="body1">{categoryTitle}</Typography>
         <Typography variant="body2">
-          {category !== 'permanent' && category !== 'newbie'
+          {category !== 'permanent' && category !== 'newbie' && category !== 'bangboo'
             ? `${golden.sumRestricted} + ${golden.sum - golden.sumRestricted}`
             : golden.sum
           }
@@ -63,7 +66,7 @@ function GachaAnalysisHistoryList ({ facet, value }: {
             key={item.id}
             name={item.name}
             id={item.item_id || item.name}
-            isWeapon={item.item_type === '武器' || item.item_type === '光锥'}
+            itemType={item.item_type}
             rank={5}
             size={GachaAnalysisHistoryItemViewSize}
             usedPity={item.usedPity}
