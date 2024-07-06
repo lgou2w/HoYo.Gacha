@@ -23,7 +23,7 @@ export default function SettingAbout () {
       </Stack>
       <Stack gap={1}>
         <Typography component="h3" variant="body1">信息</Typography>
-        <Typography component="p" variant="body2">
+        <Typography component="div" variant="body2">
           <Typography component="span" color="error.light">HoYo.Gacha</Typography>
           &nbsp;
           {'一个非官方的工具，用于管理和分析你的 miHoYo 抽卡记录。'}
