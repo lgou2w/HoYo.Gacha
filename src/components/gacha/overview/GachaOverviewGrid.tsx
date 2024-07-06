@@ -82,9 +82,10 @@ function GachaOverviewGridCard ({ facet, value, newbie }: {
           )}
         </Typography>
         <Typography component="div" variant="caption">
-          {dayjs(firstTime).format('YYYY.MM.DD')}
-          {' - '}
-          {dayjs(lastTime).format('YYYY.MM.DD')}
+          {firstTime && lastTime
+            ? dayjs(firstTime).format('YYYY.MM.DD') + ' - ' + dayjs(lastTime).format('YYYY.MM.DD')
+            : <i>&nbsp;</i>
+          }
         </Typography>
       </Box>
       <Stack className="labels">
