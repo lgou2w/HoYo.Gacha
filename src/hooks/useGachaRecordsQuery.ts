@@ -426,7 +426,12 @@ function isRestrictedGolden (
     case AccountFacet.StarRail:
       return !KnownStarRailPermanentGoldenItemIds.includes(record.item_id)
     case AccountFacet.ZenlessZoneZero:
-      return !KnownZenlessZoneZeroPermanentGoldenItemIds.includes(record.item_id)
+      // HACK: Bangboo no need!
+      if (record.gacha_type === '5') {
+        return false
+      } else {
+        return !KnownZenlessZoneZeroPermanentGoldenItemIds.includes(record.item_id)
+      }
     default:
       throw new Error(`Unknown facet: ${facet}`)
   }
@@ -446,7 +451,7 @@ const KnownStarRailPermanentGoldenItemIds: string[] = [
   '23000', '23002', '23003', '23004', '23005', '23012', '23013'
 ]
 
-// TODO: wait a minute
 const KnownZenlessZoneZeroPermanentGoldenItemIds: string[] = [
-  '1211'
+  '1021', '1041', '1101', '1141', '1181', '1211',
+  '14102', '14104', '14110', '14114', '14118', '14121'
 ]
