@@ -1,6 +1,7 @@
 import React from 'react'
 import { useTheme } from '@mui/material/styles'
 import { resolveCurrency } from '@/interfaces/account'
+import { isRankTypeOfBlue, isRankTypeOfPurple, isRankTypeOfGolden } from '@/hooks/useGachaRecordsQuery'
 import { useGachaLayoutContext } from '@/components/gacha/GachaLayoutContext'
 import { CalendarDatum, ResponsiveTimeRange } from '@nivo/calendar'
 import Stack from '@mui/material/Stack'
@@ -10,19 +11,23 @@ import Typography from '@mui/material/Typography'
 import dayjs from '@/utilities/dayjs'
 
 export default function GachaChartCalendar () {
-  const { facet, gachaRecords: { aggregatedValues } } = useGachaLayoutContext()
+  const { facet, gachaRecords: { aggregatedValues, namedValues: { bangboo } } } = useGachaLayoutContext()
   const { action: currencyAction } = resolveCurrency(facet)
 
   const calendars = Object
-    .entries(aggregatedValues.values.reduce((acc, cur) => {
-      const key = dayjs(cur.time).format('YYYY-MM-DD')
-      if (!acc[key]) {
-        acc[key] = 1
-      } else {
-        acc[key] += 1
-      }
-      return acc
-    }, {} as Record<string, number>))
+    .entries(Array
+      .from(aggregatedValues.values)
+      .concat(bangboo?.values || [])
+      .reduce((acc, cur) => {
+        const key = dayjs(cur.time).format('YYYY-MM-DD')
+        if (!acc[key]) {
+          acc[key] = 1
+        } else {
+          acc[key] += 1
+        }
+        return acc
+      }, {} as Record<string, number>)
+    )
     .reduce((acc, [key, value]) => {
       acc.push({ day: key, value })
       return acc
@@ -35,11 +40,11 @@ export default function GachaChartCalendar () {
       if (!metadataByDay[day]) {
         metadataByDay[day] = { golden: 0, purple: 0, blue: 0 }
       }
-      if (record.rank_type === '5') {
+      if (isRankTypeOfGolden(facet, record)) {
         metadataByDay[day].golden += 1
-      } else if (record.rank_type === '4') {
+      } else if (isRankTypeOfPurple(facet, record)) {
         metadataByDay[day].purple += 1
-      } else if (record.rank_type === '3') {
+      } else if (isRankTypeOfBlue(facet, record)) {
         metadataByDay[day].blue += 1
       }
     }

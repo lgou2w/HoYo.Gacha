@@ -16,15 +16,18 @@ export default function GachaChartCalendar () {
     }
   } = useGachaLayoutContext()
 
-  const itemTypesData = aggregatedValues.values.reduce((acc, cur) => {
-    const key = cur.item_type
-    if (!acc[key]) {
-      acc[key] = 1
-    } else {
-      acc[key] += 1
-    }
-    return acc
-  }, {} as Record<string, number>)
+  const itemTypesData = Array
+    .from(aggregatedValues.values)
+    .concat(bangboo?.values || [])
+    .reduce((acc, cur) => {
+      const key = cur.item_type
+      if (!acc[key]) {
+        acc[key] = 1
+      } else {
+        acc[key] += 1
+      }
+      return acc
+    }, {} as Record<string, number>)
 
   return (
     <Stack direction="column" gap={2}>
@@ -36,9 +39,18 @@ export default function GachaChartCalendar () {
             <ResponsivePie
               {...PieProps}
               data={[
-                { id: '三星', value: aggregatedValues.metadata.blue.sum },
-                { id: '四星', value: aggregatedValues.metadata.purple.sum },
-                { id: '五星', value: aggregatedValues.metadata.golden.sum }
+                {
+                  id: '三星',
+                  value: aggregatedValues.metadata.blue.sum + (bangboo?.metadata.blue.sum || 0)
+                },
+                {
+                  id: '四星',
+                  value: aggregatedValues.metadata.purple.sum + (bangboo?.metadata.purple.sum || 0)
+                },
+                {
+                  id: '五星',
+                  value: aggregatedValues.metadata.golden.sum + (bangboo?.metadata.golden.sum || 0)
+                }
               ]}
             />
           </Box>

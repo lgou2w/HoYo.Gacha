@@ -162,7 +162,6 @@ const KnownZenlessZoneZeroGachaTypes: Record<ZenlessZoneZeroGachaRecord['gacha_t
   1: 'permanent',
   2: 'character',
   3: 'weapon',
-  4: 'bangboo', // TODO: deprecated?
   5: 'bangboo'
 }
 
@@ -193,11 +192,11 @@ const KnownCategoryTitles: Record<AccountFacet, Record<NamedGachaRecords['catego
   }
 }
 
-const isRankTypeOfBlue = (facet: AccountFacet, record: GachaRecord) =>
+export const isRankTypeOfBlue = (facet: AccountFacet, record: GachaRecord) =>
   record.rank_type === (facet === AccountFacet.ZenlessZoneZero ? '2' : '3')
-const isRankTypeOfPurple = (facet: AccountFacet, record: GachaRecord) =>
+export const isRankTypeOfPurple = (facet: AccountFacet, record: GachaRecord) =>
   record.rank_type === (facet === AccountFacet.ZenlessZoneZero ? '3' : '4')
-const isRankTypeOfGolden = (facet: AccountFacet, record: GachaRecord) =>
+export const isRankTypeOfGolden = (facet: AccountFacet, record: GachaRecord) =>
   record.rank_type === (facet === AccountFacet.ZenlessZoneZero ? '4' : '5')
 
 const sortGachaRecordById = (a: GachaRecord, b: GachaRecord) => a.id.localeCompare(b.id)
@@ -275,6 +274,11 @@ function computeAggregatedGachaRecords (
   data: GachaRecord[],
   namedValues: GachaRecords['namedValues']
 ): GachaRecords['aggregatedValues'] {
+  // HACK: Bangboo is a completely separate gacha pool and doesn't count towards the aggregated.
+  if (facet === AccountFacet.ZenlessZoneZero) {
+    data = data.filter((v) => v.gacha_type !== '5')
+  }
+
   const total = data.length
   const firstTime = data[0]?.time
   const lastTime = data[total - 1]?.time
