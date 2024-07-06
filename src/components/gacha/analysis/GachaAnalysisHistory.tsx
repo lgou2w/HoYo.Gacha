@@ -52,7 +52,7 @@ function GachaAnalysisHistoryList ({ facet, value }: {
       <Box className={`${GachaAnalysisHistoryListCls}-title`}>
         <Typography variant="body1">{categoryTitle}</Typography>
         <Typography variant="body2">
-          {category !== 'permanent' && category !== 'newbie'
+          {category !== 'permanent' && category !== 'newbie' && category !== 'bangboo'
             ? `${golden.sumRestricted} + ${golden.sum - golden.sumRestricted}`
             : golden.sum
           }
