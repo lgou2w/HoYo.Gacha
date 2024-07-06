@@ -19,7 +19,7 @@
 
 ## 功能
 
-- [x] 支持 **`原神`** 和 **`崩坏：星穹铁道`** 游戏抽卡记录。
+- [x] 支持 **`原神`**、**`崩坏：星穹铁道`** 和 **`绝区零`** 游戏抽卡记录。
 - [x] 管理游戏的多个账号。
 - [x] 获取游戏的抽卡链接。
 - [x] 获取抽卡记录并保存到本地数据库文件。
@@ -89,4 +89,5 @@
 * [src/assets/images/Logo.png](src/assets/images/Logo.png)
 * [src/assets/images/genshin/*](src/assets/images/genshin)
 * [src/assets/images/starrail/*](src/assets/images/starrail)
+* [src/assets/images/zzz/*](src/assets/images/starrail)
 * [src-tauri/icons/*](src-tauri/icons/)
