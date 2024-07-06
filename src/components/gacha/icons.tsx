@@ -145,6 +145,31 @@ import StarRailWeapon23025 from '@/assets/images/starrail/weapon/23025.png'
 import StarRailWeapon23026 from '@/assets/images/starrail/weapon/23026.png'
 import StarRailWeapon23027 from '@/assets/images/starrail/weapon/23027.png'
 import StarRailWeapon23028 from '@/assets/images/starrail/weapon/23028.png'
+import ZenlessCharacter1021 from '@/assets/images/zzz/character/1021.png'
+import ZenlessCharacter1041 from '@/assets/images/zzz/character/1041.png'
+import ZenlessCharacter1091 from '@/assets/images/zzz/character/1091.png'
+import ZenlessCharacter1101 from '@/assets/images/zzz/character/1101.png'
+import ZenlessCharacter1141 from '@/assets/images/zzz/character/1141.png'
+import ZenlessCharacter1181 from '@/assets/images/zzz/character/1181.png'
+import ZenlessCharacter1191 from '@/assets/images/zzz/character/1191.png'
+import ZenlessCharacter1211 from '@/assets/images/zzz/character/1211.png'
+import ZenlessCharacter1241 from '@/assets/images/zzz/character/1241.png'
+import ZenlessWeapon14102 from '@/assets/images/zzz/weapon/14102.png'
+import ZenlessWeapon14104 from '@/assets/images/zzz/weapon/14104.png'
+import ZenlessWeapon14110 from '@/assets/images/zzz/weapon/14110.png'
+import ZenlessWeapon14114 from '@/assets/images/zzz/weapon/14114.png'
+import ZenlessWeapon14118 from '@/assets/images/zzz/weapon/14118.png'
+import ZenlessWeapon14119 from '@/assets/images/zzz/weapon/14119.png'
+import ZenlessWeapon14121 from '@/assets/images/zzz/weapon/14121.png'
+import ZenlessWeapon14124 from '@/assets/images/zzz/weapon/14124.png'
+import ZenlessBangboo54001 from '@/assets/images/zzz/bangboo/54001.png'
+import ZenlessBangboo54002 from '@/assets/images/zzz/bangboo/54002.png'
+import ZenlessBangboo54004 from '@/assets/images/zzz/bangboo/54004.png'
+import ZenlessBangboo54005 from '@/assets/images/zzz/bangboo/54005.png'
+import ZenlessBangboo54006 from '@/assets/images/zzz/bangboo/54006.png'
+import ZenlessBangboo54008 from '@/assets/images/zzz/bangboo/54008.png'
+import ZenlessBangboo54009 from '@/assets/images/zzz/bangboo/54009.png'
+import ZenlessBangboo54013 from '@/assets/images/zzz/bangboo/54013.png'
 
 // HACK: These static resources only contain five-star!
 
@@ -309,15 +334,49 @@ const StarRail = {
   }
 } as const
 
+const Zenless = {
+  character: {
+    1021: [1021, ZenlessCharacter1021],
+    1041: [1041, ZenlessCharacter1041],
+    1091: [1091, ZenlessCharacter1091],
+    1101: [1101, ZenlessCharacter1101],
+    1141: [1141, ZenlessCharacter1141],
+    1181: [1181, ZenlessCharacter1181],
+    1191: [1191, ZenlessCharacter1191],
+    1211: [1211, ZenlessCharacter1211],
+    1241: [1241, ZenlessCharacter1241]
+  },
+  weapon: {
+    14102: [14102, ZenlessWeapon14102],
+    14104: [14104, ZenlessWeapon14104],
+    14110: [14110, ZenlessWeapon14110],
+    14114: [14114, ZenlessWeapon14114],
+    14118: [14118, ZenlessWeapon14118],
+    14119: [14119, ZenlessWeapon14119],
+    14121: [14121, ZenlessWeapon14121],
+    14124: [14124, ZenlessWeapon14124]
+  },
+  bangboo: {
+    54001: [54001, ZenlessBangboo54001],
+    54002: [54002, ZenlessBangboo54002],
+    54004: [54004, ZenlessBangboo54004],
+    54005: [54005, ZenlessBangboo54005],
+    54006: [54006, ZenlessBangboo54006],
+    54008: [54008, ZenlessBangboo54008],
+    54009: [54009, ZenlessBangboo54009],
+    54013: [54013, ZenlessBangboo54013]
+  }
+} as const
+
 const Assets = {
   genshin: Genshin,
   starrail: StarRail,
-  zzz: {} // TODO: wait a minute
+  zzz: Zenless
 }
 
 export function lookupAssetIcon (
   facet: keyof typeof Assets,
-  category: 'character' | 'weapon',
+  category: 'character' | 'weapon' | 'bangboo',
   nameOrId: string
 ): [number, string] | undefined {
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment

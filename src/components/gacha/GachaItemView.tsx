@@ -13,7 +13,7 @@ export interface GachaItemViewProps {
   facet: AccountFacet
   name: string
   id: string
-  isWeapon: boolean
+  itemType: string
   rank: 3 | 4 | 5 | '3' | '4' | '5'
   size: number
   usedPity?: number
@@ -22,9 +22,9 @@ export interface GachaItemViewProps {
 }
 
 export default function GachaItemView (props: GachaItemViewProps) {
-  const { facet, name, id, isWeapon, rank, size, usedPity, restricted, time } = props
+  const { facet, name, id, itemType, rank, size, usedPity, restricted, time } = props
 
-  const category = isWeapon ? 'weapon' : 'character'
+  const category = ItemTypeCategoryMappings[itemType]
   const icon = lookupAssetIcon(facet, category, id)
 
   let src = icon?.[1]
@@ -42,6 +42,7 @@ export default function GachaItemView (props: GachaItemViewProps) {
       data-facet={facet}
       data-rank={rank}
       data-restricted={restricted}
+      data-category={category}
       title={title}
     >
       <img src={src} alt={name} />
@@ -49,6 +50,15 @@ export default function GachaItemView (props: GachaItemViewProps) {
       {restricted && <Typography className={`${GachaItemViewCls}-restricted`}>限定</Typography>}
     </Box>
   )
+}
+
+const ItemTypeCategoryMappings: Record<string, 'character' | 'weapon' | 'bangboo'> = {
+  角色: 'character',
+  武器: 'weapon',
+  光锥: 'weapon',
+  代理人: 'character',
+  音擎: 'weapon',
+  邦布: 'bangboo'
 }
 
 function getRemoteResourceSrc (facet: AccountFacet, category: string, itemIdOrName: string) {
@@ -89,7 +99,9 @@ const GachaItemViewSx: SxProps<Theme> = {
       bottom: 0,
       border: 1,
       borderColor: 'rgba(255, 255, 255, 0.25)'
-    },
+    }
+  },
+  '&[data-facet="starrail"], &[data-facet="zzz"]': {
     '&[data-rank="3"] > img': { backgroundImage: 'linear-gradient(#434e7e, #4d80c8)' },
     '&[data-rank="4"] > img': { backgroundImage: 'linear-gradient(#4e4976, #9061d2)' },
     '&[data-rank="5"] > img': { backgroundImage: 'linear-gradient(#986359, #d2ad70)' }

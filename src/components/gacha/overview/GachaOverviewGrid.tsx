@@ -114,7 +114,7 @@ function GachaOverviewGridCard ({ facet, value, newbie }: {
             key={lastGolden.id}
             name={lastGolden.name}
             id={lastGolden.item_id || lastGolden.name}
-            isWeapon={lastGolden.item_type === '武器' || lastGolden.item_type === '光锥' || lastGolden.item_type === '音擎'}
+            itemType={lastGolden.item_type}
             rank={5}
             size={72}
             usedPity={lastGolden.usedPity}
