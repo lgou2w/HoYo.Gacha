@@ -20,7 +20,7 @@ mod utilities;
 use crate::database::{Database, DatabasePluginBuilder};
 use crate::gacha::business::GachaBusinessPluginBuilder;
 use crate::gacha::convert::GachaConvertPluginBuilder;
-use crate::utilities::commons::{initialize_tracing, setup_panic_hook};
+use crate::utilities::commons::{initialize_tracing, setup_panic_hook, MAIN_WINDOW_HWND};
 use crate::utilities::paths::appdata_roaming;
 
 fn welcome() {
@@ -119,6 +119,12 @@ async fn start(database: Arc<Database>) {
       // Open devtools in debug mode or when specifying environment variable
       if cfg!(debug_assertions) || std::env::var(constants::ENV_DEVTOOLS).is_ok() {
         window.open_devtools();
+      }
+
+      #[cfg(windows)]
+      if let Ok(hwnd) = window.hwnd() {
+        info!("Tauri main window hwnd: {hwnd:?}");
+        unsafe { MAIN_WINDOW_HWND.replace(hwnd.0) };
       }
 
       Ok(())

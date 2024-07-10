@@ -104,6 +104,9 @@ fn descript_panic(panic: &(dyn Any + Send)) -> &str {
     .unwrap_or(&type_name_of_val(&panic))
 }
 
+#[cfg(windows)]
+pub static mut MAIN_WINDOW_HWND: Option<isize> = None;
+
 pub fn setup_panic_hook() {
   panic::set_hook(Box::new(|info| {
     let cause = descript_panic(info.payload());
@@ -217,6 +220,7 @@ pub fn setup_panic_hook() {
     #[cfg(windows)]
     unsafe {
       use windows::core::{w, PCWSTR};
+      use windows::Win32::Foundation::HWND;
       use windows::Win32::UI::WindowsAndMessaging::{MessageBoxW, MB_ICONERROR, MB_OK};
 
       let lptext = message
@@ -225,11 +229,13 @@ pub fn setup_panic_hook() {
         .collect::<Vec<u16>>();
 
       MessageBoxW(
-        None,
+        MAIN_WINDOW_HWND.take().map(HWND).unwrap_or_default(),
         PCWSTR::from_raw(lptext.as_ptr()),
         w!("Application crash"),
         MB_ICONERROR | MB_OK,
       );
     }
+
+    std::process::exit(1)
   }));
 }
