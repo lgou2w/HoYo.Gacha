@@ -1,14 +1,12 @@
 import React from 'react'
 import { Account, Business, KeyofBusinesses } from '@/api/interfaces/account'
-import { GachaRecord } from '@/api/interfaces/gacha'
-import { PrettiedGachaRecords } from './prettied'
+import { PrettiedGachaRecords } from '@/api/interfaces/gacha-prettied'
 
 export interface GachaRecordsContextState {
   keyofBusinesses: KeyofBusinesses
   business: Business
   activeAccount: Account | null
-  records: GachaRecord[] | null
-  prettiedRecords: PrettiedGachaRecords | null
+  records: PrettiedGachaRecords | null
 }
 
 export const GachaRecordsContext =

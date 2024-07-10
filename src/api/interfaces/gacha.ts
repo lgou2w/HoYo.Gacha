@@ -14,7 +14,7 @@ export const GachaRecordRanks = {
 export type GachaRecordRank = typeof GachaRecordRanks[keyof typeof GachaRecordRanks]
 
 // Stricter type inference based on business
-//   ON `business` = 0 -> `gachaType` = 100 | 200 | 301 | 400 | 302
+//   ON `business` = 0 -> `gachaType` = 100 | 200 | 301 | 400 | 302 | 500
 //                     -> `gachaId` === null
 //   ON `business` = 1 -> `gachaType` = 1 | 2 | 11 | 12
 //                     -> `gachaId` !== null
@@ -34,7 +34,7 @@ export type GachaRecord<T = Business> = {
 } & (
   // Genshin Impact
   T extends 0 ? {
-    gachaType: 100 | 200 | 301 | 400 | 302
+    gachaType: 100 | 200 | 301 | 400 | 302 | 500
     gachaId: null
   }
   // Honkai: Star Rail

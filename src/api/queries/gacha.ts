@@ -2,6 +2,7 @@ import { FetchQueryOptions, useQuery } from '@tanstack/react-query'
 import { Account, Businesses, KeyofBusinesses } from '@/api/interfaces/account'
 import { OmitParametersFirst } from '@/api/interfaces/declares'
 import { GachaRecord } from '@/api/interfaces/gacha'
+import prettiedGachaRecords, { PrettiedGachaRecords } from '@/api/interfaces/gacha-prettied'
 import { DatabasePlugin, DatabaseError } from '@/api/plugins'
 import { queryClient } from '@/api/store'
 
@@ -81,19 +82,26 @@ export function setGachaSelectedAccount (
 type GachaRecordsQueryKey = ['gacha', 'records', KeyofBusinesses, number | null]
 
 const GachaRecordsQueryOptions: (keyofBusinesses: KeyofBusinesses, uid: number | null) => FetchQueryOptions<
-  GachaRecord[] | null,
+  PrettiedGachaRecords | null,
   DatabaseError | Error,
-  GachaRecord[] | null,
+  PrettiedGachaRecords | null,
   GachaRecordsQueryKey
 > = (keyofBusinesses, uid) => ({
+  gcTime: Infinity,
   queryKey: ['gacha', 'records', keyofBusinesses, uid],
-  queryFn: ({ queryKey: [,, keyofBusinesses, uid] }) => uid
-    ? DatabasePlugin.findGachaRecordsByBusinessAndUid({
-      business: Businesses[keyofBusinesses],
-      uid
-    })
-    : null,
-  gcTime: Infinity
+  queryFn: async ({ queryKey: [,, keyofBusinesses, uid] }) => {
+    if (uid) {
+      const business = Businesses[keyofBusinesses]
+      const records = await DatabasePlugin.findGachaRecordsByBusinessAndUid({
+        business,
+        uid
+      })
+
+      return prettiedGachaRecords(business, uid, records)
+    } else {
+      return null
+    }
+  }
 })
 
 export function getGachaRecordsQueryData (keyofBusinesses: KeyofBusinesses, uid: number | null) {

@@ -2,15 +2,13 @@ import React, { PropsWithChildren, useCallback, useMemo } from 'react'
 import { Account } from '@/api/interfaces/account'
 import { useAccountsQuery } from '@/api/queries/account'
 import { useGachaSelectedAccountQuery, setGachaSelectedAccount } from '@/api/queries/gacha'
-import { BusinessContextState } from '@/components/BusinessProvider'
+import useBusiness from '@/components/BusinessProvider/useBusiness'
 import { GachaAccountContext, GachaAccountContextState } from './Context'
 
 export type { GachaAccountContextState }
 
-export default function GachaAccountProvider (
-  props: PropsWithChildren<BusinessContextState>
-) {
-  const { keyofBusinesses, business, children } = props
+export default function GachaAccountProvider (props: PropsWithChildren) {
+  const { keyofBusinesses, business } = useBusiness()
   const { data: accounts = [] } = useAccountsQuery()
   const {
     data: gachaAccountSelectedId,
@@ -55,7 +53,7 @@ export default function GachaAccountProvider (
 
   return (
     <GachaAccountContext.Provider value={state}>
-      {children}
+      {props.children}
     </GachaAccountContext.Provider>
   )
 }

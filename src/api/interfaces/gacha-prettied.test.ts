@@ -1,6 +1,6 @@
 import { Businesses } from '@/api/interfaces/account'
 import { GachaRecord, GachaRecordRanks } from '@/api/interfaces/gacha'
-import prettiedGachaRecords from './prettied'
+import prettiedGachaRecords from './gacha-prettied'
 
 test('GachaRecords - Prettied', () => {
   const business = Businesses.GenshinImpact
