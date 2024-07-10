@@ -38,12 +38,12 @@ mod handlers {
     UIGFGachaConverterError, UIGFGachaRecordsReader, UIGFGachaRecordsWriter,
   };
   use crate::gacha::convert::{GachaRecordsReader, GachaRecordsWriter};
-  use crate::models::{AccountIdentifier, AccountServer, Business};
+  use crate::models::{AccountIdentifier, Business};
 
   #[derive(Debug, thiserror::Error)]
   pub enum GachaConvertError {
-    #[error("{0}")]
-    IncorrectUid(String),
+    #[error("Operation is not supported")]
+    Unsupported,
 
     #[error("Error while creating output file: {0}")]
     CreateOutput(std::io::Error),
@@ -81,7 +81,7 @@ mod handlers {
     output: String,
     pretty: Option<bool>,
   ) -> Result<u64, GachaConvertError> {
-    let uid = AccountIdentifier::try_from(uid).map_err(GachaConvertError::IncorrectUid)?;
+    let uid = AccountIdentifier::from(uid);
     let output = File::create(output).map_err(GachaConvertError::CreateOutput)?;
     let records = GachaRecordQuestioner::find_gacha_records_by_business_and_uid(
       database.as_ref(),
@@ -101,11 +101,8 @@ mod handlers {
     const OFFSET_EUROPE: UtcOffset = offset!(+01:00:00);
     const OFFSET_COMMON: UtcOffset = offset!(+08:00:00);
 
-    let region_time_zone = match uid.detect_server() {
-      AccountServer::USA => OFFSET_AMERICA,
-      AccountServer::Euro => OFFSET_EUROPE,
-      _ => OFFSET_COMMON,
-    };
+    // TODO: Region time zone
+    let region_time_zone = todo!();
 
     match business {
       Business::GenshinImpact => {
@@ -119,6 +116,10 @@ mod handlers {
           .pretty(pretty.unwrap_or(false))
           .write(records, output)
           .await?;
+      }
+      Business::ZenlessZoneZero => {
+        // TODO: Export Zenless
+        return Err(GachaConvertError::Unsupported);
       }
     };
 
@@ -143,6 +144,10 @@ mod handlers {
         SRGFGachaRecordsReader::new()
           .read_with_validation(input, Some(uid.to_string()))
           .await?
+      }
+      Business::ZenlessZoneZero => {
+        // TODO: Import Zenless
+        return Err(GachaConvertError::Unsupported);
       }
     };
 

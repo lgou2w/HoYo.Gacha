@@ -41,6 +41,20 @@ export default {
       GameDataDir: {
         Example: 'X:/Star Rail/Game/StarRail_Data'
       }
+    },
+    ZenlessZoneZero: {
+      Name: 'Zenless Zone Zero',
+      Player: 'Proxy',
+      Currency: 'Polychrome',
+      Servers: {
+        Official: 'New Eridu'
+      },
+      Gacha: {
+        Name: 'Signal Search'
+      },
+      GameDataDir: {
+        Example: 'X:/ZenlessZoneZero Game/ZenlessZoneZero_Data'
+      }
     }
   },
   Error: {
@@ -65,7 +79,8 @@ export default {
           '/accounts': 'Accounts',
           '/settings': 'Settings',
           '/gacha/GenshinImpact': '$t(Business.GenshinImpact.Name)',
-          '/gacha/HonkaiStarRail': '$t(Business.HonkaiStarRail.Name)'
+          '/gacha/HonkaiStarRail': '$t(Business.HonkaiStarRail.Name)',
+          '/gacha/ZenlessZoneZero': '$t(Business.ZenlessZoneZero.Name)'
         }
       }
     }
@@ -86,7 +101,7 @@ export default {
           SuccessEdited: 'Account successfully Edited: {{uid}}',
           Uid: {
             Label: 'UID',
-            Placeholder: 'UID for in-game account (nine-digit number)',
+            Placeholder: 'UID for in-game account',
             Required: 'Please enter the UID field value.',
             Pattern: 'Please enter the correct UID format.',
             AlreadyExists: 'This account UID already exists.'

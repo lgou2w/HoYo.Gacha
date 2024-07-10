@@ -41,6 +41,20 @@ export default {
       GameDataDir: {
         Example: 'X:/Star Rail/Game/StarRail_Data'
       }
+    },
+    ZenlessZoneZero: {
+      Name: '絕區零',
+      Player: '繩匠',
+      Currency: '菲林',
+      Servers: {
+        Official: '新艾利都'
+      },
+      Gacha: {
+        Name: '調頻'
+      },
+      GameDataDir: {
+        Example: 'X:/ZenlessZoneZero Game/ZenlessZoneZero_Data'
+      }
     }
   },
   Error: {
@@ -65,7 +79,8 @@ export default {
           '/accounts': '賬戶',
           '/settings': '設定',
           '/gacha/GenshinImpact': '$t(Business.GenshinImpact.Name)',
-          '/gacha/HonkaiStarRail': '$t(Business.HonkaiStarRail.Name)'
+          '/gacha/HonkaiStarRail': '$t(Business.HonkaiStarRail.Name)',
+          '/gacha/ZenlessZoneZero': '$t(Business.ZenlessZoneZero.Name)'
         }
       }
     }
@@ -86,7 +101,7 @@ export default {
           SuccessEdited: '編輯帳戶 {{uid}} 成功。',
           Uid: {
             Label: 'UID',
-            Placeholder: '遊戲內帳戶的 UID（9 比特數位）',
+            Placeholder: '遊戲內帳戶的 UID',
             Required: '請輸入 UID 欄位值。',
             Pattern: '請輸入正確的 UID 格式。',
             AlreadyExists: '該帳戶 UID 已經存在。'

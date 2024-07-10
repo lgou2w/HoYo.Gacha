@@ -66,7 +66,7 @@ export function stringifyGachaBusinessErrorKind (kind: GachaBusinessError['kind'
 export const GachaBusinessPlugin = {
   name: PluginName,
   // Declared commands
-  findDataDir: bind<Pick<Account, 'business'> & Pick<DataDirectory, 'isOversea'>, DataDirectory | null>('find_data_dir'),
+  findDataDir: bind<Pick<Account, 'business'> & Pick<DataDirectory, 'region'>, DataDirectory | null>('find_data_dir'),
   findDataDirs: bind<Pick<Account, 'business'>, DataDirectory[]>('find_data_dirs'),
   findGachaUrls: bind<Pick<Account, 'business'> & { dataDirectory: DataDirectory, skipExpired: boolean }, GachaUrl[] | null>('find_gacha_urls'),
   fetchGachaUrlMetadata: bind<Pick<Account, 'business'> & { gachaUrl: string }, GachaUrlMetadata | null>('fetch_gacha_url_metadata'),

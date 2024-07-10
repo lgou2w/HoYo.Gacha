@@ -167,6 +167,10 @@ embedded!(
     RU_RU  = "ru-ru" -> "./honkai_star_rail/ru-ru.json",
     TH_TH  = "th-th" -> "./honkai_star_rail/th-th.json",
     VI_VN  = "vi-vn" -> "./honkai_star_rail/vi-vn.json"
+  },
+  zenless_zone_zero {
+    ZenlessZoneZero,
+    // TODO: Embedded
   }
 );
 

@@ -1,9 +1,8 @@
 import React, { ReactNode, createRef, useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { Tab, TabList, Tooltip, makeStyles, shorthands, tokens } from '@fluentui/react-components'
-import { SparkleRegular, SparkleFilled, BoardRegular, BoardFilled, PersonCircleRegular, PersonCircleFilled, SettingsRegular, SettingsFilled } from '@fluentui/react-icons'
-import { Business, Businesses } from '@/api/interfaces/account'
-import { TrainRegular } from '@/components/Commons/Icons'
+import { Tab, TabList, Tooltip, Image, makeStyles, shorthands, tokens } from '@fluentui/react-components'
+import { BoardRegular, BoardFilled, PersonCircleRegular, PersonCircleFilled, SettingsRegular, SettingsFilled } from '@fluentui/react-icons'
+import { Businesses, ReversedBusinesses } from '@/api/interfaces/account'
 import Locale from '@/components/Commons/Locale'
 
 export const ButtonSize = tokens.fontSizeHero900
@@ -12,35 +11,34 @@ const useStyles = makeStyles({
   tab: {
     borderRadius: tokens.borderRadiusSmall,
     ...shorthands.padding(tokens.spacingVerticalM, tokens.spacingHorizontalM),
-    ':hover': { backgroundColor: tokens.colorNeutralBackground2Hover },
-    ':active': { backgroundColor: tokens.colorNeutralBackground2Pressed },
-    '[aria-selected=true]': { backgroundColor: tokens.colorBrandBackground2Hover },
-    '[aria-selected=true]:hover': { backgroundColor: tokens.colorBrandBackground2Hover },
-    // '[aria-selected=true]:active': { backgroundColor: tokens.colorBrandBackground2Pressed },
     '> .fui-Tab__icon': {
       width: ButtonSize,
       height: ButtonSize,
       fontSize: ButtonSize,
-      color: tokens.colorCompoundBrandForeground1
+      color: tokens.colorCompoundBrandForeground1,
+      '> .fui-Image': {
+        width: 'inherit',
+        height: 'inherit',
+        borderRadius: tokens.borderRadiusMedium,
+        ...shorthands.border(tokens.strokeWidthThin, 'solid', tokens.colorNeutralStroke2)
+      }
     },
+    ':hover': { backgroundColor: tokens.colorNeutralBackground2Hover },
+    ':active': { backgroundColor: tokens.colorNeutralBackground2Pressed },
     ':hover > .fui-Tab__icon': { color: tokens.colorBrandForeground1 },
-    ':active > .fui-Tab__icon': { color: tokens.colorCompoundBrandForeground1Pressed }
+    ':active > .fui-Tab__icon': { color: tokens.colorCompoundBrandForeground1Pressed },
+    '[aria-selected=true]': { backgroundColor: tokens.colorBrandBackground2Hover },
+    '[aria-selected=true]:hover': { backgroundColor: tokens.colorBrandBackground2Hover },
+    '[aria-selected=true]:active': { backgroundColor: tokens.colorBrandBackground2Pressed },
+    '[aria-selected=true] > .fui-Tab__icon > .fui-Image': {
+      ...shorthands.border(tokens.strokeWidthThin, 'solid', tokens.colorBrandStroke2Pressed)
+    }
   },
   spacing: { flexGrow: 1 }
 })
 
 type NavIcon = { normal: ReactNode, selected?: ReactNode }
-type NavItem = { path: string, icon: NavIcon } | { spacing: true }
-
-const BusinessIconMappings: Record<Business, NavIcon> = {
-  [Businesses.GenshinImpact]: {
-    normal: <SparkleRegular />,
-    selected: <SparkleFilled />
-  },
-  [Businesses.HonkaiStarRail]: {
-    normal: <TrainRegular />
-  }
-}
+type NavItem = { path: string, icon: NavIcon | string } | { spacing: true }
 
 const Navs: NavItem[] = [
   {
@@ -50,12 +48,14 @@ const Navs: NavItem[] = [
       selected: <BoardFilled />
     }
   },
-  ...Object.entries(Businesses).map(([key, value]) => {
-    return {
-      path: `/gacha/${key}`,
-      icon: BusinessIconMappings[value]
-    } as NavItem
-  }),
+  ...Object
+    .entries(Businesses)
+    .map(([key, business]) => {
+      return {
+        path: `/gacha/${key}`,
+        icon: `/${ReversedBusinesses[business]}/Icon.png`
+      } as NavItem
+    }),
   { spacing: true },
   {
     path: '/accounts',
@@ -153,9 +153,11 @@ export default function NavbarTabListRouter () {
                 value={item.path}
                 className={classes.tab}
                 icon={{
-                  children: location.pathname === item.path
-                    ? item.icon.selected || item.icon.normal
-                    : item.icon.normal
+                  children: typeof item.icon === 'string'
+                    ? <Image src={item.icon} />
+                    : location.pathname === item.path
+                      ? item.icon.selected || item.icon.normal
+                      : item.icon.normal
                 }}
               />
             </Tooltip>

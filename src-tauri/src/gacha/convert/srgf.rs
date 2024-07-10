@@ -10,7 +10,7 @@ use time::{OffsetDateTime, UtcOffset};
 use super::{GachaConverter, GachaRecordsReader, GachaRecordsWriter};
 use crate::constants;
 use crate::gacha::dict::embedded as GachaDictionaryEmbedded;
-use crate::models::{Business, AccountIdentifier, GachaRecord, GachaRecordRank};
+use crate::models::{AccountIdentifier, Business, GachaRecord, GachaRecordRank};
 
 // SRGF for Honkai: Star Rail
 // See: https://uigf.org/zh/standards/SRGF.html
@@ -71,9 +71,6 @@ pub enum SRGFGachaConverterError {
 
   #[error("Inconsistent with expected uid. (Expected: {expected}, Actual: {actual})")]
   InconsistentUid { expected: String, actual: String },
-
-  #[error("{0}")]
-  IncorrectUid(String),
 
   #[error("Error while parsing field '{field}' as integer: {inner}")]
   FieldParseInt {
@@ -155,7 +152,7 @@ impl GachaConverter for SRGFGachaConverter {
   ) -> Result<Vec<GachaRecord>, Self::Error> {
     let mut records = Vec::with_capacity(provided.len());
     for provide in provided {
-      let uid: AccountIdentifier = provide
+      let uid = provide
         .uid
         .as_deref()
         .unwrap_or(&self.uid)
@@ -163,9 +160,8 @@ impl GachaConverter for SRGFGachaConverter {
         .map_err(|inner| SRGFGachaConverterError::FieldParseInt {
           field: "uid",
           inner,
-        })?
-        .try_into()
-        .map_err(SRGFGachaConverterError::IncorrectUid)?;
+        })
+        .map(AccountIdentifier::from)?;
 
       let gacha_type = provide.gacha_type.parse::<u32>().map_err(|inner| {
         SRGFGachaConverterError::FieldParseInt {
@@ -373,7 +369,7 @@ mod tests {
     GachaRecordsReader, GachaRecordsWriter, SRGFGachaConverterError, SRGFGachaRecordsReader,
     SRGFGachaRecordsWriter, SRGF,
   };
-  use crate::models::{Business, AccountIdentifier, GachaRecord, GachaRecordRank};
+  use crate::models::{AccountIdentifier, Business, GachaRecord, GachaRecordRank};
 
   #[tokio::test]
   async fn test_writer() -> Result<(), SRGFGachaConverterError> {
@@ -382,7 +378,7 @@ mod tests {
     let record = GachaRecord {
       id: "1683774600000000000".into(),
       business: Business::HonkaiStarRail,
-      uid: AccountIdentifier::try_from(uid).unwrap(),
+      uid: AccountIdentifier::from(uid),
       gacha_type: 1,
       gacha_id: Some(1001),
       rank_type: GachaRecordRank::Blue,

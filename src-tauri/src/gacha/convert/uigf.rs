@@ -16,7 +16,7 @@ use time::{OffsetDateTime, UtcOffset};
 use super::{GachaConverter, GachaRecordsReader, GachaRecordsWriter};
 use crate::constants;
 use crate::gacha::dict::embedded as GachaDictionaryEmbedded;
-use crate::models::{Business, AccountIdentifier, GachaRecord, GachaRecordRank};
+use crate::models::{AccountIdentifier, Business, GachaRecord, GachaRecordRank};
 
 // UIGF for Genshin Impact
 // See: https://uigf.org/zh/standards/UIGF.html
@@ -161,9 +161,6 @@ pub enum UIGFGachaConverterError {
   #[error("Inconsistent with expected uid. (Expected: {expected}, Actual: {actual})")]
   InconsistentUid { expected: String, actual: String },
 
-  #[error("{0}")]
-  IncorrectUid(String),
-
   #[error("Error while parsing field '{field}' as integer: {inner}")]
   FieldParseInt {
     field: &'static str,
@@ -271,7 +268,7 @@ impl GachaConverter for UIGFGachaConverter {
         return Err(UIGFGachaConverterError::RequiredFields("item_id"));
       }
 
-      let uid: AccountIdentifier = provide
+      let uid = provide
         .uid
         .as_deref()
         .unwrap_or(&self.uid)
@@ -279,9 +276,8 @@ impl GachaConverter for UIGFGachaConverter {
         .map_err(|inner| UIGFGachaConverterError::FieldParseInt {
           field: "uid",
           inner,
-        })?
-        .try_into()
-        .map_err(UIGFGachaConverterError::IncorrectUid)?;
+        })
+        .map(AccountIdentifier::from)?;
 
       let gacha_type = provide.gacha_type.parse::<u32>().map_err(|inner| {
         UIGFGachaConverterError::FieldParseInt {
@@ -505,7 +501,7 @@ mod tests {
     GachaRecordsReader, GachaRecordsWriter, UIGFGachaConverterError, UIGFGachaRecordsReader,
     UIGFGachaRecordsWriter, UIGFVersion, UIGF,
   };
-  use crate::models::{Business, AccountIdentifier, GachaRecord, GachaRecordRank};
+  use crate::models::{AccountIdentifier, Business, GachaRecord, GachaRecordRank};
 
   #[tokio::test]
   async fn test_writer() -> Result<(), UIGFGachaConverterError> {
@@ -514,7 +510,7 @@ mod tests {
     let record = GachaRecord {
       id: "1675850760000000000".into(),
       business: Business::GenshinImpact,
-      uid: AccountIdentifier::try_from(uid).unwrap(),
+      uid: AccountIdentifier::from(uid),
       gacha_type: 400,
       gacha_id: None,
       rank_type: GachaRecordRank::Blue,

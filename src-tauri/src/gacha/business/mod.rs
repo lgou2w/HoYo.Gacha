@@ -177,16 +177,22 @@ impl WebCachesVersion {
   }
 }
 
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub enum DataRegion {
+  Official,
+  Oversea,
+}
+
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct DataDirectory {
   pub path: PathBuf,
-  pub is_oversea: bool,
-  // pub is_cloud: bool, // TODO: Cloud
+  pub region: DataRegion,
 }
 
 pub trait DataDirectoryFinder: BusinessDeclare {
-  fn find_data_dir(&self, is_oversea: bool) -> Result<Option<DataDirectory>, GachaBusinessError>;
+  fn find_data_dir(&self, region: DataRegion) -> Result<Option<DataDirectory>, GachaBusinessError>;
+
   fn find_data_dirs(&self) -> Result<Vec<DataDirectory>, GachaBusinessError> {
     info!(
       message = "Finding the data directories...",
@@ -194,16 +200,16 @@ pub trait DataDirectoryFinder: BusinessDeclare {
     );
     let mut paths = Vec::with_capacity(2);
 
-    // CN Server
-    if let Some(cn) = self.find_data_dir(false)? {
-      info!("Existing CN Server Data directory: {cn:?}");
-      paths.push(cn);
+    // Official server
+    if let Some(official) = self.find_data_dir(DataRegion::Official)? {
+      info!("Existing Official Server Data directory: {official:?}");
+      paths.push(official);
     }
 
     // Oversea Server
-    if let Some(os) = self.find_data_dir(true)? {
-      info!("Existing Oversea Server Data directory: {os:?}");
-      paths.push(os);
+    if let Some(oversea) = self.find_data_dir(DataRegion::Oversea)? {
+      info!("Existing Oversea Server Data directory: {oversea:?}");
+      paths.push(oversea);
     }
 
     Ok(paths)
@@ -662,10 +668,6 @@ pub trait GachaRecordsFetcher: BusinessDeclare + Send + Sync {
     let business = self.business();
     let mut records = Vec::with_capacity(pagination.list.len());
     for value in pagination.list {
-      // HACK: It's usually fine. When try_from fails,
-      //   print the uid details and interrupt the program.
-      let uid = AccountIdentifier::try_from(value.uid).expect("Illegal account uid");
-
       // If `item_id` is not available,
       // then look up the mapping of `name` from the embedded dictionary.
       let item_id = if let Some(item_id) = value.item_id {
@@ -688,7 +690,7 @@ pub trait GachaRecordsFetcher: BusinessDeclare + Send + Sync {
       records.push(GachaRecord {
         id: value.id,
         business: *business,
-        uid,
+        uid: AccountIdentifier::from(value.uid),
         gacha_type: value.gacha_type,
         gacha_id: value.gacha_id,
         rank_type: GachaRecordRank::try_from(value.rank_type).unwrap(), // FIXME: SAFETY?
@@ -781,8 +783,9 @@ macro_rules! generate_business {
   ($(
     struct $business:ident {
       DataDirectoryFinder {
-        cn = $business_cn_log_file:expr => $business_cn_data_dir_keyword:literal,
-        os = $business_os_log_file:expr => $business_os_data_dir_keyword:literal
+        $(
+          $region:ident = $log_file:expr => $data_dir_keyword:literal,
+        )*
       }
     }
   ),*) => {
@@ -797,22 +800,23 @@ macro_rules! generate_business {
       }
 
       impl DataDirectoryFinder for $business {
-        fn find_data_dir(&self, is_oversea: bool) -> Result<Option<DataDirectory>, GachaBusinessError> {
+        fn find_data_dir(&self, region: DataRegion) -> Result<Option<DataDirectory>, GachaBusinessError> {
           info!(
             message = "Finding the data directory...",
             business = %self.business(),
-            is_oversea
+            ?region
           );
 
-          let path = match is_oversea {
-            false => lookup_path_line_from_keyword($business_cn_log_file, $business_cn_data_dir_keyword),
-            true  => lookup_path_line_from_keyword($business_os_log_file, $business_os_data_dir_keyword),
+          let path = match region {
+            $(
+              DataRegion::$region => lookup_path_line_from_keyword($log_file, $data_dir_keyword),
+            )*
           }?;
 
           if let Some(path) = path {
             Ok(Some(DataDirectory {
               path,
-              is_oversea,
+              region,
             }))
           } else {
             Ok(None)
@@ -831,14 +835,20 @@ macro_rules! generate_business {
 generate_business!(
   struct GenshinImpact {
     DataDirectoryFinder {
-      cn = mihoyo_dir().join("原神/output_log.txt")           => "/YuanShen_Data/",
-      os = mihoyo_dir().join("Genshin Impact/output_log.txt") => "/GenshinImpact_Data/"
+      Official = mihoyo_dir().join("原神/output_log.txt")           => "/YuanShen_Data/",
+      Oversea  = mihoyo_dir().join("Genshin Impact/output_log.txt") => "/GenshinImpact_Data/",
     }
   },
   struct HonkaiStarRail {
     DataDirectoryFinder {
-      cn = mihoyo_dir().join("崩坏：星穹铁道/Player.log")   => "/StarRail_Data/",
-      os = cognosphere_dir().join("Star Rail/Player.log") => "/StarRail_Data/"
+      Official = mihoyo_dir().join("崩坏：星穹铁道/Player.log")   => "/StarRail_Data/",
+      Oversea  = cognosphere_dir().join("Star Rail/Player.log") => "/StarRail_Data/",
+    }
+  },
+  struct ZenlessZoneZero {
+    DataDirectoryFinder {
+      Official = mihoyo_dir().join("绝区零/Player.log")                  => "/ZenlessZoneZero_Data/",
+      Oversea  = cognosphere_dir().join("Zenless Zone Zero/Player.log") => "/ZenlessZoneZero_Data/",
     }
   }
 );
@@ -868,7 +878,7 @@ impl Deref for GachaBusiness {
 }
 
 static GACHA_BUSINESSES: Lazy<HashMap<&Business, GachaBusiness>> = Lazy::new(|| {
-  let mut m = HashMap::with_capacity(2);
+  let mut m = HashMap::with_capacity(3);
   m.insert(
     &Business::GenshinImpact,
     GachaBusiness(Box::new(GenshinImpact)),
@@ -876,6 +886,10 @@ static GACHA_BUSINESSES: Lazy<HashMap<&Business, GachaBusiness>> = Lazy::new(|| 
   m.insert(
     &Business::HonkaiStarRail,
     GachaBusiness(Box::new(HonkaiStarRail)),
+  );
+  m.insert(
+    &Business::ZenlessZoneZero,
+    GachaBusiness(Box::new(ZenlessZoneZero)),
   );
   m
 });
@@ -1087,7 +1101,7 @@ async fn pull_gacha_records(
 
 #[cfg(test)]
 mod tests {
-  use super::{create_gacha_records_fetcher_channel, GachaBusiness, GachaBusinessError, GachaUrl};
+  use super::*;
   use crate::models::Business;
 
   fn install_tracing() {
@@ -1106,10 +1120,9 @@ mod tests {
     business: &GachaBusiness,
   ) -> Result<Option<Vec<GachaUrl>>, GachaBusinessError> {
     let skip_expired_gacha_urls = true;
-    let is_oversea = false;
     Ok(
       business
-        .find_data_dir(is_oversea)?
+        .find_data_dir(DataRegion::Official)?
         .map(|game_data_dir| business.find_gacha_urls(&game_data_dir, skip_expired_gacha_urls))
         .transpose()?
         .flatten(),

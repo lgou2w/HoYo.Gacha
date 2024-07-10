@@ -27,7 +27,7 @@ use time::OffsetDateTime;
 pub enum Business {
   GenshinImpact = 0,
   HonkaiStarRail = 1,
-  // ZenlessZoneZero = 2, // TODO: 07/04
+  ZenlessZoneZero = 2,
 }
 
 impl Business {
@@ -35,7 +35,7 @@ impl Business {
     match *self {
       Business::GenshinImpact => "Genshin Impact",
       Business::HonkaiStarRail => "Honkai: Star Rail",
-      // Business::ZenlessZoneZero => "Zenless Zone Zero",
+      Business::ZenlessZoneZero => "Zenless Zone Zero",
     }
   }
 
@@ -43,7 +43,7 @@ impl Business {
     match *self {
       Business::GenshinImpact => "hk4e",
       Business::HonkaiStarRail => "hkrpg",
-      // Business::ZenlessZoneZero => "nap",
+      Business::ZenlessZoneZero => "nap",
     }
   }
 }
@@ -60,9 +60,10 @@ impl fmt::Display for Business {
 #[serde(transparent)]
 pub struct AccountIdentifier(u32);
 
-impl AccountIdentifier {
-  pub const MIN: Self = Self(100_000_000);
-  pub const MAX: Self = Self(999_999_999);
+impl From<u32> for AccountIdentifier {
+  fn from(value: u32) -> Self {
+    Self(value)
+  }
 }
 
 impl Deref for AccountIdentifier {
@@ -88,55 +89,6 @@ impl PartialOrd<u32> for AccountIdentifier {
 impl fmt::Display for AccountIdentifier {
   fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
     self.0.fmt(f)
-  }
-}
-
-impl TryFrom<u32> for AccountIdentifier {
-  type Error = String;
-
-  fn try_from(value: u32) -> Result<Self, Self::Error> {
-    if value >= *Self::MIN && value <= *Self::MAX {
-      Ok(Self(value))
-    } else {
-      Err(format!(
-        "Incorrect account uid value: {value} (Expected: [{min}, {max}])",
-        min = Self::MIN,
-        max = Self::MAX
-      ))
-    }
-  }
-}
-
-/// Account Server
-
-#[allow(clippy::upper_case_acronyms)]
-#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
-#[repr(u8)]
-pub enum AccountServer {
-  Official = 1,
-  Channel,
-  USA = 10,
-  Euro,
-  Asia,
-  Cht,
-}
-
-impl AccountIdentifier {
-  /// Returns the first digit from `1` to `9`.
-  pub fn first_digit(&self) -> u8 {
-    (**self as f32 / *Self::MIN as f32).floor() as _
-  }
-
-  pub fn detect_server(&self) -> AccountServer {
-    match self.first_digit() {
-      1..=4 => AccountServer::Official,
-      5 => AccountServer::Channel,
-      6 => AccountServer::USA,
-      7 => AccountServer::Euro,
-      8 => AccountServer::Asia,
-      9 => AccountServer::Cht,
-      _ => unreachable!(), // SAFETY
-    }
   }
 }
 
@@ -211,7 +163,7 @@ mod tests {
     let mut account = Account {
       id: 1,
       business: Business::GenshinImpact,
-      uid: AccountIdentifier::try_from(100_000_001).unwrap(),
+      uid: AccountIdentifier::from(100_000_001),
       game_data_dir: "empty".into(),
       gacha_url: None,
       gacha_url_updated_at: None,

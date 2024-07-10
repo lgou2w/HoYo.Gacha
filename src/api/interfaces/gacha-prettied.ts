@@ -30,7 +30,7 @@ export interface CategorizedGachaRecordsOrangeMetadata<T = Business>
 }
 
 export interface CategorizedGachaRecords<T = Business> {
-  category: 'Beginner' | 'Permanent' | 'Character' | 'Weapon' | 'Chronicled'
+  category: 'Beginner' | 'Permanent' | 'Character' | 'Weapon' | 'Chronicled' | 'Bangboo'
   values: GachaRecord<T>[]
   total: number
   gachaType: GachaRecord<T>['gachaType']
@@ -53,9 +53,7 @@ export interface PrettiedGachaRecords<T = Business> {
   gachaTypeRecords: Partial<Record<GachaRecord<T>['gachaType'], GachaRecord<T>[]>>
   gachaTypeToCategories: Record<GachaRecord<T>['gachaType'], CategorizedGachaRecords<T>['category']>
   aggregated: Omit<CategorizedGachaRecords<T>, 'category' | 'gachaType' | 'lastEndId'>
-  categorizeds:
-    & Omit<Record<CategorizedGachaRecords<T>['category'], CategorizedGachaRecords<T>>, 'Chronicled'>
-    & NonNullable<{ 'Chronicled': CategorizedGachaRecords<T> | null }> // 'Genshin Impact' only!
+  categorizeds: Partial<Record<CategorizedGachaRecords<T>['category'], CategorizedGachaRecords<T>>>
 }
 
 export interface IsRestrictedOrange<T = Business> {
@@ -112,6 +110,12 @@ const KnownCategorizeds: Record<Business, Record<GachaRecord['gachaType'], Categ
     1: 'Permanent',
     11: 'Character',
     12: 'Weapon'
+  },
+  [Businesses.ZenlessZoneZero]: {
+    1: 'Permanent',
+    2: 'Character',
+    3: 'Weapon',
+    5: 'Bangboo'
   }
 }
 
@@ -197,11 +201,11 @@ function computeAggregatedGachaRecords<T = Business> (
 
   const orangeSumPercentage = orangeSum > 0 ? Math.round(orangeSum / total * 10000) / 100 : 0
   const orangeValues =
-    Array.from(categorizeds.Beginner.metadata[GachaRecordRanks.Orange].values)
-      .concat(Array.from(categorizeds.Permanent.metadata[GachaRecordRanks.Orange].values))
-      .concat(Array.from(categorizeds.Character.metadata[GachaRecordRanks.Orange].values))
-      .concat(Array.from(categorizeds.Weapon.metadata[GachaRecordRanks.Orange].values))
-      .concat(Array.from(categorizeds.Chronicled?.metadata[GachaRecordRanks.Orange].values || []))
+    Array.from(categorizeds.Beginner?.metadata[GachaRecordRanks.Orange].values || [])
+      .concat(categorizeds.Permanent?.metadata[GachaRecordRanks.Orange].values || [])
+      .concat(categorizeds.Character?.metadata[GachaRecordRanks.Orange].values || [])
+      .concat(categorizeds.Weapon?.metadata[GachaRecordRanks.Orange].values || [])
+      .concat(categorizeds.Chronicled?.metadata[GachaRecordRanks.Orange].values || [])
       .sort(sortGachaRecord)
 
   const {

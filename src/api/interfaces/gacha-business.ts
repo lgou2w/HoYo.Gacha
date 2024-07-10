@@ -1,6 +1,8 @@
+import { DataRegion } from './account'
+
 export interface DataDirectory {
   path: string
-  isOversea: boolean
+  region: DataRegion
 }
 
 export interface GachaUrl {

@@ -46,15 +46,15 @@ test('GachaRecords - Prettied', () => {
   expect(prettied.lastTime).toBe(records[1].time)
   expect(prettied.gachaTypeRecords).toHaveProperty('100', records)
 
-  expect(prettied.categorizeds.Beginner.total).toBe(records.length)
-  expect(prettied.categorizeds.Beginner.gachaType).toBe(100)
-  expect(prettied.categorizeds.Beginner.lastEndId).toBe(records[1].id)
-  expect(prettied.categorizeds.Beginner.metadata[GachaRecordRanks.Blue]).toStrictEqual({
+  expect(prettied.categorizeds.Beginner?.total).toBe(records.length)
+  expect(prettied.categorizeds.Beginner?.gachaType).toBe(100)
+  expect(prettied.categorizeds.Beginner?.lastEndId).toBe(records[1].id)
+  expect(prettied.categorizeds.Beginner?.metadata[GachaRecordRanks.Blue]).toStrictEqual({
     values: [records[0]],
     sum: 1,
     sumPercentage: 50
   })
-  expect(prettied.categorizeds.Beginner.metadata[GachaRecordRanks.Orange]).toStrictEqual({
+  expect(prettied.categorizeds.Beginner?.metadata[GachaRecordRanks.Orange]).toStrictEqual({
     values: [{
       ...records[1],
       restricted: false,

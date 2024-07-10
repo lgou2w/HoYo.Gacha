@@ -1,7 +1,7 @@
 import React from 'react'
 import { Button, Divider, Text, Tooltip, makeStyles, shorthands, tokens } from '@fluentui/react-components'
 import { PeopleEditRegular, ServerRegular } from '@fluentui/react-icons'
-import { Account, AccountServer, ReversedBusinesses, detectServer } from '@/api/interfaces/account'
+import { Account, ReversedBusinesses, detectUidServer } from '@/api/interfaces/account'
 import Locale from '@/components/Commons/Locale'
 import AddOrEditDialog from '@/pages/Accounts/BusinessView/AddOrEditDialog'
 import PlayerAvatar from '@/pages/Accounts/PlayerAvatar'
@@ -127,7 +127,7 @@ export default function AccountsBusinessViewListItem (props: Props) {
               'Pages.Accounts.BusinessView.ListItem.Server',
               {
                 business: ReversedBusinesses[account.business],
-                path: AccountServer[detectServer(account.uid)]
+                path: detectUidServer(account.business, account.uid)
               }
             ]}
           />

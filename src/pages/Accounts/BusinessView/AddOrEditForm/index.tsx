@@ -5,7 +5,7 @@ import { Button, Input, Textarea, makeStyles, shorthands, tokens } from '@fluent
 import { CursorHoverRegular, FolderSearchRegular, PersonTagRegular } from '@fluentui/react-icons'
 import { dialog } from '@tauri-apps/api'
 import { produce } from 'immer'
-import { Account, UidRegex, isCorrectUid, isOverseaServer } from '@/api/interfaces/account'
+import { Account, isCorrectUid, detectUidDataRegion } from '@/api/interfaces/account'
 import { DataDirectory } from '@/api/interfaces/gacha-business'
 import { GachaBusinessPlugin, isDatabaseError, isGachaBusinessError, stringifyGachaBusinessErrorKind } from '@/api/plugins'
 import { useAccountsQuery, useCreateAccountMutation, useUpdateAccountGameDataDirAndPropertiesByIdMutation } from '@/api/queries/account'
@@ -97,15 +97,19 @@ export default function AddOrEditForm (props: Props) {
 
   const handleAutoFindGameDataDir = useCallback(async () => {
     const uid = getValues('uid')
-    const isOversea = isCorrectUid(uid) ? isOverseaServer(uid) : null
+    const dataRegion = detectUidDataRegion(business, uid)
 
     // If the uid field is not filled in or is incorrect, find all data dirs
     let dataDirectories: DataDirectory[] = []
     try {
-      if (isOversea === null) {
+      if (dataRegion === null) {
         dataDirectories = await GachaBusinessPlugin.findDataDirs({ business })
       } else {
-        const dataDirectory = await GachaBusinessPlugin.findDataDir({ business, isOversea })
+        const dataDirectory = await GachaBusinessPlugin.findDataDir({
+          business,
+          region: 'Official'
+        })
+
         dataDirectory && (dataDirectories.push(dataDirectory))
       }
     } catch (e) {
@@ -233,12 +237,14 @@ export default function AddOrEditForm (props: Props) {
             value: true,
             message: t('Pages.Accounts.BusinessView.AddOrEditForm.Uid.Required')
           },
-          pattern: {
-            value: UidRegex,
-            message: t('Pages.Accounts.BusinessView.AddOrEditForm.Uid.Pattern')
-          },
           validate (value) {
             if (isEditMode) return
+
+            const uid = value && parseInt(value)
+            if (!uid || !Number.isSafeInteger(uid) || !isCorrectUid(business, uid)) {
+              return t('Pages.Accounts.BusinessView.AddOrEditForm.Uid.Pattern')
+            }
+
             if (value && accounts?.find((v) => v.uid === +value)) {
               return t('Pages.Accounts.BusinessView.AddOrEditForm.Uid.AlreadyExists')
             }

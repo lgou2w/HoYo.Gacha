@@ -30,8 +30,8 @@ mod handlers {
     DatabasePluginState, GachaRecordQuestioner, GachaRecordQuestionerAdditions,
   };
   use crate::gacha::business::{
-    create_gacha_records_fetcher_channel, DataDirectory, GachaBusiness, GachaBusinessError,
-    GachaRecordsFetcherChannelFragment, GachaUrl, GachaUrlMetadata,
+    create_gacha_records_fetcher_channel, DataDirectory, DataRegion, GachaBusiness,
+    GachaBusinessError, GachaRecordsFetcherChannelFragment, GachaUrl, GachaUrlMetadata,
   };
   use crate::models::Business;
 
@@ -41,9 +41,9 @@ mod handlers {
   #[tauri::command]
   pub async fn find_data_dir(
     business: Business,
-    is_oversea: bool,
+    region: DataRegion,
   ) -> Result<Option<DataDirectory>, GachaBusinessError> {
-    GachaBusiness::ref_by(&business).find_data_dir(is_oversea)
+    GachaBusiness::ref_by(&business).find_data_dir(region)
   }
 
   #[tauri::command]

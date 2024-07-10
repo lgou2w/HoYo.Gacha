@@ -3,10 +3,13 @@
 
 // Declares
 
+export type GenshinImpact = 0
+export type HonkaiStarRail = 1
+export type ZenlessZoneZero = 2
 export const Businesses = {
   GenshinImpact: 0,
-  HonkaiStarRail: 1
-  // ZenlessZoneZero: 2
+  HonkaiStarRail: 1,
+  ZenlessZoneZero: 2
 } as const
 
 export type KeyofBusinesses = keyof typeof Businesses
@@ -43,60 +46,69 @@ export function isHonkaiStarRailAccount (account: Account): boolean {
   return account.business === Businesses.HonkaiStarRail
 }
 
-// export function isZenlessZoneZeroAccount (account: Account): boolean {
-//   return account.business === Businesses.ZenlessZoneZero
-// }
-
-export enum AccountServer {
-  // CN
-  Official = 1,
-  Channel,
-  // OS
-  USA = 10,
-  Euro,
-  Asia,
-  Cht
+export function isZenlessZoneZeroAccount (account: Account): boolean {
+  return account.business === Businesses.ZenlessZoneZero
 }
 
-export const UidRegex = /^[1-9][0-9]{8}$/
-export const UidMinimum = 100_000_000
-export const UidMaximum = 999_999_999
-export function isCorrectUid (uid: number | string): boolean {
-  if (typeof uid === 'string') {
-    return UidRegex.test(uid)
-  } else if (typeof uid === 'number') {
-    return uid >= UidMinimum && uid <= UidMaximum
-  } else {
-    return false
+export function isCorrectUid (business: Business, uid: number | string): boolean {
+  switch (business) {
+    case Businesses.GenshinImpact:
+    case Businesses.HonkaiStarRail:
+      if (typeof uid === 'string') {
+        return /^[1-9][0-9]{8}$/.test(uid)
+      } else if (typeof uid === 'number') {
+        return uid >= 100_000_000 && uid <= 999_999_999
+      } else {
+        return false
+      }
+    case Businesses.ZenlessZoneZero:
+      return +uid >= 10_000_000
   }
 }
 
-/** Throws an exception if the `uid` is incorrect value. */
-export function uidFirstDigit (uid: number | string) {
-  if (!isCorrectUid(uid)) {
-    throw new Error(`Incorrect account uid: ${uid}`)
-  } else {
-    typeof uid === 'string' && (uid = parseInt(uid))
-    return Math.floor(uid / UidMinimum) as
-      1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
+export type DataRegion = 'Official' | 'Oversea'
+export function detectUidDataRegion (business: Business, uid: number | string): DataRegion | null {
+  if (!isCorrectUid(business, uid)) return null
+
+  switch (business) {
+    case Businesses.GenshinImpact:
+    case Businesses.HonkaiStarRail:
+      return +uid < 600_000_000
+        ? 'Official'
+        : 'Oversea'
+    case Businesses.ZenlessZoneZero:
+      return +uid < 100_000_000
+        ? 'Official'
+        : 'Oversea'
   }
 }
 
-export function detectServer (uid: string | number): AccountServer {
-  const first = uidFirstDigit(uid)
-  if (first >= 1 && first <= 4) {
-    return AccountServer.Official
-  } else {
-    switch (first as 5 | 6 | 7 | 8 | 9) {
-      case 5: return AccountServer.Channel
-      case 6: return AccountServer.USA
-      case 7: return AccountServer.Euro
-      case 8: return AccountServer.Asia
-      case 9: return AccountServer.Cht
-    }
-  }
-}
+export type AccountServer = 'Official' | 'Channel' | 'USA' | 'Euro' | 'Asia' | 'Cht'
+export function detectUidServer (business: Business, uid: string | number): AccountServer | null {
+  if (!isCorrectUid(business, uid)) return null
 
-export function isOverseaServer (uid: string | number): boolean {
-  return uidFirstDigit(uid) >= 6
+  switch (business) {
+    case Businesses.GenshinImpact:
+    case Businesses.HonkaiStarRail:
+      switch (Math.floor(+uid / 100_000_000) as 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9) {
+        case 1:
+        case 2:
+        case 3:
+        case 4:
+          return 'Official'
+        case 5:
+          return 'Channel'
+        case 6:
+          return 'USA'
+        case 7:
+          return 'Euro'
+        case 8:
+          return 'Asia'
+        case 9:
+          return 'Cht'
+      }
+      break
+    case Businesses.ZenlessZoneZero:
+      return 'Official'
+  }
 }
