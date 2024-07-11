@@ -145,7 +145,7 @@ impl<'r> Encode<'r, Sqlite> for AccountIdentifier {
 
 impl<'r> Decode<'r, Sqlite> for AccountIdentifier {
   fn decode(value: SqliteValueRef) -> Result<Self, BoxDynError> {
-    Ok(AccountIdentifier::try_from(u32::decode(value)?)?)
+    Ok(AccountIdentifier::from(u32::decode(value)?))
   }
 }
 
