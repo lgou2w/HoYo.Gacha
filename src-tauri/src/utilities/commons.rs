@@ -229,7 +229,10 @@ pub fn setup_panic_hook() {
         .collect::<Vec<u16>>();
 
       MessageBoxW(
-        MAIN_WINDOW_HWND.take().map(HWND).unwrap_or_default(),
+        MAIN_WINDOW_HWND
+          .take()
+          .map(|hwnd| HWND(hwnd as _))
+          .unwrap_or_default(),
         PCWSTR::from_raw(lptext.as_ptr()),
         w!("Application crash"),
         MB_ICONERROR | MB_OK,

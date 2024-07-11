@@ -14,10 +14,10 @@ publish = false
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [build-dependencies]
-tauri-build = { version = "1.5.2", features = [] }
+tauri-build = { version = "1.5.3", features = [] }
 
 [dependencies]
-async-trait = "0.1.80"
+async-trait = "0.1.81"
 backtrace = "0.3.73"
 exponential-backoff = "1.2.0"
 futures-util = "0.3.30"
@@ -26,8 +26,8 @@ once_cell = "1.19.0"
 paste = "1.0.15"
 regex = "1.10.5"
 reqwest = { version = "0.12.5", features = ["json"] }
-serde = { version = "1.0.203", features = ["derive"] }
-serde_json = { version = "1.0.118", features = ["preserve_order"] }
+serde = { version = "1.0.204", features = ["derive"] }
+serde_json = { version = "1.0.120", features = ["preserve_order"] }
 serde_repr = "0.1.19"
 thiserror = "1.0.61"
 time = { version = "0.3.36", features = ["formatting", "local-offset", "macros", "serde", "serde-human-readable"] }
@@ -48,7 +48,7 @@ features = [
 ]
 
 [dependencies.tauri]
-version = "1.6.8"
+version = "1.7.1"
 features = [
   "devtools",
   "dialog-all",
@@ -66,7 +66,7 @@ raw-window-handle = "0.5.2"
 windows-version = "0.1.1"
 
 [target.'cfg(windows)'.dependencies.windows]
-version = "0.57.0"
+version = "0.58.0"
 features = [
   "Win32_Foundation",
   "Win32_Graphics",
