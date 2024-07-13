@@ -47,14 +47,31 @@ export default function VersionChecker () {
   }, [latestVersion.data, setBusy])
 
   if (!version.data) {
-    return <Typography component="span" variant="body2" color="warning">版本更新不可用</Typography>
+    return (
+      <Typography component="span" variant="body2" color="warning">版本更新不可用</Typography>
+    )
   }
 
-  if (latestVersion.isLoading) return <Typography component="span" variant="body2">加载中...</Typography>
-  if (latestVersion.isError) return <Typography component="span" variant="body2" color="error">检查最新版本失败</Typography>
+  if (latestVersion.isLoading) {
+    return (
+      <Typography component="span" variant="body2" color="secondary">检查更新中...</Typography>
+    )
+  }
+
+  if (latestVersion.isError) {
+    return (
+      <Typography component="span" variant="body2" color="error">
+        检查最新版本失败：{latestVersion.error.message}
+      </Typography>
+    )
+  }
 
   const needUpdate = isNeedUpdate(version.data, latestVersion.data)
-  if (!needUpdate) return <Typography component="span" variant="body2" color="error">已是最新版本</Typography>
+  if (!needUpdate) {
+    return (
+      <Typography component="span" variant="body2" color="error">已是最新版本</Typography>
+    )
+  }
 
   return (
     <Button size="small" color="info"

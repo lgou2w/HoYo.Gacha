@@ -1,8 +1,11 @@
-use crate::constants;
-use crate::error::Result;
+use std::time::Duration;
+
 use reqwest::Client as Reqwest;
 use serde::{Deserialize, Serialize};
 use tauri::{Invoke, Runtime};
+
+use crate::constants;
+use crate::error::Result;
 
 pub fn get_handlers<R: Runtime>() -> Box<dyn Fn(Invoke<R>) + Send + Sync> {
   Box::new(tauri::generate_handler![
@@ -67,6 +70,7 @@ async fn get_latest_version() -> Result<LatestVersion> {
     Reqwest::builder()
       .build()?
       .get("https://hoyo-gacha.lgou2w.com/release/latest")
+      .timeout(Duration::from_secs(15))
       .send()
       .await?
       .json::<LatestVersion>()
@@ -93,6 +97,7 @@ async fn update_app(latest_version: LatestVersion) -> Result<()> {
     .build()?
     .get("https://hoyo-gacha.lgou2w.com/release/download")
     .query(&[("id", latest_version.id.to_string())])
+    .timeout(Duration::from_secs(15))
     .send()
     .await?
     .error_for_status()?;
