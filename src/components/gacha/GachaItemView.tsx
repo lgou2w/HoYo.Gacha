@@ -62,7 +62,7 @@ function resolveItemIconSrc (facet: AccountFacet, lang: string, itemName: string
   if (embedded) {
     return embedded[1]
   } else {
-    return `https://hoyo-gacha.lgou2w.com/static/${facet}/${category}/cutted/${itemId}.png`
+    return `https://hoyo-gacha.lgou2w.com/static/${facet}/${category}/cutted/${itemId || itemName}.png`
   }
 }
 
