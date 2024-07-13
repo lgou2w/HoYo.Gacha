@@ -66,14 +66,14 @@ impl SRGF {
   }
 
   pub fn from_reader(reader: impl Read) -> Result<Self> {
-    Ok(serde_json::from_reader(reader)?)
+    serde_json::from_reader(reader).map_err(Error::UIGFOrSRGFSerdeJson)
   }
 
   pub fn to_writer(&self, writer: impl Write, pretty: bool) -> Result<()> {
     if pretty {
-      Ok(serde_json::to_writer_pretty(writer, self)?)
+      serde_json::to_writer_pretty(writer, self).map_err(Error::UIGFOrSRGFSerdeJson)
     } else {
-      Ok(serde_json::to_writer(writer, self)?)
+      serde_json::to_writer(writer, self).map_err(Error::UIGFOrSRGFSerdeJson)
     }
   }
 }
