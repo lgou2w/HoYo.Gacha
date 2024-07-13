@@ -14,9 +14,6 @@ pub enum Error {
   Db(#[from] sea_orm::error::DbErr),
 
   #[error(transparent)]
-  SerdeJson(#[from] serde_json::Error),
-
-  #[error(transparent)]
   Tauri(#[from] tauri::Error),
 
   #[error(transparent)]
@@ -54,6 +51,9 @@ pub enum Error {
   GachaRecordFetcherChannelJoin,
 
   // UIGF & SRGF
+  #[error("{0}")]
+  UIGFOrSRGFSerdeJson(serde_json::Error),
+
   #[error("UIGF or SRGF Mismatched UID: expected {expected:?}, actual {actual:?}")]
   UIGFOrSRGFMismatchedUID { expected: String, actual: String },
 
@@ -95,6 +95,7 @@ impl_error_identifiers! {
   GachaRecordRetcode            => GACHA_RECORD_RETCODE,
   GachaRecordFetcherChannelSend => GACHA_RECORD_FETCHER_CHANNEL_SEND,
   GachaRecordFetcherChannelJoin => GACHA_RECORD_FETCHER_CHANNEL_JOIN,
+  UIGFOrSRGFSerdeJson           => UIGF_OR_SRGF_SERDE_JSON,
   UIGFOrSRGFMismatchedUID       => UIGF_OR_SRGF_MISMATCHED_UID,
   UIGFOrSRGFInvalidField        => UIGF_OR_SRGF_INVALID_FIELD,
   AccountAlreadyExists          => ACCOUNT_ALREADY_EXISTS,

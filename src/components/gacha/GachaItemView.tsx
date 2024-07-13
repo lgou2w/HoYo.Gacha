@@ -6,13 +6,15 @@ import Typography from '@mui/material/Typography'
 import GenshinUIRarity3Background from '@/assets/images/genshin/UI_Rarity_3_Background.png'
 import GenshinUIRarity4Background from '@/assets/images/genshin/UI_Rarity_4_Background.png'
 import GenshinUIRarity5Background from '@/assets/images/genshin/UI_Rarity_5_Background.png'
+import { ItemTypeCategoryMappings } from './ItemTypeCategoryMappings'
 import { lookupAssetIcon } from './icons'
 import dayjs from '@/utilities/dayjs'
 
 export interface GachaItemViewProps {
   facet: AccountFacet
-  name: string
-  id: string
+  lang: string
+  itemName: string
+  itemId: undefined | null | string
   itemType: string
   rank: 3 | 4 | 5 | '3' | '4' | '5'
   size: number
@@ -22,19 +24,12 @@ export interface GachaItemViewProps {
 }
 
 export default function GachaItemView (props: GachaItemViewProps) {
-  const { facet, name, id, itemType, rank, size, usedPity, restricted, time } = props
-
-  const category = ItemTypeCategoryMappings[itemType]
-  const icon = lookupAssetIcon(facet, category, id)
-
-  let src = icon?.[1]
-  if (!src) {
-    src = getRemoteResourceSrc(facet, category, id)
-  }
+  const { facet, lang, itemName, itemId, itemType, rank, size, usedPity, restricted, time } = props
+  const iconSrc = resolveItemIconSrc(facet, lang, itemName, itemId, itemType)
 
   const title = !time
-    ? name
-    : name + '\n' + dayjs(time).format('LLLL')
+    ? itemName
+    : itemName + '\n' + dayjs(time).format('LLLL')
 
   return (
     <Box className={GachaItemViewCls} sx={GachaItemViewSx}
@@ -42,27 +37,33 @@ export default function GachaItemView (props: GachaItemViewProps) {
       data-facet={facet}
       data-rank={rank}
       data-restricted={restricted}
-      data-category={category}
       title={title}
     >
-      <img src={src} alt={name} />
+      <img src={iconSrc} alt={itemName} />
       {usedPity && <Typography className={`${GachaItemViewCls}-used-pity`}>{usedPity}</Typography>}
       {restricted && <Typography className={`${GachaItemViewCls}-restricted`}>限定</Typography>}
     </Box>
   )
 }
 
-const ItemTypeCategoryMappings: Record<string, 'character' | 'weapon' | 'bangboo'> = {
-  角色: 'character',
-  武器: 'weapon',
-  光锥: 'weapon',
-  代理人: 'character',
-  音擎: 'weapon',
-  邦布: 'bangboo'
-}
+function resolveItemIconSrc (facet: AccountFacet, lang: string, itemName: string, itemId: string | undefined | null, itemType: string): string | undefined {
+  const category = ItemTypeCategoryMappings[facet][lang]?.[itemType]
+  if (!category) {
+    console.error('Unable to resolve item icon category:', facet, lang, itemType, itemName, itemId)
+    return undefined
+  }
 
-function getRemoteResourceSrc (facet: AccountFacet, category: string, itemIdOrName: string) {
-  return `https://hoyo-gacha.lgou2w.com/static/${facet}/${category}/cutted/${itemIdOrName}.png`
+  // HACK: GenshinImpact embedded icons are only available for zh-cn language, go to Remote Loading
+  if (facet === AccountFacet.Genshin && lang !== 'zh-cn') {
+    return `https://hoyo-gacha.lgou2w.com/static/${facet}/${lang}/${category}/cutted/${itemName}.png`
+  }
+
+  const embedded = lookupAssetIcon(facet, category, itemId || itemName)
+  if (embedded) {
+    return embedded[1]
+  } else {
+    return `https://hoyo-gacha.lgou2w.com/static/${facet}/${category}/cutted/${itemId || itemName}.png`
+  }
 }
 
 const GachaItemViewCls = 'gacha-item-view'

@@ -17,7 +17,7 @@ export default function SettingAbout () {
           </Link>
           <br />
           当前版本：<Version variant="inherit" />
-          &nbsp;
+          <br />
           <VersionChecker />
         </Typography>
       </Stack>

@@ -113,8 +113,9 @@ function GachaOverviewGridCard ({ facet, value, newbie }: {
           <GachaItemView
             facet={facet}
             key={lastGolden.id}
-            name={lastGolden.name}
-            id={lastGolden.item_id || lastGolden.name}
+            lang={lastGolden.lang}
+            itemName={lastGolden.name}
+            itemId={lastGolden.item_id}
             itemType={lastGolden.item_type}
             rank={5}
             size={72}
