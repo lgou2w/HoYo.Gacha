@@ -309,13 +309,18 @@ async fn request_gacha_url<T: Sized + DeserializeOwned>(
 ) -> Result<GachaResponse<T>> {
   let response: GachaResponse<T> = reqwest.get(url).send().await?.json().await?;
   if response.retcode != 0 {
-    match response.retcode {
-      -101 => Err(Error::TimeoutdGachaUrl),
-      -110 => Err(Error::VisitTooFrequentlyGachaUrl),
-      _ => Err(Error::GachaRecordRetcode {
-        retcode: response.retcode,
+    let retcode = response.retcode;
+    let message = &response.message;
+
+    if retcode == -101 || message.contains("authkey") || message.contains("auth key") {
+      Err(Error::TimeoutdGachaUrl)
+    } else if retcode == -110 || message.contains("visit too frequently") {
+      Err(Error::VisitTooFrequentlyGachaUrl)
+    } else {
+      Err(Error::GachaRecordRetcode {
+        retcode,
         message: response.message,
-      }),
+      })
     }
   } else {
     Ok(response)
