@@ -64,8 +64,9 @@ function GachaAnalysisHistoryList ({ facet, value }: {
           <GachaItemView
             facet={facet}
             key={item.id}
-            name={item.name}
-            id={item.item_id || item.name}
+            lang={item.lang}
+            itemName={item.name}
+            itemId={item.item_id}
             itemType={item.item_type}
             rank={5}
             size={GachaAnalysisHistoryItemViewSize}
