@@ -143,6 +143,10 @@ pub(super) fn lookup_valid_cache_data_dir<P: AsRef<Path>>(game_data_dir: P) -> R
 
   // Read webCaches directory
   let web_caches_dir = game_data_dir.as_ref().join("webCaches");
+  if !web_caches_dir.exists() {
+    return Err(Error::WebCaches);
+  }
+
   for entry in read_dir(&web_caches_dir)? {
     let entry = entry?;
     let entry_path = entry.path();

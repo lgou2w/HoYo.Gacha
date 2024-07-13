@@ -281,13 +281,13 @@ function AccountMenuDialogForm (props: AccountMenuDialogFormProps) {
         name="gameDataDir" label="游戏数据文件夹" type="text"
         placeholder={'例如：' + FacetGameDataDirExamples[facet]}
         variant="filled" size="small" margin="dense"
-        fullWidth required
+        fullWidth required multiline
         disabled={busy}
         error={!!errors.gameDataDir}
         helperText={errors.gameDataDir?.message}
         InputProps={{
           ...register('gameDataDir', {
-            required: '请选择游戏数据目录！'
+            required: '请选择游戏数据文件夹！'
           }),
           readOnly: true,
           startAdornment: (
