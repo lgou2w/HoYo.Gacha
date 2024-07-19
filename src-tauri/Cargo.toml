@@ -1,6 +1,6 @@
 [package]
 name = "hoyo_gacha"
-version = "0.4.1"
+version = "0.4.2"
 edition = "2021"
 authors = ["lgou2w"]
 description = "An unofficial tool for managing and analyzing your miHoYo gacha records"
@@ -38,6 +38,12 @@ tokio = { version = "1.38.0", features = ["full"] }
 tracing = "0.1.40"
 tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
 url = "2.5.2"
+
+[target."cfg(windows)".dependencies.windows]
+version = "0.39.0"
+features = [
+  "Win32_UI_WindowsAndMessaging"
+]
 
 [features]
 default = ["custom-protocol"]

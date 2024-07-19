@@ -1561,7 +1561,7 @@ dependencies = [
 
 [[package]]
 name = "hoyo_gacha"
-version = "0.4.1"
+version = "0.4.2"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -1585,6 +1585,7 @@ dependencies = [
  "tracing",
  "tracing-subscriber",
  "url",
+ "windows 0.39.0",
 ]
 
 [[package]]
