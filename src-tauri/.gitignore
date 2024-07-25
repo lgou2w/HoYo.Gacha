@@ -1,2 +1,5 @@
 /HoYo.Gacha.db
 /HoYo.Gacha.db.*
+
+# Because using Toml
+/gen/schemas

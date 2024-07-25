@@ -1,40 +1,37 @@
 import path from 'node:path'
+import griffel from '@griffel/vite-plugin'
 import react from '@vitejs/plugin-react-swc'
 import { defineConfig } from 'vite'
 
-export default defineConfig({
+export default defineConfig(({ command }) => ({
   plugins: [
     react(),
-    // Prepend the script if it is not a production environment and the React developer tools are enabled
+    command === 'build' && griffel(),
+    // Prepend the script if it is a dev environment and the React developer tools are enabled.
     // See:
     //   https://github.com/facebook/react/tree/main/packages/react-devtools#usage-with-react-dom
     //   https://vitejs.dev/guide/api-plugin.html#transformindexhtml
-    {
+    //
+    // Example usage:
+    //   Default url:
+    //     REACT_DEVTOOLS=1 pnpm tauri dev
+    //   Custom url:
+    //     REACT_DEVTOOLS_URL=http://localhost:4567 pnpm tauri dev
+    command === 'serve' && (process.env.REACT_DEVTOOLS === '1' || process.env.REACT_DEVTOOLS_URL) && {
       name: 'react-devtools-script-plugin',
       transformIndexHtml () {
-        // Example usage:
-        //   Default url:
-        //     REACT_DEVTOOLS=1 pnpm tauri dev
-        //   Custom url:
-        //     REACT_DEVTOOLS_URL=http://localhost:4567 pnpm tauri dev
-        //
-        if (process.env.NODE_ENV !== 'production' &&
-          (process.env.REACT_DEVTOOLS === '1' ||
-          typeof process.env.REACT_DEVTOOLS_URL !== 'undefined')
-        ) {
-          return [{
-            injectTo: 'head-prepend',
-            tag: 'script',
-            attrs: {
-              src: process.env.REACT_DEVTOOLS_URL || 'http://localhost:8097'
-            }
-          }]
-        }
+        return [{
+          injectTo: 'head-prepend',
+          tag: 'script',
+          attrs: {
+            src: process.env.REACT_DEVTOOLS_URL || 'http://localhost:8097'
+          }
+        }]
       }
     }
   ],
   define: {
-    __APP_NAME__: `"${process.env.npm_package_name}"`,
+    __APP_NAME__: `"${process.env.npm_package_displayName}"`,
     __APP_VERSION__: `"${process.env.npm_package_version}"`,
     __APP_DESCRIPTION__: `"${process.env.npm_package_description}"`,
     __APP_AUTHOR__: `"${process.env.npm_package_author}"`,
@@ -67,4 +64,4 @@ export default defineConfig({
     // produce sourcemaps for debug builds
     sourcemap: !!process.env.TAURI_DEBUG
   }
-})
+}))

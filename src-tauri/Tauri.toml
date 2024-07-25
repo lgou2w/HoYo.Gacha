@@ -1,0 +1,45 @@
+identifier = "com.lgou2w.hoyo.gacha"
+product-name = "HoYo.Gacha"
+version = "1.0.0"
+
+[build]
+before-dev-command   = "pnpm web:dev"
+# See: package.json - scripts - build
+# before-build-command = "pnpm web:build"
+dev-url = "http://localhost:1420"
+frontend-dist = "../dist"
+
+[bundle]
+active = true
+long-description = "An unofficial tool for managing and analyzing your miHoYo gacha records"
+short-description = "HoYo.Gacha"
+category = "DeveloperTool"
+copyright = ""
+targets = ["app"]
+icon = [
+  "icons/32x32.png",
+  "icons/128x128.png",
+  "icons/128x128@2x.png",
+  "icons/icon.icns",
+  "icons/icon.ico"
+]
+
+[app]
+with-global-tauri = true
+
+[[app.security.capabilities]]
+identifier = "main-capability"
+description = "Capability for the main window"
+windows = ["main"]
+platforms = ["windows"]
+permissions = [
+  "event:default",
+  "event:allow-listen",
+  "window:default",
+  "window:allow-close",
+  "window:allow-minimize",
+  "window:allow-start-dragging",
+  "window:allow-toggle-maximize",
+  "window:allow-is-maximized",
+  "window:allow-internal-toggle-maximize"
+]

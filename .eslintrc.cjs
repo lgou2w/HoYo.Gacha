@@ -97,6 +97,16 @@ module.exports = {
           caseInsensitive: false
         }
       }
+    ],
+    'sort-imports': [
+      'error',
+      {
+        allowSeparatedGroups: true,
+        ignoreCase: false,
+        ignoreDeclarationSort: true,
+        ignoreMemberSort: false,
+        memberSyntaxSortOrder: ['none', 'all', 'multiple', 'single']
+      }
     ]
   }
 }

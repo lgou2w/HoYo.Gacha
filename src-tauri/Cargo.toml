@@ -14,7 +14,7 @@ publish = false
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [build-dependencies]
-tauri-build = { version = "1.5.3", features = [] }
+tauri-build = { version = "2.0.0-beta.19", features = ["config-toml"] }
 
 [dependencies]
 async-trait = "0.1.81"
@@ -29,16 +29,16 @@ reqwest = { version = "0.12.5", features = ["json"] }
 serde = { version = "1.0.204", features = ["derive"] }
 serde_json = { version = "1.0.120", features = ["preserve_order"] }
 serde_repr = "0.1.19"
-thiserror = "1.0.61"
+thiserror = "1.0.63"
 time = { version = "0.3.36", features = ["formatting", "local-offset", "macros", "serde", "serde-human-readable"] }
-tokio = { version = "1.38.0", features = ["macros", "rt", "rt-multi-thread"] }
+tokio = { version = "1.39.0", features = ["macros", "rt", "rt-multi-thread"] }
 tracing = "0.1.40"
 tracing-appender = "0.2.3"
 tracing-subscriber = { version = "0.3.18", features = ["env-filter", "local-time"] }
 url = "2.5.2"
 
 [dependencies.sqlx]
-version = "0.7.4"
+version = "0.8.0"
 default-features = false
 features = [
   "runtime-tokio",
@@ -48,21 +48,13 @@ features = [
 ]
 
 [dependencies.tauri]
-version = "1.7.1"
-features = [
-  "devtools",
-  "dialog-all",
-  "os-all",
-  "window-close",
-  "window-maximize",
-  "window-minimize",
-  "window-unmaximize",
-  "window-unminimize",
-  "window-start-dragging"
-]
+version = "2.0.0-beta.24"
+features = ["devtools"]
+
+[dependencies.tauri-plugin-os]
+version = "2.0.0-beta.8"
 
 [target.'cfg(windows)'.dependencies]
-raw-window-handle = "0.5.2"
 windows-version = "0.1.1"
 
 [target.'cfg(windows)'.dependencies.windows]
@@ -72,6 +64,7 @@ features = [
   "Win32_Graphics",
   "Win32_Graphics_Dwm",
   "Win32_System_Com",
+  "Win32_System_LibraryLoader",
   "Win32_UI",
   "Win32_UI_Controls",
   "Win32_UI_Shell",
