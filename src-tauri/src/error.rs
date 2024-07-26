@@ -43,7 +43,7 @@ impl<T: StdError + ErrorDetails> Serialize for Error<T> {
   where
     S: Serializer,
   {
-    let mut state = serializer.serialize_struct("Error", 5)?;
+    let mut state = serializer.serialize_struct("Error", 4)?;
     state.serialize_field("name", &self.0.name())?;
     state.serialize_field("message", &self.0.to_string())?;
     state.serialize_field("details", &self.0.details())?;

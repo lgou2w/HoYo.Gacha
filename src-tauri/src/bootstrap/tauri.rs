@@ -52,6 +52,7 @@ impl Tauri {
           );
         }
 
+        #[cfg(windows)]
         if consts::WINDOWS_VERSION.build >= 22000 {
           ffi::set_window_shadow(&main_window, true);
         }
@@ -91,7 +92,7 @@ impl Tauri {
 
     tauri::async_runtime::spawn(async move {
       // Receive the first signal,
-      //   release the resources and respond to the another signal.
+      // release the resources and respond to the another signal.
       exiting_receiver.recv().unwrap();
       debug!("Exiting signal received");
 
@@ -104,9 +105,12 @@ impl Tauri {
         // Send a signal and wait for another signal to completed
         debug!("Sending an exiting signal...");
         exiting_sender.send(()).unwrap();
-        exited_receiver
-          .recv_timeout(Duration::from_secs(5)) // avoid stuck
-          .unwrap();
+
+        // Maximum 5 seconds to wait for cleanup,
+        // otherwise the Tauri handles the exit directly.
+        let _ = exited_receiver
+          .recv_timeout(Duration::from_secs(5))
+          .inspect_err(|e| eprintln!("Error while waiting for cleanup: {e}"));
       }
     });
   }
