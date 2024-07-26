@@ -3,6 +3,7 @@ use std::sync::atomic::Ordering;
 use std::sync::{mpsc, Arc};
 use std::time::Duration;
 
+use serde::{Deserialize, Serialize};
 use tauri::webview::{WebviewWindow, WebviewWindowBuilder};
 use tauri::{
   generate_context, generate_handler, Builder as TauriBuilder, Manager, RunEvent, Runtime,
@@ -14,27 +15,39 @@ use tracing::{debug, info};
 use super::ffi;
 use super::internals::TAURI_MAIN_WINDOW_HWND;
 use super::tracing::Tracing;
-use crate::database::{self, Database};
+use crate::database::{self, Database, KvMut};
 use crate::{business, consts};
 
 pub struct Tauri;
 
 impl Tauri {
   #[tracing::instrument(skip_all)]
-  pub fn start(tracing: Tracing, database: Database) {
+  pub async fn start(tracing: Tracing, database: Database) {
     info!("Setting Tauri asynchronous runtime as Tokio...");
     tauri::async_runtime::set(tokio::runtime::Handle::current());
 
     let database = Arc::new(database);
 
+    info!("Loading theme data...");
+    let dark = KvMut::from(&database, consts::KV_THEME_DATA)
+      .read_val_into_json::<ThemeData>()
+      .await
+      .expect("Error reading theme data from database")
+      .transpose()
+      .unwrap() // FIXME: serde_json::Error - Unless it's been tampered with.
+      .is_some_and(|theme_data| matches!(theme_data.color_scheme, Theme::Dark));
+
     info!("Creating Tauri application...");
+    let database_state = Arc::clone(&database);
     let app = TauriBuilder::default()
       .plugin(tauri_plugin_os::init())
-      .plugin(database::tauri_plugin(Arc::clone(&database)))
-      .plugin(business::tauri_plugin())
-      .setup(|app| {
+      .setup(move |app| {
+        // Database state
+        // See: src/database/mod.rs
+        app.manage(database_state);
+
         info!("Creating the Main window...");
-        let main_window = Self::create_main_window(app)?;
+        let main_window = Self::create_main_window(app, dark)?;
 
         #[cfg(windows)]
         if let Ok(hwnd) = main_window.hwnd() {
@@ -46,15 +59,14 @@ impl Tauri {
         if !consts::TAURI_MAIN_WINDOW_DECORATIONS {
           info!("Setting the mica and theme of the main window...");
           ffi::set_window_mica(&main_window);
-          ffi::set_window_theme(
-            &main_window,
-            matches!(consts::TAURI_MAIN_WINDOW_THEME, Some(Theme::Dark)),
-          );
-        }
+          ffi::set_window_theme(&main_window, dark);
 
-        #[cfg(windows)]
-        if consts::WINDOWS_VERSION.build >= 22000 {
-          ffi::set_window_shadow(&main_window, true);
+          // FIXME: Setting margins in Windows 10 results
+          // in a 1px white border at the top of the window.
+          #[cfg(windows)]
+          if consts::PLATFORM.windows.is_21h2_and_higher {
+            ffi::set_window_shadow(&main_window, true);
+          }
         }
 
         // Open devtools in debug or when specifying environment variable
@@ -65,7 +77,26 @@ impl Tauri {
 
         Ok(())
       })
-      .invoke_handler(generate_handler![change_theme])
+      .invoke_handler(generate_handler![
+        set_window_theme,
+        database::kv_questioner::database_find_kv,
+        database::kv_questioner::database_create_kv,
+        database::kv_questioner::database_update_kv,
+        database::kv_questioner::database_upsert_kv,
+        database::kv_questioner::database_delete_kv,
+        database::account_questioner::database_find_accounts_by_business,
+        database::account_questioner::database_find_account_by_business_and_uid,
+        database::account_questioner::database_create_account,
+        database::account_questioner::database_update_account_data_dir_by_business_and_uid,
+        database::account_questioner::database_update_account_gacha_url_by_business_and_uid,
+        database::account_questioner::database_update_account_properties_by_business_and_uid,
+        database::account_questioner::database_delete_account_by_business_and_uid,
+        database::gacha_record_questioner::database_find_gacha_records_by_business_and_uid,
+        database::gacha_record_questioner::database_find_gacha_records_by_business_and_uid_with_gacha_type,
+        database::gacha_record_questioner_additions::database_create_gacha_records,
+        database::gacha_record_questioner_additions::database_delete_gacha_records_by_business_and_uid,
+        business::business_locate_data_folder,
+      ])
       .build(generate_context!())
       .expect("Error while building Tauri application");
 
@@ -103,7 +134,7 @@ impl Tauri {
     app.run(move |_app_handle, event| {
       if let RunEvent::Exit = event {
         // Send a signal and wait for another signal to completed
-        debug!("Sending an exiting signal...");
+        info!("Tauri exiting...");
         exiting_sender.send(()).unwrap();
 
         // Maximum 5 seconds to wait for cleanup,
@@ -115,7 +146,7 @@ impl Tauri {
     });
   }
 
-  fn create_main_window<M, R>(manager: &mut M) -> Result<WebviewWindow<R>, TauriError>
+  fn create_main_window<M, R>(manager: &mut M, dark: bool) -> Result<WebviewWindow<R>, TauriError>
   where
     R: Runtime,
     M: Manager<R>,
@@ -134,16 +165,30 @@ impl Tauri {
     .resizable(consts::TAURI_MAIN_WINDOW_RESIZABLE)
     .decorations(consts::TAURI_MAIN_WINDOW_DECORATIONS)
     .transparent(consts::TAURI_MAIN_WINDOW_TRANSPARENT)
-    .theme(consts::TAURI_MAIN_WINDOW_THEME)
+    .theme(if dark {
+      Some(Theme::Dark)
+    } else {
+      Some(Theme::Light)
+    })
     .center()
     .build()
   }
 }
 
+// Theme
+
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct ThemeData {
+  pub namespace: String,
+  pub color_scheme: Theme,
+  pub scale: u32,
+}
+
 // Common commands
 
 #[tauri::command]
-fn change_theme(window: WebviewWindow, dark: bool) {
+fn set_window_theme(window: WebviewWindow, dark: bool) {
   ffi::set_window_theme(&window, dark);
   // TODO: change Webview2 Theme
 }

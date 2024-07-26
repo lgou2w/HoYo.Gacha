@@ -3,5 +3,6 @@
 
 #[tokio::main(flavor = "multi_thread")]
 async fn main() {
+  // See: src/bootstrap/mod.rs
   hoyo_gacha::bootstrap::start().await;
 }

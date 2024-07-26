@@ -32,25 +32,24 @@ pub fn set_window_mica(window: &WebviewWindow) {
   let hwnd = window.hwnd().unwrap();
   let hwnd = HWND(hwnd.0 as _);
 
-  match consts::WINDOWS_VERSION.build {
-    x if x >= 22621 => unsafe {
+  if consts::PLATFORM.windows.is_22h2_and_higher {
+    unsafe {
       let _ = DwmSetWindowAttribute(
         hwnd,
         DWMWA_SYSTEMBACKDROP_TYPE as _,
         &DWMSBT_MAINWINDOW as *const _ as _,
         mem::size_of::<DWM_SYSTEMBACKDROP_TYPE>() as _,
       );
-    },
-    x if x >= 22000 => unsafe {
+    }
+  } else if consts::PLATFORM.windows.is_21h2_and_higher {
+    unsafe {
       let _ = DwmSetWindowAttribute(
         hwnd,
         DWMWINDOWATTRIBUTE(1029), // DWMWA_MICA_EFFECT
         &TRUE as *const _ as _,
         mem::size_of::<BOOL>() as _,
       );
-    },
-    x if x >= 17763 => unsafe {},
-    _ => {}
+    }
   }
 }
 

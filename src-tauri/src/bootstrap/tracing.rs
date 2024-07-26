@@ -1,6 +1,7 @@
 use std::sync::atomic::Ordering;
 
 use tracing::info;
+use tracing::level_filters::LevelFilter;
 use tracing_appender::non_blocking::WorkerGuard;
 use tracing_appender::rolling::RollingFileAppender;
 use tracing_subscriber::fmt::time::LocalTime;
@@ -22,6 +23,11 @@ impl Tracing {
     }
 
     let filter = EnvFilter::builder()
+      .with_default_directive(if cfg!(debug_assertions) {
+        LevelFilter::TRACE.into()
+      } else {
+        LevelFilter::INFO.into()
+      })
       .from_env_lossy()
       .add_directive("hyper=error".parse().unwrap())
       .add_directive("reqwest=error".parse().unwrap())
@@ -46,7 +52,8 @@ impl Tracing {
 
       None
     } else {
-      let logs_dir = consts::APPDATA_LOCAL
+      let logs_dir = consts::PLATFORM
+        .appdata_local
         .join(consts::ID)
         .join(consts::TRACING_LOGS_DIRECTORY);
 

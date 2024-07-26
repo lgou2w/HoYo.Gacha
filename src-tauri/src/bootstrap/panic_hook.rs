@@ -15,7 +15,8 @@ use super::internals::{TAURI_MAIN_WINDOW_HWND, TRACING_INITIALIZED};
 use crate::consts;
 
 pub fn install() {
-  let crashs_dir = consts::APPDATA_LOCAL
+  let crashs_dir = consts::PLATFORM
+    .appdata_local
     .join(consts::ID)
     .join(consts::CRASHS_DIRECTORY);
 

@@ -2,9 +2,9 @@ import React from 'react'
 import { Outlet, createRootRoute } from '@tanstack/react-router'
 import ThemeProvider from '@/components/ThemeProvider'
 import Layout from '@/components/UI/Layout'
-import { LocalStorageThemeStore } from '@/interfaces/Theme'
+import { DatabaseThemeStore } from '@/interfaces/Theme.store'
 
-const themeStore = new LocalStorageThemeStore()
+const themeStore = new DatabaseThemeStore()
 
 const rootRoute = createRootRoute({
   shouldReload: false,

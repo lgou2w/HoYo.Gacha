@@ -67,9 +67,9 @@ impl DataFolderLocator for UnityLogDataFolderLocator {
     };
 
     let appdata_folder = if biz.business == &Business::GenshinImpact || biz.is_official() {
-      &*consts::APPDATA_LOCALLOW_MIHOYO
+      &*consts::PLATFORM.appdata_locallow_mihoyo
     } else {
-      &*consts::APPDATA_LOCALLOW_COGNOSPHERE
+      &*consts::PLATFORM.appdata_locallow_cognosphere
     };
 
     let span = Span::current();

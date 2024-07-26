@@ -1,6 +1,7 @@
 use std::env;
 use std::future::Future;
 use std::path::PathBuf;
+use std::str::FromStr;
 use std::sync::Arc;
 
 use serde::de::DeserializeOwned;
@@ -13,13 +14,13 @@ use sqlx::sqlite::{
   SqliteValueRef,
 };
 use sqlx::{Decode, Encode, Executor, FromRow, Row, Type};
-use tauri::plugin::{Builder as TauriPluginBuilder, TauriPlugin};
-use tauri::{generate_handler, Manager, Runtime, State as TauriState};
+use tauri::State as TauriState;
+use time::OffsetDateTime;
 use tracing::{info, Span};
 
 use crate::consts;
 use crate::error::{Error, ErrorDetails};
-use crate::models::{Account, AccountProperties, Business, GachaRecord};
+use crate::models::{Account, AccountProperties, Business, GachaRecord, Kv};
 
 // Type
 
@@ -63,7 +64,8 @@ impl Database {
     let filename = if cfg!(debug_assertions) {
       PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(consts::DATABASE)
     } else {
-      consts::APPDATA_LOCAL
+      consts::PLATFORM
+        .appdata_local
         .join(consts::ID)
         .join(consts::DATABASE)
     };
@@ -111,19 +113,25 @@ impl Database {
   }
 }
 
+pub type DatabaseState<'r> = TauriState<'r, Arc<Database>>;
+
 // region: SQL
 
 const SQL_V1: &str = r"
 BEGIN TRANSACTION;
 
+CREATE TABLE IF NOT EXISTS `hg.kvs` (
+  `key`        TEXT NOT NULL PRIMARY KEY,
+  `val`        TEXT NOT NULL,
+  `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE TABLE IF NOT EXISTS `hg.accounts` (
-  `business`             INTEGER NOT NULL,
-  `uid`                  INTEGER NOT NULL,
-  `game_data_dir`        TEXT    NOT NULL,
-  `gacha_url`            TEXT,
-  `gacha_url_updated_at` DATETIME,
-  `properties`           TEXT,
-  `created_at`           DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `business`   INTEGER NOT NULL,
+  `uid`        INTEGER NOT NULL,
+  `data_dir`   TEXT    NOT NULL,
+  `gacha_url`  TEXT,
+  `properties` TEXT,
   PRIMARY KEY (`business`, `uid`)
 );
 CREATE INDEX IF NOT EXISTS `hg.accounts.business_idx`     ON `hg.accounts` (`business`);
@@ -230,13 +238,13 @@ macro_rules! declare_questioner_with_handlers {
     }
 
     paste::paste! {
-      mod [<$entity:snake:lower _questioner>] {
+      pub mod [<$entity:snake:lower _questioner>] {
         use super::*;
 
         $(
           #[tauri::command]
-          pub async fn $name(
-            database: crate::database::DatabasePluginState<'_>,
+          pub async fn [<database_ $name>](
+            database: crate::database::DatabaseState<'_>,
             $($arg_n: $arg_t),*
           ) -> Result<$result, crate::database::SqlxError> {
             super::[<$entity Questioner>]::$name(&*database, $($arg_n),*).await
@@ -244,6 +252,112 @@ macro_rules! declare_questioner_with_handlers {
         )*
       }
     }
+  }
+}
+
+// endregion
+
+// region: Kv
+
+declare_questioner_with_handlers! {
+  Kv,
+
+  "SELECT * FROM `hg.kvs` WHERE `key` = ?;"
+    = find_kv { key: String, }: fetch_optional -> Option<Kv>,
+
+  "INSERT INTO `hg.kvs` (`key`, `val`) VALUES (?, ?) RETURNING *;"
+    = create_kv { key: String, val: String, }: fetch_one -> Kv,
+
+  "UPDATE `hg.kvs` SET `val` = ?, `updated_at` = ? WHERE `key` = ? RETURNING *;"
+    = update_kv {
+      val: String,
+      updated_at: Option<OffsetDateTime>,
+      key: String,
+    }: fetch_optional -> Option<Kv>,
+
+  "INSERT OR REPLACE INTO `hg.kvs` (`key`, `val`, `updated_at`) VALUES (?, ?, ?) RETURNING *;"
+    = upsert_kv {
+      key: String,
+      val: String,
+      updated_at: Option<OffsetDateTime>,
+    }: fetch_one -> Kv,
+
+  "DELETE FROM `hg.kvs` WHERE `key` = ? RETURNING *;"
+    = delete_kv { key: String, }: fetch_optional -> Option<Kv>,
+}
+
+impl<'r> FromRow<'r, SqliteRow> for Kv {
+  fn from_row(row: &'r SqliteRow) -> Result<Self, sqlx::Error> {
+    Ok(Self {
+      key: row.try_get("key")?,
+      val: row.try_get("val")?,
+      updated_at: row.try_get("updated_at")?,
+    })
+  }
+}
+
+pub struct KvMut<'a, 'key> {
+  pub database: &'a Database,
+  pub key: &'key str,
+}
+
+impl<'a, 'key> KvMut<'a, 'key> {
+  pub fn from(database: &'a Database, key: &'key str) -> Self {
+    Self { database, key }
+  }
+
+  #[inline]
+  pub async fn read(&self) -> Result<Option<Kv>, SqlxError> {
+    KvQuestioner::find_kv(self.database, self.key.into()).await
+  }
+
+  #[inline]
+  pub async fn write(&self, new_val: impl Into<String>) -> Result<Option<Kv>, SqlxError> {
+    KvQuestioner::update_kv(
+      self.database,
+      new_val.into(),
+      Some(OffsetDateTime::now_utc()),
+      self.key.into(),
+    )
+    .await
+  }
+
+  #[inline]
+  pub async fn remove(&self) -> Result<Option<Kv>, SqlxError> {
+    KvQuestioner::delete_kv(self.database, self.key.into()).await
+  }
+
+  // Read ext
+
+  #[inline]
+  pub async fn read_val(&self) -> Result<Option<String>, SqlxError> {
+    Ok(self.read().await?.map(|kv| kv.val))
+  }
+
+  #[inline]
+  pub async fn read_val_parse<R>(&self) -> Result<Option<Result<R, R::Err>>, SqlxError>
+  where
+    R: FromStr,
+  {
+    Ok(self.read_val().await?.map(|val| R::from_str(&val)))
+  }
+
+  #[inline]
+  pub async fn read_val_into<R>(&self) -> Result<Option<Result<R, R::Error>>, SqlxError>
+  where
+    R: TryFrom<String>,
+  {
+    Ok(self.read_val().await?.map(R::try_from))
+  }
+
+  #[inline]
+  pub async fn read_val_into_json<R>(
+    &self,
+  ) -> Result<Option<Result<R, serde_json::Error>>, SqlxError>
+  where
+    R: DeserializeOwned,
+  {
+    Ok(self.read_val().await?.map(|val| serde_json::from_str(&val)))
   }
 }
 
@@ -501,12 +615,12 @@ pub trait GachaRecordQuestionerAdditions {
 
 impl GachaRecordQuestionerAdditions for GachaRecordQuestioner {}
 
-mod gacha_record_questioner_additions {
+pub mod gacha_record_questioner_additions {
   use super::*;
 
   #[tauri::command]
-  pub async fn create_gacha_records(
-    database: DatabasePluginState<'_>,
+  pub async fn database_create_gacha_records(
+    database: DatabaseState<'_>,
     records: Vec<GachaRecord>,
     on_conflict: GachaRecordOnConflict,
   ) -> Result<u64, SqlxError> {
@@ -514,8 +628,8 @@ mod gacha_record_questioner_additions {
   }
 
   #[tauri::command]
-  pub async fn delete_gacha_records_by_business_and_uid(
-    database: DatabasePluginState<'_>,
+  pub async fn database_delete_gacha_records_by_business_and_uid(
+    database: DatabaseState<'_>,
     business: Business,
     uid: u32,
   ) -> Result<u64, SqlxError> {
@@ -526,34 +640,6 @@ mod gacha_record_questioner_additions {
     )
     .await
   }
-}
-
-// endregion
-
-// region: Tauri plugin
-
-pub type DatabasePluginState<'r> = TauriState<'r, Arc<Database>>;
-
-pub fn tauri_plugin<R: Runtime>(database: Arc<Database>) -> TauriPlugin<R> {
-  TauriPluginBuilder::new(consts::TAURI_PLUGIN_DATABASE)
-    .setup(move |app_handle, _api| {
-      app_handle.manage(database);
-      Ok(())
-    })
-    .invoke_handler(generate_handler![
-      account_questioner::find_accounts_by_business,
-      account_questioner::find_account_by_business_and_uid,
-      account_questioner::create_account,
-      account_questioner::update_account_data_dir_by_business_and_uid,
-      account_questioner::update_account_gacha_url_by_business_and_uid,
-      account_questioner::update_account_properties_by_business_and_uid,
-      account_questioner::delete_account_by_business_and_uid,
-      gacha_record_questioner::find_gacha_records_by_business_and_uid,
-      gacha_record_questioner::find_gacha_records_by_business_and_uid_with_gacha_type,
-      gacha_record_questioner_additions::create_gacha_records,
-      gacha_record_questioner_additions::delete_gacha_records_by_business_and_uid,
-    ])
-    .build()
 }
 
 // endregion

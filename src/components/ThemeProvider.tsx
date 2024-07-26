@@ -1,9 +1,9 @@
-import React, { PropsWithChildren, useMemo } from 'react'
+import React, { PropsWithChildren, useEffect, useMemo } from 'react'
 import { FluentProvider, Theme as FluentTheme } from '@fluentui/react-components'
 import { produce } from 'immer'
 import { useImmer } from 'use-immer'
 import ThemeContext, { ThemeState } from '@/contexts/ThemeContext'
-import { ThemeData, ThemeStore, Themes } from '@/interfaces/Theme'
+import { ScaleLevel, ThemeData, ThemeStore, Themes } from '@/interfaces/Theme'
 
 interface Props {
   initialData: ThemeData
@@ -28,6 +28,11 @@ export default function ThemeProvider (props: PropsWithChildren<Props>) {
     }
   }), [data, store, updateData])
 
+  useEffect(
+    () => applyScaling(data.scale),
+    [data.scale]
+  )
+
   const theme: FluentTheme | undefined = Themes[state.namespace]?.[state.colorScheme]
   if (!theme) {
     throw new Error(`Invalid theme data state: ${state.namespace}.${state.colorScheme}`)
@@ -40,4 +45,13 @@ export default function ThemeProvider (props: PropsWithChildren<Props>) {
       </FluentProvider>
     </ThemeContext.Provider>
   )
+}
+
+// See: src/assets/global.css -> :root
+function applyScaling (scale: ScaleLevel) {
+  window
+    .document
+    .documentElement
+    .style
+    .setProperty('--base-font-size', `${scale}px`)
 }

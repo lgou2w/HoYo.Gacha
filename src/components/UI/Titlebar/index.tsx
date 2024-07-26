@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react'
 import { Image, Subtitle2Stronger, makeStyles, tokens } from '@fluentui/react-components'
 import useTheme from '@/hooks/useTheme'
+import { Dark } from '@/interfaces/Theme'
 import TitleBarButtons from './Buttons'
 
 export const Height = '2.5rem'
@@ -59,7 +60,7 @@ export default function TitleBar () {
 
   // TODO: Experimental
   const { colorScheme } = useTheme()
-  const style = colorScheme === 'dark' ? { backgroundColor: 'transparent' } : undefined
+  const style = colorScheme === Dark ? { backgroundColor: 'transparent' } : undefined
 
   return (
     <React.Fragment>
