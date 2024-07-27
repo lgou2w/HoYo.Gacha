@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react'
-import { Image, Subtitle2Stronger, makeStyles, tokens } from '@fluentui/react-components'
+import { Image, Subtitle2Stronger, makeStyles, mergeClasses, tokens } from '@fluentui/react-components'
 import useTheme from '@/hooks/useTheme'
 import { Dark } from '@/interfaces/Theme'
 import TitleBarButtons from './Buttons'
@@ -22,6 +22,9 @@ const useStyles = makeStyles({
     boxShadow: tokens.shadow2,
     paddingLeft: tokens.spacingHorizontalS,
     columnGap: tokens.spacingVerticalS
+  },
+  rootDark: {
+    backgroundColor: 'transparent'
   },
   placeholder: {
     width: '100%',
@@ -58,13 +61,15 @@ export default function TitleBar () {
     containerRef.current.setAttribute(AttrTauriDragRegion, '')
   }, [containerRef])
 
-  // TODO: Experimental
   const { colorScheme } = useTheme()
-  const style = colorScheme === Dark ? { backgroundColor: 'transparent' } : undefined
+  const rootClasses = mergeClasses(
+    classes.root,
+    colorScheme === Dark && classes.rootDark
+  )
 
   return (
     <React.Fragment>
-      <header className={classes.root} ref={containerRef} style={style}>
+      <header className={rootClasses} ref={containerRef}>
         <Image className={classes.brand} src={Brand} shape="square" />
         <Subtitle2Stronger className={classes.title} as="h1">{Title}</Subtitle2Stronger>
         <TitleBarButtons />
