@@ -1,5 +1,4 @@
-import invoke from '@/api/invoke'
-import { Kv } from './Kv'
+import { findKv, upsertKv } from '@/api/commands/database'
 import { DefaultThemeData, ThemeData, ThemeStore, Themes } from './Theme'
 
 export type { ThemeStore }
@@ -56,7 +55,8 @@ export class LocalStorageThemeStore implements ThemeStore {
 export class DatabaseThemeStore implements ThemeStore {
   async load (): Promise<ThemeData> {
     console.debug('Loading theme data from database...')
-    const kv = await invoke<Kv | null>('database_find_kv', { key: KEY }) // TODO: Command api
+    const kv = await findKv({ key: KEY })
+
     if (!kv) {
       return { ...DefaultThemeData }
     } else {
@@ -66,6 +66,7 @@ export class DatabaseThemeStore implements ThemeStore {
 
   async save (data: ThemeData): Promise<void> {
     console.debug('Saving theme data to database...')
-    await invoke('database_upsert_kv', { key: KEY, val: JSON.stringify(data) }) // TODO: Command api
+    const val = JSON.stringify(data)
+    await upsertKv({ key: KEY, val })
   }
 }

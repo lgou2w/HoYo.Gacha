@@ -78,7 +78,7 @@ impl Tauri {
         Ok(())
       })
       .invoke_handler(generate_handler![
-        set_window_theme,
+        core_set_window_theme,
         database::kv_questioner::database_find_kv,
         database::kv_questioner::database_create_kv,
         database::kv_questioner::database_update_kv,
@@ -188,7 +188,7 @@ struct ThemeData {
 // Common commands
 
 #[tauri::command]
-fn set_window_theme(window: WebviewWindow, dark: bool) {
+fn core_set_window_theme(window: WebviewWindow, dark: bool) {
   ffi::set_window_theme(&window, dark);
   // TODO: change Webview2 Theme
 }

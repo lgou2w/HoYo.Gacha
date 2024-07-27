@@ -1,5 +1,5 @@
 import { useCallback, useContext } from 'react'
-import invoke from '@/api/invoke'
+import { setWindowTheme } from '@/api/commands/core'
 import ThemeContext from '@/contexts/ThemeContext'
 import { ColorScheme, Dark, Light } from '@/interfaces/Theme'
 
@@ -18,10 +18,7 @@ export function useColorScheme () {
   const change = useCallback(async (val: ColorScheme) => {
     if (colorScheme !== val) {
       changeTheme({ colorScheme: val })
-      // TODO: Command api
-      await invoke('set_window_theme', {
-        dark: val === Dark
-      })
+      setWindowTheme({ dark: val === Dark })
     }
   }, [colorScheme, changeTheme])
 
