@@ -22,7 +22,7 @@
     "web:clean": "rimraf dist",
     "web:dev": "cross-env NODE_ENV=development vite",
     "web:build": "cross-env NODE_ENV=production tsc && vite build",
-    "web:test": "jest --passWithNoTests --config jest.config.cjs",
+    "web:test": "jest --verbose --passWithNoTests --config jest.config.cjs",
     "web:lint": "eslint --ext .ts,.tsx --report-unused-disable-directives --max-warnings 0 --ignore-path .gitignore .",
     "web:lint:fix": "eslint --fix --ext .ts,.tsx --ignore-path .gitignore .",
     "tauri": "tauri",
