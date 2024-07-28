@@ -32,5 +32,5 @@ pub async fn start() {
   panic_hook::install();
   let tracing = tracing::Tracing::initialize();
   let database = database::Database::new().await;
-  tauri::Tauri::start(tracing, database).await;
+  tauri::start(tracing, database).await;
 }

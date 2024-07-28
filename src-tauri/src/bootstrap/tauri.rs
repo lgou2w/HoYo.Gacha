@@ -18,172 +18,140 @@ use super::tracing::Tracing;
 use crate::database::{self, Database, KvMut};
 use crate::{business, consts};
 
-pub struct Tauri;
+#[tracing::instrument(skip_all)]
+pub async fn start(tracing: Tracing, database: Database) {
+  info!("Setting Tauri asynchronous runtime as Tokio...");
+  tauri::async_runtime::set(tokio::runtime::Handle::current());
 
-impl Tauri {
-  #[tracing::instrument(skip_all)]
-  pub async fn start(tracing: Tracing, database: Database) {
-    info!("Setting Tauri asynchronous runtime as Tokio...");
-    tauri::async_runtime::set(tokio::runtime::Handle::current());
+  // Arc shared database to Tauri state
+  let database = Arc::new(database);
 
-    let database = Arc::new(database);
+  info!("Loading theme data...");
+  let color_scheme = KvMut::from(&database, consts::KV_THEME_DATA)
+    .read_val_into_json::<ThemeData>()
+    .await
+    .expect("Error reading theme data from database")
+    .transpose()
+    .unwrap() // FIXME: serde_json::Error - Unless it's been tampered with.
+    .map(|theme_data| theme_data.color_scheme)
+    // TODO: Get the current system theme if it is not customized
+    //   HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize
+    //   AppsUseLightTheme
+    //   SystemUsesLightTheme
+    .unwrap_or(Theme::Dark);
 
-    info!("Loading theme data...");
-    let color_scheme = KvMut::from(&database, consts::KV_THEME_DATA)
-      .read_val_into_json::<ThemeData>()
-      .await
-      .expect("Error reading theme data from database")
-      .transpose()
-      .unwrap() // FIXME: serde_json::Error - Unless it's been tampered with.
-      .map(|theme_data| theme_data.color_scheme)
-      // TODO: Get the current system theme if it is not customized
-      //   HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize
-      //   AppsUseLightTheme
-      //   SystemUsesLightTheme
-      .unwrap_or(Theme::Dark);
+  info!("Creating Tauri application...");
+  let database_state = Arc::clone(&database);
+  let app = TauriBuilder::default()
+    .plugin(tauri_plugin_os::init())
+    .setup(move |app| {
+      // Database state
+      // See: src/database/mod.rs
+      app.manage(database_state);
 
-    info!("Creating Tauri application...");
-    let database_state = Arc::clone(&database);
-    let app = TauriBuilder::default()
-      .plugin(tauri_plugin_os::init())
-      .setup(move |app| {
-        // Database state
-        // See: src/database/mod.rs
-        app.manage(database_state);
+      info!("Creating the Main window...");
+      let main_window = create_main_window(app, color_scheme)?;
 
-        info!("Creating the Main window...");
-        let main_window = Self::create_main_window(app, color_scheme)?;
-
-        #[cfg(windows)]
-        if let Ok(hwnd) = main_window.hwnd() {
-          info!("Tauri main window hwnd: {hwnd:?}");
-          TAURI_MAIN_WINDOW_HWND.store(hwnd.0, Ordering::Relaxed);
-        }
-
-        // Setting window vibrancy and theme if without decorators
-        if !consts::TAURI_MAIN_WINDOW_DECORATIONS {
-          info!("Setting the vibrancy and theme of the main window...");
-          ffi::set_window_vibrancy(&main_window);
-          ffi::set_window_theme(&main_window, color_scheme);
-          ffi::set_webview_theme(&main_window, color_scheme)?;
-
-          // FIXME: Setting margins in Windows 10 results
-          // in a 1px white border at the top of the window.
-          #[cfg(windows)]
-          if consts::PLATFORM.windows.is_21h2_and_higher {
-            ffi::set_window_shadow(&main_window, true);
-          }
-        }
-
-        // Open devtools in debug or when specifying environment variable
-        if cfg!(debug_assertions) || env::var(consts::ENV_DEVTOOLS).is_ok() {
-          debug!("Opens the developer tools window...");
-          main_window.open_devtools();
-        }
-
-        Ok(())
-      })
-      .invoke_handler(generate_handler![
-        core_change_theme,
-        database::kv_questioner::database_find_kv,
-        database::kv_questioner::database_create_kv,
-        database::kv_questioner::database_update_kv,
-        database::kv_questioner::database_upsert_kv,
-        database::kv_questioner::database_delete_kv,
-        database::account_questioner::database_find_accounts_by_business,
-        database::account_questioner::database_find_account_by_business_and_uid,
-        database::account_questioner::database_create_account,
-        database::account_questioner::database_update_account_data_dir_by_business_and_uid,
-        database::account_questioner::database_update_account_gacha_url_by_business_and_uid,
-        database::account_questioner::database_update_account_properties_by_business_and_uid,
-        database::account_questioner::database_delete_account_by_business_and_uid,
-        database::gacha_record_questioner::database_find_gacha_records_by_business_and_uid,
-        database::gacha_record_questioner::database_find_gacha_records_by_business_and_uid_with_gacha_type,
-        database::gacha_record_questioner_additions::database_create_gacha_records,
-        database::gacha_record_questioner_additions::database_delete_gacha_records_by_business_and_uid,
-        business::business_locate_data_folder,
-      ])
-      .build(generate_context!())
-      .expect("Error while building Tauri application");
-
-    // FIXME: Need a better way.
-    //   The `app.run_iteration` causes high cpu usage, which is a Tauri problem.
-    //   And `app.run` receives the `FnMut` callback, so it can only use two `sync_channel`
-    //   implementations to wait for resources to be released before exiting.
-    // See:
-    //   https://github.com/tauri-apps/tauri/issues/10373
-    //   https://github.com/tauri-apps/tauri/issues/8631
-
-    let release = async move {
-      info!("Cleanup");
-
-      // Arc resources can't get Ownership using `Arc::into_inner`.
-      // This is because a resource managed by a Tauri State is not Dropped until it exits.
-      // See:
-      //  https://github.com/tauri-apps/tauri/issues/5167
-      //  https://github.com/tauri-apps/tauri/issues/7358
-      database.close().await;
-
-      tracing.close();
-    };
-
-    let (exiting_sender, exiting_receiver) = mpsc::sync_channel::<()>(0);
-    let (exited_sender, exited_receiver) = mpsc::sync_channel::<()>(0);
-
-    tauri::async_runtime::spawn(async move {
-      // Receive the first signal,
-      // release the resources and respond to the another signal.
-      exiting_receiver.recv().unwrap();
-      debug!("Exiting signal received");
-
-      release.await;
-      exited_sender.send(()).unwrap();
-    });
-
-    app.run(move |_app_handle, event| {
-      if let RunEvent::Exit = event {
-        // Send a signal and wait for another signal to completed
-        info!("Tauri exiting...");
-        exiting_sender.send(()).unwrap();
-
-        // Maximum 5 seconds to wait for cleanup,
-        // otherwise the Tauri handles the exit directly.
-        let _ = exited_receiver
-          .recv_timeout(Duration::from_secs(5))
-          .inspect_err(|e| eprintln!("Error while waiting for cleanup: {e}"));
+      #[cfg(windows)]
+      if let Ok(hwnd) = main_window.hwnd() {
+        info!("Tauri main window hwnd: {hwnd:?}");
+        TAURI_MAIN_WINDOW_HWND.store(hwnd.0, Ordering::Relaxed);
       }
-    });
-  }
 
-  fn create_main_window<M, R>(
-    manager: &mut M,
-    color_scheme: Theme,
-  ) -> Result<WebviewWindow<R>, TauriError>
-  where
-    R: Runtime,
-    M: Manager<R>,
-  {
-    WebviewWindowBuilder::new(
-      manager,
-      consts::TAURI_MAIN_WINDOW_LABEL,
-      WebviewUrl::App(consts::TAURI_MAIN_WINDOW_ENTRYPOINT.into()),
-    )
-    .title(consts::TAURI_MAIN_WINDOW_TITLE)
-    .min_inner_size(
-      consts::TAURI_MAIN_WINDOW_WIDTH,
-      consts::TAURI_MAIN_WINDOW_HEIGHT,
-    )
-    .fullscreen(consts::TAURI_MAIN_WINDOW_FULLSCREEN)
-    .resizable(consts::TAURI_MAIN_WINDOW_RESIZABLE)
-    .decorations(consts::TAURI_MAIN_WINDOW_DECORATIONS)
-    .transparent(!consts::TAURI_MAIN_WINDOW_DECORATIONS)
-    .theme(Some(color_scheme))
-    .center()
-    .build()
-  }
+      // Setting window vibrancy and theme if without decorators
+      if !consts::TAURI_MAIN_WINDOW_DECORATIONS {
+        info!("Setting the vibrancy and theme of the main window...");
+        ffi::set_window_vibrancy(&main_window);
+        ffi::set_window_theme(&main_window, color_scheme);
+        ffi::set_webview_theme(&main_window, color_scheme)?;
+
+        // FIXME: Setting margins in Windows 10 results
+        // in a 1px white border at the top of the window.
+        #[cfg(windows)]
+        if consts::PLATFORM.windows.is_21h2_and_higher {
+          ffi::set_window_shadow(&main_window, true);
+        }
+      }
+
+      // Open devtools in debug or when specifying environment variable
+      if cfg!(debug_assertions) || env::var(consts::ENV_DEVTOOLS).is_ok() {
+        debug!("Opens the developer tools window...");
+        main_window.open_devtools();
+      }
+
+      Ok(())
+    })
+    .invoke_handler(generate_handler![
+      core_change_theme,
+      database::kv_questioner::database_find_kv,
+      database::kv_questioner::database_create_kv,
+      database::kv_questioner::database_update_kv,
+      database::kv_questioner::database_upsert_kv,
+      database::kv_questioner::database_delete_kv,
+      database::account_questioner::database_find_accounts_by_business,
+      database::account_questioner::database_find_account_by_business_and_uid,
+      database::account_questioner::database_create_account,
+      database::account_questioner::database_update_account_data_dir_by_business_and_uid,
+      database::account_questioner::database_update_account_gacha_url_by_business_and_uid,
+      database::account_questioner::database_update_account_properties_by_business_and_uid,
+      database::account_questioner::database_delete_account_by_business_and_uid,
+      database::gacha_record_questioner::database_find_gacha_records_by_business_and_uid,
+      database::gacha_record_questioner::database_find_gacha_records_by_business_and_uid_with_gacha_type,
+      database::gacha_record_questioner_additions::database_create_gacha_records,
+      database::gacha_record_questioner_additions::database_delete_gacha_records_by_business_and_uid,
+      business::business_locate_data_folder,
+    ])
+    .build(generate_context!())
+    .expect("Error while building Tauri application");
+
+  // FIXME: Need a better way.
+  //   The `app.run_iteration` causes high cpu usage, which is a Tauri problem.
+  //   And `app.run` receives the `FnMut` callback, so it can only use two `sync_channel`
+  //   implementations to wait for resources to be released before exiting.
+  // See:
+  //   https://github.com/tauri-apps/tauri/issues/10373
+  //   https://github.com/tauri-apps/tauri/issues/8631
+
+  let release = async move {
+    info!("Cleanup");
+
+    // Arc resources can't get Ownership using `Arc::into_inner`.
+    // This is because a resource managed by a Tauri State is not Dropped until it exits.
+    // See:
+    //  https://github.com/tauri-apps/tauri/issues/5167
+    //  https://github.com/tauri-apps/tauri/issues/7358
+    database.close().await;
+
+    tracing.close();
+  };
+
+  let (exiting_sender, exiting_receiver) = mpsc::sync_channel::<()>(0);
+  let (exited_sender, exited_receiver) = mpsc::sync_channel::<()>(0);
+
+  tauri::async_runtime::spawn(async move {
+    // Receive the first signal,
+    // release the resources and respond to the another signal.
+    exiting_receiver.recv().unwrap();
+    debug!("Exiting signal received");
+
+    release.await;
+    exited_sender.send(()).unwrap();
+  });
+
+  app.run(move |_app_handle, event| {
+    if let RunEvent::Exit = event {
+      // Send a signal and wait for another signal to completed
+      info!("Tauri exiting...");
+      exiting_sender.send(()).unwrap();
+
+      // Maximum 5 seconds to wait for cleanup,
+      // otherwise the Tauri handles the exit directly.
+      let _ = exited_receiver
+        .recv_timeout(Duration::from_secs(5))
+        .inspect_err(|e| eprintln!("Error while waiting for cleanup: {e}"));
+    }
+  });
 }
-
-// Theme
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -191,6 +159,33 @@ struct ThemeData {
   pub namespace: String,
   pub color_scheme: Theme,
   pub scale: u32,
+}
+
+fn create_main_window<M, R>(
+  manager: &mut M,
+  color_scheme: Theme,
+) -> Result<WebviewWindow<R>, TauriError>
+where
+  R: Runtime,
+  M: Manager<R>,
+{
+  WebviewWindowBuilder::new(
+    manager,
+    consts::TAURI_MAIN_WINDOW_LABEL,
+    WebviewUrl::App(consts::TAURI_MAIN_WINDOW_ENTRYPOINT.into()),
+  )
+  .title(consts::TAURI_MAIN_WINDOW_TITLE)
+  .min_inner_size(
+    consts::TAURI_MAIN_WINDOW_WIDTH,
+    consts::TAURI_MAIN_WINDOW_HEIGHT,
+  )
+  .fullscreen(consts::TAURI_MAIN_WINDOW_FULLSCREEN)
+  .resizable(consts::TAURI_MAIN_WINDOW_RESIZABLE)
+  .decorations(consts::TAURI_MAIN_WINDOW_DECORATIONS)
+  .transparent(!consts::TAURI_MAIN_WINDOW_DECORATIONS)
+  .theme(Some(color_scheme))
+  .center()
+  .build()
 }
 
 // Core commands
