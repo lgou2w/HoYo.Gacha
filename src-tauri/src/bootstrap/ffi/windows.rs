@@ -1,19 +1,25 @@
 use std::mem;
 
 use tauri::WebviewWindow;
-use windows::Win32::Foundation::{BOOL, FALSE, HWND, TRUE};
+use webview2_com::Microsoft::Web::WebView2::Win32::ICoreWebView2_13;
+use webview2_com::Microsoft::Web::WebView2::Win32::{
+  COREWEBVIEW2_PREFERRED_COLOR_SCHEME_DARK, COREWEBVIEW2_PREFERRED_COLOR_SCHEME_LIGHT,
+};
+use windows::core::w;
+use windows::core::Interface;
+use windows::Win32::Foundation::{BOOL, FALSE, HANDLE, TRUE};
 use windows::Win32::Graphics::Dwm::{
   DwmExtendFrameIntoClientArea, DwmSetWindowAttribute, DWMSBT_MAINWINDOW,
   DWMWA_SYSTEMBACKDROP_TYPE, DWMWA_USE_IMMERSIVE_DARK_MODE, DWMWINDOWATTRIBUTE,
   DWM_SYSTEMBACKDROP_TYPE,
 };
 use windows::Win32::UI::Controls::MARGINS;
+use windows::Win32::UI::WindowsAndMessaging::SetPropW;
 
 use crate::consts;
 
 pub fn set_window_shadow(window: &WebviewWindow, enable: bool) {
   let hwnd = window.hwnd().unwrap();
-  let hwnd = HWND(hwnd.0 as _);
 
   let v = if enable { 1 } else { 0 };
   let margins = MARGINS {
@@ -28,9 +34,8 @@ pub fn set_window_shadow(window: &WebviewWindow, enable: bool) {
   }
 }
 
-pub fn set_window_mica(window: &WebviewWindow) {
+pub fn set_window_vibrancy(window: &WebviewWindow) {
   let hwnd = window.hwnd().unwrap();
-  let hwnd = HWND(hwnd.0 as _);
 
   if consts::PLATFORM.windows.is_22h2_and_higher {
     unsafe {
@@ -50,20 +55,54 @@ pub fn set_window_mica(window: &WebviewWindow) {
         mem::size_of::<BOOL>() as _,
       );
     }
+  } else {
+    // TODO: Windows 10
   }
 }
 
 pub fn set_window_theme(window: &WebviewWindow, dark: bool) {
   let hwnd = window.hwnd().unwrap();
-  let hwnd = HWND(hwnd.0 as _);
+  let dark = if dark { TRUE } else { FALSE };
 
-  let pvattr = if dark { TRUE } else { FALSE };
-  unsafe {
-    let _ = DwmSetWindowAttribute(
-      hwnd,
-      DWMWA_USE_IMMERSIVE_DARK_MODE,
-      &pvattr as *const _ as _,
-      mem::size_of::<BOOL>() as _,
-    );
+  if consts::PLATFORM.windows.is_19h1_and_higher {
+    unsafe {
+      let _ = DwmSetWindowAttribute(
+        hwnd,
+        DWMWA_USE_IMMERSIVE_DARK_MODE,
+        &dark as *const _ as _,
+        mem::size_of::<BOOL>() as _,
+      );
+    }
+  } else {
+    let mut dark: i32 = dark.0;
+    unsafe {
+      let _ = SetPropW(
+        hwnd,
+        w!("UseImmersiveDarkModeColors"),
+        HANDLE(&mut dark as *mut _ as _),
+      );
+    }
   }
+}
+
+pub fn set_webview_theme(window: &WebviewWindow, dark: bool) -> tauri::Result<()> {
+  window.with_webview(move |webview| {
+    let color_scheme = if dark {
+      COREWEBVIEW2_PREFERRED_COLOR_SCHEME_DARK
+    } else {
+      COREWEBVIEW2_PREFERRED_COLOR_SCHEME_LIGHT
+    };
+
+    unsafe {
+      let _ = webview
+        .controller()
+        .CoreWebView2()
+        .unwrap()
+        .cast::<ICoreWebView2_13>()
+        .unwrap()
+        .Profile()
+        .unwrap()
+        .SetPreferredColorScheme(color_scheme);
+    }
+  })
 }

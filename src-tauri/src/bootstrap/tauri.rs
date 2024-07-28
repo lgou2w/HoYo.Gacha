@@ -55,10 +55,10 @@ impl Tauri {
           TAURI_MAIN_WINDOW_HWND.store(hwnd.0, Ordering::Relaxed);
         }
 
-        // Setting window mica and theme if without decorators
+        // Setting window vibrancy and theme if without decorators
         if !consts::TAURI_MAIN_WINDOW_DECORATIONS {
-          info!("Setting the mica and theme of the main window...");
-          ffi::set_window_mica(&main_window);
+          info!("Setting the vibrancy and theme of the main window...");
+          ffi::set_window_vibrancy(&main_window);
           ffi::set_window_theme(&main_window, dark);
 
           // FIXME: Setting margins in Windows 10 results
@@ -164,7 +164,7 @@ impl Tauri {
     .fullscreen(consts::TAURI_MAIN_WINDOW_FULLSCREEN)
     .resizable(consts::TAURI_MAIN_WINDOW_RESIZABLE)
     .decorations(consts::TAURI_MAIN_WINDOW_DECORATIONS)
-    .transparent(consts::TAURI_MAIN_WINDOW_TRANSPARENT)
+    .transparent(!consts::TAURI_MAIN_WINDOW_DECORATIONS)
     .theme(if dark {
       Some(Theme::Dark)
     } else {
@@ -185,10 +185,11 @@ struct ThemeData {
   pub scale: u32,
 }
 
-// Common commands
+// Core commands
 
 #[tauri::command]
-fn core_set_window_theme(window: WebviewWindow, dark: bool) {
+fn core_set_window_theme(window: WebviewWindow, dark: bool) -> Result<(), tauri::Error> {
   ffi::set_window_theme(&window, dark);
-  // TODO: change Webview2 Theme
+  ffi::set_webview_theme(&window, dark)?;
+  Ok(())
 }
