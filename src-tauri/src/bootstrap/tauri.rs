@@ -29,13 +29,18 @@ impl Tauri {
     let database = Arc::new(database);
 
     info!("Loading theme data...");
-    let dark = KvMut::from(&database, consts::KV_THEME_DATA)
+    let color_scheme = KvMut::from(&database, consts::KV_THEME_DATA)
       .read_val_into_json::<ThemeData>()
       .await
       .expect("Error reading theme data from database")
       .transpose()
       .unwrap() // FIXME: serde_json::Error - Unless it's been tampered with.
-      .is_some_and(|theme_data| matches!(theme_data.color_scheme, Theme::Dark));
+      .map(|theme_data| theme_data.color_scheme)
+      // TODO: Get the current system theme if it is not customized
+      //   HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize
+      //   AppsUseLightTheme
+      //   SystemUsesLightTheme
+      .unwrap_or(Theme::Dark);
 
     info!("Creating Tauri application...");
     let database_state = Arc::clone(&database);
@@ -47,7 +52,7 @@ impl Tauri {
         app.manage(database_state);
 
         info!("Creating the Main window...");
-        let main_window = Self::create_main_window(app, dark)?;
+        let main_window = Self::create_main_window(app, color_scheme)?;
 
         #[cfg(windows)]
         if let Ok(hwnd) = main_window.hwnd() {
@@ -59,7 +64,8 @@ impl Tauri {
         if !consts::TAURI_MAIN_WINDOW_DECORATIONS {
           info!("Setting the vibrancy and theme of the main window...");
           ffi::set_window_vibrancy(&main_window);
-          ffi::set_window_theme(&main_window, dark);
+          ffi::set_window_theme(&main_window, color_scheme);
+          ffi::set_webview_theme(&main_window, color_scheme)?;
 
           // FIXME: Setting margins in Windows 10 results
           // in a 1px white border at the top of the window.
@@ -78,7 +84,7 @@ impl Tauri {
         Ok(())
       })
       .invoke_handler(generate_handler![
-        core_set_window_theme,
+        core_change_theme,
         database::kv_questioner::database_find_kv,
         database::kv_questioner::database_create_kv,
         database::kv_questioner::database_update_kv,
@@ -149,7 +155,10 @@ impl Tauri {
     });
   }
 
-  fn create_main_window<M, R>(manager: &mut M, dark: bool) -> Result<WebviewWindow<R>, TauriError>
+  fn create_main_window<M, R>(
+    manager: &mut M,
+    color_scheme: Theme,
+  ) -> Result<WebviewWindow<R>, TauriError>
   where
     R: Runtime,
     M: Manager<R>,
@@ -168,11 +177,7 @@ impl Tauri {
     .resizable(consts::TAURI_MAIN_WINDOW_RESIZABLE)
     .decorations(consts::TAURI_MAIN_WINDOW_DECORATIONS)
     .transparent(!consts::TAURI_MAIN_WINDOW_DECORATIONS)
-    .theme(if dark {
-      Some(Theme::Dark)
-    } else {
-      Some(Theme::Light)
-    })
+    .theme(Some(color_scheme))
     .center()
     .build()
   }
@@ -191,8 +196,8 @@ struct ThemeData {
 // Core commands
 
 #[tauri::command]
-fn core_set_window_theme(window: WebviewWindow, dark: bool) -> Result<(), tauri::Error> {
-  ffi::set_window_theme(&window, dark);
-  ffi::set_webview_theme(&window, dark)?;
+fn core_change_theme(window: WebviewWindow, color_scheme: Theme) -> Result<(), tauri::Error> {
+  ffi::set_window_theme(&window, color_scheme);
+  ffi::set_webview_theme(&window, color_scheme)?;
   Ok(())
 }

@@ -16,7 +16,7 @@ export default function ThemeProvider (props: PropsWithChildren<Props>) {
   const state = useMemo<ThemeState>(() => ({
     ...data,
     store,
-    async change (updated) {
+    async update (updated) {
       const newData = produce(data, (draft) => {
         updated.colorScheme && (draft.colorScheme = updated.colorScheme)
         updated.namespace && (draft.namespace = updated.namespace)

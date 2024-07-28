@@ -1,6 +1,6 @@
 use std::mem;
 
-use tauri::WebviewWindow;
+use tauri::{Theme, WebviewWindow};
 use webview2_com::Microsoft::Web::WebView2::Win32::ICoreWebView2_13;
 use webview2_com::Microsoft::Web::WebView2::Win32::{
   COREWEBVIEW2_PREFERRED_COLOR_SCHEME_DARK, COREWEBVIEW2_PREFERRED_COLOR_SCHEME_LIGHT,
@@ -60,9 +60,13 @@ pub fn set_window_vibrancy(window: &WebviewWindow) {
   }
 }
 
-pub fn set_window_theme(window: &WebviewWindow, dark: bool) {
+pub fn set_window_theme(window: &WebviewWindow, color_scheme: Theme) {
   let hwnd = window.hwnd().unwrap();
-  let dark = if dark { TRUE } else { FALSE };
+  let dark = if matches!(color_scheme, Theme::Dark) {
+    TRUE
+  } else {
+    FALSE
+  };
 
   if consts::PLATFORM.windows.is_19h1_and_higher {
     unsafe {
@@ -85,9 +89,9 @@ pub fn set_window_theme(window: &WebviewWindow, dark: bool) {
   }
 }
 
-pub fn set_webview_theme(window: &WebviewWindow, dark: bool) -> tauri::Result<()> {
+pub fn set_webview_theme(window: &WebviewWindow, color_scheme: Theme) -> tauri::Result<()> {
   window.with_webview(move |webview| {
-    let color_scheme = if dark {
+    let color_scheme = if matches!(color_scheme, Theme::Dark) {
       COREWEBVIEW2_PREFERRED_COLOR_SCHEME_DARK
     } else {
       COREWEBVIEW2_PREFERRED_COLOR_SCHEME_LIGHT

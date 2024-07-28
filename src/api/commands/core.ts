@@ -1,4 +1,5 @@
+import { ColorScheme } from '@/interfaces/Theme'
 import { declareCommand } from '.'
 
-export type SetWindowThemeArgs = { dark: boolean }
-export const setWindowTheme = declareCommand<SetWindowThemeArgs>('core_set_window_theme')
+export type ChangeThemeArgs = { colorScheme: ColorScheme }
+export const changeTheme = declareCommand<ChangeThemeArgs>('core_change_theme')

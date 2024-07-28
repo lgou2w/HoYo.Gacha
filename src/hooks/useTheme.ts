@@ -1,5 +1,5 @@
 import { useCallback, useContext } from 'react'
-import { setWindowTheme } from '@/api/commands/core'
+import { changeTheme } from '@/api/commands/core'
 import ThemeContext from '@/contexts/ThemeContext'
 import { ColorScheme, Dark, Light } from '@/interfaces/Theme'
 
@@ -13,14 +13,14 @@ export default function useTheme () {
 }
 
 export function useColorScheme () {
-  const { colorScheme, change: changeTheme } = useTheme()
+  const { colorScheme, update } = useTheme()
 
-  const change = useCallback(async (val: ColorScheme) => {
-    if (colorScheme !== val) {
-      changeTheme({ colorScheme: val })
-      setWindowTheme({ dark: val === Dark })
+  const change = useCallback(async (newVal: ColorScheme) => {
+    if (colorScheme !== newVal) {
+      update({ colorScheme: newVal })
+      changeTheme({ colorScheme: newVal })
     }
-  }, [colorScheme, changeTheme])
+  }, [colorScheme, update])
 
   const toggle = useCallback(
     () => change(colorScheme === Dark ? Light : Dark),
