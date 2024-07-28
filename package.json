@@ -16,7 +16,7 @@
   "scripts": {
     "prepare": "husky install",
     "dev": "pnpm tauri:dev",
-    "build": "pnpm web:build && pnpm tauri:build",
+    "build": "pnpm tauri:build",
     "test": "pnpm web:test && pnpm tauri:test",
     "lint": "pnpm web:lint && pnpm tauri:lint",
     "web:clean": "rimraf dist",

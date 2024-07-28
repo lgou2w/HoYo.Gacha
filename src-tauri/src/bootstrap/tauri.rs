@@ -111,9 +111,12 @@ impl Tauri {
     let release = async move {
       info!("Cleanup");
 
-      if let Some(inner) = Arc::into_inner(database) {
-        inner.close().await;
-      }
+      // Arc resources can't get Ownership using `Arc::into_inner`.
+      // This is because a resource managed by a Tauri State is not Dropped until it exits.
+      // See:
+      //  https://github.com/tauri-apps/tauri/issues/5167
+      //  https://github.com/tauri-apps/tauri/issues/7358
+      database.close().await;
 
       tracing.close();
     };

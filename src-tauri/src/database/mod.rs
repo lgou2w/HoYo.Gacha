@@ -94,7 +94,7 @@ impl Database {
   }
 
   #[tracing::instrument(skip(self))]
-  pub async fn close(self) {
+  pub async fn close(&self) {
     info!("Closing database...");
     self.0.close().await;
   }

@@ -46,7 +46,6 @@ pub const TAURI_MAIN_WINDOW_HEIGHT: f64 = 864.;
 pub const TAURI_MAIN_WINDOW_FULLSCREEN: bool = false;
 pub const TAURI_MAIN_WINDOW_RESIZABLE: bool = true;
 pub const TAURI_MAIN_WINDOW_DECORATIONS: bool = false;
-pub const TAURI_MAIN_WINDOW_TRANSPARENT: bool = true;
 
 // Environment variables
 
@@ -67,8 +66,12 @@ pub struct Windows {
   // https://en.wikipedia.org/wiki/Windows_10_version_history
   // https://en.wikipedia.org/wiki/Windows_11_version_history
   pub version: windows_version::OsVersion,
+  /// `Windows 10 . 1507` Build `10240` and higher. (First Windows 10 release)
+  pub is_1507_and_higher: bool,
   /// `Windows 10 . 1809` Build `17763` and higher.
   pub is_1809_and_higher: bool,
+  /// `Windows 10 . 19H1` Build `18362` and higher.
+  pub is_19h1_and_higher: bool,
   /// `Windows 11 . 21H2` Build `22000` and higher. (First Windows 11 release)
   pub is_21h2_and_higher: bool,
   /// `Windows 11 . 22H2` Build `22621` and higher.
@@ -81,7 +84,9 @@ impl Windows {
     let version = windows_version::OsVersion::current();
     Self {
       version,
+      is_1507_and_higher: version.build >= 10240,
       is_1809_and_higher: version.build >= 17763,
+      is_19h1_and_higher: version.build >= 18362,
       is_21h2_and_higher: version.build >= 22000,
       is_22h2_and_higher: version.build >= 22621,
     }
@@ -100,7 +105,7 @@ pub struct Platform {
 pub static PLATFORM: Lazy<Platform> = Lazy::new(|| {
   let (user_home, appdata_local, appdata_locallow) = if cfg!(windows) {
     let user_home = env::var("USERPROFILE").map(PathBuf::from).unwrap();
-    let appdata = env::var("APPDATA").map(PathBuf::from).unwrap();
+    let appdata = user_home.join("AppData");
     let appdata_local = appdata.join("Local");
     let appdata_locallow = appdata.join("LocalLow");
     (user_home, appdata_local, appdata_locallow)
