@@ -13,10 +13,19 @@ use windows::Win32::Graphics::Dwm::{
   DWMWA_SYSTEMBACKDROP_TYPE, DWMWA_USE_IMMERSIVE_DARK_MODE, DWMWINDOWATTRIBUTE,
   DWM_SYSTEMBACKDROP_TYPE,
 };
+use windows::Win32::System::Console::{AttachConsole, ATTACH_PARENT_PROCESS};
 use windows::Win32::UI::Controls::MARGINS;
 use windows::Win32::UI::WindowsAndMessaging::SetPropW;
 
 use crate::consts;
+
+// Ensure that you can see the std output when start the app from the command line
+// https://github.com/rust-lang/rust/issues/67159#issuecomment-987882771
+pub fn attach_console() {
+  unsafe {
+    let _ = AttachConsole(ATTACH_PARENT_PROCESS);
+  }
+}
 
 pub fn set_window_shadow(window: &WebviewWindow, enable: bool) {
   let hwnd = window.hwnd().unwrap();

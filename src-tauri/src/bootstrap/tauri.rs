@@ -14,12 +14,13 @@ use tracing::{debug, info};
 
 use super::ffi;
 use super::internals::TAURI_MAIN_WINDOW_HWND;
+use super::singleton::Singleton;
 use super::tracing::Tracing;
 use crate::database::{self, Database, KvMut};
 use crate::{business, consts};
 
 #[tracing::instrument(skip_all)]
-pub async fn start(tracing: Tracing, database: Database) {
+pub async fn start(singleton: Singleton, tracing: Tracing, database: Database) {
   info!("Setting Tauri asynchronous runtime as Tokio...");
   tauri::async_runtime::set(tokio::runtime::Handle::current());
 
@@ -38,12 +39,13 @@ pub async fn start(tracing: Tracing, database: Database) {
     //   HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize
     //   AppsUseLightTheme
     //   SystemUsesLightTheme
-    .unwrap_or(Theme::Dark);
+    .unwrap_or(Theme::Light);
 
   info!("Creating Tauri application...");
   let database_state = Arc::clone(&database);
   let app = TauriBuilder::default()
     .plugin(tauri_plugin_os::init())
+    .plugin(tauri_plugin_shell::init())
     .setup(move |app| {
       // Database state
       // See: src/database/mod.rs
@@ -100,6 +102,7 @@ pub async fn start(tracing: Tracing, database: Database) {
       database::gacha_record_questioner_additions::database_create_gacha_records,
       database::gacha_record_questioner_additions::database_delete_gacha_records_by_business_and_uid,
       business::business_locate_data_folder,
+      business::business_obtain_gacha_url,
     ])
     .build(generate_context!())
     .expect("Error while building Tauri application");
@@ -123,6 +126,7 @@ pub async fn start(tracing: Tracing, database: Database) {
     database.close().await;
 
     tracing.close();
+    drop(singleton);
   };
 
   let (exiting_sender, exiting_receiver) = mpsc::sync_channel::<()>(0);
@@ -148,7 +152,7 @@ pub async fn start(tracing: Tracing, database: Database) {
       // otherwise the Tauri handles the exit directly.
       let _ = exited_receiver
         .recv_timeout(Duration::from_secs(5))
-        .inspect_err(|e| eprintln!("Error while waiting for cleanup: {e}"));
+        .inspect_err(|e| println!("Error while waiting for cleanup: {e}"));
     }
   });
 }
@@ -175,7 +179,7 @@ where
     WebviewUrl::App(consts::TAURI_MAIN_WINDOW_ENTRYPOINT.into()),
   )
   .title(consts::TAURI_MAIN_WINDOW_TITLE)
-  .min_inner_size(
+  .inner_size(
     consts::TAURI_MAIN_WINDOW_WIDTH,
     consts::TAURI_MAIN_WINDOW_HEIGHT,
   )
@@ -192,7 +196,9 @@ where
 
 #[tauri::command]
 fn core_change_theme(window: WebviewWindow, color_scheme: Theme) -> Result<(), tauri::Error> {
-  ffi::set_window_theme(&window, color_scheme);
-  ffi::set_webview_theme(&window, color_scheme)?;
+  if !consts::TAURI_MAIN_WINDOW_DECORATIONS {
+    ffi::set_window_theme(&window, color_scheme);
+    ffi::set_webview_theme(&window, color_scheme)?;
+  }
   Ok(())
 }

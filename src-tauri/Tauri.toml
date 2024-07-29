@@ -27,18 +27,13 @@ icon = [
 with-global-tauri = true
 
 [[app.security.capabilities]]
-identifier = "main-capability"
+identifier = "main"
 description = "Capability for the main window"
 windows = ["main"]
 platforms = ["windows"]
 permissions = [
   "event:default",
-  "event:allow-listen",
+  "os:default",
+  "shell:default",
   "window:default",
-  "window:allow-close",
-  "window:allow-minimize",
-  "window:allow-start-dragging",
-  "window:allow-toggle-maximize",
-  "window:allow-is-maximized",
-  "window:allow-internal-toggle-maximize"
 ]

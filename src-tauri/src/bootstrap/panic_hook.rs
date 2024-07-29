@@ -157,7 +157,7 @@ impl<'a> Crash<'a> {
         backtrace = %self.backtrace,
       );
     } else {
-      eprintln!("{message}");
+      println!("{message}");
     }
 
     crash_notify(message, &report_path);

@@ -2,6 +2,7 @@ use std::env;
 use std::path::PathBuf;
 
 use once_cell::sync::Lazy;
+use reqwest::Client as Reqwest;
 use time::format_description::FormatItem;
 use time::macros::format_description;
 use time::UtcOffset;
@@ -58,6 +59,13 @@ pub const KV_THEME_DATA: &str = "HG_THEME_DATA";
 // Lazy
 
 pub static LOCAL_OFFSET: Lazy<UtcOffset> = Lazy::new(|| UtcOffset::current_local_offset().unwrap());
+
+pub static REQWEST: Lazy<Reqwest> = Lazy::new(|| {
+  Reqwest::builder()
+    .user_agent(format!("{} v{}", NAME, VERSION))
+    .build()
+    .unwrap()
+});
 
 // region: Platform
 

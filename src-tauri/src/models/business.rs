@@ -56,29 +56,39 @@ pub struct BizInternals {
   pub region: &'static BusinessRegion,
   pub codename: &'static str,
   pub displayname: &'static str,
+  /// Name of the game's entry executable (without suffix)
+  pub executable_name: &'static str,
   pub data_folder_name: &'static str,
 }
 
 macro_rules! biz {
-  ($business:ident, $region:ident, $codename:literal, $displayname:literal, $data_folder_name:literal) => {
+  ($business:ident, $region:ident, $codename:literal, $displayname:literal, $executable_name:literal, $data_folder_name:literal) => {
     BizInternals {
       business: &Business::$business,
       region: &BusinessRegion::$region,
       codename: $codename,
       displayname: $displayname,
+      executable_name: $executable_name,
       data_folder_name: $data_folder_name,
     }
   };
 }
 
-pub const BIZ_GENSHIN_IMPACT_OFFICIAL: BizInternals =
-  biz!(GenshinImpact, Official, "hk4e_cn", "原神", "YuanShen_Data");
+pub const BIZ_GENSHIN_IMPACT_OFFICIAL: BizInternals = biz!(
+  GenshinImpact,
+  Official,
+  "hk4e_cn",
+  "原神",
+  "YuanShen",
+  "YuanShen_Data"
+);
 
 pub const BIZ_GENSHIN_IMPACT_GLOBAL: BizInternals = biz!(
   GenshinImpact,
   Global,
   "hk4e_global",
   "Genshin Impact",
+  "GenshinImpact",
   "GenshinImpact_Data"
 );
 
@@ -87,6 +97,7 @@ pub const BIZ_HONKAI_STAR_RAIL_OFFICIAL: BizInternals = biz!(
   Official,
   "hkrpg_cn",
   "崩坏：星穹铁道",
+  "StarRail",
   "StarRail_Data"
 );
 
@@ -95,6 +106,7 @@ pub const BIZ_HONKAI_STAR_RAIL_GLOBAL: BizInternals = biz!(
   Global,
   "hkrpg_global",
   "Honkai: Star Rail",
+  "StarRail",
   "StarRail_Data"
 );
 
@@ -103,6 +115,7 @@ pub const BIZ_ZENLESS_ZONE_ZERO_OFFICIAL: BizInternals = biz!(
   Official,
   "nap_cn",
   "绝区零",
+  "ZenlessZoneZero",
   "ZenlessZoneZero_Data"
 );
 
@@ -111,6 +124,7 @@ pub const BIZ_ZENLESS_ZONE_ZERO_GLOBAL: BizInternals = biz!(
   Global,
   "nap_global",
   "Zenless Zone Zero",
+  "ZenlessZoneZero",
   "ZenlessZoneZero_Data"
 );
 

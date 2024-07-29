@@ -1,3 +1,4 @@
+use std::env;
 use std::fmt::Debug;
 use std::path::PathBuf;
 
@@ -5,7 +6,7 @@ use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
 use tokio::fs::File as TokioFile;
 use tokio::io::{AsyncBufReadExt, BufReader as TokioBufReader};
-use tracing::{error, info, warn, Span};
+use tracing::{info, warn, Span};
 
 use crate::consts;
 use crate::error::declare_error_kinds;
@@ -13,6 +14,9 @@ use crate::models::{BizInternals, Business, BusinessRegion};
 
 declare_error_kinds! {
   DataFolderError, kinds {
+    #[error("Invalid data folder")]
+    Invalid,
+
     #[error("Unity log file not found: {path}")]
     UnityLogFileNotFound { path: PathBuf },
 
@@ -77,7 +81,7 @@ impl DataFolderLocator for UnityLogDataFolderLocator {
     span.record("log_path", log_path.to_str());
 
     if !log_path.exists() || !log_path.is_file() {
-      error!("Unity log file not found");
+      warn!("Unity log file not found");
       return Err(DataFolderErrorKind::UnityLogFileNotFound { path: log_path })?;
     }
 
@@ -108,6 +112,19 @@ impl DataFolderLocator for UnityLogDataFolderLocator {
           if let Some(slice) = line.get(colon - 1..end + keyword_len) {
             let data_folder = PathBuf::from(slice);
             info!("Located in the data folder: {data_folder:?}");
+
+            match data_folder.parent() {
+              None => return Err(DataFolderErrorKind::Invalid)?,
+              Some(parent) => {
+                let mut executable = parent.join(biz.executable_name);
+                executable.set_extension(env::consts::EXE_EXTENSION);
+
+                if !executable.exists() || !executable.is_file() {
+                  warn!("No valid game executable file found");
+                  return Err(DataFolderErrorKind::Invalid)?;
+                }
+              }
+            };
 
             return Ok(Some(DataFolder {
               business,

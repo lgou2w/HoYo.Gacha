@@ -3,6 +3,7 @@ use crate::{consts, database};
 mod ffi;
 mod internals;
 mod panic_hook;
+mod singleton;
 mod tauri;
 mod tracing;
 
@@ -10,6 +11,9 @@ mod tracing;
 pub use tracing::Tracing;
 
 pub async fn start() {
+  #[cfg(windows)]
+  ffi::attach_console();
+
   println!(
     r"
    _   _    __   __     ____            _
@@ -30,7 +34,8 @@ pub async fn start() {
   );
 
   panic_hook::install();
+  let singleton = singleton::mutex();
   let tracing = tracing::Tracing::initialize();
   let database = database::Database::new().await;
-  tauri::start(tracing, database).await;
+  tauri::start(singleton, tracing, database).await;
 }
