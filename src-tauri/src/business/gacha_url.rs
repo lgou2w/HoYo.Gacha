@@ -66,7 +66,7 @@ declare_error_kinds! {
     #[error("Visit gacha url too frequently")]
     VisitTooFrequently,
 
-    #[error("")]
+    #[error("Unexpected gacha url error response: retcode = {retcode}, message = {message:?}")]
     UnexpectedResponse { retcode: i32, message: String },
 
     #[error("Owner uid of the gacha url does not match (expected: {expected}, actual: {actual:?})")]
@@ -260,7 +260,7 @@ impl GachaUrl {
         }
 
         info!(
-          message = "Valid game url exist in the cache address",
+          message = "Valid gacha url exist in the cache address",
           ?addr,
           ?entry_store.long_key,
           ?creation_time,
@@ -302,6 +302,9 @@ impl GachaUrl {
         }
         Ok(response) => match response.data.as_ref().and_then(|page| page.list.first()) {
           None => {
+            // It's possible. For example:
+            //   There are no gacha records.
+            //   Server is not synchronising data (1 hour delay or more)
             warn!("Gacha url responded with empty record data");
             continue;
           }
@@ -320,6 +323,7 @@ impl GachaUrl {
                 owner_uid: expected_uid,
               });
             } else {
+              // The gacha url does not match the expected uid
               actual.push(record.uid);
             }
           }
