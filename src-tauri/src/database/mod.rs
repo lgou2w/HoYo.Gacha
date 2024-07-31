@@ -56,8 +56,8 @@ impl AsRef<SqlitePool> for Database {
 impl Database {
   #[tracing::instrument(fields(filename))]
   pub async fn new() -> Self {
-    // Database storage directory
-    //   In debug mode  : is in the src-tauri directory
+    // Database storage folder
+    //   In debug mode  : is in the src-tauri folder
     //   In release mode:
     //     Windows -> %APPDATA%\\Local\\{ID}
     //     MacOS   -> %HOME%/Library/Caches/{ID}

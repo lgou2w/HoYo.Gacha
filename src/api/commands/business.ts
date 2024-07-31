@@ -58,7 +58,7 @@ export type GachaUrlError = DetailedError<typeof NamedGachaUrlError,
   | { kind: 'InconsistentUid', expected: Account['uid'], actual: Array<Account['uid']> }
 >
 
-export function isGachaUrlError (error: unknown): error is DataFolderError {
+export function isGachaUrlError (error: unknown): error is GachaUrlError {
   return isDetailedError(error) &&
     error.name === NamedGachaUrlError
 }

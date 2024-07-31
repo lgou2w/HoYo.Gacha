@@ -192,7 +192,7 @@ impl DataFolderLocator for ManualDataFolderLocator {
     let maybe_data_folder: PathBuf = match rfd.pick_folder().await {
       Some(folder) => folder.into(),
       None => {
-        warn!("No folder is selected");
+        warn!("No data folder is selected");
         return Ok(None);
       }
     };
@@ -211,7 +211,7 @@ impl DataFolderLocator for ManualDataFolderLocator {
     }
 
     // Otherwise, test for the existence of executable file
-    // in the parent directory of this directory. Then it is valid.
+    // in the parent folder of this folder. Then it is valid.
     match maybe_data_folder.parent() {
       None => return Err(DataFolderErrorKind::Invalid)?,
       Some(parent) => {

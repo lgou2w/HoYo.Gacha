@@ -20,7 +20,7 @@ pub fn install() {
     .join(consts::CRASHS_DIRECTORY);
 
   if !crashs_dir.exists() {
-    fs::create_dir_all(&crashs_dir).expect("Failed to create crashs directory");
+    fs::create_dir_all(&crashs_dir).expect("Failed to create crashs folder");
   }
 
   panic::set_hook(Box::new(move |panic| {
