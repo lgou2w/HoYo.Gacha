@@ -220,6 +220,7 @@ const INDEX_VERSION3_0: u32 = 0x30000;
 #[allow(unused)]
 const INDEX_TABLE_SIZE: u32 = 0x10000;
 
+#[allow(dead_code)]
 #[derive(Debug)]
 pub struct IndexFileHeader {
   pub magic: u32,
@@ -238,6 +239,7 @@ pub struct IndexFileHeader {
   // pub lru: Lru,
 }
 
+#[allow(dead_code)]
 #[derive(Debug)]
 pub struct IndexFile {
   pub header: IndexFileHeader,
@@ -321,6 +323,7 @@ const BLOCK_VERSION3_0: u32 = 0x30000;
 const BLOCK_HEADER_SIZE: u32 = 8192;
 const BLOCK_MAX_BLOCKS: u32 = (BLOCK_HEADER_SIZE - 80) * 8;
 
+#[allow(dead_code)]
 #[derive(Debug)]
 pub struct BlockFileHeader {
   pub magic: u32,
@@ -461,6 +464,7 @@ impl BlockFile {
 
 const BLOCK_KEY_SIZE: usize = 256 - 24 * 4;
 
+#[allow(dead_code)]
 #[derive(Debug)]
 pub struct EntryStore {
   pub hash: u32,

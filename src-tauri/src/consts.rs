@@ -11,9 +11,20 @@ use tracing_appender::rolling::Rotation;
 // App
 
 pub const ID: &str = "com.lgou2w.hoyo.gacha";
+
+// for Production
+#[cfg(not(debug_assertions))]
 pub const NAME: &str = "HoYo.Gacha";
+#[cfg(not(debug_assertions))]
 pub const DATABASE: &str = "HoYo.Gacha.db";
 
+// for Development
+#[cfg(debug_assertions)]
+pub const NAME: &str = "__DEV__HoYo.Gacha";
+#[cfg(debug_assertions)]
+pub const DATABASE: &str = "__DEV__HoYo.Gacha.db";
+
+// Package info
 pub const PKG_NAME: &str = env!("CARGO_PKG_NAME");
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
 pub const AUTHORS: &str = env!("CARGO_PKG_AUTHORS");
@@ -67,7 +78,40 @@ pub static REQWEST: Lazy<Reqwest> = Lazy::new(|| {
     .unwrap()
 });
 
-// region: Platform
+// region: Locale
+
+pub struct Locale(Option<String>);
+
+impl Locale {
+  pub const DEFAULT: &'static str = "en";
+  pub const CHINESE: &'static str = "zh";
+
+  fn new() -> Self {
+    Self(tauri_plugin_os::locale())
+  }
+
+  #[inline]
+  pub fn is_default(&self) -> bool {
+    self.as_ref().starts_with(Self::DEFAULT)
+  }
+
+  #[inline]
+  pub fn is_chinese(&self) -> bool {
+    self.as_ref().starts_with(Self::CHINESE)
+  }
+}
+
+impl AsRef<str> for Locale {
+  fn as_ref(&self) -> &str {
+    self.0.as_deref().unwrap_or(Self::DEFAULT)
+  }
+}
+
+pub static LOCALE: Lazy<Locale> = Lazy::new(Locale::new);
+
+// endregion
+
+// region: Windows
 
 #[cfg(windows)]
 pub struct Windows {
@@ -88,7 +132,7 @@ pub struct Windows {
 
 #[cfg(windows)]
 impl Windows {
-  pub fn new() -> Self {
+  fn new() -> Self {
     let version = windows_version::OsVersion::current();
     Self {
       version,
@@ -101,39 +145,46 @@ impl Windows {
   }
 }
 
+#[cfg(windows)]
+pub static WINDOWS: Lazy<Windows> = Lazy::new(Windows::new);
+
+// endregion
+
+// region: Platform
+
 pub struct Platform {
-  #[cfg(windows)]
-  pub windows: Windows,
   pub user_home: PathBuf,
   pub appdata_local: PathBuf,
   pub appdata_locallow_mihoyo: PathBuf,
   pub appdata_locallow_cognosphere: PathBuf,
 }
 
-pub static PLATFORM: Lazy<Platform> = Lazy::new(|| {
-  let (user_home, appdata_local, appdata_locallow) = if cfg!(windows) {
-    let user_home = env::var("USERPROFILE").map(PathBuf::from).unwrap();
-    let appdata = user_home.join("AppData");
-    let appdata_local = appdata.join("Local");
-    let appdata_locallow = appdata.join("LocalLow");
-    (user_home, appdata_local, appdata_locallow)
-  } else if cfg!(target_os = "macos") {
-    let user_home = env::var("HOME").map(PathBuf::from).unwrap();
-    let appdata = user_home.join("Library");
-    let appdata_local = appdata.join("Caches");
-    (user_home, appdata_local.clone(), appdata_local)
-  } else {
-    unimplemented!()
-  };
+impl Platform {
+  fn new() -> Self {
+    let (user_home, appdata_local, appdata_locallow) = if cfg!(windows) {
+      let user_home = env::var("USERPROFILE").map(PathBuf::from).unwrap();
+      let appdata = user_home.join("AppData");
+      let appdata_local = appdata.join("Local");
+      let appdata_locallow = appdata.join("LocalLow");
+      (user_home, appdata_local, appdata_locallow)
+    } else if cfg!(target_os = "macos") {
+      let user_home = env::var("HOME").map(PathBuf::from).unwrap();
+      let appdata = user_home.join("Library");
+      let appdata_local = appdata.join("Caches");
+      (user_home, appdata_local.clone(), appdata_local)
+    } else {
+      unimplemented!()
+    };
 
-  Platform {
-    #[cfg(windows)]
-    windows: Windows::new(),
-    user_home,
-    appdata_local,
-    appdata_locallow_mihoyo: appdata_locallow.join("miHoYo"),
-    appdata_locallow_cognosphere: appdata_locallow.join("Cognosphere"),
+    Self {
+      user_home,
+      appdata_local,
+      appdata_locallow_mihoyo: appdata_locallow.join("miHoYo"),
+      appdata_locallow_cognosphere: appdata_locallow.join("Cognosphere"),
+    }
   }
-});
+}
+
+pub static PLATFORM: Lazy<Platform> = Lazy::new(Platform::new);
 
 // endregion

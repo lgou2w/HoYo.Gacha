@@ -18,15 +18,15 @@ use url::Url;
 use super::disk_cache::{BlockFile, IndexFile};
 use crate::consts;
 use crate::error::declare_error_kinds;
-use crate::models::{BizInternals, Business, BusinessRegion};
+use crate::models::{BizInternals, Business, BusinessRegion, GachaRecord};
 
 declare_error_kinds! {
   GachaUrlError, kinds {
     #[error("Web caches path does not exist: {path}")]
     WebCachesNotFound { path: PathBuf },
 
-    #[error("Error reading web caches: {cause}")]
-    ReadWebCaches {
+    #[error("Error opening web caches: {cause}")]
+    OpenWebCaches {
       cause: std::io::Error => serde_json::json!({
         "kind": format_args!("{}", cause.kind()),
         "message": cause.to_string(),
@@ -44,11 +44,11 @@ declare_error_kinds! {
     #[error("No gacha url found")]
     NotFound,
 
-    #[error("Invalid gacha url query params")]
-    InvalidQuery,
+    #[error("Missing gacha url query params")]
+    MissingParams,
 
-    #[error("Missing required query parameters: {params:?}")]
-    MissingParameter { params: Vec<String> },
+    #[error("Invalid gacha url query params: {params:?}")]
+    InvalidParams { params: Vec<String> },
 
     #[error("Failed to parse gacha url: {cause}")]
     Parse {
@@ -147,7 +147,7 @@ impl GachaUrl {
 
     let cache_data_folder = {
       let web_caches_folder = data_folder.as_ref().join("webCaches");
-      if !web_caches_folder.exists() || !web_caches_folder.is_dir() {
+      if !web_caches_folder.is_dir() {
         warn!("Web caches folder does not exist: {web_caches_folder:?}");
         return Err(GachaUrlErrorKind::WebCachesNotFound {
           path: web_caches_folder,
@@ -156,7 +156,7 @@ impl GachaUrl {
 
       let mut walk_dir = tokio::fs::read_dir(&web_caches_folder)
         .await
-        .map_err(|cause| GachaUrlErrorKind::ReadWebCaches { cause })?;
+        .map_err(|cause| GachaUrlErrorKind::OpenWebCaches { cause })?;
 
       let mut versions = Vec::new();
       while let Ok(Some(entry)) = walk_dir.next_entry().await {
@@ -403,7 +403,7 @@ struct GachaRecordsPaginationItem {
   #[serde(deserialize_with = "gacha_id_de", default = "Option::default")]
   gacha_id: Option<u32>,
   #[serde(deserialize_with = "string_as_number")]
-  rank_type: u8,
+  rank_type: u32,
   #[serde(deserialize_with = "string_as_number")]
   count: u32,
   time: String,
@@ -415,12 +415,13 @@ struct GachaRecordsPaginationItem {
   item_id: Option<String>,
 }
 
+#[allow(dead_code)]
 #[derive(Deserialize)]
 struct GachaRecordsPagination {
-  // page: String,
-  // size: String,
+  page: String,
+  size: String,
   // `Honkai: Star Rail`, `Zenless Zone Zero` only
-  // total: String,
+  total: Option<String>,
   list: Vec<GachaRecordsPaginationItem>,
   region: String,
   // `Honkai: Star Rail`, `Zenless Zone Zero` only
@@ -428,13 +429,15 @@ struct GachaRecordsPagination {
 }
 
 #[tracing::instrument(skip(biz))]
-fn parse_gacha_url(
+pub fn parse_gacha_url(
   biz: &BizInternals,
   gacha_url: &str,
   gacha_type: Option<&str>,
   end_id: Option<&str>,
 ) -> Result<Url, GachaUrlError> {
-  let query_start = gacha_url.find('?').ok_or(GachaUrlErrorKind::InvalidQuery)?;
+  let query_start = gacha_url
+    .find('?')
+    .ok_or(GachaUrlErrorKind::MissingParams)?;
   let base_url = &gacha_url[..query_start];
   let query_str = &gacha_url[query_start + 1..];
 
@@ -457,12 +460,12 @@ fn parse_gacha_url(
         "Gacha url missing important '{gacha_type_field}' or 'init_type' parameters: {queries:?}"
       );
 
-      GachaUrlErrorKind::MissingParameter {
+      GachaUrlErrorKind::InvalidParams {
         params: vec![gacha_type_field.into(), "init_type".into()],
       }
     })?;
 
-  // let origin_end_id = queries.get("end_id").cloned();
+  let origin_end_id = queries.get("end_id").cloned();
   let gacha_type = gacha_type.unwrap_or(&origin_gacha_type);
 
   // Deletion and modification of some query parameters
@@ -475,9 +478,7 @@ fn parse_gacha_url(
   queries.insert("size".into(), "20".into());
   queries.insert(gacha_type_field.into(), gacha_type.into());
 
-  if let Some(end_id) = end_id
-  /* .or(origin_end_id.as_deref()) */
-  {
+  if let Some(end_id) = end_id.or(origin_end_id.as_deref()) {
     queries.insert("end_id".into(), end_id.into());
   }
 
@@ -490,10 +491,13 @@ fn parse_gacha_url(
 }
 
 #[tracing::instrument(skip(url))]
-async fn request_gacha_url(url: Url) -> Result<GachaRecordsResponse, GachaUrlError> {
+pub async fn request_gacha_url(
+  url: Url,
+  timeout: Option<Duration>,
+) -> Result<GachaRecordsResponse, GachaUrlError> {
   let response: GachaRecordsResponse = consts::REQWEST
     .get(url)
-    .timeout(Duration::from_secs(10))
+    .timeout(timeout.unwrap_or(Duration::from_secs(10)))
     .send()
     .await
     .map_err(|cause| GachaUrlErrorKind::Reqwest { cause })?
@@ -521,22 +525,22 @@ async fn request_gacha_url(url: Url) -> Result<GachaRecordsResponse, GachaUrlErr
 }
 
 #[tracing::instrument(skip(url))]
-fn request_gacha_url_with_retry(
+pub fn request_gacha_url_with_retry(
   url: Url,
   retries: Option<u8>,
 ) -> BoxFuture<'static, Result<GachaRecordsResponse, GachaUrlError>> {
   // HACK: Default maximum 5 attempts
   const RETRIES: u8 = 5;
-
-  let min = Duration::from_millis(200); // Min: 0.2s
-  let max = Duration::from_millis(10_000); // Max: 10s
+  const MIN: Duration = Duration::from_millis(200); // Min: 0.2s
+  const MAX: Duration = Duration::from_millis(10_000); // Max: 10s
 
   let retries = retries.unwrap_or(RETRIES);
-  let backoff = Backoff::new(retries as u32, min, max);
+  let backoff = Backoff::new(retries as u32, MIN, MAX);
+  let timeout = MAX + Duration::from_secs(3);
 
   async move {
     for duration in &backoff {
-      match request_gacha_url(url.clone()).await {
+      match request_gacha_url(url.clone(), Some(timeout)).await {
         // okay
         Ok(response) => return Ok(response),
 
@@ -560,4 +564,56 @@ fn request_gacha_url_with_retry(
     Err(GachaUrlErrorKind::VisitTooFrequently)?
   }
   .boxed()
+}
+
+#[tracing::instrument(skip_all)]
+pub async fn fetch_gacha_records(
+  business: &Business,
+  region: &BusinessRegion,
+  gacha_url: &str,
+  gacha_type: Option<&str>,
+  end_id: Option<&str>,
+) -> Result<Option<Vec<GachaRecord>>, GachaUrlError> {
+  info!("Fetching the gacha records...");
+  let biz = BizInternals::mapped(business, region);
+
+  let gacha_url = parse_gacha_url(biz, gacha_url, gacha_type, end_id)?;
+  let pagination = match request_gacha_url_with_retry(gacha_url, None).await {
+    Err(error) => {
+      warn!("Responded with an error while fetching the gacha records: {error:?}");
+      return Err(error);
+    }
+    Ok(response) => {
+      if response
+        .data
+        .as_ref()
+        .is_some_and(|data| !data.list.is_empty())
+      {
+        response.data.unwrap() // SAFETY
+      } else {
+        // Empty records -> return None
+        return Ok(None);
+      }
+    }
+  };
+
+  let mut records = Vec::with_capacity(pagination.list.len());
+  for value in pagination.list {
+    records.push(GachaRecord {
+      id: value.id,
+      business: *business,
+      uid: value.uid,
+      gacha_type: value.gacha_type,
+      gacha_id: value.gacha_id,
+      rank_type: value.rank_type,
+      count: value.count,
+      time: value.time,
+      lang: value.lang,
+      name: value.name,
+      item_type: value.item_type,
+      item_id: value.item_id.unwrap_or_default(), // TODO: Dictionary
+    })
+  }
+
+  Ok(Some(records))
 }

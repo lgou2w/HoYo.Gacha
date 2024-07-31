@@ -5,13 +5,12 @@ use std::io::{self, Write};
 use std::panic::{self, PanicInfo};
 use std::path::Path;
 use std::process;
-use std::sync::atomic::Ordering;
 
 use backtrace::Backtrace;
 use time::OffsetDateTime;
 use tracing::error;
 
-use super::internals::{TAURI_MAIN_WINDOW_HWND, TRACING_INITIALIZED};
+use super::internals;
 use crate::consts;
 
 pub fn install() {
@@ -139,16 +138,29 @@ impl<'a> Crash<'a> {
     writeln!(report_file)?;
     report_file.flush()?;
 
-    let message = format!(
-      "Oops! {name} v{version} had a problem and crashed. To help us diagnose the problem you can send us a crash report.\n\nWe have generated a report file at {report_path:?}.\n\nSubmit an issue or email with the subject of \"{name} Crash Report\" and include the report as an attachment.\n\n- Homepage: {homepage}\n- Authors: {authors}\n",
-      name = self.name,
-      version = self.version,
-      report_path = report_path,
-      homepage = consts::HOMEPAGE,
-      authors = consts::AUTHORS,
-    );
+    let message = if consts::LOCALE.is_chinese() {
+      format!(
+        "哎呀！{name} v{version} 出现问题并崩溃了。为了帮助我们诊断问题，您可以向我们发送一份崩溃报告。\n\n我们已经在 {report_path:?} 生成了一个报告文件。\n\n请提交一个主题为 “{name} 崩溃报告” 的问题或电子邮件，并将报告作为附件包含在内。\n\n- 主页：{homepage}\n- 开源：{repository}\n- 作者：{authors}\n",
+        name = self.name,
+        version = self.version,
+        report_path = report_path,
+        homepage = consts::HOMEPAGE,
+        repository = consts::REPOSITORY,
+        authors = consts::AUTHORS,
+      )
+    } else {
+      format!(
+        "Oops! {name} v{version} had a problem and crashed. To help us diagnose the problem you can send us a crash report.\n\nWe have generated a report file at {report_path:?}.\n\nSubmit an issue or email with the subject of \"{name} Crash Report\" and include the report as an attachment.\n\n- Homepage: {homepage}\n- GitHub: {repository}\n- Authors: {authors}\n",
+        name = self.name,
+        version = self.version,
+        report_path = report_path,
+        homepage = consts::HOMEPAGE,
+        repository = consts::REPOSITORY,
+        authors = consts::AUTHORS,
+      )
+    };
 
-    if TRACING_INITIALIZED.load(Ordering::Relaxed) {
+    if internals::has_tracing_initialized() {
       error!(
         target: consts::PKG_NAME,
         message,
@@ -167,7 +179,7 @@ impl<'a> Crash<'a> {
 
 #[cfg(windows)]
 fn crash_notify(message: String, report_path: impl AsRef<Path>) {
-  let hwnd = TAURI_MAIN_WINDOW_HWND.load(Ordering::Relaxed);
+  let hwnd = internals::get_tauri_main_window_hwnd();
 
   unsafe {
     use std::os::windows::process::CommandExt;

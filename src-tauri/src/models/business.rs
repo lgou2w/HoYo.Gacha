@@ -1,5 +1,7 @@
 use std::collections::HashMap;
+use std::env;
 use std::fmt::{self, Display};
+use std::path::{Path, PathBuf};
 
 use num_enum::{IntoPrimitive, TryFromPrimitive};
 use once_cell::sync::Lazy;
@@ -55,19 +57,28 @@ pub struct BizInternals {
   pub business: &'static Business,
   pub region: &'static BusinessRegion,
   pub codename: &'static str,
-  pub displayname: &'static str,
+  pub display_name: &'static str,
   /// Name of the game's entry executable (without suffix)
   pub executable_name: &'static str,
   pub data_folder_name: &'static str,
 }
 
+impl BizInternals {
+  #[inline]
+  pub fn join_executable_file(&self, folder: impl AsRef<Path>) -> PathBuf {
+    let mut executable = folder.as_ref().join(self.executable_name);
+    executable.set_extension(env::consts::EXE_EXTENSION);
+    executable
+  }
+}
+
 macro_rules! biz {
-  ($business:ident, $region:ident, $codename:literal, $displayname:literal, $executable_name:literal, $data_folder_name:literal) => {
+  ($business:ident, $region:ident, $codename:literal, $display_name:literal, $executable_name:literal, $data_folder_name:literal) => {
     BizInternals {
       business: &Business::$business,
       region: &BusinessRegion::$region,
       codename: $codename,
-      displayname: $displayname,
+      display_name: $display_name,
       executable_name: $executable_name,
       data_folder_name: $data_folder_name,
     }

@@ -1,5 +1,3 @@
-use std::sync::atomic::Ordering;
-
 use tracing::info;
 use tracing::level_filters::LevelFilter;
 use tracing_appender::non_blocking::WorkerGuard;
@@ -9,7 +7,7 @@ use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
 use tracing_subscriber::EnvFilter;
 
-use super::internals::TRACING_INITIALIZED;
+use super::internals;
 use crate::consts;
 
 pub struct Tracing {
@@ -18,7 +16,7 @@ pub struct Tracing {
 
 impl Tracing {
   pub fn initialize() -> Self {
-    if TRACING_INITIALIZED.load(Ordering::Relaxed) {
+    if internals::has_tracing_initialized() {
       panic!("Tracing has already been initialized")
     }
 
@@ -87,7 +85,8 @@ impl Tracing {
     };
 
     info!("Tracing initialized");
-    TRACING_INITIALIZED.store(true, Ordering::Relaxed);
+    internals::set_tracing_initialized(true);
+
     Self { file_appender }
   }
 

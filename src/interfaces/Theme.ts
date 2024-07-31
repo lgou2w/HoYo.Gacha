@@ -33,6 +33,7 @@ export const KnownNamespaces = Object.keys(Themes) as Namespace[]
 // Suitable for default system scaling at high resolution
 // E.g.: 2K 100% Scaling -> 20 (1.2x)
 export type ScaleLevel = 16 | 20 | 24 | 28 | 32
+export const ScaleLevels: readonly ScaleLevel[] = [16, 20, 24, 28, 32]
 
 export interface ThemeData {
   namespace: Namespace

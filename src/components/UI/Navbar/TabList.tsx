@@ -3,7 +3,7 @@ import { Image, Tab, TabList, Tooltip, imageClassNames, makeStyles, shorthands, 
 import { BoardFilled, BoardRegular, PersonCircleFilled, PersonCircleRegular, SettingsFilled, SettingsRegular } from '@fluentui/react-icons'
 import { useLocation, useNavigate } from '@tanstack/react-router'
 import Locale from '@/components/UI/Locale'
-import { Businesses, ReversedBusinesses } from '@/interfaces/Account'
+import { Businesses, ReversedBusinesses } from '@/interfaces/Business'
 
 export const ButtonSize = tokens.fontSizeHero900
 const useStyles = makeStyles({

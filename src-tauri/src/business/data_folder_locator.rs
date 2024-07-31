@@ -1,13 +1,16 @@
-use std::env;
 use std::fmt::Debug;
+use std::num::NonZeroIsize;
 use std::path::PathBuf;
 
 use async_trait::async_trait;
+use raw_window_handle::{RawWindowHandle, Win32WindowHandle, WindowHandle};
+use rfd::AsyncFileDialog;
 use serde::{Deserialize, Serialize};
 use tokio::fs::File as TokioFile;
 use tokio::io::{AsyncBufReadExt, BufReader as TokioBufReader};
 use tracing::{info, warn, Span};
 
+use crate::bootstrap::internals;
 use crate::consts;
 use crate::error::declare_error_kinds;
 use crate::models::{BizInternals, Business, BusinessRegion};
@@ -35,7 +38,7 @@ declare_error_kinds! {
 pub struct DataFolder {
   pub business: Business,
   pub region: BusinessRegion,
-  pub folder: PathBuf,
+  pub value: PathBuf,
 }
 
 #[async_trait]
@@ -77,10 +80,10 @@ impl DataFolderLocator for UnityLogDataFolderLocator {
     };
 
     let span = Span::current();
-    let log_path = appdata_folder.join(biz.displayname).join(log_filename);
+    let log_path = appdata_folder.join(biz.display_name).join(log_filename);
     span.record("log_path", log_path.to_str());
 
-    if !log_path.exists() || !log_path.is_file() {
+    if !log_path.is_file() {
       warn!("Unity log file not found");
       return Err(DataFolderErrorKind::UnityLogFileNotFound { path: log_path })?;
     }
@@ -113,14 +116,13 @@ impl DataFolderLocator for UnityLogDataFolderLocator {
             let data_folder = PathBuf::from(slice);
             info!("Located in the data folder: {data_folder:?}");
 
+            // Test this data folder for validity
             match data_folder.parent() {
               None => return Err(DataFolderErrorKind::Invalid)?,
               Some(parent) => {
-                let mut executable = parent.join(biz.executable_name);
-                executable.set_extension(env::consts::EXE_EXTENSION);
-
-                if !executable.exists() || !executable.is_file() {
-                  warn!("No valid game executable file found");
+                let executable_file = biz.join_executable_file(parent);
+                if !executable_file.is_file() {
+                  warn!("No valid game executable file found: {executable_file:?}");
                   return Err(DataFolderErrorKind::Invalid)?;
                 }
               }
@@ -129,7 +131,7 @@ impl DataFolderLocator for UnityLogDataFolderLocator {
             return Ok(Some(DataFolder {
               business,
               region,
-              folder: data_folder,
+              value: data_folder,
             }));
           }
         }
@@ -138,6 +140,95 @@ impl DataFolderLocator for UnityLogDataFolderLocator {
 
     warn!("Not locating the data folder from the keyword");
     Ok(None)
+  }
+}
+
+// endregion
+
+// region: Manual
+
+#[derive(Debug)]
+pub struct ManualDataFolderLocator;
+
+#[async_trait]
+impl DataFolderLocator for ManualDataFolderLocator {
+  #[tracing::instrument]
+  async fn locate_data_folder(
+    &self,
+    business: Business,
+    region: BusinessRegion,
+  ) -> Result<Option<DataFolder>, DataFolderError> {
+    info!("Manually locate the data folder...");
+
+    let biz = BizInternals::mapped(&business, &region);
+
+    let title = if crate::consts::LOCALE.is_chinese() {
+      format!(
+        "请选择 {} 的游戏数据目录：{}",
+        biz.display_name, biz.data_folder_name
+      )
+    } else {
+      format!(
+        "Please select the game data folder for {}: {}",
+        biz.display_name, biz.data_folder_name
+      )
+    };
+
+    let mut rfd = AsyncFileDialog::new()
+      .set_directory(&consts::PLATFORM.user_home)
+      .set_title(title);
+
+    #[cfg(windows)]
+    {
+      let hwnd = internals::get_tauri_main_window_hwnd();
+      if hwnd != 0 {
+        let hwnd = NonZeroIsize::new(hwnd).unwrap();
+        let raw_window_handle = RawWindowHandle::Win32(Win32WindowHandle::new(hwnd));
+        let window_handle = unsafe { WindowHandle::borrow_raw(raw_window_handle) };
+        rfd = rfd.set_parent(&window_handle);
+      }
+    }
+
+    let maybe_data_folder: PathBuf = match rfd.pick_folder().await {
+      Some(folder) => folder.into(),
+      None => {
+        warn!("No folder is selected");
+        return Ok(None);
+      }
+    };
+
+    // If the game folder is selected, then test if the executable file exists,
+    // then just add the data folder
+    let executable_file = biz.join_executable_file(&maybe_data_folder);
+    if executable_file.is_file() {
+      let data_folder = maybe_data_folder.join(biz.data_folder_name);
+      info!("Selected data folder: {data_folder:?}");
+      return Ok(Some(DataFolder {
+        business,
+        region,
+        value: data_folder,
+      }));
+    }
+
+    // Otherwise, test for the existence of executable file
+    // in the parent directory of this directory. Then it is valid.
+    match maybe_data_folder.parent() {
+      None => return Err(DataFolderErrorKind::Invalid)?,
+      Some(parent) => {
+        let executable_file = biz.join_executable_file(parent);
+        if !executable_file.is_file() {
+          warn!("No valid game executable file found: {executable_file:?}");
+          return Err(DataFolderErrorKind::Invalid)?;
+        }
+      }
+    };
+
+    info!("Selected data folder: {maybe_data_folder:?}");
+    Ok(Some(DataFolder {
+      business,
+      region,
+      value: maybe_data_folder,
+    }))
   }
 }
 
@@ -168,6 +259,7 @@ impl DataFolderLocator for RegistryDataFolderLocator {
 #[derive(Debug, Deserialize)]
 pub enum DataFolderLocatorFactory {
   UnityLog,
+  Manual,
   #[cfg(windows)]
   Registry,
 }
@@ -176,6 +268,7 @@ impl From<DataFolderLocatorFactory> for &dyn DataFolderLocator {
   fn from(value: DataFolderLocatorFactory) -> Self {
     match value {
       DataFolderLocatorFactory::UnityLog => &UnityLogDataFolderLocator,
+      DataFolderLocatorFactory::Manual => &ManualDataFolderLocator,
       #[cfg(windows)]
       DataFolderLocatorFactory::Registry => &RegistryDataFolderLocator,
     }

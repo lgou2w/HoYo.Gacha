@@ -36,4 +36,10 @@ permissions = [
   "os:default",
   "shell:default",
   "window:default",
+  "window:allow-close",
+  "window:allow-minimize",
+  "window:allow-start-dragging",
+  "window:allow-toggle-maximize",
+  "window:allow-is-maximized",
+  "window:allow-internal-toggle-maximize"
 ]

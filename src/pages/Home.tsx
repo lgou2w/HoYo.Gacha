@@ -1,7 +1,8 @@
 import React, { Fragment } from 'react'
-import { Switch } from '@fluentui/react-components'
+import { Button } from '@fluentui/react-components'
 import { createRoute } from '@tanstack/react-router'
-import { useColorScheme } from '@/hooks/useTheme'
+import { locateDataFolder } from '@/api/commands/business'
+import { Businesses } from '@/interfaces/Business'
 import rootRoute from '@/pages/Root'
 
 const homeRoute = createRoute({
@@ -13,13 +14,25 @@ const homeRoute = createRoute({
 // eslint-disable-next-line react-refresh/only-export-components
 function Home () {
   // TODO: Experimental
-  const { colorScheme, toggle } = useColorScheme()
+  const onClick = async () => {
+    try {
+      const result = await locateDataFolder({
+        business: Businesses.ZenlessZoneZero,
+        region: 'Official',
+        factory: 'Manual'
+      })
+      console.debug(result)
+    } catch (e) {
+      console.error(e)
+    }
+  }
   //
 
   return (
     <Fragment>
       <div>Home</div>
-      <Switch label={colorScheme} onClick={() => toggle()} />
+      <br />
+      <Button onClick={onClick}>Test</Button>
     </Fragment>
   )
 }

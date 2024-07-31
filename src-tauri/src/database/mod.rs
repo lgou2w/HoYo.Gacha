@@ -34,7 +34,7 @@ impl ErrorDetails for sqlx::Error {
     }
   }
 
-  fn details(&self) -> impl serde::Serialize {
+  fn details(&self) -> serde_json::Value {
     match self.as_database_error() {
       None => serde_json::Value::Null,
       Some(database) => serde_json::json!({
@@ -519,7 +519,7 @@ impl<'r> FromRow<'r, SqliteRow> for GachaRecord {
   }
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Copy, Clone, Debug, Deserialize)]
 pub enum GachaRecordOnConflict {
   Nothing,
   Update,

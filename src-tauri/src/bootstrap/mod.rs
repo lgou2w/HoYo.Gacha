@@ -1,7 +1,7 @@
 use crate::{consts, database};
 
 mod ffi;
-mod internals;
+pub mod internals;
 mod panic_hook;
 mod singleton;
 mod tauri;

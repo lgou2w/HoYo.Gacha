@@ -46,7 +46,7 @@ pub fn set_window_shadow(window: &WebviewWindow, enable: bool) {
 pub fn set_window_vibrancy(window: &WebviewWindow) {
   let hwnd = window.hwnd().unwrap();
 
-  if consts::PLATFORM.windows.is_22h2_and_higher {
+  if consts::WINDOWS.is_22h2_and_higher {
     unsafe {
       let _ = DwmSetWindowAttribute(
         hwnd,
@@ -55,7 +55,7 @@ pub fn set_window_vibrancy(window: &WebviewWindow) {
         mem::size_of::<DWM_SYSTEMBACKDROP_TYPE>() as _,
       );
     }
-  } else if consts::PLATFORM.windows.is_21h2_and_higher {
+  } else if consts::WINDOWS.is_21h2_and_higher {
     unsafe {
       let _ = DwmSetWindowAttribute(
         hwnd,
@@ -77,7 +77,7 @@ pub fn set_window_theme(window: &WebviewWindow, color_scheme: Theme) {
     FALSE
   };
 
-  if consts::PLATFORM.windows.is_19h1_and_higher {
+  if consts::WINDOWS.is_19h1_and_higher {
     unsafe {
       let _ = DwmSetWindowAttribute(
         hwnd,

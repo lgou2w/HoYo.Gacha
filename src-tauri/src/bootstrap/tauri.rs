@@ -1,5 +1,4 @@
 use std::env;
-use std::sync::atomic::Ordering;
 use std::sync::{mpsc, Arc};
 use std::time::Duration;
 
@@ -13,7 +12,7 @@ use tauri::{Error as TauriError, Theme};
 use tracing::{debug, info};
 
 use super::ffi;
-use super::internals::TAURI_MAIN_WINDOW_HWND;
+use super::internals;
 use super::singleton::Singleton;
 use super::tracing::Tracing;
 use crate::database::{self, Database, KvMut};
@@ -57,7 +56,7 @@ pub async fn start(singleton: Singleton, tracing: Tracing, database: Database) {
       #[cfg(windows)]
       if let Ok(hwnd) = main_window.hwnd() {
         info!("Tauri main window hwnd: {hwnd:?}");
-        TAURI_MAIN_WINDOW_HWND.store(hwnd.0, Ordering::Relaxed);
+        internals::set_tauri_main_window_hwnd(hwnd.0);
       }
 
       // Setting window vibrancy and theme if without decorators
@@ -70,7 +69,7 @@ pub async fn start(singleton: Singleton, tracing: Tracing, database: Database) {
         // FIXME: Setting margins in Windows 10 results
         // in a 1px white border at the top of the window.
         #[cfg(windows)]
-        if consts::PLATFORM.windows.is_21h2_and_higher {
+        if consts::WINDOWS.is_21h2_and_higher {
           ffi::set_window_shadow(&main_window, true);
         }
       }
@@ -103,6 +102,7 @@ pub async fn start(singleton: Singleton, tracing: Tracing, database: Database) {
       database::gacha_record_questioner_additions::database_delete_gacha_records_by_business_and_uid,
       business::business_locate_data_folder,
       business::business_obtain_gacha_url,
+      business::business_create_gacha_records_fetcher_channel,
     ])
     .build(generate_context!())
     .expect("Error while building Tauri application");

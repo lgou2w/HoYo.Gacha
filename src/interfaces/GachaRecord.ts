@@ -1,15 +1,7 @@
-import {
-  Business,
-  Businesses,
-  GenshinImpact,
-  HonkaiStarRail,
-  ZenlessZoneZero
-} from './Account'
+import { Business, Businesses, GenshinImpact, HonkaiStarRail, ZenlessZoneZero } from './Business'
 
 // GachaRecord
 //   See: src-tauri/src/models/gacha_record.rs
-
-// Declares
 
 export type GachaRecord<T extends Business> = {
   business: T

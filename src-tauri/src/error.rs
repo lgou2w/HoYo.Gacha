@@ -6,13 +6,19 @@ use serde::{Serialize, Serializer};
 
 pub const SERIALIZATION_MARKER: &str = "__HG_ERROR__";
 
-pub trait ErrorDetails {
+pub trait ErrorDetails: StdError {
   fn name(&self) -> &'static str;
-  fn details(&self) -> impl Serialize;
+  fn details(&self) -> serde_json::Value;
 }
 
 #[derive(Debug)]
 pub struct Error<T>(T);
+
+impl<T> Error<T> {
+  pub fn into_inner(self) -> T {
+    self.0
+  }
+}
 
 impl<T> AsRef<T> for Error<T> {
   fn as_ref(&self) -> &T {
@@ -20,33 +26,42 @@ impl<T> AsRef<T> for Error<T> {
   }
 }
 
-impl<T: StdError + ErrorDetails> From<T> for Error<T> {
+impl<T: ErrorDetails> From<T> for Error<T> {
   fn from(value: T) -> Self {
     Self(value)
   }
 }
 
-impl<T: StdError + ErrorDetails> Display for Error<T> {
+impl<T: ErrorDetails> Display for Error<T> {
   fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
     write!(f, "{}", self.0)
   }
 }
 
-impl<T: StdError + ErrorDetails + 'static> StdError for Error<T> {
+impl<T: ErrorDetails + 'static> StdError for Error<T> {
   fn source(&self) -> Option<&(dyn StdError + 'static)> {
     Some(&self.0)
   }
 }
 
-impl<T: StdError + ErrorDetails> Serialize for Error<T> {
+impl<T: ErrorDetails + 'static> Serialize for Error<T> {
+  fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+  where
+    S: Serializer,
+  {
+    (&self.0 as &dyn ErrorDetails).serialize(serializer)
+  }
+}
+
+impl Serialize for dyn ErrorDetails + 'static {
   fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
   where
     S: Serializer,
   {
     let mut state = serializer.serialize_struct("Error", 4)?;
-    state.serialize_field("name", &self.0.name())?;
-    state.serialize_field("message", &self.0.to_string())?;
-    state.serialize_field("details", &self.0.details())?;
+    state.serialize_field("name", &self.name())?;
+    state.serialize_field("message", &self.to_string())?;
+    state.serialize_field("details", &self.details())?;
     state.serialize_field(SERIALIZATION_MARKER, &true)?;
     state.end()
   }
@@ -76,12 +91,12 @@ macro_rules! declare_error_kinds {
           stringify!($name)
         }
 
-        fn details(&self) -> impl serde::Serialize {
+        fn details(&self) -> serde_json::Value {
           match self {
             $(
               Self::$kind$({ $($field),* })? => serde_json::json!({
+                "kind": stringify!($kind),
                 $(
-                  "kind": stringify!($kind),
                   $(
                     stringify!($field): declare_error_kinds!(
                       @field_detail $field$(=> $field_expr)?
@@ -124,7 +139,7 @@ mod tests {
         "Foo"
       }
 
-      fn details(&self) -> impl Serialize {
+      fn details(&self) -> serde_json::Value {
         serde_json::Value::Null
       }
     }

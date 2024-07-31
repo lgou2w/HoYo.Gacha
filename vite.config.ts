@@ -31,7 +31,7 @@ export default defineConfig(({ command }) => ({
     }
   ],
   define: {
-    __APP_NAME__: `"${process.env.npm_package_displayName}"`,
+    __APP_NAME__: `"${command === 'serve' ? '__DEV__' : ''}${process.env.npm_package_displayName}"`,
     __APP_VERSION__: `"${process.env.npm_package_version}"`,
     __APP_DESCRIPTION__: `"${process.env.npm_package_description}"`,
     __APP_AUTHOR__: `"${process.env.npm_package_author}"`,
