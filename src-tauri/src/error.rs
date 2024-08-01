@@ -15,6 +15,7 @@ pub trait ErrorDetails: StdError {
 pub struct Error<T>(T);
 
 impl<T> Error<T> {
+  #[inline]
   pub fn into_inner(self) -> T {
     self.0
   }

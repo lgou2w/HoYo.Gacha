@@ -44,8 +44,8 @@ declare_error_kinds! {
     #[error("No gacha url found")]
     NotFound,
 
-    #[error("Missing gacha url query params")]
-    MissingParams,
+    #[error("Illegal gacha url")]
+    Illegal { url: String },
 
     #[error("Invalid gacha url query params: {params:?}")]
     InvalidParams { params: Vec<String> },
@@ -77,17 +77,26 @@ declare_error_kinds! {
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct GachaUrl {
-  pub value: String,
+  pub business: Business,
+  pub region: BusinessRegion,
+  pub owner_uid: u32,
   #[serde(with = "rfc3339")]
   pub creation_time: OffsetDateTime,
-  pub owner_uid: u32,
+  // Some important parameters of the Raw gacha url,
+  // which are normally essential.
+  pub param_game_biz: String,
+  pub param_region: String,
+  pub param_lang: String,
+  pub param_authkey: String,
+  pub value: Url,
 }
 
 // Dirty url without parsing and validation
 type DirtyGachaUrl = (String, OffsetDateTime);
 
 static REGEX_GACHA_URL: Lazy<Regex> = Lazy::new(|| {
-  Regex::new(r"^https:\/\/.*(mihoyo.com|hoyoverse.com).*(\/getGachaLog\?).*(authkey\=).*$").unwrap()
+  Regex::new(r"(?i)^https:\/\/.*(mihoyo.com|hoyoverse.com).*(\/getGachaLog\?).*(authkey\=).*$")
+    .unwrap()
 });
 
 static REGEX_WEB_CACHES_VERSION: Lazy<Regex> = Lazy::new(|| {
@@ -294,8 +303,15 @@ impl GachaUrl {
 
     let mut actual = Vec::with_capacity(dirty_urls.len());
     for (dirty, creation_time) in dirty_urls {
-      let url = parse_gacha_url(biz, &dirty, None, None)?;
-      match request_gacha_url_with_retry(url, None).await {
+      let ParsedGachaUrl {
+        param_game_biz,
+        param_region,
+        param_lang,
+        param_authkey,
+        value: gacha_url,
+      } = parse_gacha_url(biz, &dirty, None, None)?;
+
+      match request_gacha_url_with_retry(gacha_url.clone(), None).await {
         Err(error) => {
           warn!("Error requesting a gacha url: {error:?}");
           continue;
@@ -318,9 +334,15 @@ impl GachaUrl {
               );
 
               return Ok(GachaUrl {
-                value: dirty,
-                creation_time,
+                business: *biz.business,
+                region: *biz.region,
                 owner_uid: expected_uid,
+                creation_time,
+                param_game_biz,
+                param_region,
+                param_lang,
+                param_authkey,
+                value: gacha_url,
               });
             } else {
               // The gacha url does not match the expected uid
@@ -428,16 +450,33 @@ struct GachaRecordsPagination {
   region_time_zone: Option<i8>,
 }
 
+#[derive(Debug)]
+struct ParsedGachaUrl {
+  // Some important parameters of the Raw gacha url,
+  // which are normally essential.
+  pub param_game_biz: String,
+  pub param_region: String,
+  pub param_lang: String,
+  pub param_authkey: String,
+  // Gacha url
+  pub value: Url,
+}
+
 #[tracing::instrument(skip(biz))]
 pub fn parse_gacha_url(
   biz: &BizInternals,
   gacha_url: &str,
   gacha_type: Option<&str>,
   end_id: Option<&str>,
-) -> Result<Url, GachaUrlError> {
-  let query_start = gacha_url
-    .find('?')
-    .ok_or(GachaUrlErrorKind::MissingParams)?;
+) -> Result<ParsedGachaUrl, GachaUrlError> {
+  if !REGEX_GACHA_URL.is_match(gacha_url) {
+    Err(GachaUrlErrorKind::Illegal {
+      url: gacha_url.into(),
+    })?;
+  }
+
+  // SAFETY
+  let query_start = gacha_url.find('?').unwrap();
   let base_url = &gacha_url[..query_start];
   let query_str = &gacha_url[query_start + 1..];
 
@@ -445,23 +484,39 @@ pub fn parse_gacha_url(
     .into_owned()
     .collect::<HashMap<String, String>>();
 
-  let gacha_type_field = if biz.business == &Business::ZenlessZoneZero {
-    "real_gacha_type"
-  } else {
-    "gacha_type"
+  macro_rules! required_param {
+    ($name:literal) => {
+      queries
+        .get($name)
+        .filter(|s| !s.is_empty())
+        .ok_or(GachaUrlErrorKind::InvalidParams {
+          params: vec![$name.into()],
+        })?
+    };
+  }
+
+  let param_game_biz = required_param!("game_biz").to_owned();
+  let param_region = required_param!("region").to_owned();
+  let param_lang = required_param!("lang").to_owned();
+  let param_authkey = required_param!("authkey").to_owned();
+
+  let (gacha_type_field, init_type_field) = match biz.business {
+    Business::GenshinImpact => ("gacha_type", "init_type"),
+    Business::HonkaiStarRail => ("gacha_type", "default_gacha_type"),
+    Business::ZenlessZoneZero => ("real_gacha_type", "init_log_gacha_base_type"),
   };
 
   let origin_gacha_type = queries
     .get(gacha_type_field)
     .cloned()
-    .or(queries.get("init_type").cloned())
+    .or(queries.get(init_type_field).cloned())
     .ok_or_else(|| {
       warn!(
-        "Gacha url missing important '{gacha_type_field}' or 'init_type' parameters: {queries:?}"
+        "Gacha url missing important '{gacha_type_field}' or '{init_type_field}' parameters: {queries:?}"
       );
 
       GachaUrlErrorKind::InvalidParams {
-        params: vec![gacha_type_field.into(), "init_type".into()],
+        params: vec![gacha_type_field.into(), init_type_field.into()],
       }
     })?;
 
@@ -482,11 +537,19 @@ pub fn parse_gacha_url(
     queries.insert("end_id".into(), end_id.into());
   }
 
-  Url::parse_with_params(base_url, queries).map_err(|cause| {
+  let url = Url::parse_with_params(base_url, queries).map_err(|cause| {
     // Normally, this is never reachable here.
     // Unless it's a `url` crate issue.
     warn!("Error parsing gacha url with params: {cause}");
-    GachaUrlErrorKind::Parse { cause }.into()
+    GachaUrlErrorKind::Parse { cause }
+  })?;
+
+  Ok(ParsedGachaUrl {
+    param_game_biz,
+    param_region,
+    param_lang,
+    param_authkey,
+    value: url,
   })
 }
 
@@ -577,8 +640,8 @@ pub async fn fetch_gacha_records(
   info!("Fetching the gacha records...");
   let biz = BizInternals::mapped(business, region);
 
-  let gacha_url = parse_gacha_url(biz, gacha_url, gacha_type, end_id)?;
-  let pagination = match request_gacha_url_with_retry(gacha_url, None).await {
+  let parsed = parse_gacha_url(biz, gacha_url, gacha_type, end_id)?;
+  let pagination = match request_gacha_url_with_retry(parsed.value, None).await {
     Err(error) => {
       warn!("Responded with an error while fetching the gacha records: {error:?}");
       return Err(error);
@@ -600,9 +663,9 @@ pub async fn fetch_gacha_records(
   let mut records = Vec::with_capacity(pagination.list.len());
   for value in pagination.list {
     records.push(GachaRecord {
-      id: value.id,
       business: *business,
       uid: value.uid,
+      id: value.id,
       gacha_type: value.gacha_type,
       gacha_id: value.gacha_id,
       rank_type: value.rank_type,
@@ -616,4 +679,56 @@ pub async fn fetch_gacha_records(
   }
 
   Ok(Some(records))
+}
+
+#[cfg(test)]
+mod tests {
+  use crate::error::Error;
+
+  use super::*;
+
+  #[test]
+  fn test_parse_gacha_url() {
+    let biz = BizInternals::GENSHIN_IMPACT_OFFICIAL;
+
+    assert!(matches!(
+      parse_gacha_url(biz, "", None, None).map_err(Error::into_inner),
+      Err(GachaUrlErrorKind::Illegal { url }) if url.is_empty()
+    ));
+
+    assert!(matches!(
+      parse_gacha_url(biz, "?", None, None).map_err(Error::into_inner),
+      Err(GachaUrlErrorKind::Illegal { url }) if url == "?"
+    ));
+
+    assert!(matches!(
+      parse_gacha_url(biz, "https://.mihoyo.com/getGachaLog?", None, None).map_err(Error::into_inner),
+      Err(GachaUrlErrorKind::Illegal { url }) if url == "https://.mihoyo.com/getGachaLog?"
+    ));
+
+    assert!(matches!(
+      parse_gacha_url(
+        biz,
+        "https://fake-test.mihoyo.com/getGachaLog?authkey=",
+        None,
+        None
+      )
+      .map_err(Error::into_inner),
+      Err(GachaUrlErrorKind::InvalidParams { .. })
+    ));
+
+    // See: REGEX_GACHA_URL
+    let ParsedGachaUrl {
+      param_game_biz,
+      param_region,
+      param_lang,
+      param_authkey,
+      value: _value,
+    } = parse_gacha_url(biz, "https://fake-test.mihoyo.com/getGachaLog?game_biz=biz&region=region&lang=lang&authkey=authkey&gacha_type=gacha_type", None, None).unwrap();
+
+    assert_eq!(param_game_biz, "biz");
+    assert_eq!(param_region, "region");
+    assert_eq!(param_lang, "lang");
+    assert_eq!(param_authkey, "authkey");
+  }
 }

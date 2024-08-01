@@ -48,7 +48,7 @@ export type GachaUrlError = DetailedError<typeof NamedGachaUrlError,
   | { kind: 'OpenWebCaches', cause: { kind: string, message: string } }
   | { kind: 'ReadDiskCache', cause: { kind: string, message: string } }
   | { kind: 'NotFound' }
-  | { kind: 'MissingParams' }
+  | { kind: 'Illegal', url: string }
   | { kind: 'InvalidParams', params: string[] }
   | { kind: 'Parse', cause: string }
   | { kind: 'Reqwest', cause: string }
@@ -64,9 +64,15 @@ export function isGachaUrlError (error: unknown): error is GachaUrlError {
 }
 
 export interface GachaUrl {
-  value: string
-  creationTime: string
+  business: Business
+  region: BusinessRegion
   ownerUid: Account['uid']
+  creationTime: string
+  paramGameBiz: string
+  paramRegion: string
+  paramLang: string
+  paramAuthkey: string
+  value: string
 }
 
 export type ObtainGachaUrlArgs = NonNullable<{

@@ -63,15 +63,6 @@ pub struct BizInternals {
   pub data_folder_name: &'static str,
 }
 
-impl BizInternals {
-  #[inline]
-  pub fn join_executable_file(&self, folder: impl AsRef<Path>) -> PathBuf {
-    let mut executable = folder.as_ref().join(self.executable_name);
-    executable.set_extension(env::consts::EXE_EXTENSION);
-    executable
-  }
-}
-
 macro_rules! biz {
   ($business:ident, $region:ident, $codename:literal, $display_name:literal, $executable_name:literal, $data_folder_name:literal) => {
     BizInternals {
@@ -138,6 +129,22 @@ pub const BIZ_ZENLESS_ZONE_ZERO_GLOBAL: BizInternals = biz!(
   "ZenlessZoneZero",
   "ZenlessZoneZero_Data"
 );
+
+impl BizInternals {
+  pub const GENSHIN_IMPACT_OFFICIAL: &'static Self = &BIZ_GENSHIN_IMPACT_OFFICIAL;
+  pub const GENSHIN_IMPACT_GLOBAL: &'static Self = &BIZ_GENSHIN_IMPACT_GLOBAL;
+  pub const HONKAI_STAR_RAIL_OFFICIAL: &'static Self = &BIZ_HONKAI_STAR_RAIL_OFFICIAL;
+  pub const HONKAI_STAR_RAIL_GLOBAL: &'static Self = &BIZ_HONKAI_STAR_RAIL_OFFICIAL;
+  pub const ZENLESS_ZONE_ZERO_OFFICIAL: &'static Self = &BIZ_ZENLESS_ZONE_ZERO_OFFICIAL;
+  pub const ZENLESS_ZONE_ZERO_GLOBAL: &'static Self = &BIZ_ZENLESS_ZONE_ZERO_GLOBAL;
+
+  #[inline]
+  pub fn join_executable_file(&self, folder: impl AsRef<Path>) -> PathBuf {
+    let mut executable = folder.as_ref().join(self.executable_name);
+    executable.set_extension(env::consts::EXE_EXTENSION);
+    executable
+  }
+}
 
 static BIZ_INTERNALS: Lazy<
   HashMap<(&'static Business, &'static BusinessRegion), &'static BizInternals>,
