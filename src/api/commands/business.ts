@@ -25,19 +25,20 @@ export function isDataFolderError (error: unknown): error is DataFolderError {
     error.name === NamedDataFolderError
 }
 
-export interface DataFolder {
-  business: Business
+export interface DataFolder<T extends Business> {
+  business: T
   region: BusinessRegion
   value: string
 }
 
-export type LocateDataFolderArgs = NonNullable<{
-  business: Business
+export type LocateDataFolderArgs<T extends Business> = NonNullable<{
+  business: T
   region: BusinessRegion
   factory: 'UnityLog' | 'Manual' | 'Registry'
 }>
 
-export const locateDataFolder = declareCommand<LocateDataFolderArgs, DataFolder | null>('business_locate_data_folder')
+export type LocateDataFolder = <T extends Business>(args: LocateDataFolderArgs<T>, options?: InvokeOptions) => Promise<DataFolder<T> | null>
+export const locateDataFolder: LocateDataFolder = declareCommand('business_locate_data_folder')
 
 // Gacha Url
 
@@ -63,8 +64,8 @@ export function isGachaUrlError (error: unknown): error is GachaUrlError {
     error.name === NamedGachaUrlError
 }
 
-export interface GachaUrl {
-  business: Business
+export interface GachaUrl<T extends Business> {
+  business: T
   region: BusinessRegion
   ownerUid: Account['uid']
   creationTime: string
@@ -75,14 +76,15 @@ export interface GachaUrl {
   value: string
 }
 
-export type ObtainGachaUrlArgs = NonNullable<{
-  business: Business
+export type ObtainGachaUrlArgs<T extends Business> = NonNullable<{
+  business: T
   region: BusinessRegion
   dataFolder: string
   expectedUid: Account['uid']
 }>
 
-export const obtainGachaUrl = declareCommand<ObtainGachaUrlArgs, GachaUrl | null>('business_obtain_gacha_url')
+export type ObtainGachaUrl = <T extends Business>(args: ObtainGachaUrlArgs<T>, options?: InvokeOptions) => Promise<GachaUrl<T>>
+export const obtainGachaUrl: ObtainGachaUrl = declareCommand('business_obtain_gacha_url')
 
 // Business Advanced
 

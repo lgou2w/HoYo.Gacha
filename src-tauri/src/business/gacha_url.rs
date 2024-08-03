@@ -29,7 +29,7 @@ declare_error_kinds! {
     OpenWebCaches {
       cause: std::io::Error => serde_json::json!({
         "kind": format_args!("{}", cause.kind()),
-        "message": cause.to_string(),
+        "message": format_args!("{cause}"),
       })
     },
 
@@ -37,7 +37,7 @@ declare_error_kinds! {
     ReadDiskCache {
       cause: std::io::Error => serde_json::json!({
         "kind": format_args!("{}", cause.kind()),
-        "message": cause.to_string(),
+        "message": format_args!("{cause}"),
       })
     },
 
@@ -52,12 +52,12 @@ declare_error_kinds! {
 
     #[error("Failed to parse gacha url: {cause}")]
     Parse {
-      cause: url::ParseError => cause.to_string()
+      cause: url::ParseError => format_args!("{cause}")
     },
 
     #[error("Error sending http request: {cause}")]
     Reqwest {
-      cause: reqwest::Error => cause.to_string()
+      cause: reqwest::Error => format_args!("{cause}")
     },
 
     #[error("Authkey timeout for gacha url")]
@@ -240,6 +240,19 @@ impl GachaUrl {
           continue;
         }
 
+        // Convert creation time
+        let creation_time = {
+          let timestamp = (entry_store.creation_time / 1_000_000) as i64 - 11_644_473_600;
+          OffsetDateTime::from_unix_timestamp(timestamp)
+            .unwrap() // FIXME: SAFETY?
+            .to_offset(*consts::LOCAL_OFFSET)
+        };
+
+        // By default, this gacha url is valid for 1 day.
+        if creation_time + time::Duration::DAY < now_local {
+          continue; // It's expired
+        }
+
         // Read the long key of entry store from the data_2 block file
         let url = entry_store.read_long_key(&block_file2)?;
 
@@ -253,19 +266,6 @@ impl GachaUrl {
         // Verify that the url is the correct gacha url
         if !REGEX_GACHA_URL.is_match(url) {
           continue;
-        }
-
-        // Convert creation time
-        let creation_time = {
-          let timestamp = (entry_store.creation_time / 1_000_000) as i64 - 11_644_473_600;
-          OffsetDateTime::from_unix_timestamp(timestamp)
-            .unwrap() // FIXME: SAFETY?
-            .to_offset(*consts::LOCAL_OFFSET)
-        };
-
-        // By default, this gacha url is valid for 1 day.
-        if creation_time + time::Duration::DAY < now_local {
-          continue; // It's expired
         }
 
         info!(
@@ -309,11 +309,17 @@ impl GachaUrl {
         param_lang,
         param_authkey,
         value: gacha_url,
-      } = parse_gacha_url(biz, &dirty, None, None)?;
+      } = match parse_gacha_url(biz, &dirty, None, None) {
+        Ok(parsed) => parsed,
+        Err(error) => {
+          warn!("Error parsing gacha url: {error:?}");
+          continue;
+        }
+      };
 
       match request_gacha_url_with_retry(gacha_url.clone(), None).await {
         Err(error) => {
-          warn!("Error requesting a gacha url: {error:?}");
+          warn!("Error requesting gacha url: {error:?}");
           continue;
         }
         Ok(response) => match response.data.as_ref().and_then(|page| page.list.first()) {
@@ -359,6 +365,7 @@ impl GachaUrl {
     } else {
       warn!(
         message = "The expected uid does not match the owner of the existing gacha urls",
+        %expected_uid,
         ?actual
       );
       Err(GachaUrlErrorKind::InconsistentUid {

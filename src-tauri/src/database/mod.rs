@@ -1,8 +1,8 @@
 use std::env;
 use std::future::Future;
 use std::path::PathBuf;
-use std::str::FromStr;
 use std::sync::Arc;
+use std::time::Instant;
 
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
@@ -21,6 +21,10 @@ use tracing::{info, Span};
 use crate::consts;
 use crate::error::{Error, ErrorDetails};
 use crate::models::{Account, AccountProperties, Business, GachaRecord, Kv};
+
+mod kvs;
+
+pub use kvs::*;
 
 // Type
 
@@ -208,6 +212,12 @@ macro_rules! declare_questioner {
             database: &crate::database::Database,
             $($arg_n: $arg_t),*
           ) -> Result<$result, crate::database::SqlxError> {
+            tracing::info!(
+              message = "Executing database operation",
+              name = ?stringify!($name),
+              operation = ?stringify!($operation),
+              $($arg_n = ?$arg_n),*
+            );
             Self::[<sql_ $name>]($($arg_n),*)
               .$operation(database.as_ref())
               .await
@@ -293,71 +303,6 @@ impl<'r> FromRow<'r, SqliteRow> for Kv {
       val: row.try_get("val")?,
       updated_at: row.try_get("updated_at")?,
     })
-  }
-}
-
-pub struct KvMut<'a, 'key> {
-  pub database: &'a Database,
-  pub key: &'key str,
-}
-
-impl<'a, 'key> KvMut<'a, 'key> {
-  pub fn from(database: &'a Database, key: &'key str) -> Self {
-    Self { database, key }
-  }
-
-  #[inline]
-  pub async fn read(&self) -> Result<Option<Kv>, SqlxError> {
-    KvQuestioner::find_kv(self.database, self.key.into()).await
-  }
-
-  #[inline]
-  pub async fn write(&self, new_val: impl Into<String>) -> Result<Option<Kv>, SqlxError> {
-    KvQuestioner::update_kv(
-      self.database,
-      new_val.into(),
-      Some(OffsetDateTime::now_utc()),
-      self.key.into(),
-    )
-    .await
-  }
-
-  #[inline]
-  pub async fn remove(&self) -> Result<Option<Kv>, SqlxError> {
-    KvQuestioner::delete_kv(self.database, self.key.into()).await
-  }
-
-  // Read ext
-
-  #[inline]
-  pub async fn read_val(&self) -> Result<Option<String>, SqlxError> {
-    Ok(self.read().await?.map(|kv| kv.val))
-  }
-
-  #[inline]
-  pub async fn read_val_parse<R>(&self) -> Result<Option<Result<R, R::Err>>, SqlxError>
-  where
-    R: FromStr,
-  {
-    Ok(self.read_val().await?.map(|val| R::from_str(&val)))
-  }
-
-  #[inline]
-  pub async fn read_val_into<R>(&self) -> Result<Option<Result<R, R::Error>>, SqlxError>
-  where
-    R: TryFrom<String>,
-  {
-    Ok(self.read_val().await?.map(R::try_from))
-  }
-
-  #[inline]
-  pub async fn read_val_into_json<R>(
-    &self,
-  ) -> Result<Option<Result<R, serde_json::Error>>, SqlxError>
-  where
-    R: DeserializeOwned,
-  {
-    Ok(self.read_val().await?.map(|val| serde_json::from_str(&val)))
   }
 }
 
@@ -566,6 +511,8 @@ pub trait GachaRecordQuestionerAdditions {
     on_conflict: GachaRecordOnConflict,
   ) -> impl Future<Output = Result<u64, SqlxError>> {
     async move {
+      info!("Executing create gacha records database operation...");
+      let start = Instant::now();
       let mut txn = database.as_ref().begin().await?;
       let mut changes = 0;
       let sql = on_conflict.sql();
@@ -588,6 +535,11 @@ pub trait GachaRecordQuestionerAdditions {
           .rows_affected();
       }
       txn.commit().await?;
+      info!(
+        message = "Creation of gacha records completed",
+        changes = ?changes,
+        elapsed = ?start.elapsed()
+      );
 
       Ok(changes)
     }
@@ -600,6 +552,8 @@ pub trait GachaRecordQuestionerAdditions {
     uid: u32,
   ) -> impl Future<Output = Result<u64, SqlxError>> {
     async move {
+      info!("Executing delete gacha records database operation...");
+      let start = Instant::now();
       let changes =
         sqlx::query("DELETE FROM `hg.gacha_records` WHERE `business` = ? AND `uid` = ?;")
           .bind(business)
@@ -607,6 +561,12 @@ pub trait GachaRecordQuestionerAdditions {
           .execute(database.as_ref())
           .await?
           .rows_affected();
+
+      info!(
+        message = "Deletion of gacha records completed",
+        changes = ?changes,
+        elapsed = ?start.elapsed(),
+      );
 
       Ok(changes)
     }

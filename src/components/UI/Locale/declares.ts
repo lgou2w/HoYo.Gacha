@@ -1,5 +1,5 @@
 import { ElementType } from 'react'
-import { useTranslation } from 'react-i18next'
+import type { useTranslation } from 'react-i18next'
 
 export type LocaleOptions = [string, Record<string, unknown>?]
 export type LocaleTFn = ReturnType<typeof useTranslation>['t']

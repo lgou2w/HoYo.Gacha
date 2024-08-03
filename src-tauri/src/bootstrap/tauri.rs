@@ -2,7 +2,6 @@ use std::env;
 use std::sync::{mpsc, Arc};
 use std::time::Duration;
 
-use serde::{Deserialize, Serialize};
 use tauri::webview::{WebviewWindow, WebviewWindowBuilder};
 use tauri::{
   generate_context, generate_handler, Builder as TauriBuilder, Manager, RunEvent, Runtime,
@@ -16,6 +15,7 @@ use super::internals;
 use super::singleton::Singleton;
 use super::tracing::Tracing;
 use crate::database::{self, Database, KvMut};
+use crate::models::ThemeData;
 use crate::{business, consts};
 
 #[tracing::instrument(skip_all)]
@@ -28,17 +28,19 @@ pub async fn start(singleton: Singleton, tracing: Tracing, database: Database) {
 
   info!("Loading theme data...");
   let color_scheme = KvMut::from(&database, consts::KV_THEME_DATA)
-    .read_val_into_json::<ThemeData>()
+    .try_read_val_json::<ThemeData>()
     .await
     .expect("Error reading theme data from database")
     .transpose()
     .unwrap() // FIXME: serde_json::Error - Unless it's been tampered with.
     .map(|theme_data| theme_data.color_scheme)
-    // TODO: Get the current system theme if it is not customized
-    //   HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize
-    //   AppsUseLightTheme
-    //   SystemUsesLightTheme
-    .unwrap_or(Theme::Light);
+    .unwrap_or_else(|| {
+      if cfg!(windows) {
+        ffi::apps_use_theme()
+      } else {
+        Theme::Light
+      }
+    });
 
   info!("Creating Tauri application...");
   let database_state = Arc::clone(&database);
@@ -155,14 +157,6 @@ pub async fn start(singleton: Singleton, tracing: Tracing, database: Database) {
         .inspect_err(|e| println!("Error while waiting for cleanup: {e}"));
     }
   });
-}
-
-#[derive(Debug, Deserialize, Serialize)]
-#[serde(rename_all = "camelCase")]
-struct ThemeData {
-  pub namespace: String,
-  pub color_scheme: Theme,
-  pub scale: u32,
 }
 
 fn create_main_window<M, R>(

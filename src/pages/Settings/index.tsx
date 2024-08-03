@@ -1,18 +1,9 @@
 import React, { Fragment } from 'react'
 import { Select, Switch, useId } from '@fluentui/react-components'
-import { createRoute } from '@tanstack/react-router'
 import useTheme, { useColorScheme } from '@/hooks/useTheme'
 import { ScaleLevel, ScaleLevels } from '@/interfaces/Theme'
-import rootRoute from '@/pages/Root'
 
-const settingsRoute = createRoute({
-  path: '/settings',
-  getParentRoute: () => rootRoute,
-  component: Settings
-})
-
-// eslint-disable-next-line react-refresh/only-export-components
-function Settings () {
+export default function Settings () {
   // TODO: Experimental
   const { scale, update } = useTheme()
   const { colorScheme, toggle } = useColorScheme()
@@ -36,5 +27,3 @@ function Settings () {
     </Fragment>
   )
 }
-
-export default settingsRoute

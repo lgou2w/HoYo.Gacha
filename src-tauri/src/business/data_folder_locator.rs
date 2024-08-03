@@ -28,7 +28,7 @@ declare_error_kinds! {
       path: PathBuf,
       cause: std::io::Error => serde_json::json!({
         "kind": format_args!("{}", cause.kind()),
-        "message": cause.to_string(),
+        "message": format_args!("{cause}"),
       })
     },
   }
@@ -162,7 +162,7 @@ impl DataFolderLocator for ManualDataFolderLocator {
 
     let biz = BizInternals::mapped(&business, &region);
 
-    let title = if crate::consts::LOCALE.is_chinese() {
+    let title = if crate::consts::LOCALE.is_chinese {
       format!(
         "请选择 {} 的游戏数据目录：{}",
         biz.display_name, biz.data_folder_name

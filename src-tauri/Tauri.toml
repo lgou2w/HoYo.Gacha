@@ -32,14 +32,14 @@ description = "Capability for the main window"
 windows = ["main"]
 platforms = ["windows"]
 permissions = [
-  "event:default",
+  "core:default",
+  "core:window:default",
+  "core:window:allow-close",
+  "core:window:allow-minimize",
+  "core:window:allow-start-dragging",
+  "core:window:allow-toggle-maximize",
+  "core:window:allow-is-maximized",
+  "core:window:allow-internal-toggle-maximize",
   "os:default",
-  "shell:default",
-  "window:default",
-  "window:allow-close",
-  "window:allow-minimize",
-  "window:allow-start-dragging",
-  "window:allow-toggle-maximize",
-  "window:allow-is-maximized",
-  "window:allow-internal-toggle-maximize"
+  "shell:default"
 ]

@@ -1,18 +1,9 @@
 import React, { Fragment } from 'react'
 import { Button } from '@fluentui/react-components'
-import { createRoute } from '@tanstack/react-router'
 import { locateDataFolder } from '@/api/commands/business'
 import { Businesses } from '@/interfaces/Business'
-import rootRoute from '@/pages/Root'
 
-const homeRoute = createRoute({
-  path: '/',
-  getParentRoute: () => rootRoute,
-  component: Home
-})
-
-// eslint-disable-next-line react-refresh/only-export-components
-function Home () {
+export default function Home () {
   // TODO: Experimental
   const onClick = async () => {
     try {
@@ -36,5 +27,3 @@ function Home () {
     </Fragment>
   )
 }
-
-export default homeRoute

@@ -138,7 +138,7 @@ impl<'a> Crash<'a> {
     writeln!(report_file)?;
     report_file.flush()?;
 
-    let message = if consts::LOCALE.is_chinese() {
+    let message = if consts::LOCALE.is_chinese {
       format!(
         "哎呀！{name} v{version} 出现问题并崩溃了。为了帮助我们诊断问题，您可以向我们发送一份崩溃报告。\n\n我们已经在 {report_path:?} 生成了一个报告文件。\n\n请提交一个主题为 “{name} 崩溃报告” 的问题或电子邮件，并将报告作为附件包含在内。\n\n- 主页：{homepage}\n- 开源：{repository}\n- 作者：{authors}\n",
         name = self.name,

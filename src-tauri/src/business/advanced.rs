@@ -119,7 +119,7 @@ async fn pull_gacha_records(
       business,
       region,
       gacha_url,
-      Some(&gacha_type.to_string()),
+      Some(&format!("{}", *gacha_type)),
       Some(&end_id),
     )
     .await?

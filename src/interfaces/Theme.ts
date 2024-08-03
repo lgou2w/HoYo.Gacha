@@ -43,7 +43,8 @@ export interface ThemeData {
 
 export const DefaultThemeData: Readonly<ThemeData> = {
   namespace: 'web',
-  colorScheme: 'light',
+  // If in the absence of a custom color scheme, keep it the same as the back-end setting
+  colorScheme: window.matchMedia('(prefers-color-scheme: light)').matches ? Light : Dark,
   scale: 16
 }
 

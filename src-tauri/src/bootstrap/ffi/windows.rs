@@ -119,3 +119,28 @@ pub fn set_webview_theme(window: &WebviewWindow, color_scheme: Theme) -> tauri::
     }
   })
 }
+
+// Get the current system theme
+//   HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize
+//   AppsUseLightTheme
+//   SystemUsesLightTheme
+pub fn apps_use_theme() -> Theme {
+  fn apps_use_light_theme() -> windows_registry::Result<bool> {
+    windows_registry::CURRENT_USER
+      .create("Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize")?
+      .get_u32("AppsUseLightTheme")
+      .map(|val| val != 0)
+  }
+
+  match apps_use_light_theme() {
+    Err(error) => {
+      tracing::error!("Error reading system registry: {error:?}");
+      Theme::Light
+    }
+    Ok(light) => {
+      let theme = if light { Theme::Light } else { Theme::Dark };
+      tracing::info!("Read registry AppsUseLightTheme: {theme}");
+      theme
+    }
+  }
+}

@@ -80,30 +80,27 @@ pub static REQWEST: Lazy<Reqwest> = Lazy::new(|| {
 
 // region: Locale
 
-pub struct Locale(Option<String>);
+pub struct Locale {
+  pub value: Option<String>,
+  pub is_default: bool,
+  pub is_chinese: bool,
+}
 
 impl Locale {
   pub const DEFAULT: &'static str = "en";
   pub const CHINESE: &'static str = "zh";
 
   fn new() -> Self {
-    Self(tauri_plugin_os::locale())
-  }
+    let value = tauri_plugin_os::locale();
+    let value_ref = value.as_deref().unwrap_or(Self::DEFAULT);
+    let is_default = value_ref.starts_with(Self::DEFAULT);
+    let is_chinese = value_ref.starts_with(Self::CHINESE);
 
-  #[inline]
-  pub fn is_default(&self) -> bool {
-    self.as_ref().starts_with(Self::DEFAULT)
-  }
-
-  #[inline]
-  pub fn is_chinese(&self) -> bool {
-    self.as_ref().starts_with(Self::CHINESE)
-  }
-}
-
-impl AsRef<str> for Locale {
-  fn as_ref(&self) -> &str {
-    self.0.as_deref().unwrap_or(Self::DEFAULT)
+    Self {
+      value,
+      is_default,
+      is_chinese,
+    }
   }
 }
 
