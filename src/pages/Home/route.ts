@@ -3,7 +3,7 @@ import rootRoute from '@/pages/Root/route'
 import Home from '.'
 
 const homeRoute = createRoute({
-  path: '',
+  path: '/',
   getParentRoute: () => rootRoute,
   component: Home
 })
