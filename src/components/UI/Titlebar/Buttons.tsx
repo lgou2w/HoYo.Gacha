@@ -27,7 +27,6 @@ function createButtonStyles ([hover, pressed]: [string, string]): GriffelStyle {
   return {
     height: 'inherit',
     'min-width': '2.8rem',
-    color: tokens.colorNeutralForegroundOnBrand,
     backgroundColor: tokens.colorTransparentBackground,
     ...shorthands.border(0),
     ':hover': {

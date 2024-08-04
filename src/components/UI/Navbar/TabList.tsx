@@ -1,59 +1,50 @@
 import React, { ReactNode, createRef, useEffect } from 'react'
-import { Image, Tab, TabList, Tooltip, imageClassNames, makeStyles, shorthands, tabClassNames, tokens } from '@fluentui/react-components'
-import { BoardFilled, BoardRegular, PersonCircleFilled, PersonCircleRegular, SettingsFilled, SettingsRegular } from '@fluentui/react-icons'
+import { Divider, Image, Tab, TabList, Tooltip, imageClassNames, makeStyles, shorthands, tabClassNames, tokens } from '@fluentui/react-components'
+import { SettingsFilled, SettingsRegular } from '@fluentui/react-icons'
 import { useLocation, useNavigate } from '@tanstack/react-router'
 import Locale from '@/components/UI/Locale'
 import { Businesses, ReversedBusinesses } from '@/interfaces/Business'
 
-export const ButtonSize = tokens.fontSizeHero900
+const ButtonSize = tokens.fontSizeHero900
 const useStyles = makeStyles({
   root: { height: '100%' },
   tab: {
+    display: 'flex',
+    justifyContent: 'center',
     borderRadius: tokens.borderRadiusSmall,
-    ...shorthands.padding(tokens.spacingVerticalM, tokens.spacingHorizontalM),
+    ...shorthands.padding(tokens.spacingVerticalMNudge, tokens.spacingHorizontalMNudge),
     [`& .${tabClassNames.icon}`]: {
       width: ButtonSize,
       height: ButtonSize,
       fontSize: ButtonSize,
       color: tokens.colorCompoundBrandForeground1,
+      borderRadius: tokens.borderRadiusLarge,
       [`& .${imageClassNames.root}`]: {
         width: 'inherit',
         height: 'inherit',
-        borderRadius: tokens.borderRadiusMedium,
-        ...shorthands.border(tokens.strokeWidthThin, 'solid', tokens.colorNeutralStroke2)
+        borderRadius: tokens.borderRadiusLarge,
+        ...shorthands.border(tokens.strokeWidthThick, 'solid', 'transparent')
       }
     },
-    ':hover': {
-      backgroundColor: tokens.colorNeutralBackground2Hover,
-      [`& .${tabClassNames.icon}`]: { color: tokens.colorBrandForeground1 }
-    },
-    ':active': {
-      backgroundColor: tokens.colorNeutralBackground2Pressed,
-      [`& .${tabClassNames.icon}`]: { color: tokens.colorCompoundBrandForeground1Pressed }
-    },
-    '[aria-selected=true]': {
-      backgroundColor: tokens.colorBrandBackground2Hover,
-      [`& .${tabClassNames.icon} .${imageClassNames.root}`]: {
-        ...shorthands.border(tokens.strokeWidthThin, 'solid', tokens.colorBrandStroke2Pressed)
-      }
-    },
-    '[aria-selected=true]:hover': { backgroundColor: tokens.colorBrandBackground2Hover },
-    '[aria-selected=true]:active': { backgroundColor: tokens.colorBrandBackground2Pressed }
+    ':hover': { [`& .${tabClassNames.icon}`]: { color: tokens.colorBrandForeground1 } },
+    ':active': { [`& .${tabClassNames.icon}`]: { color: tokens.colorCompoundBrandForeground1Pressed } },
+    [`[aria-selected=true] .${tabClassNames.icon} .${imageClassNames.root}`]: {
+      ...shorthands.border(tokens.strokeWidthThick, 'solid', tokens.colorBrandStroke2Hover)
+    }
   },
-  spacing: { flexGrow: 1 }
+  spacing: { flexGrow: 1 },
+  divider: { flexGrow: 0.025 }
 })
 
 type NavIcon = { normal: ReactNode, selected?: ReactNode }
-type NavItem = { path: string, icon: NavIcon | string } | { spacing: true }
+type NavItem =
+  | { path: string, icon: NavIcon | string }
+  | { spacing: true }
+  | { divider: true }
 
 const Navs: NavItem[] = [
-  {
-    path: '/',
-    icon: {
-      normal: <BoardRegular />,
-      selected: <BoardFilled />
-    }
-  },
+  { path: '/', icon: '/Logo.png' },
+  { spacing: true },
   ...Object
     .entries(Businesses)
     .map(([key, business]) => {
@@ -62,14 +53,7 @@ const Navs: NavItem[] = [
         icon: `/${ReversedBusinesses[business]}/Icon.png`
       } as NavItem
     }),
-  { spacing: true },
-  {
-    path: '/accounts',
-    icon: {
-      normal: <PersonCircleRegular />,
-      selected: <PersonCircleFilled />
-    }
-  },
+  { divider: true },
   {
     path: '/settings',
     icon: {
@@ -168,10 +152,10 @@ export default function NavbarTabList () {
               />
             </Tooltip>
           )
+        } else if ('divider' in item) {
+          return <Divider key={index} className={classes.divider} inset />
         } else if ('spacing' in item) {
-          return (
-            <div key={index} className={classes.spacing} />
-          )
+          return <div key={index} className={classes.spacing} />
         } else {
           return null
         }

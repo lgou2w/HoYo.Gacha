@@ -1,10 +1,10 @@
 import React, { useEffect, useRef } from 'react'
-import { Image, Subtitle2Stronger, makeStyles, mergeClasses, tokens } from '@fluentui/react-components'
-import useTheme from '@/hooks/useTheme'
-import { Dark } from '@/interfaces/Theme'
+import { Subtitle2Stronger, makeStyles, shorthands, tokens } from '@fluentui/react-components'
+import { useLocation } from '@tanstack/react-router'
+import Locale from '@/components/UI/Locale'
+import { NavbarWidth, TitleBarHeight } from '@/components/UI/consts'
 import TitleBarButtons from './Buttons'
 
-export const Height = '2.5rem'
 const useStyles = makeStyles({
   root: {
     position: 'fixed',
@@ -14,46 +14,29 @@ const useStyles = makeStyles({
     left: 0,
     display: 'flex',
     alignItems: 'center',
-    height: Height,
-    maxHeight: Height,
+    height: TitleBarHeight,
+    maxHeight: TitleBarHeight,
     userSelect: 'none',
-    color: tokens.colorNeutralForegroundOnBrand,
-    backgroundColor: tokens.colorBrandBackground,
-    boxShadow: tokens.shadow2,
-    paddingLeft: tokens.spacingHorizontalS,
-    columnGap: tokens.spacingVerticalS
-  },
-  rootDark: {
-    backgroundColor: 'transparent'
-  },
-  placeholder: {
-    width: '100%',
-    height: Height
-  },
-  brand: {
-    width: `calc(${Height} / 1.6)`,
-    height: `calc(${Height} / 1.6)`,
-    userSelect: 'none',
-    pointerEvents: 'none', // Penetrates the mouse, triggering Tauri drag
-    '-webkit-user-drag': 'none' // Avoid image dragging
+    backgroundColor: 'transparent',
+    marginLeft: NavbarWidth,
+    ...shorthands.borderBottom(tokens.strokeWidthThin, 'solid', tokens.colorNeutralStroke1)
   },
   title: {
     display: 'inline-flex',
     alignItems: 'center',
+    pointerEvents: 'none',
     height: '100%',
-    pointerEvents: 'none'
+    ...shorthands.padding(0, tokens.spacingHorizontalL)
   }
 })
 
 // See: https://github.com/tauri-apps/tauri/blob/dev/core/tauri/src/window/scripts/drag.js
-
 const AttrTauriDragRegion = 'data-tauri-drag-region'
-const Title = `${__APP_NAME__} - v${__APP_VERSION__}`
-const Brand = '/Logo.png'
 
 export default function TitleBar () {
   const classes = useStyles()
   const containerRef = useRef<HTMLDivElement>(null)
+  const location = useLocation()
 
   useEffect(() => {
     if (!containerRef.current) return
@@ -61,20 +44,18 @@ export default function TitleBar () {
     containerRef.current.setAttribute(AttrTauriDragRegion, '')
   }, [containerRef])
 
-  const { colorScheme } = useTheme()
-  const rootClasses = mergeClasses(
-    classes.root,
-    colorScheme === Dark && classes.rootDark
-  )
-
   return (
-    <React.Fragment>
-      <header className={rootClasses} ref={containerRef}>
-        <Image className={classes.brand} src={Brand} shape="square" />
-        <Subtitle2Stronger className={classes.title} as="h1">{Title}</Subtitle2Stronger>
-        <TitleBarButtons />
-      </header>
-      <div className={classes.placeholder} />
-    </React.Fragment>
+    <header className={classes.root} ref={containerRef}>
+      <Locale
+        className={classes.title}
+        component={Subtitle2Stronger}
+        as="h1"
+        mapping={[`Components.UI.Navbar.TabList.${location.pathname}`]}
+      />
+      {import.meta.env.DEV && (
+        <pre style={{ margin: '0 auto' }}>CONTENT UNDER DEVELOPMENT, NOT FINAL.</pre>
+      )}
+      <TitleBarButtons />
+    </header>
   )
 }

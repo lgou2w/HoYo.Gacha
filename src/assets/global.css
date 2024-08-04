@@ -31,7 +31,7 @@ pre {
 }
 
 ::-webkit-scrollbar {
-  background: var(--colorNeutralBackground1);
+  background: transparent;
   width: 12px;
 }
 
@@ -43,5 +43,5 @@ pre {
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--colorNeutralBackground2)
+  background: transparent;
 }

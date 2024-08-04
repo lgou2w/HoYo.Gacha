@@ -1,19 +1,21 @@
 import React, { Fragment, PropsWithChildren } from 'react'
 import { makeStyles, shorthands, tokens } from '@fluentui/react-components'
 import Navbar from '@/components/UI/Navbar'
-import Titlebar, { Height as TitleBarHeight } from '@/components/UI/Titlebar'
+import Titlebar from '@/components/UI/TitleBar'
+import { TitleBarHeight } from '@/components/UI/consts'
 
 const useStyles = makeStyles({
   main: {
     display: 'flex',
     flexDirection: 'row',
     width: '100%',
-    height: 'auto'
+    height: '100vh'
   },
   scroller: {
     display: 'block',
     width: 'inherit',
     height: `calc(100vh - ${TitleBarHeight})`,
+    marginTop: TitleBarHeight,
     overflow: 'hidden auto'
   },
   content: {
