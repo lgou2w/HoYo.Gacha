@@ -22,7 +22,7 @@ const useStyles = makeStyles({
     ...shorthands.borderBottom(tokens.strokeWidthThin, 'solid', tokens.colorNeutralStroke1)
   },
   title: {
-    display: 'inline-flex',
+    display: 'flex',
     alignItems: 'center',
     pointerEvents: 'none',
     height: '100%',
@@ -53,7 +53,10 @@ export default function TitleBar () {
         mapping={[`Components.UI.Navbar.TabList.${location.pathname}`]}
       />
       {import.meta.env.DEV && (
-        <pre style={{ margin: '0 auto' }}>CONTENT UNDER DEVELOPMENT, NOT FINAL.</pre>
+        <pre style={{
+          margin: '0 auto',
+          pointerEvents: 'none'
+        }}>CONTENT UNDER DEVELOPMENT, NOT FINAL.</pre>
       )}
       <TitleBarButtons />
     </header>

@@ -6,6 +6,7 @@ import useAppInit from '@/hooks/useAppInit'
 import queryClient from '@/queryClient'
 import router from '@/router'
 import '@/assets/global.css'
+import '@/assets/fui.css'
 import '@/i18n'
 
 export default function App () {

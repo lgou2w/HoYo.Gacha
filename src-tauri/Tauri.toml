@@ -3,8 +3,9 @@ product-name = "HoYo.Gacha"
 version = "1.0.0"
 
 [build]
-before-dev-command   = "pnpm web:dev"
-before-build-command = "pnpm web:build"
+# See: package.json - scripts - dev & build
+# before-dev-command   = "pnpm web:dev"
+# before-build-command = "pnpm web:build"
 dev-url = "http://localhost:1420"
 frontend-dist = "../dist"
 

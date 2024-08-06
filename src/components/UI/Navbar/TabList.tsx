@@ -5,7 +5,6 @@ import { useLocation, useNavigate } from '@tanstack/react-router'
 import Locale from '@/components/UI/Locale'
 import { Businesses, ReversedBusinesses } from '@/interfaces/Business'
 
-const ButtonSize = tokens.fontSizeHero900
 const useStyles = makeStyles({
   root: { height: '100%' },
   tab: {
@@ -14,9 +13,9 @@ const useStyles = makeStyles({
     borderRadius: tokens.borderRadiusSmall,
     ...shorthands.padding(tokens.spacingVerticalMNudge, tokens.spacingHorizontalMNudge),
     [`& .${tabClassNames.icon}`]: {
-      width: ButtonSize,
-      height: ButtonSize,
-      fontSize: ButtonSize,
+      width: tokens.fontSizeHero900,
+      height: tokens.fontSizeHero900,
+      fontSize: tokens.fontSizeHero900,
       color: tokens.colorCompoundBrandForeground1,
       borderRadius: tokens.borderRadiusLarge,
       [`& .${imageClassNames.root}`]: {

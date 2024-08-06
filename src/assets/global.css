@@ -29,19 +29,3 @@ p,
 pre {
   margin: 0;
 }
-
-::-webkit-scrollbar {
-  background: transparent;
-  width: 12px;
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--colorNeutralForeground4);
-  background-clip: padding-box;
-  border: 4px solid transparent;
-  border-radius: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
