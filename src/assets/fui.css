@@ -189,3 +189,9 @@
   margin-left: calc(-0.75rem - var(--spacingHorizontalXS));
   margin-right: var(--spacingHorizontalXS);
 }
+
+.fui-FluentProvider
+.fui-Table
+.fui-TableCell {
+  height: 2.125rem;
+}

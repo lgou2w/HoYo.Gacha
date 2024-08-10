@@ -14,7 +14,7 @@ publish = false
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [build-dependencies]
-tauri-build = { version = "2.0.0-rc.0", features = ["config-toml"] }
+tauri-build = { version = "2.0.0-rc.2", features = ["config-toml"] }
 
 [dependencies]
 async-trait = "0.1.81"
@@ -28,11 +28,12 @@ raw-window-handle = "0.6.2"
 regex = "1.10.6"
 reqwest = { version = "0.12.5", features = ["json"] }
 rfd = { version = "0.14.1", default-features = false }
-serde = { version = "1.0.204", features = ["derive"] }
+serde = { version = "1.0.205", features = ["derive"] }
 serde_json = { version = "1.0.122", features = ["preserve_order"] }
 serde_repr = "0.1.19"
 tauri-plugin-os = "2.0.0-rc.0"
 tauri-plugin-shell = "2.0.0-rc.0"
+tauri-plugin-clipboard-manager = "2.0.0-rc.0"
 thiserror = "1.0.63"
 time = { version = "0.3.36", features = ["formatting", "local-offset", "macros", "serde", "serde-human-readable"] }
 tokio = { version = "1.39.2", features = ["macros", "rt", "rt-multi-thread"] }
@@ -53,7 +54,7 @@ features = [
 
 # https://github.com/tauri-apps/tauri/blob/dev/core/tauri/Cargo.toml
 [dependencies.tauri]
-version = "2.0.0-rc.0"
+version = "2.0.0-rc.2"
 default-features = false
 features = [
   "wry",

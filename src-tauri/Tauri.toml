@@ -41,6 +41,9 @@ permissions = [
   "core:window:allow-toggle-maximize",
   "core:window:allow-is-maximized",
   "core:window:allow-internal-toggle-maximize",
+  "clipboard-manager:allow-read-text",
+  "clipboard-manager:allow-write-image",
+  "clipboard-manager:allow-write-text",
   "os:default",
-  "shell:default"
+  "shell:default",
 ]

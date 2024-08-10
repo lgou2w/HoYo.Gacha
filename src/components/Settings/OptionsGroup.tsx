@@ -1,4 +1,4 @@
-import React, { ReactNode } from 'react'
+import React, { PropsWithChildren, ReactNode } from 'react'
 import { Subtitle2, makeStyles, mergeClasses, tokens } from '@fluentui/react-components'
 
 const useStyles = makeStyles({
@@ -14,15 +14,16 @@ const useStyles = makeStyles({
   }
 })
 
-type Props = Omit<React.JSX.IntrinsicElements['div'], 'title'> & {
+interface Props {
+  className?: string
   title?: ReactNode
 }
 
-export default function SettingsOptionsGroup (props: Props) {
-  const { className, title, children, ...rest } = props
+export default function SettingsOptionsGroup (props: PropsWithChildren<Props>) {
+  const { className, title, children } = props
   const classes = useStyles()
   return (
-    <div className={mergeClasses(classes.root, className)} {...rest}>
+    <div className={mergeClasses(classes.root, className)}>
       {title && <Subtitle2 as="h6">{title}</Subtitle2>}
       <div className={classes.items}>
         {children}

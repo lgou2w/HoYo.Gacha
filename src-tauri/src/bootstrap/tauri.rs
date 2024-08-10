@@ -45,6 +45,7 @@ pub async fn start(singleton: Singleton, tracing: Tracing, database: Database) {
   info!("Creating Tauri application...");
   let database_state = Arc::clone(&database);
   let app = TauriBuilder::default()
+    .plugin(tauri_plugin_clipboard_manager::init())
     .plugin(tauri_plugin_os::init())
     .plugin(tauri_plugin_shell::init())
     .setup(move |app| {
@@ -54,6 +55,12 @@ pub async fn start(singleton: Singleton, tracing: Tracing, database: Database) {
 
       info!("Creating the Main window...");
       let main_window = create_main_window(app, color_scheme)?;
+
+      #[cfg(windows)]
+      ffi::webview_version(&main_window, |version| {
+        info!("Webview2 Runtime version: {version}");
+        unsafe { WEBVIEW2_VERSION.replace(version) };
+      })?;
 
       #[cfg(windows)]
       if let Ok(hwnd) = main_window.hwnd() {
@@ -85,6 +92,7 @@ pub async fn start(singleton: Singleton, tracing: Tracing, database: Database) {
       Ok(())
     })
     .invoke_handler(generate_handler![
+      core_webview2_version,
       core_change_theme,
       database::kv_questioner::database_find_kv,
       database::kv_questioner::database_create_kv,
@@ -187,6 +195,14 @@ where
 }
 
 // Core commands
+
+static mut WEBVIEW2_VERSION: Option<String> = None;
+
+#[tauri::command]
+fn core_webview2_version() -> Result<String, tauri::Error> {
+  let version = unsafe { WEBVIEW2_VERSION.clone() };
+  Ok(version.unwrap_or("Unknown".into()))
+}
 
 #[tauri::command]
 fn core_change_theme(window: WebviewWindow, color_scheme: Theme) -> Result<(), tauri::Error> {

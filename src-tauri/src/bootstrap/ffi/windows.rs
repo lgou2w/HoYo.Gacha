@@ -1,12 +1,12 @@
-use std::mem;
+use std::mem::{self, MaybeUninit};
 
 use tauri::{Theme, WebviewWindow};
-use webview2_com::Microsoft::Web::WebView2::Win32::ICoreWebView2_13;
+use webview2_com::Microsoft::Web::WebView2::Win32::{ICoreWebView2_13, ICoreWebView2_2};
 use webview2_com::Microsoft::Web::WebView2::Win32::{
   COREWEBVIEW2_PREFERRED_COLOR_SCHEME_DARK, COREWEBVIEW2_PREFERRED_COLOR_SCHEME_LIGHT,
 };
-use windows::core::w;
 use windows::core::Interface;
+use windows::core::{w, PWSTR};
 use windows::Win32::Foundation::{BOOL, FALSE, HANDLE, TRUE};
 use windows::Win32::Graphics::Dwm::{
   DwmExtendFrameIntoClientArea, DwmSetWindowAttribute, DWMSBT_MAINWINDOW,
@@ -116,6 +116,29 @@ pub fn set_webview_theme(window: &WebviewWindow, color_scheme: Theme) -> tauri::
         .Profile()
         .unwrap()
         .SetPreferredColorScheme(color_scheme);
+    }
+  })
+}
+
+pub fn webview_version<F: FnOnce(String) + Send + 'static>(
+  window: &WebviewWindow,
+  consumer: F,
+) -> tauri::Result<()> {
+  window.with_webview(move |webview| unsafe {
+    let mut version = MaybeUninit::<PWSTR>::uninit();
+    let _ = webview
+      .controller()
+      .CoreWebView2()
+      .unwrap()
+      .cast::<ICoreWebView2_2>()
+      .unwrap()
+      .Environment()
+      .unwrap()
+      .BrowserVersionString(version.as_mut_ptr());
+
+    let version = version.assume_init();
+    if !version.is_empty() {
+      consumer(version.to_string().unwrap())
     }
   })
 }

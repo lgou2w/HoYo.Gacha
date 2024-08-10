@@ -24,7 +24,7 @@ dist-ssr
 *.sw?
 
 # User custom
-!.vscode/
+!.vscode/settings.json
 .idea/
 node_modules/
 target/

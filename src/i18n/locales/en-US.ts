@@ -78,6 +78,14 @@ export default {
                 Stable: 'Stable (Release)',
                 Insider: 'Insider (Alpha)'
               }
+            },
+            Specification: {
+              Title: 'Device Specifications',
+              CopyBtn: 'Copy',
+              OperatingSystem: 'Operating system',
+              SystemVersion: 'System version',
+              SystemType: 'System type',
+              Webview2: 'Webview2'
             }
           }
         }

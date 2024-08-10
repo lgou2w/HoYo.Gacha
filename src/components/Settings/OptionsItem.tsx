@@ -6,11 +6,13 @@ const useStyles = makeStyles({
     display: 'flex',
     flexDirection: 'row',
     alignItems: 'center',
-    boxShadow: tokens.shadow2,
     columnGap: tokens.spacingHorizontalM,
     borderRadius: tokens.borderRadiusMedium,
-    background: tokens.colorNeutralBackground1,
     ...shorthands.padding(tokens.spacingVerticalM, tokens.spacingHorizontalM)
+  },
+  rootPaper: {
+    boxShadow: tokens.shadow2,
+    background: tokens.colorNeutralBackground1
   },
   icon: {
     display: 'flex',
@@ -22,32 +24,40 @@ const useStyles = makeStyles({
     flexDirection: 'column',
     flexGrow: 1
   },
-  action: {
+  actions: {
     display: 'flex',
     flexDirection: 'row',
     alignItems: 'center',
-    columnGap: tokens.spacingHorizontalS
+    columnGap: tokens.spacingHorizontalM
   }
 })
 
-type Props = Omit<React.JSX.IntrinsicElements['div'], 'title' | 'children'> & {
+interface Props {
+  className?: string
   icon: ReactNode
   title: ReactNode
-  subtitle: ReactNode
+  subtitle?: ReactNode
   action: ReactNode
+  transparent?: boolean
 }
 
 export default function SettingsOptionsItem (props: Props) {
-  const { className, icon, title, subtitle, action, ...rest } = props
+  const { className, icon, title, subtitle, action, transparent } = props
   const classes = useStyles()
+  const rootClasses = mergeClasses(
+    classes.root,
+    !transparent && classes.rootPaper,
+    className
+  )
+
   return (
-    <div className={mergeClasses(classes.root, className)} {...rest}>
+    <div className={rootClasses}>
       <div className={classes.icon}>{icon}</div>
       <div className={classes.header}>
         <Body1Strong>{title}</Body1Strong>
-        <Caption1>{subtitle}</Caption1>
+        {subtitle && <Caption1>{subtitle}</Caption1>}
       </div>
-      <div className={classes.action}>{action}</div>
+      <div className={classes.actions}>{action}</div>
     </div>
   )
 }

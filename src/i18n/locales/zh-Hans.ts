@@ -78,6 +78,14 @@ export default {
                 Stable: '稳定版 (Stable)',
                 Insider: '预览版 (Insider)'
               }
+            },
+            Specification: {
+              Title: '设备规格',
+              CopyBtn: '复制',
+              OperatingSystem: '操作系统',
+              SystemVersion: '系统版本',
+              SystemType: '系统类型',
+              Webview2: 'Webview2'
             }
           }
         }
