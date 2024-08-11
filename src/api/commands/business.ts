@@ -50,6 +50,7 @@ export type GachaUrlError = DetailedError<typeof NamedGachaUrlError,
   | { kind: 'ReadDiskCache', cause: { kind: string, message: string } }
   | { kind: 'NotFound' }
   | { kind: 'Illegal', url: string }
+  | { kind: 'IllegalBiz', url: string, expected: string, actual: string }
   | { kind: 'InvalidParams', params: string[] }
   | { kind: 'Parse', cause: string }
   | { kind: 'Reqwest', cause: string }
@@ -68,7 +69,7 @@ export interface GachaUrl<T extends Business> {
   business: T
   region: BusinessRegion
   ownerUid: Account['uid']
-  creationTime: string
+  creationTime: string | null
   paramGameBiz: string
   paramRegion: string
   paramLang: string
@@ -85,6 +86,16 @@ export type ObtainGachaUrlArgs<T extends Business> = NonNullable<{
 
 export type ObtainGachaUrl = <T extends Business>(args: ObtainGachaUrlArgs<T>, options?: InvokeOptions) => Promise<GachaUrl<T>>
 export const obtainGachaUrl: ObtainGachaUrl = declareCommand('business_obtain_gacha_url')
+
+export type FromDirtyGachaUrlArgs<T extends Business> = NonNullable<{
+  business: T
+  region: BusinessRegion
+  dirtyUrl: string
+  expectedUid: Account['uid']
+}>
+
+export type FromDirtyGachaUrl = <T extends Business>(args: FromDirtyGachaUrlArgs<T>, options?: InvokeOptions) => Promise<GachaUrl<T>>
+export const fromDirtyGachaUrl: FromDirtyGachaUrl = declareCommand('business_from_dirty_gacha_url')
 
 // Business Advanced
 

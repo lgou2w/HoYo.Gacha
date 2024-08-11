@@ -131,11 +131,11 @@ CREATE TABLE IF NOT EXISTS `hg.kvs` (
 );
 
 CREATE TABLE IF NOT EXISTS `hg.accounts` (
-  `business`   INTEGER NOT NULL,
-  `uid`        INTEGER NOT NULL,
-  `data_dir`   TEXT    NOT NULL,
-  `gacha_url`  TEXT,
-  `properties` TEXT,
+  `business`    INTEGER NOT NULL,
+  `uid`         INTEGER NOT NULL,
+  `data_folder` TEXT    NOT NULL,
+  `gacha_url`   TEXT,
+  `properties`  TEXT,
   PRIMARY KEY (`business`, `uid`)
 );
 CREATE INDEX IF NOT EXISTS `hg.accounts.business_idx`     ON `hg.accounts` (`business`);
@@ -324,17 +324,17 @@ declare_questioner_with_handlers! {
         uid: u32,
       }: fetch_optional -> Option<Account>,
 
-  "INSERT INTO `hg.accounts` (`business`, `uid`, `data_dir`, `properties`) VALUES (?, ?, ?, ?) RETURNING *;"
+  "INSERT INTO `hg.accounts` (`business`, `uid`, `data_folder`, `properties`) VALUES (?, ?, ?, ?) RETURNING *;"
     = create_account {
         business: Business,
         uid: u32,
-        data_dir: String,
+        data_folder: String,
         properties: Option<AccountProperties>,
       }: fetch_one -> Account,
 
-  "UPDATE `hg.accounts` SET `data_dir` = ? WHERE `business` = ? AND `uid` = ? RETURNING *;"
-    = update_account_data_dir_by_business_and_uid {
-        data_dir: String,
+  "UPDATE `hg.accounts` SET `data_folder` = ? WHERE `business` = ? AND `uid` = ? RETURNING *;"
+    = update_account_data_folder_by_business_and_uid {
+        data_folder: String,
         business: Business,
         uid: u32,
       }: fetch_optional -> Option<Account>,
@@ -364,7 +364,7 @@ impl<'r> FromRow<'r, SqliteRow> for Account {
     Ok(Self {
       business: row.try_get("business")?,
       uid: row.try_get("uid")?,
-      data_dir: row.try_get("data_dir")?,
+      data_folder: row.try_get("data_folder")?,
       gacha_url: row.try_get("gacha_url")?,
       properties: row.try_get("properties")?,
     })

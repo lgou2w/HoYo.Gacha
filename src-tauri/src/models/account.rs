@@ -1,4 +1,3 @@
-use std::hash::{Hash, Hasher};
 use std::ops::{Deref, DerefMut};
 
 use serde::{Deserialize, Serialize};
@@ -32,33 +31,9 @@ impl DerefMut for AccountProperties {
 pub struct Account {
   pub business: Business,
   pub uid: u32,
-  pub data_dir: String,
+  pub data_folder: String,
   pub gacha_url: Option<String>,
   pub properties: Option<AccountProperties>,
-}
-
-impl PartialEq for Account {
-  fn eq(&self, other: &Self) -> bool {
-    self.business == other.business && self.uid == other.uid
-  }
-}
-
-impl PartialOrd for Account {
-  fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-    Some(
-      self
-        .business
-        .cmp(&other.business)
-        .then(self.uid.cmp(&other.uid)),
-    )
-  }
-}
-
-impl Hash for Account {
-  fn hash<H: Hasher>(&self, state: &mut H) {
-    self.business.hash(state);
-    self.uid.hash(state);
-  }
 }
 
 // Tests
@@ -72,14 +47,16 @@ mod tests {
     let mut account = Account {
       business: Business::GenshinImpact,
       uid: 100_000_001,
-      data_dir: "empty".into(),
+      data_folder: "empty".into(),
       gacha_url: None,
       properties: None,
     };
 
     assert!(matches!(
       serde_json::to_string(&account).as_deref(),
-      Ok(r#"{"business":0,"uid":100000001,"dataDir":"empty","gachaUrl":null,"properties":null}"#)
+      Ok(
+        r#"{"business":0,"uid":100000001,"dataFolder":"empty","gachaUrl":null,"properties":null}"#
+      )
     ));
 
     account.gacha_url.replace("some gacha url".into());
@@ -93,7 +70,7 @@ mod tests {
     assert!(matches!(
       serde_json::to_string(&account).as_deref(),
       Ok(
-        r#"{"business":0,"uid":100000001,"dataDir":"empty","gachaUrl":"some gacha url","properties":{"foo":"bar"}}"#
+        r#"{"business":0,"uid":100000001,"dataFolder":"empty","gachaUrl":"some gacha url","properties":{"foo":"bar"}}"#
       )
     ));
   }
@@ -104,7 +81,7 @@ mod tests {
       {
         "business": 0,
         "uid": 100000001,
-        "dataDir": "some game data dir",
+        "dataFolder": "some data folder",
         "gachaUrl": "some gacha url",
         "properties": {
           "foo": "bar",
@@ -116,6 +93,7 @@ mod tests {
     let account = serde_json::from_str::<Account>(json).unwrap();
     assert_eq!(account.business, Business::GenshinImpact);
     assert_eq!(account.uid, 100_000_001);
+    assert_eq!(account.data_folder, "some data folder");
     assert_eq!(account.gacha_url.as_deref(), Some("some gacha url"));
 
     assert_eq!(

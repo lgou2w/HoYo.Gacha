@@ -102,7 +102,7 @@ pub async fn start(singleton: Singleton, tracing: Tracing, database: Database) {
       database::account_questioner::database_find_accounts_by_business,
       database::account_questioner::database_find_account_by_business_and_uid,
       database::account_questioner::database_create_account,
-      database::account_questioner::database_update_account_data_dir_by_business_and_uid,
+      database::account_questioner::database_update_account_data_folder_by_business_and_uid,
       database::account_questioner::database_update_account_gacha_url_by_business_and_uid,
       database::account_questioner::database_update_account_properties_by_business_and_uid,
       database::account_questioner::database_delete_account_by_business_and_uid,
@@ -112,6 +112,7 @@ pub async fn start(singleton: Singleton, tracing: Tracing, database: Database) {
       database::gacha_record_questioner_additions::database_delete_gacha_records_by_business_and_uid,
       business::business_locate_data_folder,
       business::business_obtain_gacha_url,
+      business::business_from_dirty_gacha_url,
       business::business_create_gacha_records_fetcher_channel,
     ])
     .build(generate_context!())

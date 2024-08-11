@@ -59,11 +59,11 @@ export const findAccountsByBusiness = declareCommand<FindAccountsByBusinessArgs,
 export type FindAccountByBusinessAndUidArgs = Pick<Account, 'business' | 'uid'>
 export const findAccountByBusinessAndUid = declareCommand<FindAccountByBusinessAndUidArgs, Account | null>('database_find_account_by_business_and_uid')
 
-export type CreateAccountArgs = Pick<Account, 'business' | 'uid' | 'dataDir'> & Partial<Pick<Account, 'properties'>>
+export type CreateAccountArgs = Pick<Account, 'business' | 'uid' | 'dataFolder'> & Partial<Pick<Account, 'properties'>>
 export const createAccount = declareCommand<CreateAccountArgs, Account>('database_create_account')
 
-export type UpdateAccountDataDirByBusinessAndUidArgs = Pick<Account, 'business' | 'uid' | 'dataDir'>
-export const updateAccountDataDirByBusinessAndUid = declareCommand<UpdateAccountDataDirByBusinessAndUidArgs, Account | null>('database_update_account_data_dir_by_business_and_uid')
+export type UpdateAccountDataFolderByBusinessAndUidArgs = Pick<Account, 'business' | 'uid' | 'dataFolder'>
+export const updateAccountDataFolderByBusinessAndUid = declareCommand<UpdateAccountDataFolderByBusinessAndUidArgs, Account | null>('database_update_account_data_folder_by_business_and_uid')
 
 export type UpdateAccountGachaUrlByBusinessAndUidArgs = Pick<Account, 'business' | 'uid' | 'gachaUrl'>
 export const updateAccountGachaUrlByBusinessAndUid = declareCommand<UpdateAccountGachaUrlByBusinessAndUidArgs, Account | null>('database_update_account_gacha_url_by_business_and_uid')

@@ -1,5 +1,3 @@
-use std::hash::{Hash, Hasher};
-
 use serde::{Deserialize, Serialize};
 
 use super::Business;
@@ -46,30 +44,4 @@ pub struct GachaRecord {
   pub name: String,
   pub item_type: String,
   pub item_id: String,
-}
-
-impl PartialEq for GachaRecord {
-  fn eq(&self, other: &Self) -> bool {
-    self.business == other.business && self.uid == other.uid && self.id == other.id
-  }
-}
-
-impl PartialOrd for GachaRecord {
-  fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-    Some(
-      self
-        .business
-        .cmp(&other.business)
-        .then(self.uid.cmp(&other.uid))
-        .then(self.id.cmp(&other.id)),
-    )
-  }
-}
-
-impl Hash for GachaRecord {
-  fn hash<H: Hasher>(&self, state: &mut H) {
-    self.business.hash(state);
-    self.uid.hash(state);
-    self.id.hash(state);
-  }
 }

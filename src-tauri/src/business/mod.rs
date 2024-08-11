@@ -40,6 +40,17 @@ pub async fn business_obtain_gacha_url(
   GachaUrl::obtain(&business, &region, &data_folder, expected_uid).await
 }
 
+#[tauri::command]
+#[tracing::instrument(skip_all)]
+pub async fn business_from_dirty_gacha_url(
+  business: Business,
+  region: BusinessRegion,
+  dirty_url: String,
+  expected_uid: u32,
+) -> Result<GachaUrl, GachaUrlError> {
+  GachaUrl::from_dirty(&business, &region, dirty_url, expected_uid).await
+}
+
 #[derive(Debug, Default, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CreateGachaRecordsFetcherChannelOptions {

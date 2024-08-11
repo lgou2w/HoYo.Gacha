@@ -1,4 +1,4 @@
-import { Business, Businesses } from './Business'
+import { Business, Businesses, GenshinImpact, HonkaiStarRail, ZenlessZoneZero } from './Business'
 
 // Account
 //   See: src-tauri/src/models/account.rs
@@ -7,25 +7,29 @@ export interface KnownAccountProperties {
   displayName: string | null
 }
 
-export interface Account {
-  business: Business
+export interface Account<T extends Business = Business> {
+  business: T
   uid: number
-  dataDir: string
+  dataFolder: string
   gachaUrl: string | null
   properties: KnownAccountProperties & Record<string, unknown> | null
 }
 
+export type GenshinImpactAccount = Account<GenshinImpact>
+export type HonkaiStarRailAccount = Account<HonkaiStarRail>
+export type ZenlessZoneZeroAccount = Account<ZenlessZoneZero>
+
 // Utilities
 
-export function isGenshinImpactAccount (account: Account): boolean {
+export function isGenshinImpactAccount (account: Account<Business>): account is GenshinImpactAccount {
   return account.business === Businesses.GenshinImpact
 }
 
-export function isHonkaiStarRailAccount (account: Account): boolean {
+export function isHonkaiStarRailAccount (account: Account<Business>): account is HonkaiStarRailAccount {
   return account.business === Businesses.HonkaiStarRail
 }
 
-export function isZenlessZoneZeroAccount (account: Account): boolean {
+export function isZenlessZoneZeroAccount (account: Account<Business>): account is ZenlessZoneZeroAccount {
   return account.business === Businesses.ZenlessZoneZero
 }
 
