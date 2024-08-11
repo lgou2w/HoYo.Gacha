@@ -54,7 +54,7 @@ export const deleteKv = declareCommand<DeleteKvArgs, Kv | null>('database_delete
 // Account
 
 export type FindAccountsByBusinessArgs = Pick<Account, 'business'>
-export const findAccountsByBusiness = declareCommand<FindAccountsByBusinessArgs, Account[] | null>('database_find_accounts_by_business')
+export const findAccountsByBusiness = declareCommand<FindAccountsByBusinessArgs, Account[]>('database_find_accounts_by_business')
 
 export type FindAccountByBusinessAndUidArgs = Pick<Account, 'business' | 'uid'>
 export const findAccountByBusinessAndUid = declareCommand<FindAccountByBusinessAndUidArgs, Account | null>('database_find_account_by_business_and_uid')

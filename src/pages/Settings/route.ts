@@ -3,8 +3,8 @@ import rootRoute from '@/pages/Root/route'
 import Settings from '.'
 
 const settingsRoute = createRoute({
-  path: '/settings',
   getParentRoute: () => rootRoute,
+  path: '/settings',
   component: Settings
 })
 
