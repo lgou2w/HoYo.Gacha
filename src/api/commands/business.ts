@@ -48,6 +48,7 @@ export type GachaUrlError = DetailedError<typeof NamedGachaUrlError,
   | { kind: 'WebCachesNotFound', path: string }
   | { kind: 'OpenWebCaches', cause: { kind: string, message: string } }
   | { kind: 'ReadDiskCache', cause: { kind: string, message: string } }
+  | { kind: 'EmptyData' }
   | { kind: 'NotFound' }
   | { kind: 'Illegal', url: string }
   | { kind: 'IllegalBiz', url: string, expected: string, actual: string }
@@ -77,15 +78,15 @@ export interface GachaUrl<T extends Business> {
   value: string
 }
 
-export type ObtainGachaUrlArgs<T extends Business> = NonNullable<{
+export type FromWebCachesGachaUrlArgs<T extends Business> = NonNullable<{
   business: T
   region: BusinessRegion
   dataFolder: string
   expectedUid: Account['uid']
 }>
 
-export type ObtainGachaUrl = <T extends Business>(args: ObtainGachaUrlArgs<T>, options?: InvokeOptions) => Promise<GachaUrl<T>>
-export const obtainGachaUrl: ObtainGachaUrl = declareCommand('business_obtain_gacha_url')
+export type FromWebCachesGachaUrl = <T extends Business>(args: FromWebCachesGachaUrlArgs<T>, options?: InvokeOptions) => Promise<GachaUrl<T>>
+export const fromWebCachesGachaUrl: FromWebCachesGachaUrl = declareCommand('business_from_webcaches_gacha_url')
 
 export type FromDirtyGachaUrlArgs<T extends Business> = NonNullable<{
   business: T
@@ -108,7 +109,7 @@ export type CreateGachaRecordsFetcherChannelArgs<T extends Business> = NonNullab
   options?: {
     eventChannel?: string
     saveToDatabase?: boolean
-    onConflict?: 'Nothing' | 'Update'
+    saveOnConflict?: 'Nothing' | 'Update'
   }
 }>
 

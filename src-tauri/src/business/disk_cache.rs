@@ -18,13 +18,11 @@
 //
 
 use std::borrow::Cow;
-use std::collections::HashMap;
 use std::fmt::{Debug, Formatter};
 use std::fs::File;
 use std::io::{Error, ErrorKind, Read, Result, Seek, SeekFrom};
 use std::path::Path;
 
-use once_cell::sync::Lazy;
 use paste::paste;
 
 // =============
@@ -41,40 +39,27 @@ const ADDR_FILE_SELECTOR_OFFSET: u32 = 16;
 const ADDR_START_BLOCK_MASK: u32 = 0x0000FFFF;
 const ADDR_FILE_NAME_MASK: u32 = 0x0FFFFFFF;
 
-// File Type -> Block Size
-static FILE_BLOCK_SIZE_MAPPINGS: Lazy<HashMap<u32, u32>> = Lazy::new(|| {
-  let mut m = HashMap::with_capacity(7);
-  m.insert(1, 36); // Rankings
-  m.insert(2, 256); // Block 256
-  m.insert(3, 1024); // Block 1K
-  m.insert(4, 4096); // Block 4K
-  m.insert(5, 8); // Block Files
-  m.insert(6, 104); // Block Entries
-  m.insert(7, 48); // Block Evicted
-  m
-});
-
 #[derive(Clone, PartialEq, Eq)]
 pub struct CacheAddr(pub u32);
 
 impl CacheAddr {
-  pub fn is_initialized(&self) -> bool {
+  pub const fn is_initialized(&self) -> bool {
     self.0 & ADDR_INITIALIZED_MASK != 0
   }
 
-  pub fn is_separate_file(&self) -> bool {
+  pub const fn is_separate_file(&self) -> bool {
     self.0 & ADDR_FILE_TYPE_MASK == 0
   }
 
-  pub fn is_block_file(&self) -> bool {
+  pub const fn is_block_file(&self) -> bool {
     self.0 & ADDR_FILE_TYPE_MASK != 0
   }
 
-  pub fn file_type(&self) -> u32 {
+  pub const fn file_type(&self) -> u32 {
     (self.0 & ADDR_FILE_TYPE_MASK) >> ADDR_FILE_TYPE_OFFSET
   }
 
-  pub fn file_number(&self) -> u32 {
+  pub const fn file_number(&self) -> u32 {
     if self.is_separate_file() {
       self.0 & ADDR_FILE_NAME_MASK
     } else {
@@ -82,13 +67,20 @@ impl CacheAddr {
     }
   }
 
-  pub fn block_size(&self) -> u32 {
-    *FILE_BLOCK_SIZE_MAPPINGS
-      .get(&self.file_type())
-      .unwrap_or(&0) // Other is External. Always zero
+  pub const fn block_size(&self) -> u32 {
+    match self.file_type() {
+      1 => 36,   // Rankings
+      2 => 256,  // Block 256
+      3 => 1024, // Block 1K
+      4 => 4096, // Block 4K
+      5 => 8,    // Block Files
+      6 => 104,  // Block Entries
+      7 => 48,   // Block Evicted
+      _ => 0,    // Other is External. Always zero
+    }
   }
 
-  pub fn start_block(&self) -> u32 {
+  pub const fn start_block(&self) -> u32 {
     if self.is_separate_file() {
       0
     } else {
@@ -96,7 +88,7 @@ impl CacheAddr {
     }
   }
 
-  pub fn num_blocks(&self) -> u32 {
+  pub const fn num_blocks(&self) -> u32 {
     if self.is_separate_file() {
       0
     } else {

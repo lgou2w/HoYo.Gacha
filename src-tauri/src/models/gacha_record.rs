@@ -43,5 +43,5 @@ pub struct GachaRecord {
   pub time: String,
   pub name: String,
   pub item_type: String,
-  pub item_id: String,
+  pub item_id: Option<String>,
 }

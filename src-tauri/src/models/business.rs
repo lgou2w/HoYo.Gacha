@@ -134,7 +134,7 @@ impl BizInternals {
   pub const GENSHIN_IMPACT_OFFICIAL: &'static Self = &BIZ_GENSHIN_IMPACT_OFFICIAL;
   pub const GENSHIN_IMPACT_GLOBAL: &'static Self = &BIZ_GENSHIN_IMPACT_GLOBAL;
   pub const HONKAI_STAR_RAIL_OFFICIAL: &'static Self = &BIZ_HONKAI_STAR_RAIL_OFFICIAL;
-  pub const HONKAI_STAR_RAIL_GLOBAL: &'static Self = &BIZ_HONKAI_STAR_RAIL_OFFICIAL;
+  pub const HONKAI_STAR_RAIL_GLOBAL: &'static Self = &BIZ_HONKAI_STAR_RAIL_GLOBAL;
   pub const ZENLESS_ZONE_ZERO_OFFICIAL: &'static Self = &BIZ_ZENLESS_ZONE_ZERO_OFFICIAL;
   pub const ZENLESS_ZONE_ZERO_GLOBAL: &'static Self = &BIZ_ZENLESS_ZONE_ZERO_GLOBAL;
 
@@ -153,15 +153,30 @@ static BIZ_INTERNALS: Lazy<
   use BusinessRegion::*;
 
   let mut m = HashMap::with_capacity(6);
-  m.insert((&GenshinImpact, &Official), &BIZ_GENSHIN_IMPACT_OFFICIAL);
-  m.insert((&GenshinImpact, &Global), &BIZ_GENSHIN_IMPACT_GLOBAL);
-  m.insert((&HonkaiStarRail, &Official), &BIZ_HONKAI_STAR_RAIL_OFFICIAL);
-  m.insert((&HonkaiStarRail, &Global), &BIZ_HONKAI_STAR_RAIL_GLOBAL);
+  m.insert(
+    (&GenshinImpact, &Official),
+    BizInternals::GENSHIN_IMPACT_OFFICIAL,
+  );
+  m.insert(
+    (&GenshinImpact, &Global),
+    BizInternals::GENSHIN_IMPACT_GLOBAL,
+  );
+  m.insert(
+    (&HonkaiStarRail, &Official),
+    BizInternals::HONKAI_STAR_RAIL_OFFICIAL,
+  );
+  m.insert(
+    (&HonkaiStarRail, &Global),
+    BizInternals::HONKAI_STAR_RAIL_GLOBAL,
+  );
   m.insert(
     (&ZenlessZoneZero, &Official),
-    &BIZ_ZENLESS_ZONE_ZERO_OFFICIAL,
+    BizInternals::ZENLESS_ZONE_ZERO_OFFICIAL,
   );
-  m.insert((&ZenlessZoneZero, &Global), &BIZ_ZENLESS_ZONE_ZERO_GLOBAL);
+  m.insert(
+    (&ZenlessZoneZero, &Global),
+    BizInternals::ZENLESS_ZONE_ZERO_GLOBAL,
+  );
   m
 });
 

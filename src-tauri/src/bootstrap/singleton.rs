@@ -15,6 +15,8 @@ pub struct Singleton {
   hmutex: HANDLE,
 }
 
+unsafe impl Send for Singleton {}
+
 impl Drop for Singleton {
   fn drop(&mut self) {
     if !self.hmutex.is_invalid() {
@@ -35,10 +37,11 @@ pub fn mutex() -> Singleton {
     Singleton { hmutex }
   } else if error == ERROR_ALREADY_EXISTS {
     unsafe {
-      let hwnd = FindWindowW(None, &HSTRING::from(consts::TAURI_MAIN_WINDOW_TITLE));
-      if IsWindow(hwnd).as_bool() {
-        let _ = ShowWindow(hwnd, SW_SHOW);
-        let _ = SetForegroundWindow(hwnd);
+      if let Ok(hwnd) = FindWindowW(None, &HSTRING::from(consts::TAURI_MAIN_WINDOW_TITLE)) {
+        if IsWindow(hwnd).as_bool() {
+          let _ = ShowWindow(hwnd, SW_SHOW);
+          let _ = SetForegroundWindow(hwnd);
+        }
       }
     }
 

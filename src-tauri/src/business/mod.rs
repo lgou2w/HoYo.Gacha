@@ -31,13 +31,13 @@ pub async fn business_locate_data_folder(
 
 #[tauri::command]
 #[tracing::instrument(skip_all)]
-pub async fn business_obtain_gacha_url(
+pub async fn business_from_webcaches_gacha_url(
   business: Business,
   region: BusinessRegion,
   data_folder: PathBuf,
   expected_uid: u32,
 ) -> Result<GachaUrl, GachaUrlError> {
-  GachaUrl::obtain(&business, &region, &data_folder, expected_uid).await
+  GachaUrl::from_webcaches(&business, &region, &data_folder, expected_uid).await
 }
 
 #[tauri::command]
@@ -56,7 +56,7 @@ pub async fn business_from_dirty_gacha_url(
 pub struct CreateGachaRecordsFetcherChannelOptions {
   event_channel: Option<String>,
   save_to_database: Option<bool>,
-  on_conflict: Option<GachaRecordOnConflict>,
+  save_on_conflict: Option<GachaRecordOnConflict>,
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -74,12 +74,12 @@ pub async fn business_create_gacha_records_fetcher_channel(
 ) -> Result<(), Box<dyn ErrorDetails + 'static>> {
   let options = options.unwrap_or_default();
 
-  let event_emit = options.event_channel.is_some();
   let event_channel = options.event_channel.unwrap_or_default();
+  let event_emit = !event_channel.is_empty();
 
   let save_to_database = options.save_to_database.unwrap_or_default();
-  let on_conflict = options
-    .on_conflict
+  let save_on_conflict = options
+    .save_on_conflict
     .unwrap_or(GachaRecordOnConflict::Nothing);
 
   use advanced::GachaRecordsFetcherChannelFragment as Fragment;
@@ -105,7 +105,7 @@ pub async fn business_create_gacha_records_fetcher_channel(
       if save_to_database {
         if let Fragment::Data(records) = fragment {
           use crate::database::{GachaRecordQuestioner, GachaRecordQuestionerAdditions};
-          GachaRecordQuestioner::create_gacha_records(&database, records, on_conflict)
+          GachaRecordQuestioner::create_gacha_records(&database, records, save_on_conflict)
             .await
             .map_err(|error| Box::new(error.into_inner()) as _)?;
         }

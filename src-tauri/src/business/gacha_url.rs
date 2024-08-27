@@ -12,7 +12,7 @@ use serde::de::IntoDeserializer;
 use serde::{Deserialize, Deserializer, Serialize};
 use time::serde::rfc3339;
 use time::OffsetDateTime;
-use tracing::{info, warn, Span};
+use tracing::{info, warn};
 use url::Url;
 
 use super::disk_cache::{BlockFile, IndexFile};
@@ -40,6 +40,9 @@ declare_error_kinds! {
         "message": format_args!("{cause}"),
       })
     },
+
+    #[error("Gacha url with empty data")]
+    EmptyData,
 
     #[error("No gacha url found")]
     NotFound,
@@ -82,7 +85,7 @@ static REGEX_GACHA_URL: Lazy<Regex> = Lazy::new(|| {
     .unwrap()
 });
 
-static REGEX_WEB_CACHES_VERSION: Lazy<Regex> = Lazy::new(|| {
+static REGEX_WEBCACHES_VERSION: Lazy<Regex> = Lazy::new(|| {
   Regex::new(r"^(?P<major>\d+)\.(?P<minor>\d+)\.(?P<patch>\d+)(\.(?P<build>\d+))?$").unwrap()
 });
 
@@ -102,7 +105,7 @@ impl fmt::Display for WebCachesVersion {
 
 impl WebCachesVersion {
   fn parse(version: impl AsRef<str>) -> Option<Self> {
-    if let Some(captures) = REGEX_WEB_CACHES_VERSION.captures(version.as_ref()) {
+    if let Some(captures) = REGEX_WEBCACHES_VERSION.captures(version.as_ref()) {
       let major = captures["major"].parse().unwrap();
       let minor = captures["minor"].parse().unwrap();
       let patch = captures["patch"].parse().unwrap();
@@ -125,13 +128,14 @@ pub struct DirtyGachaUrl {
 
 impl DirtyGachaUrl {
   #[tracing::instrument]
-  pub async fn from_web_caches(
+  pub async fn from_webcaches(
     data_folder: impl AsRef<Path> + Debug,
+    skip_expired: bool,
   ) -> Result<Vec<Self>, GachaUrlError> {
     info!("Reading gacha urls from webcaches...");
 
     let cache_data_folder = Self::combie_cache_data_folder(data_folder).await?;
-    let gacha_urls = Self::read_cache_data_gacha_urls(cache_data_folder)
+    let gacha_urls = Self::read_cache_data_gacha_urls(cache_data_folder, skip_expired)
       .map_err(|cause| GachaUrlErrorKind::ReadDiskCache { cause })?;
 
     Ok(gacha_urls)
@@ -142,17 +146,16 @@ impl DirtyGachaUrl {
     data_folder: impl AsRef<Path> + Debug,
   ) -> Result<PathBuf, GachaUrlError> {
     info!("Finding the webcaches data folder from the data folder");
-    let span = Span::current();
 
-    let web_caches_folder = data_folder.as_ref().join("webCaches");
-    if !web_caches_folder.is_dir() {
-      warn!("Webcaches folder does not exist: {web_caches_folder:?}");
+    let webcaches_folder = data_folder.as_ref().join("webCaches");
+    if !webcaches_folder.is_dir() {
+      warn!("Webcaches folder does not exist: {webcaches_folder:?}");
       return Err(GachaUrlErrorKind::WebCachesNotFound {
-        path: web_caches_folder,
+        path: webcaches_folder,
       })?;
     }
 
-    let mut walk_dir = tokio::fs::read_dir(&web_caches_folder)
+    let mut walk_dir = tokio::fs::read_dir(&webcaches_folder)
       .await
       .map_err(|cause| GachaUrlErrorKind::OpenWebCaches { cause })?;
 
@@ -171,7 +174,7 @@ impl DirtyGachaUrl {
     if versions.is_empty() {
       warn!("List of versions of webcaches not found");
       return Err(GachaUrlErrorKind::WebCachesNotFound {
-        path: web_caches_folder,
+        path: webcaches_folder,
       })?;
     }
 
@@ -181,10 +184,9 @@ impl DirtyGachaUrl {
     // Get the latest version
     let latest_version = versions.last().unwrap().to_string(); // SAFETY
     info!("Retrieve the latest version of webcaches: {latest_version}");
-    span.record("web_caches_version", &latest_version);
 
     Ok(
-      web_caches_folder
+      webcaches_folder
         .join(latest_version)
         .join("Cache")
         .join("Cache_Data"),
@@ -194,6 +196,7 @@ impl DirtyGachaUrl {
   #[tracing::instrument]
   fn read_cache_data_gacha_urls(
     cache_data_folder: impl AsRef<Path> + Debug,
+    skip_expired: bool,
   ) -> std::io::Result<Vec<Self>> {
     info!("Starting to read disk cache gacha urls...");
     let cache_data_folder = cache_data_folder.as_ref();
@@ -240,7 +243,7 @@ impl DirtyGachaUrl {
       };
 
       // By default, this gacha url is valid for 1 day.
-      if creation_time + time::Duration::DAY < now_local {
+      if skip_expired && creation_time + time::Duration::DAY < now_local {
         continue; // It's expired
       }
 
@@ -297,14 +300,19 @@ impl GachaUrl {
   // Read all valid gacha urls from the webcaches data folder
   // and check for timeliness and consistency to get the latest gacha url.
   #[tracing::instrument]
-  pub async fn obtain(
+  pub async fn from_webcaches(
     business: &Business,
     region: &BusinessRegion,
     data_folder: impl AsRef<Path> + Debug,
     expected_uid: u32,
   ) -> Result<Self, GachaUrlError> {
     let biz = BizInternals::mapped(business, region);
-    let dirty_urls = DirtyGachaUrl::from_web_caches(data_folder).await?;
+    let dirty_urls = DirtyGachaUrl::from_webcaches(
+      data_folder,
+      true, // No need for expired urls
+    )
+    .await?;
+
     Self::consistency_check(biz, dirty_urls, expected_uid).await
   }
 
@@ -336,8 +344,16 @@ impl GachaUrl {
     info!("Find owner consistency gacha url...");
 
     let mut actual = Vec::with_capacity(dirty_urls.len());
+    let mut contains_empty: usize = 0;
+
     for dirty in dirty_urls {
-      let parsed = match ParsedGachaUrl::parse(biz, &dirty.value, None, None) {
+      let parsed = match ParsedGachaUrl::parse(
+        biz,
+        &dirty.value,
+        None,    // Keep the value of dirty url
+        None,    // Keep the value of dirty url
+        Some(1), // Just one piece of data is enough
+      ) {
         Ok(parsed) => parsed,
         Err(error) => {
           warn!("Error parsing gacha url: {error:?}");
@@ -356,6 +372,11 @@ impl GachaUrl {
             //   There are no gacha records.
             //   Server is not synchronising data (1 hour delay or more)
             warn!("Gacha url responded with empty record data");
+            contains_empty += 1;
+
+            // FIXME: continue may not be secure.
+            //   If the account is not record data and there are hundreds of cached gacha urls
+            //   (when gacha record are constantly opened in game)
             continue;
           }
           Some(record) => {
@@ -383,8 +404,15 @@ impl GachaUrl {
       }
     }
 
+    // If the account's record data has not been synchronised,
+    // then a special error kind is returned.
+    if contains_empty != 0 {
+      warn!("Gacha url exists for empty record data.");
+      Err(GachaUrlErrorKind::EmptyData)?
+    }
+
     if actual.is_empty() {
-      warn!("No gacha urls exist");
+      warn!("No gacha url found");
       Err(GachaUrlErrorKind::NotFound)?
     } else {
       warn!(
@@ -421,6 +449,7 @@ impl ParsedGachaUrl {
     gacha_url: &str,
     gacha_type: Option<&str>,
     end_id: Option<&str>,
+    page_size: Option<u8>, // 1 - 20, None Default is 20
   ) -> Result<Self, GachaUrlError> {
     if !REGEX_GACHA_URL.is_match(gacha_url) {
       Err(GachaUrlErrorKind::Illegal {
@@ -492,7 +521,7 @@ impl ParsedGachaUrl {
     queries.remove("begin_id");
     queries.remove("end_id");
     queries.insert("page".into(), "1".into());
-    queries.insert("size".into(), "20".into());
+    queries.insert("size".into(), page_size.unwrap_or(20).to_string());
     queries.insert(gacha_type_field.into(), gacha_type.into());
 
     if let Some(end_id) = end_id.or(origin_end_id.as_deref()) {
@@ -639,7 +668,7 @@ fn request_gacha_url_with_retry(
   // HACK: Default maximum 5 attempts
   const RETRIES: u8 = 5;
   const MIN: Duration = Duration::from_millis(200); // Min: 0.2s
-  const MAX: Duration = Duration::from_millis(10_000); // Max: 10s
+  const MAX: Duration = Duration::from_millis(5000); // Max: 5s
 
   let retries = retries.unwrap_or(RETRIES);
   let backoff = Backoff::new(retries as u32, MIN, MAX);
@@ -653,11 +682,10 @@ fn request_gacha_url_with_retry(
 
         // Wait and retry only if the error is VisitTooFrequently.
         Err(error) if matches!(error.as_ref(), GachaUrlErrorKind::VisitTooFrequently) => {
-          warn!(
-            "Requesting gacha url visit too frequently, wait({}s) and retry...",
-            duration.as_secs_f32()
-          );
-          tokio::time::sleep(duration).await;
+          warn!("Requesting gacha url visit too frequently, retry...");
+          if let Some(duration) = duration {
+            tokio::time::sleep(duration).await;
+          }
           continue;
         }
 
@@ -680,11 +708,12 @@ pub async fn fetch_gacha_records(
   gacha_url: &str,
   gacha_type: Option<&str>,
   end_id: Option<&str>,
+  page_size: Option<u8>,
 ) -> Result<Option<Vec<GachaRecord>>, GachaUrlError> {
   info!("Fetching the gacha records...");
   let biz = BizInternals::mapped(business, region);
 
-  let parsed = ParsedGachaUrl::parse(biz, gacha_url, gacha_type, end_id)?;
+  let parsed = ParsedGachaUrl::parse(biz, gacha_url, gacha_type, end_id, page_size)?;
   let pagination = match request_gacha_url_with_retry(parsed.value, None).await {
     Err(error) => {
       warn!("Responded with an error while fetching the gacha records: {error:?}");
@@ -704,23 +733,24 @@ pub async fn fetch_gacha_records(
     }
   };
 
-  let mut records = Vec::with_capacity(pagination.list.len());
-  for value in pagination.list {
-    records.push(GachaRecord {
+  let records = pagination
+    .list
+    .into_iter()
+    .map(|item| GachaRecord {
       business: *business,
-      uid: value.uid,
-      id: value.id,
-      gacha_type: value.gacha_type,
-      gacha_id: value.gacha_id,
-      rank_type: value.rank_type,
-      count: value.count,
-      time: value.time,
-      lang: value.lang,
-      name: value.name,
-      item_type: value.item_type,
-      item_id: value.item_id.unwrap_or_default(), // TODO: Dictionary
+      uid: item.uid,
+      id: item.id,
+      gacha_type: item.gacha_type,
+      gacha_id: item.gacha_id,
+      rank_type: item.rank_type,
+      count: item.count,
+      time: item.time,
+      lang: item.lang,
+      name: item.name,
+      item_type: item.item_type,
+      item_id: item.item_id,
     })
-  }
+    .collect();
 
   Ok(Some(records))
 }
@@ -736,17 +766,17 @@ mod tests {
     let biz = BizInternals::GENSHIN_IMPACT_OFFICIAL;
 
     assert!(matches!(
-      ParsedGachaUrl::parse(biz, "", None, None).map_err(Error::into_inner),
+      ParsedGachaUrl::parse(biz, "", None, None, None).map_err(Error::into_inner),
       Err(GachaUrlErrorKind::Illegal { url }) if url.is_empty()
     ));
 
     assert!(matches!(
-      ParsedGachaUrl::parse(biz, "?", None, None).map_err(Error::into_inner),
+      ParsedGachaUrl::parse(biz, "?", None, None, None).map_err(Error::into_inner),
       Err(GachaUrlErrorKind::Illegal { url }) if url == "?"
     ));
 
     assert!(matches!(
-      ParsedGachaUrl::parse(biz, "https://.mihoyo.com/getGachaLog?", None, None).map_err(Error::into_inner),
+      ParsedGachaUrl::parse(biz, "https://.mihoyo.com/getGachaLog?", None, None, None).map_err(Error::into_inner),
       Err(GachaUrlErrorKind::Illegal { url }) if url == "https://.mihoyo.com/getGachaLog?"
     ));
 
@@ -754,6 +784,7 @@ mod tests {
       ParsedGachaUrl::parse(
         biz,
         "https://fake-test.mihoyo.com/getGachaLog?authkey=",
+        None,
         None,
         None
       )
@@ -768,7 +799,7 @@ mod tests {
       param_lang,
       param_authkey,
       value: _value,
-    } = ParsedGachaUrl::parse(biz, &format!("https://fake-test.mihoyo.com/getGachaLog?game_biz={game_biz}&region=region&lang=lang&authkey=authkey&gacha_type=gacha_type", game_biz = biz.codename), None, None).unwrap();
+    } = ParsedGachaUrl::parse(biz, &format!("https://fake-test.mihoyo.com/getGachaLog?game_biz={game_biz}&region=region&lang=lang&authkey=authkey&gacha_type=gacha_type", game_biz = biz.codename), None, None, None).unwrap();
 
     assert_eq!(param_game_biz, biz.codename);
     assert_eq!(param_region, "region");

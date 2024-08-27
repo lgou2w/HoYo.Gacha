@@ -153,7 +153,7 @@ CREATE TABLE IF NOT EXISTS `hg.gacha_records` (
   `lang`       TEXT    NOT NULL,
   `name`       TEXT    NOT NULL,
   `item_type`  TEXT    NOT NULL,
-  `item_id`    TEXT    NOT NULL,
+  `item_id`    TEXT,
   PRIMARY KEY (`business`, `uid`, `id`)
 );
 CREATE INDEX IF NOT EXISTS `hg.gacha_records.id_idx`                      ON `hg.gacha_records` (`id`);

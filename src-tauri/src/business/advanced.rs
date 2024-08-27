@@ -121,6 +121,7 @@ async fn pull_gacha_records(
       gacha_url,
       Some(&format!("{}", *gacha_type)),
       Some(&end_id),
+      None,
     )
     .await?
     {
