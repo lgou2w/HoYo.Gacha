@@ -54,8 +54,8 @@ impl Display for BusinessRegion {
 /// Business and Region internals
 
 pub struct BizInternals {
-  pub business: &'static Business,
-  pub region: &'static BusinessRegion,
+  pub business: Business,
+  pub region: BusinessRegion,
   pub codename: &'static str,
   pub display_name: &'static str,
   /// Name of the game's entry executable (without suffix)
@@ -66,8 +66,8 @@ pub struct BizInternals {
 macro_rules! biz {
   ($business:ident, $region:ident, $codename:literal, $display_name:literal, $executable_name:literal, $data_folder_name:literal) => {
     BizInternals {
-      business: &Business::$business,
-      region: &BusinessRegion::$region,
+      business: Business::$business,
+      region: BusinessRegion::$region,
       codename: $codename,
       display_name: $display_name,
       executable_name: $executable_name,
@@ -146,42 +146,38 @@ impl BizInternals {
   }
 }
 
-static BIZ_INTERNALS: Lazy<
-  HashMap<(&'static Business, &'static BusinessRegion), &'static BizInternals>,
-> = Lazy::new(|| {
-  use Business::*;
-  use BusinessRegion::*;
+static BIZ_INTERNALS: Lazy<HashMap<(Business, BusinessRegion), &'static BizInternals>> =
+  Lazy::new(|| {
+    use Business::*;
+    use BusinessRegion::*;
 
-  let mut m = HashMap::with_capacity(6);
-  m.insert(
-    (&GenshinImpact, &Official),
-    BizInternals::GENSHIN_IMPACT_OFFICIAL,
-  );
-  m.insert(
-    (&GenshinImpact, &Global),
-    BizInternals::GENSHIN_IMPACT_GLOBAL,
-  );
-  m.insert(
-    (&HonkaiStarRail, &Official),
-    BizInternals::HONKAI_STAR_RAIL_OFFICIAL,
-  );
-  m.insert(
-    (&HonkaiStarRail, &Global),
-    BizInternals::HONKAI_STAR_RAIL_GLOBAL,
-  );
-  m.insert(
-    (&ZenlessZoneZero, &Official),
-    BizInternals::ZENLESS_ZONE_ZERO_OFFICIAL,
-  );
-  m.insert(
-    (&ZenlessZoneZero, &Global),
-    BizInternals::ZENLESS_ZONE_ZERO_GLOBAL,
-  );
-  m
-});
+    let mut m = HashMap::with_capacity(6);
+    m.insert(
+      (GenshinImpact, Official),
+      BizInternals::GENSHIN_IMPACT_OFFICIAL,
+    );
+    m.insert((GenshinImpact, Global), BizInternals::GENSHIN_IMPACT_GLOBAL);
+    m.insert(
+      (HonkaiStarRail, Official),
+      BizInternals::HONKAI_STAR_RAIL_OFFICIAL,
+    );
+    m.insert(
+      (HonkaiStarRail, Global),
+      BizInternals::HONKAI_STAR_RAIL_GLOBAL,
+    );
+    m.insert(
+      (ZenlessZoneZero, Official),
+      BizInternals::ZENLESS_ZONE_ZERO_OFFICIAL,
+    );
+    m.insert(
+      (ZenlessZoneZero, Global),
+      BizInternals::ZENLESS_ZONE_ZERO_GLOBAL,
+    );
+    m
+  });
 
 impl BizInternals {
-  pub fn mapped<'a>(business: &'a Business, region: &'a BusinessRegion) -> &'static Self {
+  pub fn mapped(business: Business, region: BusinessRegion) -> &'static Self {
     BIZ_INTERNALS
       .get(&(business, region))
       .unwrap_or_else(|| panic!("No biz internal mapping value with key: {business}.{region}"))

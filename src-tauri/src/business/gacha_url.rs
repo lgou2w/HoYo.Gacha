@@ -301,8 +301,8 @@ impl GachaUrl {
   // and check for timeliness and consistency to get the latest gacha url.
   #[tracing::instrument]
   pub async fn from_webcaches(
-    business: &Business,
-    region: &BusinessRegion,
+    business: Business,
+    region: BusinessRegion,
     data_folder: impl AsRef<Path> + Debug,
     expected_uid: u32,
   ) -> Result<Self, GachaUrlError> {
@@ -319,8 +319,8 @@ impl GachaUrl {
   // Verifying timeliness and consistency from a dirty gacha url
   #[tracing::instrument]
   pub async fn from_dirty(
-    business: &Business,
-    region: &BusinessRegion,
+    business: Business,
+    region: BusinessRegion,
     dirty_url: String,
     expected_uid: u32,
   ) -> Result<Self, GachaUrlError> {
@@ -389,8 +389,8 @@ impl GachaUrl {
               );
 
               return Ok(GachaUrl {
-                business: *biz.business,
-                region: *biz.region,
+                business: biz.business,
+                region: biz.region,
                 creation_time: dirty.creation_time,
                 url: parsed,
                 owner_uid: expected_uid,
@@ -703,8 +703,8 @@ fn request_gacha_url_with_retry(
 
 #[tracing::instrument(skip_all)]
 pub async fn fetch_gacha_records(
-  business: &Business,
-  region: &BusinessRegion,
+  business: Business,
+  region: BusinessRegion,
   gacha_url: &str,
   gacha_type: Option<&str>,
   end_id: Option<&str>,
@@ -737,7 +737,7 @@ pub async fn fetch_gacha_records(
     .list
     .into_iter()
     .map(|item| GachaRecord {
-      business: *business,
+      business,
       uid: item.uid,
       id: item.id,
       gacha_type: item.gacha_type,

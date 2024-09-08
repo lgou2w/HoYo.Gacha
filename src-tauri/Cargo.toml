@@ -14,36 +14,38 @@ publish = false
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [build-dependencies]
-tauri-build = { version = "2.0.0-rc.6", features = ["config-toml"] }
+tauri-build = { version = "2.0.0-rc.9", features = ["config-toml"] }
 
 [dependencies]
-async-trait = "0.1.81"
+async-trait = "0.1.82"
 backtrace = "0.3.73"
 exponential-backoff = "2.0.0"
 futures-util = "0.3.30"
 num_enum = "0.7.3"
 once_cell = "1.19.0"
+os_info = "3.8.2"
 paste = "1.0.15"
 raw-window-handle = "0.6.2"
 regex = "1.10.6"
 reqwest = { version = "0.12.7", features = ["json"] }
 rfd = { version = "0.14.1", default-features = false }
-serde = { version = "1.0.209", features = ["derive"] }
-serde_json = { version = "1.0.127", features = ["preserve_order"] }
+sha1 = "0.10.6"
+serde = { version = "1.0.210", features = ["derive"] }
+serde_json = { version = "1.0.128", features = ["preserve_order"] }
 serde_repr = "0.1.19"
-tauri-plugin-os = "2.0.0-rc.0"
-tauri-plugin-shell = "2.0.0-rc.2"
+sys-locale = "0.3.1"
+tauri-plugin-shell = "2.0.0-rc.3"
 tauri-plugin-clipboard-manager = "2.1.0-beta.7"
 thiserror = "1.0.63"
 time = { version = "0.3.36", features = ["formatting", "local-offset", "macros", "serde", "serde-human-readable"] }
-tokio = { version = "1.39.3", features = ["macros", "rt", "rt-multi-thread"] }
+tokio = { version = "1.40.0", features = ["macros", "rt", "rt-multi-thread"] }
 tracing = "0.1.40"
 tracing-appender = "0.2.3"
 tracing-subscriber = { version = "0.3.18", features = ["env-filter", "local-time"] }
 url = "2.5.2"
 
 [dependencies.sqlx]
-version = "0.8.1"
+version = "0.8.2"
 default-features = false
 features = [
   "runtime-tokio",
@@ -54,7 +56,7 @@ features = [
 
 # https://github.com/tauri-apps/tauri/blob/dev/core/tauri/Cargo.toml
 [dependencies.tauri]
-version = "2.0.0-rc.6"
+version = "2.0.0-rc.10"
 default-features = false
 features = [
   "wry",
@@ -79,7 +81,6 @@ features = [
   "Win32_Security",
   "Win32_System_Com",
   "Win32_System_Console",
-  "Win32_System_LibraryLoader",
   "Win32_System_Threading",
   "Win32_UI",
   "Win32_UI_Controls",

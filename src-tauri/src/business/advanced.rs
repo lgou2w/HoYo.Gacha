@@ -52,8 +52,8 @@ where
   let task = tokio::spawn(async move {
     for (gacha_type, last_end_id) in gacha_type_and_last_end_id_mappings {
       pull_gacha_records(
-        &business,
-        &region,
+        business,
+        region,
         &sender,
         &gacha_url,
         &gacha_type,
@@ -85,8 +85,8 @@ where
 
 #[tracing::instrument(skip_all, fields(?gacha_type, ?last_end_id))]
 async fn pull_gacha_records(
-  business: &Business,
-  region: &BusinessRegion,
+  business: Business,
+  region: BusinessRegion,
   sender: &mpsc::Sender<GachaRecordsFetcherChannelFragment>,
   gacha_url: &str,
   gacha_type: &u32,

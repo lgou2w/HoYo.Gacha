@@ -3,11 +3,11 @@ import { Button, Table, TableBody, TableCell, TableRow, makeStyles, tableCellCla
 import { InfoRegular } from '@fluentui/react-icons'
 import { Await } from '@tanstack/react-router'
 import { writeText } from '@tauri-apps/plugin-clipboard-manager'
-import * as os from '@tauri-apps/plugin-os'
 import isPromise from 'is-promise'
-import { webview2Version } from '@/api/commands/core'
+import { osInfo, webview2Version } from '@/api/commands/core'
 import SettingsOptionsCollapse from '@/components/Settings/OptionsCollapse'
 import Locale from '@/components/UI/Locale'
+import { stringifyOsInfoVersion } from '@/interfaces/Os'
 
 const useStyles = makeStyles({
   table: {
@@ -27,9 +27,9 @@ export default function SettingsOptionsAboutSpecification () {
   const classes = useStyles()
   const data: Record<string, string | Promise<string>> = useMemo(() => {
     return {
-      OperatingSystem: os.type(),
-      SystemVersion: os.version(),
-      SystemType: os.arch(),
+      OperatingSystem: osInfo().then((value) => value.edition || value.os_type),
+      SystemVersion: osInfo().then((value) => stringifyOsInfoVersion(value.version)),
+      SystemType: osInfo().then((value) => value.architecture || value.bitness),
       Webview2: webview2Version()
     }
   }, [])

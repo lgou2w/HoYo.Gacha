@@ -10,9 +10,11 @@ use crate::models::{Business, BusinessRegion};
 pub mod advanced;
 mod data_folder_locator;
 mod disk_cache;
+mod gacha_metadata;
 mod gacha_url;
 
 pub use data_folder_locator::*;
+pub use gacha_metadata::*;
 pub use gacha_url::*;
 
 // region: Tauri plugin
@@ -37,7 +39,7 @@ pub async fn business_from_webcaches_gacha_url(
   data_folder: PathBuf,
   expected_uid: u32,
 ) -> Result<GachaUrl, GachaUrlError> {
-  GachaUrl::from_webcaches(&business, &region, &data_folder, expected_uid).await
+  GachaUrl::from_webcaches(business, region, &data_folder, expected_uid).await
 }
 
 #[tauri::command]
@@ -48,7 +50,7 @@ pub async fn business_from_dirty_gacha_url(
   dirty_url: String,
   expected_uid: u32,
 ) -> Result<GachaUrl, GachaUrlError> {
-  GachaUrl::from_dirty(&business, &region, dirty_url, expected_uid).await
+  GachaUrl::from_dirty(business, region, dirty_url, expected_uid).await
 }
 
 #[derive(Debug, Default, Deserialize)]

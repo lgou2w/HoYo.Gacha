@@ -1,4 +1,4 @@
-// Account
+// Kv
 //   See: src-tauri/src/models/kv.rs
 
 export interface Kv {

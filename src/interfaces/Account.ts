@@ -21,6 +21,11 @@ export type ZenlessZoneZeroAccount = Account<ZenlessZoneZero>
 
 // Utilities
 
+export function isSamePrimaryKeyAccount (left: Account, right: Account): boolean {
+  return left.business === right.business &&
+    left.uid === right.uid
+}
+
 export function isGenshinImpactAccount (account: Account<Business>): account is GenshinImpactAccount {
   return account.business === Businesses.GenshinImpact
 }

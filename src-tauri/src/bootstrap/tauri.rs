@@ -2,6 +2,7 @@ use std::env;
 use std::sync::{mpsc, Arc};
 use std::time::Duration;
 
+use os_info::Info as OsInfo;
 use tauri::webview::{WebviewWindow, WebviewWindowBuilder};
 use tauri::{
   generate_context, generate_handler, Builder as TauriBuilder, Manager, RunEvent, Runtime,
@@ -46,7 +47,6 @@ pub async fn start(singleton: Singleton, tracing: Tracing, database: Database) {
   let database_state = Arc::clone(&database);
   let app = TauriBuilder::default()
     .plugin(tauri_plugin_clipboard_manager::init())
-    .plugin(tauri_plugin_os::init())
     .plugin(tauri_plugin_shell::init())
     .setup(move |app| {
       // Database state
@@ -92,6 +92,8 @@ pub async fn start(singleton: Singleton, tracing: Tracing, database: Database) {
       Ok(())
     })
     .invoke_handler(generate_handler![
+      core_os_info,
+      core_locale,
       core_webview2_version,
       core_change_theme,
       database::kv_questioner::database_find_kv,
@@ -198,6 +200,16 @@ where
 // Core commands
 
 static mut WEBVIEW2_VERSION: Option<String> = None;
+
+#[tauri::command]
+fn core_os_info() -> &'static OsInfo {
+  &consts::OS_INFO
+}
+
+#[tauri::command]
+fn core_locale() -> &'static Option<String> {
+  &consts::LOCALE.value
+}
 
 #[tauri::command]
 fn core_webview2_version() -> Result<String, tauri::Error> {

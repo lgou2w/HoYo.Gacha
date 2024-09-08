@@ -65,15 +65,15 @@ impl DataFolderLocator for UnityLogDataFolderLocator {
   ) -> Result<Option<DataFolder>, DataFolderError> {
     info!("Locating the data folder...");
 
-    let biz = BizInternals::mapped(&business, &region);
+    let biz = BizInternals::mapped(business, region);
 
-    let log_filename = if biz.business == &Business::GenshinImpact {
+    let log_filename = if biz.business == Business::GenshinImpact {
       "output_log.txt"
     } else {
       "Player.log"
     };
 
-    let appdata_folder = if biz.business == &Business::GenshinImpact || biz.is_official() {
+    let appdata_folder = if biz.business == Business::GenshinImpact || biz.is_official() {
       &*consts::PLATFORM.appdata_locallow_mihoyo
     } else {
       &*consts::PLATFORM.appdata_locallow_cognosphere
@@ -160,7 +160,7 @@ impl DataFolderLocator for ManualDataFolderLocator {
   ) -> Result<Option<DataFolder>, DataFolderError> {
     info!("Manually locate the data folder...");
 
-    let biz = BizInternals::mapped(&business, &region);
+    let biz = BizInternals::mapped(business, region);
 
     let title = if crate::consts::LOCALE.is_chinese {
       format!(

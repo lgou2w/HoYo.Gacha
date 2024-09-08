@@ -1,5 +1,5 @@
-import { locale as localeFn } from '@tauri-apps/plugin-os'
 import { LanguageDetectorAsyncModule } from 'i18next'
+import { locale as localeFn } from '@/api/commands/core'
 import { DefaultLanguage, KnownLanguages, Language, SupportedLanguages } from './locales'
 
 export const TauriLanguageDetectorModuleLocalStorageKey = 'HG_LANGUAGE'

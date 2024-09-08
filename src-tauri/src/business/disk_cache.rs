@@ -541,7 +541,7 @@ impl EntryStore {
     if !self.has_long_key() {
       return Err(Error::new(
         ErrorKind::Unsupported,
-        "Entry store do not have long key",
+        "Entry store does not have a long key",
       ));
     }
 

@@ -2,6 +2,7 @@ use std::env;
 use std::path::PathBuf;
 
 use once_cell::sync::Lazy;
+use os_info::{get as get_os_info, Info as OsInfo};
 use reqwest::Client as Reqwest;
 use time::format_description::FormatItem;
 use time::macros::format_description;
@@ -69,6 +70,8 @@ pub const KV_THEME_DATA: &str = "HG_THEME_DATA";
 
 // Lazy
 
+pub static OS_INFO: Lazy<OsInfo> = Lazy::new(get_os_info);
+
 pub static LOCAL_OFFSET: Lazy<UtcOffset> = Lazy::new(|| UtcOffset::current_local_offset().unwrap());
 
 pub static REQWEST: Lazy<Reqwest> = Lazy::new(|| {
@@ -91,7 +94,7 @@ impl Locale {
   pub const CHINESE: &'static str = "zh";
 
   fn new() -> Self {
-    let value = tauri_plugin_os::locale();
+    let value = sys_locale::get_locale();
     let value_ref = value.as_deref().unwrap_or(Self::DEFAULT);
     let is_default = value_ref.starts_with(Self::DEFAULT);
     let is_chinese = value_ref.starts_with(Self::CHINESE);
