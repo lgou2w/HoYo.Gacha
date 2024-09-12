@@ -9,7 +9,7 @@ use once_cell::sync::Lazy;
 use sha1::{Digest, Sha1};
 use tracing::info;
 
-use crate::models::{Metadata, MetadataSource};
+use super::{Metadata, MetadataSource};
 
 const EMBEDDED_JSON_METADATA: &[u8] = include_bytes!("./gacha_metadata.json");
 

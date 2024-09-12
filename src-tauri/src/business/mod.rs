@@ -10,11 +10,11 @@ use crate::models::{Business, BusinessRegion};
 pub mod advanced;
 mod data_folder_locator;
 mod disk_cache;
-mod gacha_metadata;
+mod gacha_convert;
 mod gacha_url;
 
 pub use data_folder_locator::*;
-pub use gacha_metadata::*;
+pub use gacha_convert::*;
 pub use gacha_url::*;
 
 // region: Tauri plugin

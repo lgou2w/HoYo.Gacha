@@ -127,11 +127,11 @@ impl MetadataStruct {
     self.reverses().keys()
   }
 
-  pub fn from_id<'a, 'id: 'a>(&'a self, id: &'id str) -> Option<MetadataStructEntryRef<'a>> {
+  pub fn entry_from_id<'a, 'id: 'a>(&'a self, id: &'id str) -> Option<MetadataStructEntryRef<'a>> {
     self.entries.get(id).map(|entry| self.entry_ref(id, entry))
   }
 
-  pub fn from_name<'a, 'name: 'a>(
+  pub fn entry_from_name<'a, 'name: 'a>(
     &'a self,
     name: &'name str,
   ) -> Option<HashSet<MetadataStructEntryRef<'a>>> {
@@ -148,7 +148,7 @@ impl MetadataStruct {
     }
   }
 
-  pub fn from_name_first<'a, 'name: 'a>(
+  pub fn entry_from_name_first<'a, 'name: 'a>(
     &'a self,
     name: &'name str,
   ) -> Option<MetadataStructEntryRef<'a>> {
@@ -398,7 +398,7 @@ mod tests {
       || name == "Mistsplitter Reforged"));
 
     assert_eq!(
-      s.from_id("10000002"),
+      s.entry_from_id("10000002"),
       Some(MetadataStructEntryRef {
         locale: "en-us",
         category: MetadataStruct::CATEGORY_CHARACTER,
@@ -411,7 +411,7 @@ mod tests {
     );
 
     assert_eq!(
-      s.from_name_first("Jean"),
+      s.entry_from_name_first("Jean"),
       Some(MetadataStructEntryRef {
         locale: "en-us",
         category: MetadataStruct::CATEGORY_CHARACTER,
@@ -424,7 +424,7 @@ mod tests {
     );
 
     assert_eq!(
-      s.from_name("Traveler"),
+      s.entry_from_name("Traveler"),
       Some(HashSet::from_iter([
         MetadataStructEntryRef {
           locale: "en-us",
@@ -448,7 +448,7 @@ mod tests {
     );
 
     assert_eq!(
-      s.from_name_first("Mistsplitter Reforged"),
+      s.entry_from_name_first("Mistsplitter Reforged"),
       Some(MetadataStructEntryRef {
         locale: "en-us",
         category: MetadataStruct::CATEGORY_WEAPON,
@@ -460,18 +460,21 @@ mod tests {
       })
     );
 
-    assert_eq!(s.from_name_first("Kamisato Ayaka"), s.from_id("10000002"));
-    assert_eq!(s.from_name_first("Jean"), s.from_id("10000003"));
     assert_eq!(
-      s.from_name("Traveler"),
+      s.entry_from_name_first("Kamisato Ayaka"),
+      s.entry_from_id("10000002")
+    );
+    assert_eq!(s.entry_from_name_first("Jean"), s.entry_from_id("10000003"));
+    assert_eq!(
+      s.entry_from_name("Traveler"),
       Some(HashSet::from_iter([
-        s.from_id("10000005").unwrap(),
-        s.from_id("10000007").unwrap()
+        s.entry_from_id("10000005").unwrap(),
+        s.entry_from_id("10000007").unwrap()
       ]))
     );
     assert_eq!(
-      s.from_name_first("Mistsplitter Reforged"),
-      s.from_id("11509")
+      s.entry_from_name_first("Mistsplitter Reforged"),
+      s.entry_from_id("11509")
     );
 
     s = metadata.obtain(Business::GenshinImpact, "zh-cn").unwrap();
@@ -487,7 +490,7 @@ mod tests {
       .any(|name| name == "神里绫华" || name == "琴" || name == "旅行者" || name == "雾切之回光"));
 
     assert_eq!(
-      s.from_name_first("神里绫华"),
+      s.entry_from_name_first("神里绫华"),
       Some(MetadataStructEntryRef {
         locale: "zh-cn",
         category: MetadataStruct::CATEGORY_CHARACTER,
@@ -500,7 +503,7 @@ mod tests {
     );
 
     assert_eq!(
-      s.from_id("10000003"),
+      s.entry_from_id("10000003"),
       Some(MetadataStructEntryRef {
         locale: "zh-cn",
         category: MetadataStruct::CATEGORY_CHARACTER,
@@ -513,7 +516,7 @@ mod tests {
     );
 
     assert_eq!(
-      s.from_name("旅行者"),
+      s.entry_from_name("旅行者"),
       Some(HashSet::from_iter([
         MetadataStructEntryRef {
           locale: "zh-cn",
@@ -537,7 +540,7 @@ mod tests {
     );
 
     assert_eq!(
-      s.from_id("11509"),
+      s.entry_from_id("11509"),
       Some(MetadataStructEntryRef {
         locale: "zh-cn",
         category: MetadataStruct::CATEGORY_WEAPON,
@@ -549,15 +552,21 @@ mod tests {
       })
     );
 
-    assert_eq!(s.from_name_first("神里绫华"), s.from_id("10000002"));
-    assert_eq!(s.from_name_first("琴"), s.from_id("10000003"));
     assert_eq!(
-      s.from_name("旅行者"),
+      s.entry_from_name_first("神里绫华"),
+      s.entry_from_id("10000002")
+    );
+    assert_eq!(s.entry_from_name_first("琴"), s.entry_from_id("10000003"));
+    assert_eq!(
+      s.entry_from_name("旅行者"),
       Some(HashSet::from_iter([
-        s.from_id("10000005").unwrap(),
-        s.from_id("10000007").unwrap()
+        s.entry_from_id("10000005").unwrap(),
+        s.entry_from_id("10000007").unwrap()
       ]))
     );
-    assert_eq!(s.from_name_first("雾切之回光"), s.from_id("11509"));
+    assert_eq!(
+      s.entry_from_name_first("雾切之回光"),
+      s.entry_from_id("11509")
+    );
   }
 }

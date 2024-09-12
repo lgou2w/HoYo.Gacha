@@ -8,7 +8,6 @@ use futures_util::future::BoxFuture;
 use futures_util::FutureExt;
 use once_cell::sync::Lazy;
 use regex::Regex;
-use serde::de::IntoDeserializer;
 use serde::{Deserialize, Deserializer, Serialize};
 use time::serde::rfc3339;
 use time::OffsetDateTime;
@@ -19,6 +18,7 @@ use super::disk_cache::{BlockFile, IndexFile};
 use crate::consts;
 use crate::error::declare_error_kinds;
 use crate::models::{BizInternals, Business, BusinessRegion, GachaRecord};
+use crate::utilities::serde_helper;
 
 declare_error_kinds! {
   GachaUrlError, kinds {
@@ -552,38 +552,17 @@ struct GachaRecordsResponse {
   data: Option<GachaRecordsPagination>,
 }
 
-fn string_as_number<'de, D, T>(de: D) -> Result<T, D::Error>
-where
-  D: Deserializer<'de>,
-  T: TryFrom<u64>,
-  T::Error: fmt::Display,
-{
-  let str = String::deserialize(de)?;
-  let num = str.parse::<u64>().map_err(serde::de::Error::custom)?;
-  T::try_from(num).map_err(serde::de::Error::custom)
-}
-
-fn empty_string_as_none<'de, D, T>(de: D) -> Result<Option<T>, D::Error>
-where
-  D: Deserializer<'de>,
-  T: Deserialize<'de>,
-{
-  let opt = Option::<String>::deserialize(de)?;
-  match opt.as_deref() {
-    None | Some("") => Ok(None),
-    Some(s) => T::deserialize(s.into_deserializer()).map(Some),
-  }
-}
-
 fn gacha_id_de<'de, D>(de: D) -> Result<Option<u32>, D::Error>
 where
   D: Deserializer<'de>,
 {
-  let opt: Option<String> = empty_string_as_none(de)?;
+  use serde::de::IntoDeserializer;
+
+  let opt: Option<String> = serde_helper::de::empty_string_as_none(de)?;
   match opt.as_deref() {
     None => Ok(None),
     Some(str) => {
-      let num: u64 = string_as_number(str.into_deserializer())?;
+      let num: u64 = serde_helper::de::string_as_number(str.into_deserializer())?;
       let res = u32::try_from(num).map_err(serde::de::Error::custom)?;
       Ok(Some(res))
     }
@@ -593,23 +572,26 @@ where
 #[derive(Deserialize)]
 struct GachaRecordsPaginationItem {
   id: String,
-  #[serde(deserialize_with = "string_as_number")]
+  #[serde(deserialize_with = "serde_helper::de::string_as_number")]
   uid: u32,
-  #[serde(deserialize_with = "string_as_number")]
+  #[serde(deserialize_with = "serde_helper::de::string_as_number")]
   gacha_type: u32,
   // `Honkai: Star Rail`, `Zenless Zone Zero` only
   #[serde(deserialize_with = "gacha_id_de", default = "Option::default")]
   gacha_id: Option<u32>,
-  #[serde(deserialize_with = "string_as_number")]
+  #[serde(deserialize_with = "serde_helper::de::string_as_number")]
   rank_type: u32,
-  #[serde(deserialize_with = "string_as_number")]
+  #[serde(deserialize_with = "serde_helper::de::string_as_number")]
   count: u32,
   time: String,
   lang: String,
   name: String,
   item_type: String,
   // `Honkai: Star Rail`, `Zenless Zone Zero` only
-  #[serde(deserialize_with = "empty_string_as_none", default = "Option::default")]
+  #[serde(
+    deserialize_with = "serde_helper::de::empty_string_as_none",
+    default = "Option::default"
+  )]
   item_id: Option<String>,
 }
 

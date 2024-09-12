@@ -2,7 +2,7 @@ use std::any::{self, Any};
 use std::fmt::{self, Display};
 use std::fs::{self, File};
 use std::io::{self, Write};
-use std::panic::{self, PanicInfo};
+use std::panic::{self, PanicHookInfo};
 use std::path::Path;
 use std::process;
 
@@ -41,7 +41,7 @@ struct Crash<'a> {
 
 impl<'a> Crash<'a> {
   #[inline]
-  fn collect(panic: &'a PanicInfo) -> Self {
+  fn collect(panic: &'a PanicHookInfo) -> Self {
     // See: https://github.com/rust-lang/rfcs/issues/1389
     #[inline]
     fn descript_panic(panic: &(dyn Any + Send)) -> &str {
@@ -206,7 +206,7 @@ fn crash_notify(message: String, report_path: impl AsRef<Path>) {
   {
     Command::new("explorer")
       .arg("/select,")
-      .raw_arg(&format!("\"{}\"", report_path.as_ref().display()))
+      .raw_arg(format!("\"{}\"", report_path.as_ref().display()))
       .spawn()
       .unwrap();
   }
