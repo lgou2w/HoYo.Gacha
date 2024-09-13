@@ -6,7 +6,7 @@ use super::Business;
 
 /// Account Properties
 
-#[derive(Clone, Debug, Default, Deserialize, Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(transparent)]
 pub struct AccountProperties(serde_json::Map<String, serde_json::Value>);
 
@@ -26,7 +26,7 @@ impl DerefMut for AccountProperties {
 
 /// Account
 
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct Account {
   pub business: Business,

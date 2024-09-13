@@ -27,7 +27,7 @@ use super::Business;
 //   `Empty` : Is the empty string.
 //
 
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct GachaRecord {
   pub business: Business,
