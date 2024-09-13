@@ -28,6 +28,7 @@ pub const DATABASE: &str = "__DEV__HoYo.Gacha.db";
 // Package info
 pub const PKG_NAME: &str = env!("CARGO_PKG_NAME");
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
+pub const VERSION_WITH_PREFIX: &str = concat!("v", env!("CARGO_PKG_VERSION"));
 pub const AUTHORS: &str = env!("CARGO_PKG_AUTHORS");
 pub const DESCRIPTION: &str = env!("CARGO_PKG_DESCRIPTION");
 pub const HOMEPAGE: &str = env!("CARGO_PKG_HOMEPAGE");
@@ -76,7 +77,7 @@ pub static LOCAL_OFFSET: Lazy<UtcOffset> = Lazy::new(|| UtcOffset::current_local
 
 pub static REQWEST: Lazy<Reqwest> = Lazy::new(|| {
   Reqwest::builder()
-    .user_agent(format!("{} v{}", NAME, VERSION))
+    .user_agent(format!("{}/{}", NAME, VERSION))
     .build()
     .unwrap()
 });

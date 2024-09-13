@@ -20,7 +20,7 @@ pub async fn start() {
   | | | | __\ \ / /__  / ___| __ _  ___| |__   __ _
   | |_| |/ _ \ V / _ \| |  _ / _` |/ __| '_ \ / _` |
   |  _  | (_) | | (_) | |_| | (_| | (__| | | | (_| |
-  |_| |_|\___/|_|\___(_)____|\__,_|\___|_| |_|\__,_| v{version}
+  |_| |_|\___/|_|\___(_)____|\__,_|\___|_| |_|\__,_| {version}
 
   {description}
 
@@ -28,7 +28,7 @@ pub async fn start() {
   - Homepage: {homepage}
   ",
     description = consts::DESCRIPTION,
-    version = consts::VERSION,
+    version = consts::VERSION_WITH_PREFIX,
     authors = consts::AUTHORS,
     homepage = consts::HOMEPAGE,
   );
