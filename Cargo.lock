@@ -1652,6 +1652,7 @@ dependencies = [
  "tauri-build",
  "tauri-plugin-clipboard-manager",
  "tauri-plugin-shell",
+ "tempfile",
  "thiserror",
  "time",
  "tokio",

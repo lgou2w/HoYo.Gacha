@@ -1,5 +1,5 @@
 pub mod de {
-  use std::fmt;
+  use std::fmt::Display;
 
   use serde::de::IntoDeserializer;
   use serde::{Deserialize, Deserializer};
@@ -8,7 +8,7 @@ pub mod de {
   where
     D: Deserializer<'de>,
     T: TryFrom<u64>,
-    T::Error: fmt::Display,
+    T::Error: Display,
   {
     let str = String::deserialize(de)?;
     let num = str.parse::<u64>().map_err(serde::de::Error::custom)?;
@@ -19,7 +19,7 @@ pub mod de {
   where
     D: Deserializer<'de>,
     T: TryFrom<u64>,
-    T::Error: fmt::Display,
+    T::Error: Display,
   {
     let opt = Option::<String>::deserialize(de)?;
     match opt {
@@ -37,6 +37,31 @@ pub mod de {
     match opt.as_deref() {
       None | Some("") => Ok(None),
       Some(s) => T::deserialize(s.into_deserializer()).map(Some),
+    }
+  }
+}
+
+pub mod ser {
+  use std::fmt::Display;
+
+  use serde::Serializer;
+
+  pub fn number_as_string<T, S>(num: &T, ser: S) -> Result<S::Ok, S::Error>
+  where
+    T: Display,
+    S: Serializer,
+  {
+    ser.serialize_str(&num.to_string())
+  }
+
+  pub fn option_number_as_string<T, S>(num: &Option<T>, ser: S) -> Result<S::Ok, S::Error>
+  where
+    T: Display,
+    S: Serializer,
+  {
+    match num {
+      None => ser.serialize_none(),
+      Some(n) => ser.serialize_str(&n.to_string()),
     }
   }
 }
