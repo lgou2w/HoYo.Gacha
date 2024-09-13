@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::fmt::{self, Display};
 use std::fs::File;
 use std::io::{self, BufWriter, Cursor, Read};
@@ -302,7 +302,7 @@ impl GachaRecordsWriter for LegacyUigfGachaRecordsWriter {
     let mut uigf = LegacyUigf {
       info: LegacyUigfInfo {
         uid: *account_uid,
-        lang: Some(account_locale.clone()),
+        lang: Some(account_locale.to_owned()),
         export_time: Some(export_time_str),
         export_timestamp: Some(export_timestamp as _),
         export_app: Some(consts::ID.to_owned()),
@@ -394,7 +394,7 @@ impl GachaRecordsReader for LegacyUigfGachaRecordsReader {
 
     let uigf_version = VersionNumber::from_str(&uigf.info.uigf_version).map_err(|_| {
       Self::Error::InvalidVersion {
-        version: uigf.info.uigf_version.clone(),
+        version: uigf.info.uigf_version,
       }
     })?;
 
@@ -511,10 +511,170 @@ declare_error_kinds!(
 declare_error_kinds!(
   UigfGachaRecordsReadError,
   kinds {
-    #[error("Todo")]
-    Todo,
+    #[error("Invalid json input: {cause}")]
+    InvalidInput {
+      cause: serde_json::Error => format_args!("{}", cause)
+    },
+
+    #[error("Invalid uigf version string: {version}")]
+    InvalidVersion { version: String },
+
+    #[error("Unsupported uigf version: {version} (Allowed: {allowed})")]
+    UnsupportedVersion {
+      version: VersionNumber => format_args!("{}", version),
+      allowed: String
+    },
+
+    #[error("Missing metadata entry: {business}, locale: {lang}, {key}: {val}")]
+    MissingMetadataEntry {
+      business: Business,
+      lang: String,
+      key: &'static str,
+      val: String
+    },
   }
 );
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct Uigf {
+  pub info: UigfInfo,
+  #[serde(default = "Option::default", skip_serializing_if = "Option::is_none")]
+  pub hk4e: Option<Vec<UigfProject<UigfHk4eItem>>>,
+  #[serde(default = "Option::default", skip_serializing_if = "Option::is_none")]
+  pub hkrpg: Option<Vec<UigfProject<UigfHkrpgItem>>>,
+  #[serde(default = "Option::default", skip_serializing_if = "Option::is_none")]
+  pub nap: Option<Vec<UigfProject<UigfNapItem>>>,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct UigfInfo {
+  #[serde(
+    deserialize_with = "serde_helper::de::string_as_number",
+    serialize_with = "serde_helper::ser::number_as_string"
+  )]
+  pub export_timestamp: u64,
+  pub export_app: String,
+  pub export_app_version: String,
+  pub version: String,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct UigfProject<Item> {
+  #[serde(
+    deserialize_with = "serde_helper::de::string_as_number",
+    serialize_with = "serde_helper::ser::number_as_string"
+  )]
+  pub uid: u32,
+  pub timezone: i8,
+  pub lang: String,
+  pub list: Vec<Item>,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct UigfHk4eItem {
+  #[serde(
+    deserialize_with = "serde_helper::de::string_as_number",
+    serialize_with = "serde_helper::ser::number_as_string"
+  )]
+  pub uigf_gacha_type: u32,
+  #[serde(
+    deserialize_with = "serde_helper::de::string_as_number",
+    serialize_with = "serde_helper::ser::number_as_string"
+  )]
+  pub gacha_type: u32,
+  pub item_id: String,
+  #[serde(
+    deserialize_with = "serde_helper::de::string_as_number_option",
+    serialize_with = "serde_helper::ser::option_number_as_string",
+    default = "Option::default",
+    skip_serializing_if = "Option::is_none"
+  )]
+  pub count: Option<u32>,
+  pub time: String,
+  #[serde(default = "Option::default", skip_serializing_if = "Option::is_none")]
+  pub item_type: Option<String>,
+  #[serde(
+    deserialize_with = "serde_helper::de::string_as_number_option",
+    serialize_with = "serde_helper::ser::option_number_as_string",
+    default = "Option::default",
+    skip_serializing_if = "Option::is_none"
+  )]
+  pub rank_type: Option<u32>,
+  pub id: String,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct UigfHkrpgItem {
+  #[serde(
+    deserialize_with = "serde_helper::de::string_as_number",
+    serialize_with = "serde_helper::ser::number_as_string"
+  )]
+  pub gacha_id: u32,
+  #[serde(
+    deserialize_with = "serde_helper::de::string_as_number",
+    serialize_with = "serde_helper::ser::number_as_string"
+  )]
+  pub gacha_type: u32,
+  pub item_id: String,
+  #[serde(
+    deserialize_with = "serde_helper::de::string_as_number_option",
+    serialize_with = "serde_helper::ser::option_number_as_string",
+    default = "Option::default",
+    skip_serializing_if = "Option::is_none"
+  )]
+  pub count: Option<u32>,
+  pub time: String,
+  #[serde(default = "Option::default", skip_serializing_if = "Option::is_none")]
+  pub item_type: Option<String>,
+  #[serde(
+    deserialize_with = "serde_helper::de::string_as_number_option",
+    serialize_with = "serde_helper::ser::option_number_as_string",
+    default = "Option::default",
+    skip_serializing_if = "Option::is_none"
+  )]
+  pub rank_type: Option<u32>,
+  pub id: String,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct UigfNapItem {
+  #[serde(
+    deserialize_with = "serde_helper::de::string_as_number_option",
+    serialize_with = "serde_helper::ser::option_number_as_string",
+    default = "Option::default",
+    skip_serializing_if = "Option::is_none"
+  )]
+  pub gacha_id: Option<u32>,
+  #[serde(
+    deserialize_with = "serde_helper::de::string_as_number",
+    serialize_with = "serde_helper::ser::number_as_string"
+  )]
+  pub gacha_type: u32,
+  pub item_id: String,
+  #[serde(
+    deserialize_with = "serde_helper::de::string_as_number_option",
+    serialize_with = "serde_helper::ser::option_number_as_string",
+    default = "Option::default",
+    skip_serializing_if = "Option::is_none"
+  )]
+  pub count: Option<u32>,
+  pub time: String,
+  #[serde(default = "Option::default", skip_serializing_if = "Option::is_none")]
+  pub item_type: Option<String>,
+  #[serde(
+    deserialize_with = "serde_helper::de::string_as_number_option",
+    serialize_with = "serde_helper::ser::option_number_as_string",
+    default = "Option::default",
+    skip_serializing_if = "Option::is_none"
+  )]
+  pub rank_type: Option<u32>,
+  pub id: String,
+}
+
+impl Uigf {
+  pub const V4_0: VersionNumber = VersionNumber::new(4, 0);
+  pub const SUPPORTED_VERSIONS: [VersionNumber; 1] = [Self::V4_0];
+}
 
 pub struct UigfGachaRecordsWriter {}
 
@@ -531,7 +691,9 @@ impl GachaRecordsWriter for UigfGachaRecordsWriter {
   }
 }
 
-pub struct UigfGachaRecordsReader {}
+pub struct UigfGachaRecordsReader {
+  pub businesses: Option<HashSet<Business>>, // None for all businesses
+}
 
 impl GachaRecordsReader for UigfGachaRecordsReader {
   type Error = UigfGachaRecordsReadErrorKind;
@@ -541,7 +703,117 @@ impl GachaRecordsReader for UigfGachaRecordsReader {
     metadata: &GachaMetadata,
     input: impl Read,
   ) -> Result<Vec<GachaRecord>, Self::Error> {
-    todo!("Implement Fresh UIGF Gacha Records Reader");
+    let Self { businesses } = self;
+
+    let uigf: Uigf =
+      serde_json::from_reader(input).map_err(|cause| Self::Error::InvalidInput { cause })?;
+
+    let uigf_version =
+      VersionNumber::from_str(&uigf.info.version).map_err(|_| Self::Error::InvalidVersion {
+        version: uigf.info.version,
+      })?;
+
+    if !Uigf::SUPPORTED_VERSIONS.contains(&uigf_version) {
+      return Err(Self::Error::UnsupportedVersion {
+        version: uigf_version,
+        allowed: Uigf::SUPPORTED_VERSIONS
+          .iter()
+          .map(ToString::to_string)
+          .collect::<Vec<_>>()
+          .join(", "),
+      });
+    }
+
+    // Filter out the businesses that are not expected
+    let (hk4e, hkrpg, nap) = if let Some(businesses) = businesses {
+      (
+        if businesses.contains(&Business::GenshinImpact) {
+          uigf.hk4e
+        } else {
+          None
+        },
+        if businesses.contains(&Business::HonkaiStarRail) {
+          uigf.hkrpg
+        } else {
+          None
+        },
+        if businesses.contains(&Business::ZenlessZoneZero) {
+          uigf.nap
+        } else {
+          None
+        },
+      )
+    } else {
+      (uigf.hk4e, uigf.hkrpg, uigf.nap)
+    };
+
+    // Calculate the total number of records
+    #[inline]
+    fn sum_vec_project<T>(v: Option<&Vec<UigfProject<T>>>) -> usize {
+      v.map(|v| v.len()).unwrap_or(0)
+    }
+    let sum = sum_vec_project(hk4e.as_ref())
+      + sum_vec_project(hkrpg.as_ref())
+      + sum_vec_project(nap.as_ref());
+
+    let mut records = Vec::with_capacity(sum);
+
+    const FIELD_ITEM_ID: &str = "item_id";
+    macro_rules! convert {
+      ($business:ident, $project:ident, $item:ident, $gacha_id:expr) => {
+        for project in $project {
+          for item in project.list {
+            let metadata_entry = metadata
+              .obtain(Business::$business, &project.lang)
+              .and_then(|map| map.entry_from_id(&item.item_id))
+              .ok_or_else(|| Self::Error::MissingMetadataEntry {
+                business: Business::$business,
+                lang: project.lang.clone(),
+                key: FIELD_ITEM_ID,
+                val: item.item_id.clone(),
+              })?;
+
+            let gacha_id = $gacha_id(&item);
+            records.push(GachaRecord {
+              business: Business::$business,
+              uid: project.uid,
+              id: item.id,
+              gacha_type: item.gacha_type,
+              gacha_id,
+              rank_type: item.rank_type.unwrap_or(metadata_entry.rank as _),
+              count: item.count.unwrap_or(1),
+              lang: project.lang.clone(),
+              time: item.time, // TODO: project.timezone
+              name: metadata_entry.name.to_owned(),
+              item_type: item
+                .item_type
+                .unwrap_or(metadata_entry.category_name.to_owned()),
+              item_id: Some(item.item_id),
+            })
+          }
+        }
+      };
+    }
+
+    if let Some(hk4e) = hk4e {
+      convert!(GenshinImpact, hk4e, UigfHk4eItem, |_| None);
+    }
+
+    if let Some(hkrpg) = hkrpg {
+      convert!(
+        HonkaiStarRail,
+        hkrpg,
+        UigfHkrpgItem,
+        |item: &UigfHkrpgItem| Some(item.gacha_id)
+      );
+    }
+
+    if let Some(nap) = nap {
+      convert!(ZenlessZoneZero, nap, UigfNapItem, |item: &UigfNapItem| item
+        .gacha_id);
+    }
+
+    Ok(records)
   }
 }
 
@@ -602,28 +874,28 @@ impl GachaRecordsReader for SrgfGachaRecordsReader {
 
 // region: Excel Writer
 
-declare_error_kinds!(
-  ExcelGachaRecordsWriteError,
-  kinds {
-    #[error("Todo")]
-    Todo,
-  }
-);
+// declare_error_kinds!(
+//   ExcelGachaRecordsWriteError,
+//   kinds {
+//     #[error("Todo")]
+//     Todo,
+//   }
+// );
 
-pub struct ExcelGachaRecordsWriter {}
+// pub struct ExcelGachaRecordsWriter {}
 
-impl GachaRecordsWriter for ExcelGachaRecordsWriter {
-  type Error = ExcelGachaRecordsWriteErrorKind;
+// impl GachaRecordsWriter for ExcelGachaRecordsWriter {
+//   type Error = ExcelGachaRecordsWriteErrorKind;
 
-  fn write(
-    &self,
-    metadata: &GachaMetadata,
-    records: Vec<GachaRecord>,
-    output: impl AsRef<Path>,
-  ) -> Result<(), Self::Error> {
-    todo!("Implement Excel Gacha Records Writer");
-  }
-}
+//   fn write(
+//     &self,
+//     metadata: &GachaMetadata,
+//     records: Vec<GachaRecord>,
+//     output: impl AsRef<Path>,
+//   ) -> Result<(), Self::Error> {
+//     todo!("Implement Excel Gacha Records Writer");
+//   }
+// }
 
 // endregion
 
@@ -647,7 +919,7 @@ mod tests {
   }
 
   #[test]
-  fn test_legacy_uigf_v2_2_gacha_records_reader() {
+  fn test_legacy_uigf_v2_2_reader() {
     // v2.2: The name and item_type fields must be provided.
     let input = br#"{
       "info": {
@@ -691,7 +963,7 @@ mod tests {
   }
 
   #[test]
-  fn test_legacy_uigf_v2_3_gacha_records_reader() {
+  fn test_legacy_uigf_v2_3_reader() {
     // v2.3: The item_id field must be provided.
     let input = br#"{
       "info": {
@@ -808,6 +1080,113 @@ mod tests {
     assert_eq!(records, read_records);
 
     temp_dir.close().unwrap();
+  }
+
+  #[test]
+  fn test_uigf_v4_0_gacha_records_reader() {
+    let input = br#"{
+      "info": {
+        "export_timestamp": "1672531200",
+        "export_app": "genshin",
+        "export_app_version": "1.0.0",
+        "version": "v4.0"
+      },
+      "hk4e": [
+        {
+          "uid": "100000000",
+          "timezone": 8,
+          "lang": "en-us",
+          "list": [
+            {
+              "uigf_gacha_type": "301",
+              "gacha_type": "301",
+              "item_id": "10000002",
+              "time": "2023-01-01 00:00:00",
+              "id": "1000000000000000000"
+            }
+          ]
+        }
+      ],
+      "hkrpg": [
+        {
+          "uid": "100000001",
+          "timezone": 8,
+          "lang": "en-us",
+          "list": [
+            {
+              "gacha_id": "1",
+              "gacha_type": "11",
+              "item_id": "1001",
+              "time": "2023-01-01 00:00:00",
+              "id": "1000000000000000001"
+            }
+          ]
+        }
+      ],
+      "nap": [
+        {
+          "uid": "100000002",
+          "timezone": 8,
+          "lang": "en-us",
+          "list": [
+            {
+              "gacha_type": "1",
+              "item_id": "1011",
+              "time": "2023-01-01 00:00:00",
+              "id": "1000000000000000002"
+            }
+          ]
+        }
+      ]
+    }"#;
+
+    let records = UigfGachaRecordsReader { businesses: None }
+      .read_from_slice(GachaMetadata::embedded(), input)
+      .unwrap();
+
+    assert_eq!(records.len(), 3);
+
+    let record = &records[0];
+    assert_eq!(record.business, Business::GenshinImpact);
+    assert_eq!(record.uid, 100_000_000);
+    assert_eq!(record.id, "1000000000000000000");
+    assert_eq!(record.gacha_type, 301);
+    assert_eq!(record.gacha_id, None);
+    assert_eq!(record.rank_type, 5);
+    assert_eq!(record.count, 1);
+    assert_eq!(record.lang, "en-us");
+    assert_eq!(record.time, "2023-01-01 00:00:00");
+    assert_eq!(record.name, "Kamisato Ayaka");
+    assert_eq!(record.item_type, "Character");
+    assert_eq!(record.item_id.as_deref(), Some("10000002"));
+
+    let record = &records[1];
+    assert_eq!(record.business, Business::HonkaiStarRail);
+    assert_eq!(record.uid, 100_000_001);
+    assert_eq!(record.id, "1000000000000000001");
+    assert_eq!(record.gacha_type, 11);
+    assert_eq!(record.gacha_id, Some(1));
+    assert_eq!(record.rank_type, 4);
+    assert_eq!(record.count, 1);
+    assert_eq!(record.lang, "en-us");
+    assert_eq!(record.time, "2023-01-01 00:00:00");
+    assert_eq!(record.name, "March 7th");
+    assert_eq!(record.item_type, "Character");
+    assert_eq!(record.item_id.as_deref(), Some("1001"));
+
+    let record = &records[2];
+    assert_eq!(record.business, Business::ZenlessZoneZero);
+    assert_eq!(record.uid, 100_000_002);
+    assert_eq!(record.id, "1000000000000000002");
+    assert_eq!(record.gacha_type, 1);
+    assert_eq!(record.gacha_id, None);
+    assert_eq!(record.rank_type, 3);
+    assert_eq!(record.count, 1);
+    assert_eq!(record.lang, "en-us");
+    assert_eq!(record.time, "2023-01-01 00:00:00");
+    assert_eq!(record.name, "Anby");
+    assert_eq!(record.item_type, "Agents");
+    assert_eq!(record.item_id.as_deref(), Some("1011"));
   }
 }
 
