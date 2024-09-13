@@ -318,8 +318,8 @@ impl GachaRecordsWriter for LegacyUigfGachaRecordsWriter {
       if record.business != BUSINESS {
         return Err(Self::Error::IncompatibleRecordBusiness {
           business: record.business,
-          id: record.id.clone(),
-          name: record.name.clone(),
+          id: record.id,
+          name: record.name,
         });
       } else if record.uid != *account_uid {
         return Err(Self::Error::IncompatibleRecordOwner {
@@ -328,8 +328,8 @@ impl GachaRecordsWriter for LegacyUigfGachaRecordsWriter {
         });
       } else if record.lang != *account_locale {
         return Err(Self::Error::IncompatibleRecordLocale {
-          expected: account_locale.clone(),
-          actual: record.lang.clone(),
+          expected: account_locale.to_owned(),
+          actual: record.lang,
         });
       }
 
@@ -341,15 +341,15 @@ impl GachaRecordsWriter for LegacyUigfGachaRecordsWriter {
 
       // Always fill in these optional fields to ensure compatibility
       uigf.list.push(LegacyUigfItem {
-        id: record.id.clone(),
+        id: record.id,
         uid: Some(record.uid),
         gacha_type: record.gacha_type,
         count: Some(record.count),
-        time: record.time.clone(), // TODO: region_time_zone
-        name: Some(record.name.clone()),
-        lang: Some(record.lang.clone()),
-        item_id: record.item_id.clone(),
-        item_type: Some(record.item_type.clone()),
+        time: record.time, // TODO: region_time_zone
+        name: Some(record.name),
+        lang: Some(record.lang),
+        item_id: record.item_id,
+        item_type: Some(record.item_type),
         rank_type: Some(record.rank_type),
         uigf_gacha_type,
       })
