@@ -85,7 +85,7 @@ impl FromStr for UigfVersion {
     let caps = VERSION_NUMBER_REGEX.captures(s).ok_or(())?;
     let major = caps["major"].parse().unwrap();
     let minor = caps["minor"].parse().unwrap();
-    Ok(UigfVersion { major, minor })
+    Ok(Self { major, minor })
   }
 }
 
@@ -309,15 +309,12 @@ impl GachaRecordsWriter for LegacyUigfGachaRecordsWriter {
       region_time_zone,
     } = self;
 
-    let export_time_str = export_time.format(TIME_FORMAT).unwrap();
-    let export_timestamp = export_time.unix_timestamp();
-
     let mut uigf = LegacyUigf {
       info: LegacyUigfInfo {
         uid: *account_uid,
         lang: Some(account_locale.to_owned()),
-        export_time: Some(export_time_str),
-        export_timestamp: Some(export_timestamp as _),
+        export_time: Some(export_time.format(TIME_FORMAT).unwrap()),
+        export_timestamp: Some(export_time.unix_timestamp() as _),
         export_app: Some(consts::ID.to_owned()),
         export_app_version: Some(consts::VERSION_WITH_PREFIX.to_owned()),
         uigf_version: uigf_version.to_string(),
@@ -852,7 +849,7 @@ impl GachaRecordsWriter for UigfGachaRecordsWriter {
                 gacha_type: record.gacha_type,
               })?,
             gacha_type: record.gacha_type,
-            item_id: record.item_id.as_ref().unwrap().to_owned(),
+            item_id: record.item_id.unwrap_or(metadata_entry.id.to_owned()),
             count: Some(record.count),
             time: record.time,
             item_type: Some(metadata_entry.category_name.to_owned()),
@@ -869,8 +866,13 @@ impl GachaRecordsWriter for UigfGachaRecordsWriter {
         hkrpg,
         UigfHkrpgItem,
         |record: GachaRecord, metadata_entry: MetadataStructEntryRef<'_>| {
+          // HACK: In Honkai Star Rail business,
+          //   the gacha_id value of the Record must exist.
+          //   Unless the user manually modifies the database record
+          let gacha_id = record.gacha_id.unwrap();
+
           Ok(UigfHkrpgItem {
-            gacha_id: record.gacha_id.unwrap(), // FIXME: Safety?
+            gacha_id,
             gacha_type: record.gacha_type,
             item_id: record.item_id.unwrap_or(metadata_entry.id.to_owned()),
             count: Some(record.count),
@@ -1053,20 +1055,142 @@ impl GachaRecordsReader for UigfGachaRecordsReader {
 declare_error_kinds!(
   SrgfGachaRecordsWriteError,
   kinds {
-    #[error("Todo")]
-    Todo,
+    #[error("Incompatible record business: {business}, id: {id}, name: {name}")]
+    IncompatibleRecordBusiness {
+      business: Business,
+      id: String,
+      name: String
+    },
+
+    #[error("Incompatible record owner uid: expected: {expected}, actual: {actual}")]
+    IncompatibleRecordOwner {
+      expected: u32,
+      actual: u32
+    },
+
+    #[error("Incompatible record locale: expected: {expected}, actual: {actual}")]
+    IncompatibleRecordLocale {
+      expected: String,
+      actual: String
+    },
+
+    #[error("Failed to create output '{path}': {cause}")]
+    CreateOutput {
+      path: PathBuf,
+      cause: io::Error => format_args!("{}", cause)
+    },
+
+    #[error("Serialization json error: {cause}")]
+    Serialize {
+      cause: serde_json::Error => format_args!("{}", cause)
+    },
   }
 );
 
 declare_error_kinds!(
   SrgfGachaRecordsReadError,
   kinds {
-    #[error("Todo")]
-    Todo,
+    #[error("Invalid json input: {cause}")]
+    InvalidInput {
+      cause: serde_json::Error => format_args!("{}", cause)
+    },
+
+    #[error("Invalid uigf version string: {version}")]
+    InvalidVersion { version: String },
+
+    #[error("Unsupported uigf version: {version} (Allowed: {allowed})")]
+    UnsupportedVersion {
+      version: UigfVersion => format_args!("{}", version),
+      allowed: String
+    },
+
+    #[error("Inconsistent with expected uid: expected: {expected}, actual: {actual})")]
+    InconsistentUid { expected: u32, actual: u32 },
+
+    #[error("Missing metadata entry: {business}, locale: {lang}, {key}: {val}")]
+    MissingMetadataEntry {
+      business: Business,
+      lang: String,
+      key: &'static str,
+      val: String
+    },
   }
 );
 
-pub struct SrgfGachaRecordsWriter {}
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct Srgf {
+  pub info: SrgfInfo,
+  pub list: Vec<SrgfItem>,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct SrgfInfo {
+  #[serde(
+    deserialize_with = "serde_helper::de::string_as_number",
+    serialize_with = "serde_helper::ser::number_as_string"
+  )]
+  pub uid: u32,
+  pub lang: String,
+  pub export_timestamp: Option<u64>,
+  pub export_app: Option<String>,
+  pub export_app_version: Option<String>,
+  pub srgf_version: String,
+  pub region_time_zone: i8,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct SrgfItem {
+  pub id: String,
+  #[serde(
+    deserialize_with = "serde_helper::de::string_as_number_option",
+    serialize_with = "serde_helper::ser::option_number_as_string",
+    default = "Option::default",
+    skip_serializing_if = "Option::is_none"
+  )]
+  pub uid: Option<u32>,
+  #[serde(
+    deserialize_with = "serde_helper::de::string_as_number",
+    serialize_with = "serde_helper::ser::number_as_string"
+  )]
+  pub gacha_id: u32,
+  #[serde(
+    deserialize_with = "serde_helper::de::string_as_number",
+    serialize_with = "serde_helper::ser::number_as_string"
+  )]
+  pub gacha_type: u32,
+  #[serde(
+    deserialize_with = "serde_helper::de::string_as_number_option",
+    serialize_with = "serde_helper::ser::option_number_as_string",
+    default = "Option::default",
+    skip_serializing_if = "Option::is_none"
+  )]
+  pub count: Option<u32>,
+  pub time: String,
+  pub name: Option<String>,
+  pub lang: Option<String>,
+  pub item_id: String,
+  pub item_type: Option<String>,
+  #[serde(
+    deserialize_with = "serde_helper::de::string_as_number_option",
+    serialize_with = "serde_helper::ser::option_number_as_string",
+    default = "Option::default",
+    skip_serializing_if = "Option::is_none"
+  )]
+  pub rank_type: Option<u32>,
+}
+
+impl Srgf {
+  pub const V1_0: UigfVersion = UigfVersion::new(1, 0);
+  pub const SUPPORTED_VERSIONS: [UigfVersion; 1] = [Self::V1_0];
+}
+
+pub struct SrgfGachaRecordsWriter {
+  pub srgf_version: UigfVersion, // SRGF version: v1.0
+  pub account_locale: String,
+  pub account_uid: u32,
+  pub export_time: OffsetDateTime,
+  pub region_time_zone: i8,
+}
 
 impl GachaRecordsWriter for SrgfGachaRecordsWriter {
   type Error = SrgfGachaRecordsWriteErrorKind;
@@ -1077,11 +1201,88 @@ impl GachaRecordsWriter for SrgfGachaRecordsWriter {
     records: Vec<GachaRecord>,
     output: impl AsRef<Path>,
   ) -> Result<(), Self::Error> {
-    todo!("Implement SRGF Gacha Records Writer");
+    // SRGF Gacha Records only support: Honkai Star Rail
+    const BUSINESS: Business = Business::HonkaiStarRail;
+
+    let Self {
+      srgf_version,
+      account_locale,
+      account_uid,
+      export_time,
+      region_time_zone,
+    } = self;
+
+    let mut srgf = Srgf {
+      info: SrgfInfo {
+        uid: *account_uid,
+        lang: account_locale.to_owned(),
+        export_timestamp: Some(export_time.unix_timestamp() as _),
+        export_app: Some(consts::ID.to_owned()),
+        export_app_version: Some(consts::VERSION_WITH_PREFIX.to_owned()),
+        srgf_version: srgf_version.to_string(),
+        region_time_zone: *region_time_zone,
+      },
+      list: Vec::with_capacity(records.len()),
+    };
+
+    for record in records {
+      // Avoid writing records that are not compatible with the account.
+      if record.business != BUSINESS {
+        return Err(Self::Error::IncompatibleRecordBusiness {
+          business: record.business,
+          id: record.id,
+          name: record.name,
+        });
+      } else if record.uid != *account_uid {
+        return Err(Self::Error::IncompatibleRecordOwner {
+          expected: *account_uid,
+          actual: record.uid,
+        });
+      } else if record.lang != *account_locale {
+        return Err(Self::Error::IncompatibleRecordLocale {
+          expected: account_locale.to_owned(),
+          actual: record.lang,
+        });
+      }
+
+      // HACK: In Honkai Star Rail business,
+      //   the gacha_id and item_id value of the Record must exist.
+      //   Unless the user manually modifies the database record
+      let gacha_id = record.gacha_id.unwrap();
+      let item_id = record.item_id.unwrap();
+
+      srgf.list.push(SrgfItem {
+        id: record.id,
+        uid: Some(record.uid),
+        gacha_id,
+        gacha_type: record.gacha_type,
+        count: Some(record.count),
+        time: record.time, // TODO: region_time_zone
+        name: Some(record.name),
+        lang: Some(record.lang),
+        item_id,
+        item_type: Some(record.item_type),
+        rank_type: Some(record.rank_type),
+      })
+    }
+
+    let output = output.as_ref().with_extension("json");
+    let output_file = File::create(&output).map_err(|cause| Self::Error::CreateOutput {
+      path: output,
+      cause,
+    })?;
+
+    serde_json::to_writer(BufWriter::new(output_file), &srgf)
+      .map_err(|cause| Self::Error::Serialize { cause })?;
+
+    Ok(())
   }
 }
 
-pub struct SrgfGachaRecordsReader {}
+pub struct SrgfGachaRecordsReader {
+  pub expected_locale: String,
+  pub expected_uid: u32,
+}
 
 impl GachaRecordsReader for SrgfGachaRecordsReader {
   type Error = SrgfGachaRecordsReadErrorKind;
@@ -1091,7 +1292,72 @@ impl GachaRecordsReader for SrgfGachaRecordsReader {
     metadata: &GachaMetadata,
     input: impl Read,
   ) -> Result<Vec<GachaRecord>, Self::Error> {
-    todo!("Implement SRGF Gacha Records Reader");
+    // Legacy SRGF Gacha Records only support: Honkai Star Rail
+    const BUSINESS: Business = Business::HonkaiStarRail;
+
+    let Self {
+      expected_locale,
+      expected_uid,
+    } = self;
+
+    let srgf: Srgf =
+      serde_json::from_reader(input).map_err(|cause| Self::Error::InvalidInput { cause })?;
+
+    let srgf_version =
+      UigfVersion::from_str(&srgf.info.srgf_version).map_err(|_| Self::Error::InvalidVersion {
+        version: srgf.info.srgf_version,
+      })?;
+
+    if !Srgf::SUPPORTED_VERSIONS.contains(&srgf_version) {
+      return Err(Self::Error::UnsupportedVersion {
+        version: srgf_version,
+        allowed: Srgf::SUPPORTED_VERSIONS
+          .iter()
+          .map(ToString::to_string)
+          .collect::<Vec<_>>()
+          .join(", "),
+      });
+    }
+
+    if srgf.info.uid != *expected_uid {
+      return Err(Self::Error::InconsistentUid {
+        expected: *expected_uid,
+        actual: srgf.info.uid,
+      });
+    }
+
+    let mut records = Vec::with_capacity(srgf.list.len());
+    for item in srgf.list {
+      let locale = item.lang.unwrap_or(expected_locale.clone());
+      let metadata_entry = metadata
+        .obtain(BUSINESS, &locale)
+        .and_then(|map| map.entry_from_id(&item.item_id))
+        .ok_or_else(|| Self::Error::MissingMetadataEntry {
+          business: BUSINESS,
+          lang: locale.clone(),
+          key: FIELD_ITEM_ID,
+          val: item.item_id.clone(),
+        })?;
+
+      records.push(GachaRecord {
+        business: BUSINESS,
+        uid: item.uid.unwrap_or(*expected_uid),
+        id: item.id,
+        gacha_type: item.gacha_type,
+        gacha_id: Some(item.gacha_id),
+        rank_type: item.rank_type.unwrap_or(metadata_entry.rank as _),
+        count: item.count.unwrap_or(1),
+        lang: locale,
+        time: item.time, // TODO: srgf.info.region_time_zone
+        name: item.name.unwrap_or(metadata_entry.name.to_owned()),
+        item_type: item
+          .item_type
+          .unwrap_or(metadata_entry.category_name.to_owned()),
+        item_id: Some(item.item_id),
+      })
+    }
+
+    Ok(records)
   }
 }
 
@@ -1131,7 +1397,7 @@ mod tests {
   use super::*;
 
   #[test]
-  fn test_version_number_from_str() {
+  fn test_parse_uigf_version() {
     assert_eq!("v2.2".parse(), Ok(UigfVersion::V2_2));
     assert_eq!("v2.3".parse(), Ok(UigfVersion::V2_3));
     assert_eq!("v2.4".parse(), Ok(UigfVersion::V2_4));
@@ -1144,7 +1410,7 @@ mod tests {
   }
 
   #[test]
-  fn test_legacy_uigf_v2_2_reader() {
+  fn test_uigf_v2_2_reader() {
     // v2.2: The name and item_type fields must be provided.
     let input = br#"{
       "info": {
@@ -1188,7 +1454,7 @@ mod tests {
   }
 
   #[test]
-  fn test_legacy_uigf_v2_3_reader() {
+  fn test_uigf_v2_3_reader() {
     // v2.3: The item_id field must be provided.
     let input = br#"{
       "info": {
@@ -1231,7 +1497,7 @@ mod tests {
   }
 
   #[test]
-  fn test_legacy_uigf_v2_4_region_time_zone() {
+  fn test_uigf_v2_4_reader_null_region_time_zone() {
     // v2.4: The region_time_zone field must be provided.
     let input = br#"{
       "info": {
@@ -1265,7 +1531,7 @@ mod tests {
   }
 
   #[test]
-  fn test_legacy_uigf_write_and_read() {
+  fn test_uigf_v2_2_writer_and_reader() {
     let records = vec![GachaRecord {
       business: Business::GenshinImpact,
       uid: 100_000_000,
@@ -1308,11 +1574,11 @@ mod tests {
   }
 
   #[test]
-  fn test_uigf_v4_0_gacha_records_reader() {
+  fn test_uigf_v4_0_reader() {
     let input = br#"{
       "info": {
         "export_timestamp": "1672531200",
-        "export_app": "genshin",
+        "export_app": "foobar",
         "export_app_version": "1.0.0",
         "version": "v4.0"
       },
@@ -1415,7 +1681,7 @@ mod tests {
   }
 
   #[test]
-  fn test_uigf_v4_0_gacha_records_writer() {
+  fn test_uigf_v4_0_writer_and_reader() {
     let records = vec![
       GachaRecord {
         business: Business::GenshinImpact,
@@ -1480,6 +1746,93 @@ mod tests {
     let read_records = UigfGachaRecordsReader { businesses: None }
       .read(GachaMetadata::embedded(), input)
       .unwrap();
+
+    assert_eq!(records, read_records);
+
+    temp_dir.close().unwrap();
+  }
+
+  #[test]
+  fn test_srgf_v1_0_reader() {
+    let input = br#"{
+      "info": {
+        "uid": "100000000",
+        "lang": "en-us",
+        "srgf_version": "v1.0",
+        "region_time_zone": 8
+      },
+      "list": [
+        {
+          "id": "1000000000000000000",
+          "gacha_id": "1",
+          "gacha_type": "301",
+          "time": "2023-01-01 00:00:00",
+          "item_id": "1001"
+        }
+      ]
+    }"#;
+
+    let records = SrgfGachaRecordsReader {
+      expected_locale: "en-us".to_owned(),
+      expected_uid: 100_000_000,
+    }
+    .read_from_slice(GachaMetadata::embedded(), input)
+    .unwrap();
+
+    assert_eq!(records.len(), 1);
+
+    let record = &records[0];
+    assert_eq!(record.business, Business::HonkaiStarRail);
+    assert_eq!(record.uid, 100_000_000);
+    assert_eq!(record.id, "1000000000000000000");
+    assert_eq!(record.gacha_type, 301);
+    assert_eq!(record.gacha_id, Some(1));
+    assert_eq!(record.rank_type, 4);
+    assert_eq!(record.count, 1);
+    assert_eq!(record.lang, "en-us");
+    assert_eq!(record.time, "2023-01-01 00:00:00");
+    assert_eq!(record.name, "March 7th");
+    assert_eq!(record.item_type, "Character");
+    assert_eq!(record.item_id.as_deref(), Some("1001"));
+  }
+
+  #[test]
+  fn test_srgf_v1_0_writer_and_reader() {
+    let records = vec![GachaRecord {
+      business: Business::HonkaiStarRail,
+      uid: 100_000_000,
+      id: "1000000000000000000".to_owned(),
+      gacha_type: 301,
+      gacha_id: Some(1),
+      rank_type: 4,
+      count: 1,
+      lang: "en-us".to_owned(),
+      time: "2023-01-01 00:00:00".to_owned(),
+      name: "March 7th".to_owned(),
+      item_type: "Character".to_owned(),
+      item_id: Some("1001".to_owned()),
+    }];
+
+    let temp_dir = tempfile::tempdir().unwrap();
+    let output = temp_dir.path().join("test_srgf_v1_0_gacha_records_write");
+
+    SrgfGachaRecordsWriter {
+      srgf_version: Srgf::V1_0,
+      account_locale: "en-us".to_owned(),
+      account_uid: 100_000_000,
+      export_time: OffsetDateTime::now_utc().to_offset(*consts::LOCAL_OFFSET),
+      region_time_zone: 8,
+    }
+    .write(GachaMetadata::embedded(), records.clone(), &output)
+    .unwrap();
+
+    let input = File::open(output.with_extension("json")).unwrap();
+    let read_records = SrgfGachaRecordsReader {
+      expected_locale: "en-us".to_owned(),
+      expected_uid: 100_000_000,
+    }
+    .read(GachaMetadata::embedded(), input)
+    .unwrap();
 
     assert_eq!(records, read_records);
 
