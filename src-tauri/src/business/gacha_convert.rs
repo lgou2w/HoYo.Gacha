@@ -14,7 +14,7 @@ use time::OffsetDateTime;
 
 use crate::consts;
 use crate::error::{declare_error_kinds, ErrorDetails};
-use crate::models::{Business, GachaMetadata, GachaRecord};
+use crate::models::{Business, GachaMetadata, GachaRecord, MetadataStructEntryRef};
 use crate::utilities::serde_helper;
 
 // region: Declares
@@ -53,7 +53,7 @@ pub trait GachaRecordsReader {
 // region: Version number
 
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
-pub struct VersionNumber {
+pub struct UigfVersion {
   pub major: u8,
   pub minor: u8,
 }
@@ -61,32 +61,65 @@ pub struct VersionNumber {
 static VERSION_NUMBER_REGEX: Lazy<Regex> =
   Lazy::new(|| Regex::new(r"^v(?P<major>\d+)\.(?P<minor>\d+)$").unwrap());
 
-impl VersionNumber {
+impl UigfVersion {
+  pub const V2_2: Self = Self::new(2, 2);
+  pub const V2_3: Self = Self::new(2, 3);
+  pub const V2_4: Self = Self::new(2, 4);
+  pub const V3_0: Self = Self::new(3, 0);
+  pub const V4_0: Self = Self::new(4, 0);
   pub const fn new(major: u8, minor: u8) -> Self {
     Self { major, minor }
   }
 }
 
-impl Display for VersionNumber {
+impl Display for UigfVersion {
   fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
     write!(f, "v{}.{}", self.major, self.minor)
   }
 }
 
-impl FromStr for VersionNumber {
+impl FromStr for UigfVersion {
   type Err = ();
 
   fn from_str(s: &str) -> Result<Self, Self::Err> {
     let caps = VERSION_NUMBER_REGEX.captures(s).ok_or(())?;
     let major = caps["major"].parse().unwrap();
     let minor = caps["minor"].parse().unwrap();
-    Ok(VersionNumber { major, minor })
+    Ok(UigfVersion { major, minor })
   }
 }
 
 // endregion
 
 // region: UIGF
+
+/*
+ * Gacha type mapping between Official and UIGF
+ * Only support: Genshin Impact
+ *
+ * Gacha Type (Official) | Gacha Type (UIGF)
+ *       100             |       100
+ *       200             |       200
+ *       301             |       301
+ *       400             |       301
+ *       302             |       302
+ *       500             |       500
+ */
+static UIGF_GACHA_TYPE_MAPPINGS: Lazy<HashMap<u32, u32>> = Lazy::new(|| {
+  let mut m = HashMap::with_capacity(6);
+  m.insert(100, 100);
+  m.insert(200, 200);
+  m.insert(301, 301);
+  m.insert(400, 301); // 400 -> 301
+  m.insert(302, 302);
+  m.insert(500, 500);
+  m
+});
+
+const FIELD_NAME: &str = "name";
+const FIELD_ITEM_ID: &str = "item_id";
+const FIELD_ITEM_TYPE: &str = "item_type";
+const FIELD_REGION_TIME_ZONE: &str = "region_time_zone";
 
 // Legacy UIGF Gacha Records
 // Only business: Genshin Impact
@@ -146,7 +179,7 @@ declare_error_kinds!(
 
     #[error("Unsupported uigf version: {version} (Allowed: {allowed})")]
     UnsupportedVersion {
-      version: VersionNumber => format_args!("{}", version),
+      version: UigfVersion => format_args!("{}", version),
       allowed: String
     },
 
@@ -166,26 +199,6 @@ declare_error_kinds!(
   }
 );
 
-/*
- * Gacha Type (Official) | Gacha Type (Legacy UIGF)
- *       100             |       100
- *       200             |       200
- *       301             |       301
- *       400             |       301
- *       302             |       302
- *       500             |       500
- */
-static LEGACY_UIGF_GACHA_TYPE_MAPPINGS: Lazy<HashMap<u32, u32>> = Lazy::new(|| {
-  let mut m = HashMap::with_capacity(6);
-  m.insert(100, 100);
-  m.insert(200, 200);
-  m.insert(301, 301);
-  m.insert(400, 301); // 400 -> 301
-  m.insert(302, 302);
-  m.insert(500, 500);
-  m
-});
-
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct LegacyUigf {
   pub info: LegacyUigfInfo,
@@ -193,12 +206,12 @@ pub struct LegacyUigf {
 }
 
 impl LegacyUigf {
-  pub const V2_2: VersionNumber = VersionNumber::new(2, 2);
-  pub const V2_3: VersionNumber = VersionNumber::new(2, 3);
-  pub const V2_4: VersionNumber = VersionNumber::new(2, 4);
-  pub const V3_0: VersionNumber = VersionNumber::new(3, 0);
-  pub const SUPPORTED_VERSIONS: [VersionNumber; 4] =
-    [Self::V2_2, Self::V2_3, Self::V2_4, Self::V3_0];
+  pub const SUPPORTED_VERSIONS: [UigfVersion; 4] = [
+    UigfVersion::V2_2,
+    UigfVersion::V2_3,
+    UigfVersion::V2_4,
+    UigfVersion::V3_0,
+  ];
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -267,7 +280,7 @@ pub struct LegacyUigfItem {
 }
 
 pub struct LegacyUigfGachaRecordsWriter {
-  pub uigf_version: VersionNumber, // Legacy UIGF version: v2.2, v2.3, v2.4, v3.0
+  pub uigf_version: UigfVersion, // Legacy UIGF version: v2.2, v2.3, v2.4, v3.0
   pub account_locale: String,
   pub account_uid: u32,
   pub export_time: OffsetDateTime,
@@ -333,7 +346,7 @@ impl GachaRecordsWriter for LegacyUigfGachaRecordsWriter {
         });
       }
 
-      let uigf_gacha_type = *LEGACY_UIGF_GACHA_TYPE_MAPPINGS
+      let uigf_gacha_type = *UIGF_GACHA_TYPE_MAPPINGS
         .get(&record.gacha_type)
         .ok_or_else(|| Self::Error::FailedMappingGachaType {
           gacha_type: record.gacha_type,
@@ -392,11 +405,10 @@ impl GachaRecordsReader for LegacyUigfGachaRecordsReader {
     let uigf: LegacyUigf =
       serde_json::from_reader(input).map_err(|cause| Self::Error::InvalidInput { cause })?;
 
-    let uigf_version = VersionNumber::from_str(&uigf.info.uigf_version).map_err(|_| {
-      Self::Error::InvalidVersion {
+    let uigf_version =
+      UigfVersion::from_str(&uigf.info.uigf_version).map_err(|_| Self::Error::InvalidVersion {
         version: uigf.info.uigf_version,
-      }
-    })?;
+      })?;
 
     if !LegacyUigf::SUPPORTED_VERSIONS.contains(&uigf_version) {
       return Err(Self::Error::UnsupportedVersion {
@@ -416,14 +428,9 @@ impl GachaRecordsReader for LegacyUigfGachaRecordsReader {
       });
     }
 
-    let is_v2_2 = uigf_version == LegacyUigf::V2_2;
-    let is_v2_3 = uigf_version == LegacyUigf::V2_3;
-    let is_v2_4 = uigf_version == LegacyUigf::V2_4;
-
-    const FIELD_NAME: &str = "name";
-    const FIELD_ITEM_ID: &str = "item_id";
-    const FIELD_ITEM_TYPE: &str = "item_type";
-    const FIELD_REGION_TIME_ZONE: &str = "region_time_zone";
+    let is_v2_2 = uigf_version == UigfVersion::V2_2;
+    let is_v2_3 = uigf_version == UigfVersion::V2_3;
+    let is_v2_4 = uigf_version == UigfVersion::V2_4;
 
     if is_v2_4 && uigf.info.region_time_zone.is_none() {
       return Err(Self::Error::RequiredField {
@@ -452,13 +459,15 @@ impl GachaRecordsReader for LegacyUigfGachaRecordsReader {
         });
       }
 
+      let name = item.name.clone();
+      let item_id = item.item_id.clone();
       let metadata_entry = metadata
         .obtain(BUSINESS, &locale)
         .and_then(|map| {
           if is_v2_2 {
-            map.entry_from_name_first(item.name.as_ref().unwrap())
+            map.entry_from_name_first(name.as_ref().unwrap())
           } else {
-            map.entry_from_id(item.item_id.as_ref().unwrap())
+            map.entry_from_id(item_id.as_ref().unwrap())
           }
         })
         .ok_or_else(|| Self::Error::MissingMetadataEntry {
@@ -466,9 +475,9 @@ impl GachaRecordsReader for LegacyUigfGachaRecordsReader {
           lang: locale.clone(),
           key: if is_v2_2 { FIELD_NAME } else { FIELD_ITEM_ID },
           val: if is_v2_2 {
-            item.name.as_ref().unwrap().to_owned()
+            name.clone().unwrap()
           } else {
-            item.item_id.as_ref().unwrap().to_owned()
+            item_id.clone().unwrap()
           },
         })?;
 
@@ -484,11 +493,11 @@ impl GachaRecordsReader for LegacyUigfGachaRecordsReader {
         count: item.count.unwrap_or(1),
         lang: locale,
         time: item.time, // TODO: uigf.info.region_time_zone
-        name: item.name.clone().unwrap_or(metadata_entry.name.to_owned()),
+        name: item.name.unwrap_or(metadata_entry.name.to_owned()),
         item_type: item
           .item_type
           .unwrap_or(metadata_entry.category_name.to_owned()),
-        item_id: Some(item.item_id.clone().unwrap_or(metadata_entry.id.to_owned())),
+        item_id: Some(item.item_id.unwrap_or(metadata_entry.id.to_owned())),
       })
     }
 
@@ -503,8 +512,32 @@ impl GachaRecordsReader for LegacyUigfGachaRecordsReader {
 declare_error_kinds!(
   UigfGachaRecordsWriteError,
   kinds {
-    #[error("Todo")]
-    Todo,
+    #[error("Missing account information provided: {uid}")]
+    MissingAccountInfo { uid: u32 },
+
+    #[error("Missing metadata entry: {business}, locale: {lang}, {key}: {val}")]
+    MissingMetadataEntry {
+      business: Business,
+      lang: String,
+      key: &'static str,
+      val: String
+    },
+
+    #[error("Failed to mapping uigf gacha type: {gacha_type}")]
+    FailedMappingGachaType {
+      gacha_type: u32
+    },
+
+    #[error("Failed to create output '{path}': {cause}")]
+    CreateOutput {
+      path: PathBuf,
+      cause: io::Error => format_args!("{}", cause)
+    },
+
+    #[error("Serialization json error: {cause}")]
+    Serialize {
+      cause: serde_json::Error => format_args!("{}", cause)
+    },
   }
 );
 
@@ -521,7 +554,7 @@ declare_error_kinds!(
 
     #[error("Unsupported uigf version: {version} (Allowed: {allowed})")]
     UnsupportedVersion {
-      version: VersionNumber => format_args!("{}", version),
+      version: UigfVersion => format_args!("{}", version),
       allowed: String
     },
 
@@ -672,11 +705,14 @@ pub struct UigfNapItem {
 }
 
 impl Uigf {
-  pub const V4_0: VersionNumber = VersionNumber::new(4, 0);
-  pub const SUPPORTED_VERSIONS: [VersionNumber; 1] = [Self::V4_0];
+  pub const SUPPORTED_VERSIONS: [UigfVersion; 1] = [UigfVersion::V4_0];
 }
 
-pub struct UigfGachaRecordsWriter {}
+pub struct UigfGachaRecordsWriter {
+  pub businesses: Option<HashSet<Business>>, // None for all businesses
+  pub accounts: HashMap<u32, (i8, String)>,  // uid -> (timezone, lang)
+  pub export_time: OffsetDateTime,
+}
 
 impl GachaRecordsWriter for UigfGachaRecordsWriter {
   type Error = UigfGachaRecordsWriteErrorKind;
@@ -687,7 +723,196 @@ impl GachaRecordsWriter for UigfGachaRecordsWriter {
     records: Vec<GachaRecord>,
     output: impl AsRef<Path>,
   ) -> Result<(), Self::Error> {
-    todo!("Implement Fresh UIGF Gacha Records Writer");
+    let Self {
+      businesses,
+      accounts,
+      export_time,
+    } = self;
+
+    let mut uigf = Uigf {
+      info: UigfInfo {
+        export_timestamp: export_time.unix_timestamp() as _,
+        export_app: consts::ID.to_owned(),
+        export_app_version: consts::VERSION_WITH_PREFIX.to_owned(),
+        version: UigfVersion::V4_0.to_string(),
+      },
+      hk4e: None,
+      hkrpg: None,
+      nap: None,
+    };
+
+    // Group the records by business and uid
+    let mut groups = records.into_iter().fold(
+      HashMap::<Business, HashMap<u32, Vec<_>>>::new(),
+      |mut acc, record| {
+        acc
+          .entry(record.business)
+          .or_default()
+          .entry(record.uid)
+          .or_default()
+          .push(record);
+
+        acc
+      },
+    );
+
+    // Filter out the businesses that are not expected
+    let (hk4e, hkrpg, nap) = if let Some(businesses) = businesses {
+      (
+        if businesses.contains(&Business::GenshinImpact) {
+          groups.remove(&Business::GenshinImpact)
+        } else {
+          None
+        },
+        if businesses.contains(&Business::HonkaiStarRail) {
+          groups.remove(&Business::HonkaiStarRail)
+        } else {
+          None
+        },
+        if businesses.contains(&Business::ZenlessZoneZero) {
+          groups.remove(&Business::ZenlessZoneZero)
+        } else {
+          None
+        },
+      )
+    } else {
+      (
+        groups.remove(&Business::GenshinImpact),
+        groups.remove(&Business::HonkaiStarRail),
+        groups.remove(&Business::ZenlessZoneZero),
+      )
+    };
+
+    macro_rules! convert {
+      ($business:ident, $project:ident, $item:ident, $item_convert:expr) => {
+        let mut projects = Vec::with_capacity($project.len());
+        for (uid, records) in $project {
+          // Ensure that the account information is provided
+          let (timezone, lang) = accounts
+            .get(&uid)
+            .cloned()
+            .ok_or(Self::Error::MissingAccountInfo { uid })?;
+
+          let mut list = Vec::with_capacity(records.len());
+          for record in records {
+            // Find the metadata entry
+            let name = record.name.clone();
+            let item_id = record.item_id.clone();
+            let has_item_id = item_id.is_some();
+
+            let metadata_entry = metadata
+              .obtain(Business::$business, &record.lang)
+              .and_then(|map| {
+                if has_item_id {
+                  map.entry_from_id(item_id.as_ref().unwrap())
+                } else {
+                  map.entry_from_name_first(&name)
+                }
+              })
+              .ok_or_else(|| Self::Error::MissingMetadataEntry {
+                business: Business::$business,
+                lang: record.lang.clone(),
+                key: if has_item_id {
+                  FIELD_ITEM_ID
+                } else {
+                  FIELD_NAME
+                },
+                val: if has_item_id {
+                  item_id.clone().unwrap()
+                } else {
+                  name.clone()
+                },
+              })?;
+
+            list.push($item_convert(record, metadata_entry)?);
+          }
+
+          projects.push(UigfProject {
+            uid,
+            timezone,
+            lang,
+            list,
+          });
+        }
+
+        uigf.$project.replace(projects);
+      };
+    }
+
+    if let Some(hk4e) = hk4e {
+      convert!(
+        GenshinImpact,
+        hk4e,
+        UigfHk4eItem,
+        |record: GachaRecord, metadata_entry: MetadataStructEntryRef<'_>| {
+          Ok(UigfHk4eItem {
+            uigf_gacha_type: *UIGF_GACHA_TYPE_MAPPINGS
+              .get(&record.gacha_type)
+              .ok_or_else(|| Self::Error::FailedMappingGachaType {
+                gacha_type: record.gacha_type,
+              })?,
+            gacha_type: record.gacha_type,
+            item_id: record.item_id.as_ref().unwrap().to_owned(),
+            count: Some(record.count),
+            time: record.time,
+            item_type: Some(metadata_entry.category_name.to_owned()),
+            rank_type: Some(record.rank_type),
+            id: record.id,
+          })
+        }
+      );
+    }
+
+    if let Some(hkrpg) = hkrpg {
+      convert!(
+        HonkaiStarRail,
+        hkrpg,
+        UigfHkrpgItem,
+        |record: GachaRecord, metadata_entry: MetadataStructEntryRef<'_>| {
+          Ok(UigfHkrpgItem {
+            gacha_id: record.gacha_id.unwrap(), // FIXME: Safety?
+            gacha_type: record.gacha_type,
+            item_id: record.item_id.unwrap_or(metadata_entry.id.to_owned()),
+            count: Some(record.count),
+            time: record.time,
+            item_type: Some(record.item_type),
+            rank_type: Some(record.rank_type),
+            id: record.id,
+          })
+        }
+      );
+    }
+
+    if let Some(nap) = nap {
+      convert!(
+        ZenlessZoneZero,
+        nap,
+        UigfNapItem,
+        |record: GachaRecord, metadata_entry: MetadataStructEntryRef<'_>| {
+          Ok(UigfNapItem {
+            gacha_id: record.gacha_id,
+            gacha_type: record.gacha_type,
+            item_id: record.item_id.unwrap_or(metadata_entry.id.to_owned()),
+            count: Some(record.count),
+            time: record.time,
+            item_type: Some(record.item_type),
+            rank_type: Some(record.rank_type),
+            id: record.id,
+          })
+        }
+      );
+    }
+
+    let output = output.as_ref().with_extension("json");
+    let output_file = File::create(&output).map_err(|cause| Self::Error::CreateOutput {
+      path: output,
+      cause,
+    })?;
+
+    serde_json::to_writer(BufWriter::new(output_file), &uigf)
+      .map_err(|cause| Self::Error::Serialize { cause })?;
+
+    Ok(())
   }
 }
 
@@ -709,7 +934,7 @@ impl GachaRecordsReader for UigfGachaRecordsReader {
       serde_json::from_reader(input).map_err(|cause| Self::Error::InvalidInput { cause })?;
 
     let uigf_version =
-      VersionNumber::from_str(&uigf.info.version).map_err(|_| Self::Error::InvalidVersion {
+      UigfVersion::from_str(&uigf.info.version).map_err(|_| Self::Error::InvalidVersion {
         version: uigf.info.version,
       })?;
 
@@ -752,13 +977,13 @@ impl GachaRecordsReader for UigfGachaRecordsReader {
     fn sum_vec_project<T>(v: Option<&Vec<UigfProject<T>>>) -> usize {
       v.map(|v| v.len()).unwrap_or(0)
     }
-    let sum = sum_vec_project(hk4e.as_ref())
-      + sum_vec_project(hkrpg.as_ref())
-      + sum_vec_project(nap.as_ref());
 
-    let mut records = Vec::with_capacity(sum);
+    let mut records = Vec::with_capacity(
+      sum_vec_project(hk4e.as_ref())
+        + sum_vec_project(hkrpg.as_ref())
+        + sum_vec_project(nap.as_ref()),
+    );
 
-    const FIELD_ITEM_ID: &str = "item_id";
     macro_rules! convert {
       ($business:ident, $project:ident, $item:ident, $gacha_id:expr) => {
         for project in $project {
@@ -907,15 +1132,15 @@ mod tests {
 
   #[test]
   fn test_version_number_from_str() {
-    assert_eq!("v2.2".parse(), Ok(VersionNumber::new(2, 2)));
-    assert_eq!("v2.3".parse(), Ok(VersionNumber::new(2, 3)));
-    assert_eq!("v2.4".parse(), Ok(VersionNumber::new(2, 4)));
-    assert_eq!("v4.0".parse(), Ok(VersionNumber::new(4, 0)));
+    assert_eq!("v2.2".parse(), Ok(UigfVersion::V2_2));
+    assert_eq!("v2.3".parse(), Ok(UigfVersion::V2_3));
+    assert_eq!("v2.4".parse(), Ok(UigfVersion::V2_4));
+    assert_eq!("v4.0".parse(), Ok(UigfVersion::V4_0));
 
-    assert_eq!("v2.2.1".parse::<VersionNumber>(), Err(()));
-    assert_eq!("v2".parse::<VersionNumber>(), Err(()));
-    assert_eq!("2.2".parse::<VersionNumber>(), Err(()));
-    assert_eq!("2".parse::<VersionNumber>(), Err(()));
+    assert_eq!("v2.2.1".parse::<UigfVersion>(), Err(()));
+    assert_eq!("v2".parse::<UigfVersion>(), Err(()));
+    assert_eq!("2.2".parse::<UigfVersion>(), Err(()));
+    assert_eq!("2".parse::<UigfVersion>(), Err(()));
   }
 
   #[test]
@@ -1060,7 +1285,7 @@ mod tests {
     let output = temp_dir.path().join("test_legacy_uigf_write_and_read");
 
     LegacyUigfGachaRecordsWriter {
-      uigf_version: LegacyUigf::V2_2,
+      uigf_version: UigfVersion::V2_2,
       account_locale: "en-us".to_owned(),
       account_uid: 100_000_000,
       export_time: OffsetDateTime::now_utc().to_offset(*consts::LOCAL_OFFSET),
@@ -1187,6 +1412,78 @@ mod tests {
     assert_eq!(record.name, "Anby");
     assert_eq!(record.item_type, "Agents");
     assert_eq!(record.item_id.as_deref(), Some("1011"));
+  }
+
+  #[test]
+  fn test_uigf_v4_0_gacha_records_writer() {
+    let records = vec![
+      GachaRecord {
+        business: Business::GenshinImpact,
+        uid: 100_000_000,
+        id: "1000000000000000000".to_owned(),
+        gacha_type: 301,
+        gacha_id: None,
+        rank_type: 5,
+        count: 1,
+        lang: "en-us".to_owned(),
+        time: "2023-01-01 00:00:00".to_owned(),
+        name: "Kamisato Ayaka".to_owned(),
+        item_type: "Character".to_owned(),
+        item_id: Some("10000002".to_owned()),
+      },
+      GachaRecord {
+        business: Business::HonkaiStarRail,
+        uid: 100_000_001,
+        id: "1000000000000000001".to_owned(),
+        gacha_type: 11,
+        gacha_id: Some(1),
+        rank_type: 4,
+        count: 1,
+        lang: "en-us".to_owned(),
+        time: "2023-01-01 00:00:00".to_owned(),
+        name: "March 7th".to_owned(),
+        item_type: "Character".to_owned(),
+        item_id: Some("1001".to_owned()),
+      },
+      GachaRecord {
+        business: Business::ZenlessZoneZero,
+        uid: 100_000_002,
+        id: "1000000000000000002".to_owned(),
+        gacha_type: 1,
+        gacha_id: None,
+        rank_type: 3,
+        count: 1,
+        lang: "en-us".to_owned(),
+        time: "2023-01-01 00:00:00".to_owned(),
+        name: "Anby".to_owned(),
+        item_type: "Agents".to_owned(),
+        item_id: Some("1011".to_owned()),
+      },
+    ];
+
+    let temp_dir = tempfile::tempdir().unwrap();
+    let output = temp_dir.path().join("test_uigf_v4_0_gacha_records_writer");
+
+    UigfGachaRecordsWriter {
+      businesses: None,
+      accounts: HashMap::from_iter([
+        (100_000_000, (8, "en-us".to_owned())),
+        (100_000_001, (8, "en-us".to_owned())),
+        (100_000_002, (8, "en-us".to_owned())),
+      ]),
+      export_time: OffsetDateTime::now_utc().to_offset(*consts::LOCAL_OFFSET),
+    }
+    .write(GachaMetadata::embedded(), records.clone(), &output)
+    .unwrap();
+
+    let input = File::open(output.with_extension("json")).unwrap();
+    let read_records = UigfGachaRecordsReader { businesses: None }
+      .read(GachaMetadata::embedded(), input)
+      .unwrap();
+
+    assert_eq!(records, read_records);
+
+    temp_dir.close().unwrap();
   }
 }
 
