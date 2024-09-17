@@ -1,5 +1,6 @@
 identifier = "com.lgou2w.hoyo.gacha"
 product-name = "HoYo.Gacha"
+main-binary-name = "HoYo.Gacha"
 version = "1.0.0"
 
 [build]

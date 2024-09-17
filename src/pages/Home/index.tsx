@@ -1,18 +1,32 @@
 import React, { Fragment } from 'react'
 import { Button } from '@fluentui/react-components'
-import { locateDataFolder } from '@/api/commands/business'
-import { Businesses } from '@/interfaces/Business'
+import { event } from '@tauri-apps/api'
+import { importGachaRecords } from '@/api/commands/business'
 
 export default function Home () {
   // TODO: Experimental
   const onClick = async () => {
     try {
-      const result = await locateDataFolder({
-        business: Businesses.ZenlessZoneZero,
-        region: 'Official',
-        factory: 'Manual'
+      const progressChannel = 'business_import_gacha_records_progress'
+      const unlisten = await event.listen<number>(progressChannel, (event) => {
+        console.debug('Progress:', event.payload)
       })
-      console.debug(result)
+
+      try {
+        const result = await importGachaRecords({
+          input: 'X:/UIGF_20240912_184321.json',
+          importer: {
+            LegacyUigf: {
+              expectedLocale: 'zh-cn',
+              expectedUid: 100000001
+            }
+          },
+          progressChannel
+        })
+        console.debug('Command result:', result)
+      } finally {
+        unlisten()
+      }
     } catch (e) {
       console.error(e)
     }

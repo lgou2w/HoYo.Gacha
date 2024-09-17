@@ -2,17 +2,21 @@ use std::path::PathBuf;
 
 use serde::Deserialize;
 use tauri::{Emitter, WebviewWindow};
+use tokio::sync::mpsc;
 
-use crate::database::{DatabaseState, GachaRecordOnConflict};
+use crate::database::{
+  DatabaseState, GachaRecordOnConflict, GachaRecordQuestioner, GachaRecordQuestionerAdditions,
+};
 use crate::error::ErrorDetails;
-use crate::models::{Business, BusinessRegion};
+use crate::models::{Business, BusinessRegion, GachaMetadata};
 
-pub mod advanced;
+mod advanced;
 mod data_folder_locator;
 mod disk_cache;
 mod gacha_convert;
 mod gacha_url;
 
+pub use advanced::*;
 pub use data_folder_locator::*;
 pub use gacha_convert::*;
 pub use gacha_url::*;
@@ -107,7 +111,7 @@ pub async fn business_create_gacha_records_fetcher_channel(
       if save_to_database {
         if let Fragment::Data(records) = fragment {
           use crate::database::{GachaRecordQuestioner, GachaRecordQuestionerAdditions};
-          GachaRecordQuestioner::create_gacha_records(&database, records, save_on_conflict)
+          GachaRecordQuestioner::create_gacha_records(&database, records, save_on_conflict, None)
             .await
             .map_err(|error| Box::new(error.into_inner()) as _)?;
         }
@@ -118,6 +122,100 @@ pub async fn business_create_gacha_records_fetcher_channel(
   )
   .await
   .map_err(|error| error as _)
+}
+
+#[tauri::command]
+#[tracing::instrument(skip_all)]
+pub async fn business_import_gacha_records(
+  window: WebviewWindow,
+  database: DatabaseState<'_>,
+  input: PathBuf,
+  importer: GachaRecordsImporter,
+  save_on_conflict: Option<GachaRecordOnConflict>,
+  progress_channel: Option<String>,
+) -> Result<u64, Box<dyn ErrorDetails + 'static>> {
+  let records = importer.import(GachaMetadata::embedded(), input)?;
+
+  // Progress reporting
+  let (progress_reporter, progress_task) = if let Some(event_channel) = progress_channel {
+    let (reporter, mut receiver) = mpsc::channel(1);
+    let task = tokio::spawn(async move {
+      while let Some(progress) = receiver.recv().await {
+        window.emit(&event_channel, &progress).unwrap(); // FIXME: emit SAFETY?
+      }
+    });
+
+    (Some(reporter), Some(task))
+  } else {
+    (None, None)
+  };
+
+  let changes = GachaRecordQuestioner::create_gacha_records(
+    database.as_ref(),
+    records,
+    save_on_conflict.unwrap_or(GachaRecordOnConflict::Nothing),
+    progress_reporter,
+  )
+  .await
+  .map_err(|error| Box::new(error.into_inner()) as _)?;
+
+  // Wait for the progress task to finish
+  if let Some(progress_task) = progress_task {
+    progress_task.await.unwrap(); // FIXME: SAFETY?
+  }
+
+  Ok(changes)
+}
+
+#[tauri::command]
+#[tracing::instrument(skip_all)]
+pub async fn business_export_gacha_records(
+  window: WebviewWindow,
+  database: DatabaseState<'_>,
+  output: PathBuf,
+  exporter: GachaRecordsExporter,
+) -> Result<(), Box<dyn ErrorDetails + 'static>> {
+  // TODO: Progress reporting
+
+  let records = match &exporter {
+    GachaRecordsExporter::LegacyUigf(writer) => {
+      GachaRecordQuestioner::find_gacha_records_by_business_and_uid(
+        database.as_ref(),
+        Business::GenshinImpact,
+        writer.account_uid,
+      )
+      .await
+      .map_err(|error| Box::new(error.into_inner()) as _)?
+    }
+    GachaRecordsExporter::Uigf(writer) => {
+      let mut records = Vec::new();
+
+      for account_uid in writer.accounts.keys() {
+        let account_records = GachaRecordQuestioner::find_gacha_records_by_businesses_or_uid(
+          database.as_ref(),
+          writer.businesses.as_ref(),
+          *account_uid,
+        )
+        .await
+        .map_err(|error| Box::new(error.into_inner()) as _)?;
+
+        records.extend(account_records);
+      }
+
+      records
+    }
+    GachaRecordsExporter::Srgf(writer) => {
+      GachaRecordQuestioner::find_gacha_records_by_business_and_uid(
+        database.as_ref(),
+        Business::HonkaiStarRail,
+        writer.account_uid,
+      )
+      .await
+      .map_err(|error| Box::new(error.into_inner()) as _)?
+    }
+  };
+
+  exporter.export(GachaMetadata::embedded(), records, output)
 }
 
 // endregion

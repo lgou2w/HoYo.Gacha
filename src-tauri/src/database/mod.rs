@@ -1,3 +1,4 @@
+use std::collections::HashSet;
 use std::env;
 use std::future::Future;
 use std::path::PathBuf;
@@ -16,6 +17,7 @@ use sqlx::sqlite::{
 use sqlx::{Decode, Encode, Executor, FromRow, Row, Type};
 use tauri::State as TauriState;
 use time::OffsetDateTime;
+use tokio::sync::mpsc;
 use tracing::{info, Span};
 
 use crate::consts;
@@ -431,6 +433,11 @@ impl<'r> Decode<'r, Sqlite> for AccountProperties {
 declare_questioner_with_handlers! {
   GachaRecord,
 
+  "SELECT * FROM `hg.gacha_records` WHERE `uid` = ?;"
+    = find_gacha_records_by_uid {
+        uid: u32,
+      }: fetch_all -> Vec<GachaRecord>,
+
   "SELECT * FROM `hg.gacha_records` WHERE `business` = ? AND `uid` = ?;"
     = find_gacha_records_by_business_and_uid {
         business: Business,
@@ -504,19 +511,26 @@ impl GachaRecordOnConflict {
 }
 
 pub trait GachaRecordQuestionerAdditions {
-  #[tracing::instrument(skip(database, records), fields(records = records.len()))]
+  #[tracing::instrument(skip(database, records, progress_reporter), fields(records = records.len()))]
   fn create_gacha_records(
     database: &Database,
     records: Vec<GachaRecord>,
     on_conflict: GachaRecordOnConflict,
+    progress_reporter: Option<mpsc::Sender<f32>>,
   ) -> impl Future<Output = Result<u64, SqlxError>> {
     async move {
       info!("Executing create gacha records database operation...");
+      let total = records.len();
       let start = Instant::now();
+      let sql = on_conflict.sql();
+
       let mut txn = database.as_ref().begin().await?;
       let mut changes = 0;
-      let sql = on_conflict.sql();
+      let mut completes = 0;
+      let mut last_progress_reported = Instant::now();
+
       for record in records {
+        completes += 1;
         changes += sqlx::query(sql)
           .bind(record.business)
           .bind(record.uid)
@@ -533,8 +547,26 @@ pub trait GachaRecordQuestionerAdditions {
           .execute(&mut *txn)
           .await?
           .rows_affected();
+
+        // Progress reporting: 200ms interval
+        // Avoiding excessive recording leading to frequent reporting
+        if let Some(reporter) = &progress_reporter {
+          if last_progress_reported.elapsed().as_millis() > 200 {
+            last_progress_reported = Instant::now();
+
+            let progress = completes as f32 / total as f32;
+            let progress = (progress * 100.).round() / 100.;
+            if progress > 0. {
+              let _ = reporter.try_send(progress);
+            }
+          }
+        }
       }
       txn.commit().await?;
+
+      // Avoiding incomplete progress due to reporting intervals
+      let _ = progress_reporter.map(|reporter| reporter.try_send(1.0));
+
       info!(
         message = "Creation of gacha records completed",
         changes = ?changes,
@@ -571,6 +603,51 @@ pub trait GachaRecordQuestionerAdditions {
       Ok(changes)
     }
   }
+
+  #[tracing::instrument(skip(database))]
+  fn find_gacha_records_by_businesses_and_uid(
+    database: &Database,
+    businesses: &HashSet<Business>,
+    uid: u32,
+  ) -> impl Future<Output = Result<Vec<GachaRecord>, SqlxError>> {
+    async move {
+      info!("Executing find gacha records by businesses and uid database operation...");
+      let start = Instant::now();
+      let records =
+        sqlx::query_as("SELECT * FROM `hg.gacha_records` WHERE `business` IN (?) AND `uid` = ?;")
+          .bind(
+            businesses
+              .iter()
+              .map(|b| (*b as u8).to_string())
+              .collect::<Vec<_>>()
+              .join(","),
+          )
+          .bind(uid)
+          .fetch_all(database.as_ref())
+          .await?;
+
+      info!(
+        message = "Finding of gacha records completed",
+        records = ?records.len(),
+        elapsed = ?start.elapsed(),
+      );
+
+      Ok(records)
+    }
+  }
+
+  #[tracing::instrument(skip(database))]
+  async fn find_gacha_records_by_businesses_or_uid(
+    database: &Database,
+    businesses: Option<&HashSet<Business>>,
+    uid: u32,
+  ) -> Result<Vec<GachaRecord>, SqlxError> {
+    if let Some(businesses) = businesses {
+      Self::find_gacha_records_by_businesses_and_uid(database, businesses, uid).await
+    } else {
+      GachaRecordQuestioner::find_gacha_records_by_uid(database, uid).await
+    }
+  }
 }
 
 impl GachaRecordQuestionerAdditions for GachaRecordQuestioner {}
@@ -584,7 +661,7 @@ pub mod gacha_record_questioner_additions {
     records: Vec<GachaRecord>,
     on_conflict: GachaRecordOnConflict,
   ) -> Result<u64, SqlxError> {
-    GachaRecordQuestioner::create_gacha_records(database.as_ref(), records, on_conflict).await
+    GachaRecordQuestioner::create_gacha_records(database.as_ref(), records, on_conflict, None).await
   }
 
   #[tauri::command]
@@ -596,6 +673,34 @@ pub mod gacha_record_questioner_additions {
     GachaRecordQuestioner::delete_gacha_records_by_business_and_uid(
       database.as_ref(),
       business,
+      uid,
+    )
+    .await
+  }
+
+  #[tauri::command]
+  pub async fn database_find_gacha_records_by_businesses_and_uid(
+    database: DatabaseState<'_>,
+    businesses: HashSet<Business>,
+    uid: u32,
+  ) -> Result<Vec<GachaRecord>, SqlxError> {
+    GachaRecordQuestioner::find_gacha_records_by_businesses_and_uid(
+      database.as_ref(),
+      &businesses,
+      uid,
+    )
+    .await
+  }
+
+  #[tauri::command]
+  pub async fn database_find_gacha_records_by_businesses_or_uid(
+    database: DatabaseState<'_>,
+    businesses: Option<HashSet<Business>>,
+    uid: u32,
+  ) -> Result<Vec<GachaRecord>, SqlxError> {
+    GachaRecordQuestioner::find_gacha_records_by_businesses_or_uid(
+      database.as_ref(),
+      businesses.as_ref(),
       uid,
     )
     .await

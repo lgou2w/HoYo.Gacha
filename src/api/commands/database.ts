@@ -76,6 +76,9 @@ export const deleteAccountByBusinessAndUid = declareCommand<DeleteAccountByBusin
 
 // Gacha Record
 
+export type FindGachaRecordsByUidArgs = Pick<GachaRecord<Business>, 'uid'>
+export const findGachaRecordsByUid = declareCommand<FindGachaRecordsByUidArgs, GachaRecord<Business>[]>('database_find_gacha_records_by_uid')
+
 export type FindGachaRecordsByBusinessAndUidArgs<T extends Business> = Pick<GachaRecord<T>, 'business' | 'uid'>
 export type FindGachaRecordsByBusinessAndUid = <T extends Business>(args: FindGachaRecordsByBusinessAndUidArgs<T>, options?: InvokeOptions) => Promise<GachaRecord<T>[]>
 export const findGachaRecordsByBusinessAndUid: FindGachaRecordsByBusinessAndUid = declareCommand('database_find_gacha_records_by_business_and_uid')
@@ -91,3 +94,17 @@ export const createGachaRecords: CreateGachaRecords = declareCommand('database_c
 export type DeleteGachaRecordsByBusinessAndUidArgs<T extends Business> = Pick<GachaRecord<T>, 'business' | 'uid'>
 export type DeleteGachaRecordsByBusinessAndUid = <T extends Business>(args: DeleteGachaRecordsByBusinessAndUidArgs<T>, options?: InvokeOptions) => Promise<number>
 export const deleteGachaRecordsByBusinessAndUid: DeleteGachaRecordsByBusinessAndUid = declareCommand('database_delete_gacha_records_by_business_and_uid')
+
+export type FindGachaRecordsByBusinessesAndUidArgs = NonNullable<{
+  businesses: Business[],
+  uid: GachaRecord<Business>['uid']
+}>
+
+export const findGachaRecordsByBusinessesAndUid = declareCommand<FindGachaRecordsByBusinessesAndUidArgs, GachaRecord<Business>[]>('database_find_gacha_records_by_businesses_and_uid')
+
+export type FindGachaRecordsByBusinessesOrUidArgs = NonNullable<{
+  businesses?: Business[],
+  uid: GachaRecord<Business>['uid']
+}>
+
+export const findGachaRecordsByBusinessesOrUid = declareCommand<FindGachaRecordsByBusinessesOrUidArgs, GachaRecord<Business>[]>('database_find_gacha_records_by_businesses_or_uid')

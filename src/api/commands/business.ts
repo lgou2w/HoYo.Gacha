@@ -98,6 +98,8 @@ export type FromDirtyGachaUrlArgs<T extends Business> = NonNullable<{
 export type FromDirtyGachaUrl = <T extends Business>(args: FromDirtyGachaUrlArgs<T>, options?: InvokeOptions) => Promise<GachaUrl<T>>
 export const fromDirtyGachaUrl: FromDirtyGachaUrl = declareCommand('business_from_dirty_gacha_url')
 
+// Gacha Convert
+
 // Business Advanced
 
 export type CreateGachaRecordsFetcherChannelArgs<T extends Business> = NonNullable<{
@@ -115,3 +117,50 @@ export type CreateGachaRecordsFetcherChannelArgs<T extends Business> = NonNullab
 
 export type CreateGachaRecordsFetcherChannel = <T extends Business>(args: CreateGachaRecordsFetcherChannelArgs<T>, options?: InvokeOptions) => Promise<void>
 export const createGachaRecordsFetcherChannel: CreateGachaRecordsFetcherChannel = declareCommand('business_create_gacha_records_fetcher_channel')
+
+export type ImportGachaRecordsArgs = NonNullable<{
+  input: string
+  importer:
+    | { LegacyUigf: {
+      expectedLocale: string,
+      expectedUid: Account['uid']
+    } }
+    | { Uigf: {
+      businesses?: Business[],
+      accounts?: Account['uid'][]
+    } }
+    | { Srgf: {
+      expectedLocale: string,
+      expectedUid: Account['uid']
+    } }
+  saveOnConflict?: 'Nothing' | 'Update'
+  progressChannel?: string
+}>
+
+export const importGachaRecords = declareCommand<ImportGachaRecordsArgs, number>('business_import_gacha_records')
+
+export type ExportGachaRecordsArgs = NonNullable<{
+  output: string
+  exporter:
+    | { LegacyUigf: {
+      uigfVersion: 'v2.2' | 'v2.3' | 'v2.4' | 'v3.0'
+      accountLocale: string
+      accountUid: Account['uid']
+      exportTime: string | Date
+      regionTimeZone: number
+    } }
+    | { Uigf: {
+      businesses?: Business[],
+      accounts: Record<Account['uid'], [number, string]> // uid: [timezone, locale]
+      exportTime: string | Date
+    } }
+    | { Srgf: {
+      srgfVersion: 'v1.0'
+      accountLocale: string
+      accountUid: Account['uid']
+      exportTime: string | Date
+      regionTimeZone: number
+    } }
+}>
+
+export const exportGachaRecords = declareCommand<ExportGachaRecordsArgs, void>('business_export_gacha_records')

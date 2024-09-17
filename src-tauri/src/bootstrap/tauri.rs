@@ -108,14 +108,19 @@ pub async fn start(singleton: Singleton, tracing: Tracing, database: Database) {
       database::account_questioner::database_update_account_gacha_url_by_business_and_uid,
       database::account_questioner::database_update_account_properties_by_business_and_uid,
       database::account_questioner::database_delete_account_by_business_and_uid,
+      database::gacha_record_questioner::database_find_gacha_records_by_uid,
       database::gacha_record_questioner::database_find_gacha_records_by_business_and_uid,
       database::gacha_record_questioner::database_find_gacha_records_by_business_and_uid_with_gacha_type,
       database::gacha_record_questioner_additions::database_create_gacha_records,
       database::gacha_record_questioner_additions::database_delete_gacha_records_by_business_and_uid,
+      database::gacha_record_questioner_additions::database_find_gacha_records_by_businesses_and_uid,
+      database::gacha_record_questioner_additions::database_find_gacha_records_by_businesses_or_uid,
       business::business_locate_data_folder,
       business::business_from_webcaches_gacha_url,
       business::business_from_dirty_gacha_url,
       business::business_create_gacha_records_fetcher_channel,
+      business::business_import_gacha_records,
+      business::business_export_gacha_records,
     ])
     .build(generate_context!())
     .expect("Error while building Tauri application");
