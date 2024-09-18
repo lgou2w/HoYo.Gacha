@@ -1,14 +1,16 @@
 import { DetailedError, isDetailedError } from '@/api/error'
 import { InvokeOptions } from '@/api/invoke'
 import { Account } from '@/interfaces/Account'
-import { Business, BusinessRegion } from '@/interfaces/Business'
+import { Business, BusinessRegion, GenshinImpact } from '@/interfaces/Business'
 import { GachaRecord } from '@/interfaces/GachaRecord'
+import { SqlxDatabaseError, SqlxError } from './database'
 import { declareCommand } from '.'
 
 // See:
 //   src-tauri/src/business/mod.rs
 //   src-tauri/src/business/data_folder_locator.rs
 //   src-tauri/src/business/gacha_url.rs
+//   src-tauri/src/business/gacha_convert.rs
 
 // Data Folder
 
@@ -99,6 +101,118 @@ export type FromDirtyGachaUrl = <T extends Business>(args: FromDirtyGachaUrlArgs
 export const fromDirtyGachaUrl: FromDirtyGachaUrl = declareCommand('business_from_dirty_gacha_url')
 
 // Gacha Convert
+
+const NamedLegacyUigfGachaRecordsWriteError = 'LegacyUigfGachaRecordsWriteError' as const
+
+export type LegacyUigfGachaRecordsWriteError = DetailedError<typeof NamedLegacyUigfGachaRecordsWriteError,
+  | { kind: 'IncompatibleRecordBusiness', business: Business, id: string, name: string }
+  | { kind: 'IncompatibleRecordOwner', expected: Account['uid'], actual: Account['uid'] }
+  | { kind: 'IncompatibleRecordLocale', expected: string, actual: string }
+  | { kind: 'FailedMappingGachaType', value: GachaRecord<GenshinImpact>['gachaType'] }
+  | { kind: 'CreateOutput', path: string, cause: { kind: string, message: string } }
+  | { kind: 'Serialize', cause: string }
+>
+
+export function isLegacyUigfGachaRecordsWriteError (error: unknown): error is LegacyUigfGachaRecordsWriteError {
+  return isDetailedError(error) &&
+    error.name === NamedLegacyUigfGachaRecordsWriteError
+}
+
+const NamedLegacyUigfGachaRecordsReadError = 'LegacyUigfGachaRecordsReadError' as const
+
+export type LegacyUigfGachaRecordsReadError = DetailedError<typeof NamedLegacyUigfGachaRecordsReadError,
+  | { kind: 'OpenInput', path: string, cause: { kind: string, message: string } }
+  | { kind: 'InvalidInput', cause: string }
+  | { kind: 'InvalidVersion', version: string }
+  | { kind: 'UnsupportedVersion', version: string, allowed: string }
+  | { kind: 'InconsistentUid', expected: Account['uid'], actual: Account['uid'] }
+  | { kind: 'RequiredField', field: string }
+  | { kind: 'MissingMetadataEntry', business: Business, locale: string, key: string, val: string }
+>
+
+export function isLegacyUigfGachaRecordsReadError (error: unknown): error is LegacyUigfGachaRecordsReadError {
+  return isDetailedError(error) &&
+    error.name === NamedLegacyUigfGachaRecordsReadError
+}
+
+const NamedUigfGachaRecordsWriteError = 'UigfGachaRecordsWriteError' as const
+
+export type UigfGachaRecordsWriteError = DetailedError<typeof NamedUigfGachaRecordsWriteError,
+  | { kind: 'MissingAccountInfo', uid: Account['uid'] }
+  | { kind: 'MissingMetadataEntry', business: Business, locale: string, key: string, val: string }
+  | { kind: 'FailedMappingGachaType', value: GachaRecord<GenshinImpact>['gachaType'] }
+  | { kind: 'CreateOutput', path: string, cause: { kind: string, message: string } }
+  | { kind: 'Serialize', cause: string }
+>
+
+export function isUigfGachaRecordsWriteError (error: unknown): error is UigfGachaRecordsWriteError {
+  return isDetailedError(error) &&
+    error.name === NamedUigfGachaRecordsWriteError
+}
+
+const NamedUigfGachaRecordsReadError = 'UigfGachaRecordsReadError' as const
+
+export type UigfGachaRecordsReadError = DetailedError<typeof NamedUigfGachaRecordsReadError,
+  | { kind: 'OpenInput', path: string, cause: { kind: string, message: string } }
+  | { kind: 'InvalidInput', cause: string }
+  | { kind: 'InvalidVersion', version: string }
+  | { kind: 'UnsupportedVersion', version: string, allowed: string }
+  | { kind: 'MissingMetadataEntry', business: Business, locale: string, key: string, val: string }
+>
+
+export function isUigfGachaRecordsReadError (error: unknown): error is UigfGachaRecordsReadError {
+  return isDetailedError(error) &&
+    error.name === NamedUigfGachaRecordsReadError
+}
+
+const NamedSrgfGachaRecordsWriteError = 'SrgfGachaRecordsWriteError' as const
+
+export type SrgfGachaRecordsWriteError = DetailedError<typeof NamedSrgfGachaRecordsWriteError,
+  | { kind: 'IncompatibleRecordBusiness', business: Business, id: string, name: string }
+  | { kind: 'IncompatibleRecordOwner', expected: Account['uid'], actual: Account['uid'] }
+  | { kind: 'IncompatibleRecordLocale', expected: string, actual: string }
+  | { kind: 'CreateOutput', path: string, cause: { kind: string, message: string } }
+  | { kind: 'Serialize', cause: string }
+>
+
+export function isSrgfGachaRecordsWriteError (error: unknown): error is SrgfGachaRecordsWriteError {
+  return isDetailedError(error) &&
+    error.name === NamedSrgfGachaRecordsWriteError
+}
+
+const NamedSrgfGachaRecordsReadError = 'SrgfGachaRecordsReadError' as const
+
+export type SrgfGachaRecordsReadError = DetailedError<typeof NamedSrgfGachaRecordsReadError,
+  | { kind: 'OpenInput', path: string, cause: { kind: string, message: string } }
+  | { kind: 'InvalidInput', cause: string }
+  | { kind: 'InvalidVersion', version: string }
+  | { kind: 'UnsupportedVersion', version: string, allowed: string }
+  | { kind: 'InconsistentUid', expected: Account['uid'], actual: Account['uid'] }
+  | { kind: 'MissingMetadataEntry', business: Business, locale: string, key: string, val: string }
+>
+
+export function isSrgfGachaRecordsReadError (error: unknown): error is SrgfGachaRecordsReadError {
+  return isDetailedError(error) &&
+    error.name === NamedSrgfGachaRecordsReadError
+}
+
+export type ImportGachaRecordsError =
+  // Because it needs to be inserted into the database
+  | SqlxError
+  | SqlxDatabaseError
+  // These errors are based on the type of importer
+  | LegacyUigfGachaRecordsReadError
+  | UigfGachaRecordsReadError
+  | SrgfGachaRecordsReadError
+
+export type ExportGachaRecordsError =
+  // Because it needs to be fetched from the database
+  | SqlxError
+  | SqlxDatabaseError
+  // These errors are based on the type of exporter
+  | LegacyUigfGachaRecordsWriteError
+  | UigfGachaRecordsWriteError
+  | SrgfGachaRecordsWriteError
 
 // Business Advanced
 

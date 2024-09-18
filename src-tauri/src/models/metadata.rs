@@ -42,11 +42,7 @@ pub struct Metadata(
 
 impl Metadata {
   #[inline]
-  pub fn obtain<'a>(
-    &'a self,
-    business: Business,
-    locale: impl AsRef<str>,
-  ) -> Option<&'a MetadataStruct> {
+  pub fn obtain(&self, business: Business, locale: impl AsRef<str>) -> Option<&MetadataStruct> {
     self.0.get(&business)?.get(locale.as_ref())
   }
 

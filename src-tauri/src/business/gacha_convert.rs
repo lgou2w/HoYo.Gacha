@@ -171,13 +171,16 @@ declare_error_kinds!(
       actual: String
     },
 
-    #[error("Failed to mapping uigf gacha type: {gacha_type}")]
-    FailedMappingGachaType { gacha_type: u32 },
+    #[error("Failed to mapping uigf gacha type: {value}")]
+    FailedMappingGachaType { value: u32 },
 
     #[error("Failed to create output '{path}': {cause}")]
     CreateOutput {
       path: PathBuf,
-      cause: io::Error => format_args!("{}", cause)
+      cause: io::Error => serde_json::json!({
+        "kind": format_args!("{}", cause.kind()),
+        "message": format_args!("{cause}"),
+      })
     },
 
     #[error("Serialization json error: {cause}")]
@@ -192,7 +195,10 @@ declare_error_kinds!(
   kinds {
     #[error("Failed to open input: {cause}")]
     OpenInput {
-      cause: io::Error => format_args!("{}", cause)
+      cause: io::Error => serde_json::json!({
+        "kind": format_args!("{}", cause.kind()),
+        "message": format_args!("{cause}"),
+      })
     },
 
     #[error("Invalid json input: {cause}")]
@@ -212,10 +218,10 @@ declare_error_kinds!(
     #[error("Required field missing: {field}")]
     RequiredField { field: &'static str },
 
-    #[error("Missing metadata entry: {business}, locale: {lang}, {key}: {val}")]
+    #[error("Missing metadata entry: {business}, locale: {locale}, {key}: {val}")]
     MissingMetadataEntry {
       business: Business,
-      lang: String,
+      locale: String,
       key: &'static str,
       val: String
     },
@@ -379,7 +385,7 @@ impl GachaRecordsWriter for LegacyUigfGachaRecordsWriter {
         .get(&record.gacha_type)
         .ok_or_else(
           || LegacyUigfGachaRecordsWriteErrorKind::FailedMappingGachaType {
-            gacha_type: record.gacha_type,
+            value: record.gacha_type,
           },
         )?;
 
@@ -520,7 +526,7 @@ impl GachaRecordsReader for LegacyUigfGachaRecordsReader {
         .ok_or_else(
           || LegacyUigfGachaRecordsReadErrorKind::MissingMetadataEntry {
             business: BUSINESS,
-            lang: locale.clone(),
+            locale: locale.clone(),
             key: if is_v2_2 { FIELD_NAME } else { FIELD_ITEM_ID },
             val: if is_v2_2 {
               name.clone().unwrap()
@@ -564,21 +570,24 @@ declare_error_kinds!(
     #[error("Missing account information provided: {uid}")]
     MissingAccountInfo { uid: u32 },
 
-    #[error("Missing metadata entry: {business}, locale: {lang}, {key}: {val}")]
+    #[error("Missing metadata entry: {business}, locale: {locale}, {key}: {val}")]
     MissingMetadataEntry {
       business: Business,
-      lang: String,
+      locale: String,
       key: &'static str,
       val: String
     },
 
-    #[error("Failed to mapping uigf gacha type: {gacha_type}")]
-    FailedMappingGachaType { gacha_type: u32 },
+    #[error("Failed to mapping uigf gacha type: {value}")]
+    FailedMappingGachaType { value: u32 },
 
     #[error("Failed to create output '{path}': {cause}")]
     CreateOutput {
       path: PathBuf,
-      cause: io::Error => format_args!("{}", cause)
+      cause: io::Error => serde_json::json!({
+        "kind": format_args!("{}", cause.kind()),
+        "message": format_args!("{cause}"),
+      })
     },
 
     #[error("Serialization json error: {cause}")]
@@ -593,7 +602,10 @@ declare_error_kinds!(
   kinds {
     #[error("Failed to open input: {cause}")]
     OpenInput {
-      cause: io::Error => format_args!("{}", cause)
+      cause: io::Error => serde_json::json!({
+        "kind": format_args!("{}", cause.kind()),
+        "message": format_args!("{cause}"),
+      })
     },
 
     #[error("Invalid json input: {cause}")]
@@ -607,10 +619,10 @@ declare_error_kinds!(
     #[error("Unsupported uigf version: {version} (Allowed: {allowed})")]
     UnsupportedVersion { version: UigfVersion, allowed: String },
 
-    #[error("Missing metadata entry: {business}, locale: {lang}, {key}: {val}")]
+    #[error("Missing metadata entry: {business}, locale: {locale}, {key}: {val}")]
     MissingMetadataEntry {
       business: Business,
-      lang: String,
+      locale: String,
       key: &'static str,
       val: String
     },
@@ -863,7 +875,7 @@ impl GachaRecordsWriter for UigfGachaRecordsWriter {
               })
               .ok_or_else(|| UigfGachaRecordsWriteErrorKind::MissingMetadataEntry {
                 business: Business::$business,
-                lang: record.lang.clone(),
+                locale: record.lang.clone(),
                 key: if has_item_id {
                   FIELD_ITEM_ID
                 } else {
@@ -902,7 +914,7 @@ impl GachaRecordsWriter for UigfGachaRecordsWriter {
             uigf_gacha_type: *UIGF_GACHA_TYPE_MAPPINGS
               .get(&record.gacha_type)
               .ok_or_else(|| UigfGachaRecordsWriteErrorKind::FailedMappingGachaType {
-                gacha_type: record.gacha_type,
+                value: record.gacha_type,
               })?,
             gacha_type: record.gacha_type,
             item_id: record.item_id.unwrap_or(metadata_entry.id.to_owned()),
@@ -1077,7 +1089,7 @@ impl GachaRecordsReader for UigfGachaRecordsReader {
               .and_then(|map| map.entry_from_id(&item.item_id))
               .ok_or_else(|| UigfGachaRecordsReadErrorKind::MissingMetadataEntry {
                 business: Business::$business,
-                lang: project.lang.clone(),
+                locale: project.lang.clone(),
                 key: FIELD_ITEM_ID,
                 val: item.item_id.clone(),
               })?;
@@ -1153,7 +1165,10 @@ declare_error_kinds!(
     #[error("Failed to create output '{path}': {cause}")]
     CreateOutput {
       path: PathBuf,
-      cause: io::Error => format_args!("{}", cause)
+      cause: io::Error => serde_json::json!({
+        "kind": format_args!("{}", cause.kind()),
+        "message": format_args!("{cause}"),
+      })
     },
 
     #[error("Serialization json error: {cause}")]
@@ -1168,7 +1183,10 @@ declare_error_kinds!(
   kinds {
     #[error("Failed to open input: {cause}")]
     OpenInput {
-      cause: io::Error => format_args!("{}", cause)
+      cause: io::Error => serde_json::json!({
+        "kind": format_args!("{}", cause.kind()),
+        "message": format_args!("{cause}"),
+      })
     },
 
     #[error("Invalid json input: {cause}")]
