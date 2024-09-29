@@ -1,114 +1,147 @@
-import { FetchQueryOptions, useQuery, useMutation, UseMutationOptions } from '@tanstack/react-query'
+import { MutationFunction, MutationKey, queryOptions, useMutation } from '@tanstack/react-query'
 import { produce } from 'immer'
-import { Account } from '@/api/interfaces/account'
-import { OmitParametersFirst, PickParametersFirst } from '@/api/interfaces/declares'
-import { DatabasePlugin, DatabaseError } from '@/api/plugins'
-import { queryClient } from '@/api/store'
+import {
+  CreateAccountArgs,
+  DeleteAccountByBusinessAndUidArgs,
+  SqlxDatabaseError,
+  SqlxError,
+  createAccount,
+  deleteAccountByBusinessAndUid,
+  findAccountsByBusiness,
+  updateAccountDataFolderByBusinessAndUid,
+  updateAccountGachaUrlByBusinessAndUid,
+  updateAccountPropertiesByBusinessAndUid
+} from '@/api/commands/database'
+import { Account, isSamePrimaryKeyAccount } from '@/interfaces/Account'
+import { Businesses, KeyofBusinesses, ReversedBusinesses } from '@/interfaces/Business'
+import { OmitParametersFirst } from '@/interfaces/Declare'
+import queryClient from '@/queryClient'
 
-const AccountsQueryKey: FetchQueryOptions['queryKey'] = ['accounts']
-const AccountsQueryOptions: FetchQueryOptions<Account[]> = {
-  queryKey: AccountsQueryKey,
-  queryFn: () => DatabasePlugin.findAccounts(),
-  gcTime: Infinity
+type AccountsKey = [KeyofBusinesses, 'Accounts']
+function accountsKey (keyofBusinesses: KeyofBusinesses): AccountsKey {
+  return [keyofBusinesses, 'Accounts']
 }
 
-export function getAccountsQueryData () {
-  return queryClient.getQueryData<Account[]>(AccountsQueryKey)
+function setAccountsData (
+  keyofBusinesses: KeyofBusinesses,
+  ...rest: OmitParametersFirst<typeof queryClient.setQueryData<Account[], AccountsKey>>
+) {
+  return queryClient.setQueryData<Account[], AccountsKey>(
+    accountsKey(keyofBusinesses),
+    ...rest
+  )
 }
 
-export function setAccountsQueryData (...rest: OmitParametersFirst<typeof queryClient.setQueryData<Account[]>>) {
-  return queryClient.setQueryData<Account[]>(AccountsQueryKey, ...rest)
-}
-
-export function fetchAccountsQuery () {
-  return queryClient.fetchQuery(AccountsQueryOptions)
-}
-
-export function getAccountsQueryDataOrFetch () {
-  const cache = getAccountsQueryData()
-  return cache
-    ? Promise.resolve(cache)
-    : fetchAccountsQuery()
-}
-
-export function useAccountsQuery () {
-  return useQuery({
-    ...AccountsQueryOptions,
+export function accountsQueryOptions (keyofBusinesses: KeyofBusinesses) {
+  return queryOptions<
+    Account[],
+    SqlxError | SqlxDatabaseError | Error,
+    Account[],
+    AccountsKey
+  >({
     staleTime: Infinity,
-    refetchOnWindowFocus: false
+    queryKey: accountsKey(keyofBusinesses),
+    queryFn: () => findAccountsByBusiness({
+      business: Businesses[keyofBusinesses]
+    })
   })
 }
 
-const CreateAccountMutationKey: UseMutationOptions['mutationKey'] = ['accounts', 'create']
-const CreateAccountMutationOptions: UseMutationOptions<
-  Account,
-  DatabaseError | Error,
-  PickParametersFirst<typeof DatabasePlugin.createAccount>
-> = {
-  mutationKey: CreateAccountMutationKey,
-  mutationFn: DatabasePlugin.createAccount,
-  onSuccess (data) {
-    if (!data) return
-    setAccountsQueryData((prev) => {
-      return prev && produce(prev, (draft) => {
-        draft.push(data)
-      })
-    })
-  }
-}
-
+const CreateAccountKey = ['Accounts', 'Create']
 export function useCreateAccountMutation () {
-  return useMutation(CreateAccountMutationOptions)
+  return useMutation<
+    Account,
+    SqlxError | SqlxDatabaseError | Error,
+    CreateAccountArgs
+  >({
+    mutationKey: CreateAccountKey,
+    mutationFn: createAccount,
+    onSuccess (data) {
+      setAccountsData(
+        ReversedBusinesses[data.business],
+        (prev) => {
+          return produce(prev || [], (draft) => {
+            draft.push(data)
+          })
+        }
+      )
+    }
+  })
 }
 
-const DeleteAccountByIdMutationKey: UseMutationOptions['mutationKey'] = ['accounts', 'deleteById']
-const DeleteAccountByIdMutationOptions: UseMutationOptions<
-  Account | null,
-  DatabaseError | Error,
-  PickParametersFirst<typeof DatabasePlugin.deleteAccountById>
-> = {
-  mutationKey: DeleteAccountByIdMutationKey,
-  mutationFn: DatabasePlugin.deleteAccountById,
-  onSuccess (data) {
-    if (!data) return
-    setAccountsQueryData((prev) => {
-      return prev && produce(prev, (draft) => {
-        const idx = draft.findIndex((v) => v.id === data.id)
-        if (idx !== -1) {
-          draft.splice(idx, 1)
+function createUpdateAccountFieldMutation<Args, U extends keyof Account> (
+  mutationKey: MutationKey,
+  mutationFn: MutationFunction<Account | null, Args>,
+  field: U
+) {
+  return () => {
+    return useMutation<
+      Account | null,
+      SqlxError | SqlxDatabaseError | Error,
+      Args
+    >({
+      mutationKey,
+      mutationFn,
+      onSuccess (data) {
+        if (data) {
+          setAccountsData(
+            ReversedBusinesses[data.business],
+            (prev) => {
+              return prev && produce(prev, (draft) => {
+                let index: number
+                if ((index = draft.findIndex((el) => isSamePrimaryKeyAccount(el, data))) !== -1) {
+                  draft[index][field] = data[field]
+                }
+              })
+            }
+          )
         }
-      })
+      }
     })
   }
 }
 
-export function useDeleteAccountByIdMutation () {
-  return useMutation(DeleteAccountByIdMutationOptions)
-}
+export const useUpdateAccountDataFolderMutation = createUpdateAccountFieldMutation(
+  ['Accounts', 'Update', 'DataFolder'],
+  updateAccountDataFolderByBusinessAndUid,
+  'dataFolder'
+)
 
-const UpdateAccountGameDataDirAndPropertiesByIdMutationKey: UseMutationOptions['mutationKey'] =
-  ['accounts', 'updateGameDataDirAndPropertiesById']
-const UpdateAccountGameDataDirAndPropertiesByIdMutation: UseMutationOptions<
-  Account | null,
-  DatabaseError | Error,
-  PickParametersFirst<typeof DatabasePlugin.updateAccountGameDataDirAndPropertiesById>
-> = {
-  mutationKey: UpdateAccountGameDataDirAndPropertiesByIdMutationKey,
-  mutationFn: DatabasePlugin.updateAccountGameDataDirAndPropertiesById,
-  onSuccess (data) {
-    if (!data) return
-    setAccountsQueryData((prev) => {
-      return prev && produce(prev, (draft) => {
-        const ref = draft.find((v) => v.id === data.id)
-        if (ref) {
-          ref.gameDataDir = data.gameDataDir
-          ref.properties = data.properties
-        }
-      })
-    })
-  }
-}
+export const useUpdateAccountGachaUrlMutation = createUpdateAccountFieldMutation(
+  ['Accounts', 'Update', 'GachaUrl'],
+  updateAccountGachaUrlByBusinessAndUid,
+  'gachaUrl'
+)
 
-export function useUpdateAccountGameDataDirAndPropertiesByIdMutation () {
-  return useMutation(UpdateAccountGameDataDirAndPropertiesByIdMutation)
+export const useUpdateAccountPropertiesMutation = createUpdateAccountFieldMutation(
+  ['Accounts', 'Update', 'Properties'],
+  updateAccountPropertiesByBusinessAndUid,
+  'properties'
+)
+
+const DeleteAccountKey = ['Accounts', 'Delete']
+export function useDeleteAccountMutation () {
+  return useMutation<
+    Account | null,
+    SqlxError | SqlxDatabaseError | Error,
+    DeleteAccountByBusinessAndUidArgs
+  >({
+    mutationKey: DeleteAccountKey,
+    mutationFn: deleteAccountByBusinessAndUid,
+    onSuccess (data) {
+      if (data) {
+        setAccountsData(
+          ReversedBusinesses[data.business],
+          (prev) => {
+            return prev && produce(prev, (draft) => {
+              let index: number
+              if ((index = draft.findIndex((el) => isSamePrimaryKeyAccount(el, data))) !== -1) {
+                draft.splice(index, 1)
+              }
+            })
+          }
+        )
+      }
+    }
+  })
 }

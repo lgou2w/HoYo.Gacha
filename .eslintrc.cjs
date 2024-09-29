@@ -58,6 +58,7 @@ module.exports = {
   },
   rules: {
     semi: ['error', 'never'],
+    '@typescript-eslint/no-unused-expressions': ['error', { allowShortCircuit: true }],
     'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
     'deprecation/deprecation': 'error',
     'import/no-unresolved': 'error',
@@ -96,6 +97,16 @@ module.exports = {
           orderImportKind: 'asc',
           caseInsensitive: false
         }
+      }
+    ],
+    'sort-imports': [
+      'error',
+      {
+        allowSeparatedGroups: true,
+        ignoreCase: false,
+        ignoreDeclarationSort: true,
+        ignoreMemberSort: false,
+        memberSyntaxSortOrder: ['none', 'all', 'multiple', 'single']
       }
     ]
   }
