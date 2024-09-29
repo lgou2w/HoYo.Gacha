@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use std::fmt::{self, Debug};
 use std::path::{Path, PathBuf};
+use std::str::FromStr;
 use std::time::Duration;
 
 use exponential_backoff::Backoff;
@@ -95,17 +96,23 @@ struct WebCachesVersion(u8, u8, u8, Option<u8>);
 
 impl fmt::Display for WebCachesVersion {
   fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-    if let Some(patch) = self.3 {
-      write!(f, "{}.{}.{}.{}", self.0, self.1, self.2, patch)
-    } else {
-      write!(f, "{}.{}.{}", self.0, self.1, self.2)
+    let Self(major, minor, patch, build) = self;
+
+    write!(f, "{major}.{minor}.{patch}")?;
+
+    if let Some(build) = build {
+      write!(f, ".{build}")?;
     }
+
+    Ok(())
   }
 }
 
-impl WebCachesVersion {
-  fn parse(version: impl AsRef<str>) -> Option<Self> {
-    if let Some(captures) = REGEX_WEBCACHES_VERSION.captures(version.as_ref()) {
+impl FromStr for WebCachesVersion {
+  type Err = ();
+
+  fn from_str(s: &str) -> Result<Self, Self::Err> {
+    if let Some(captures) = REGEX_WEBCACHES_VERSION.captures(s) {
       let major = captures["major"].parse().unwrap();
       let minor = captures["minor"].parse().unwrap();
       let patch = captures["patch"].parse().unwrap();
@@ -113,9 +120,9 @@ impl WebCachesVersion {
         .name("build")
         .map(|build| build.as_str().parse::<u8>().unwrap());
 
-      Some(WebCachesVersion(major, minor, patch, build))
+      Ok(Self(major, minor, patch, build))
     } else {
-      None
+      Err(())
     }
   }
 }
@@ -161,13 +168,10 @@ impl DirtyGachaUrl {
 
     let mut versions = Vec::new();
     while let Ok(Some(entry)) = walk_dir.next_entry().await {
-      if !entry.path().is_dir() {
-        continue;
-      }
-
-      let entry_name = entry.file_name();
-      if let Some(version) = WebCachesVersion::parse(entry_name.to_string_lossy()) {
-        versions.push(version);
+      if entry.path().is_dir() {
+        if let Some(Ok(version)) = entry.file_name().to_str().map(WebCachesVersion::from_str) {
+          versions.push(version);
+        }
       }
     }
 

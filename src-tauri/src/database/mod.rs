@@ -65,7 +65,7 @@ impl Database {
     // Database storage folder
     //   In debug mode  : is in the src-tauri folder
     //   In release mode:
-    //     Windows -> %APPDATA%\\Local\\{ID}
+    //     Windows -> %USERPROFILE%\\AppData\\Local\\{ID}
     //     MacOS   -> %HOME%/Library/Caches/{ID}
     let filename = if cfg!(debug_assertions) {
       PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(consts::DATABASE)

@@ -1,5 +1,5 @@
 import React, { ReactNode } from 'react'
-import { Select } from '@fluentui/react-components'
+import { Dropdown, Option } from '@fluentui/react-components'
 import { Multiplier12XRegular, Multiplier15XRegular, Multiplier18XRegular, Multiplier1XRegular, Multiplier2XRegular } from '@fluentui/react-icons'
 import SettingsOptionsItem from '@/components/Settings/OptionsItem'
 import Locale from '@/components/UI/Locale'
@@ -23,16 +23,17 @@ export default function SettingsOptionsAppearanceScaleLevel () {
       title={<Locale mapping={['Pages.Settings.Options.Appearance.ScaleLevel.Title']} />}
       subtitle={<Locale mapping={['Pages.Settings.Options.Appearance.ScaleLevel.Subtitle']} />}
       action={(
-        <Select
-          value={scale}
-          onChange={(_, data) => update({ scale: +data.value as ScaleLevel })}
+        <Dropdown
+          value={ScaleLevelMappings[scale].label}
+          defaultSelectedOptions={[String(scale)]}
+          onOptionSelect={(_, data) => update({ scale: +data.optionValue! as ScaleLevel })}
         >
           {Object.entries(ScaleLevelMappings).map(([value, { label }]) => (
-            <option key={value} value={value}>
+            <Option key={value} value={value}>
               {label}
-            </option>
+            </Option>
           ))}
-        </Select>
+        </Dropdown>
       )}
     />
   )

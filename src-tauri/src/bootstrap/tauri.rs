@@ -173,6 +173,11 @@ pub async fn start(singleton: Singleton, tracing: Tracing, database: Database) {
         .inspect_err(|e| println!("Error while waiting for cleanup: {e}"));
     }
   });
+
+  // HACK: Don't put any code after `app.run`.
+  //   Because until the issues above are resolved,
+  //   the app will always be interrupted by Tauri
+  //   instead of exiting naturally!
 }
 
 fn create_main_window<M, R>(
@@ -217,9 +222,8 @@ fn core_locale() -> &'static Option<String> {
 }
 
 #[tauri::command]
-fn core_webview2_version() -> Result<String, tauri::Error> {
-  let version = unsafe { WEBVIEW2_VERSION.clone() };
-  Ok(version.unwrap_or("Unknown".into()))
+fn core_webview2_version() -> Result<&'static str, tauri::Error> {
+  Ok(unsafe { WEBVIEW2_VERSION.as_deref() }.unwrap_or("Unknown"))
 }
 
 #[tauri::command]

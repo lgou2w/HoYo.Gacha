@@ -28,26 +28,28 @@ impl Drop for Singleton {
   }
 }
 
-pub fn mutex() -> Singleton {
-  let hmutex = unsafe { CreateMutexW(None, TRUE, &HSTRING::from(consts::ID)) }
-    .expect("CreateMutexW has failed");
+impl Singleton {
+  pub fn mutex() -> Self {
+    let hmutex = unsafe { CreateMutexW(None, TRUE, &HSTRING::from(consts::ID)) }
+      .expect("CreateMutexW has failed");
 
-  let error = unsafe { GetLastError() };
-  if error == NO_ERROR {
-    Singleton { hmutex }
-  } else if error == ERROR_ALREADY_EXISTS {
-    unsafe {
-      if let Ok(hwnd) = FindWindowW(None, &HSTRING::from(consts::TAURI_MAIN_WINDOW_TITLE)) {
-        if IsWindow(hwnd).as_bool() {
-          let _ = ShowWindow(hwnd, SW_SHOW);
-          let _ = SetForegroundWindow(hwnd);
+    let error = unsafe { GetLastError() };
+    if error == NO_ERROR {
+      Self { hmutex }
+    } else if error == ERROR_ALREADY_EXISTS {
+      unsafe {
+        if let Ok(hwnd) = FindWindowW(None, &HSTRING::from(consts::TAURI_MAIN_WINDOW_TITLE)) {
+          if IsWindow(hwnd).as_bool() {
+            let _ = ShowWindow(hwnd, SW_SHOW);
+            let _ = SetForegroundWindow(hwnd);
+          }
         }
       }
-    }
 
-    println!("App instance already exists");
-    process::exit(0)
-  } else {
-    panic!("Unexpected error: {error:?}")
+      println!("App instance already exists");
+      process::exit(0)
+    } else {
+      panic!("Unexpected error: {error:?}")
+    }
   }
 }

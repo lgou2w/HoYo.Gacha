@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react'
+import React from 'react'
 import { Subtitle2Stronger, makeStyles, shorthands, tokens } from '@fluentui/react-components'
 import { useLocation } from '@tanstack/react-router'
 import Locale from '@/components/UI/Locale'
@@ -30,22 +30,15 @@ const useStyles = makeStyles({
   }
 })
 
-// See: https://github.com/tauri-apps/tauri/blob/dev/core/tauri/src/window/scripts/drag.js
-const AttrTauriDragRegion = 'data-tauri-drag-region'
-
 export default function TitleBar () {
   const classes = useStyles()
-  const containerRef = useRef<HTMLDivElement>(null)
   const location = useLocation()
 
-  useEffect(() => {
-    if (!containerRef.current) return
-    if (containerRef.current.hasAttribute(AttrTauriDragRegion)) return
-    containerRef.current.setAttribute(AttrTauriDragRegion, '')
-  }, [containerRef])
-
   return (
-    <header className={classes.root} ref={containerRef}>
+    <header
+      className={classes.root}
+      data-tauri-drag-region
+    >
       <Locale
         className={classes.title}
         component={Subtitle2Stronger}

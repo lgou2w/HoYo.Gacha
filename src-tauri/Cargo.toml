@@ -14,10 +14,10 @@ publish = false
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [build-dependencies]
-tauri-build = { version = "2.0.0-rc.12", default-features = false, features = ["config-toml"] }
+tauri-build = { version = "2.0.0-rc.13", default-features = false, features = ["config-toml"] }
 
 [dependencies]
-async-trait = "0.1.82"
+async-trait = "0.1.83"
 backtrace = "0.3.74"
 exponential-backoff = "2.0.0"
 futures-util = "0.3.30"
@@ -28,7 +28,7 @@ paste = "1.0.15"
 raw-window-handle = "0.6.2"
 regex = "1.10.6"
 reqwest = { version = "0.12.7", features = ["json"] }
-rfd = { version = "0.14.1", default-features = false }
+rfd = { version = "0.15.0", default-features = false }
 sha1 = "0.10.6"
 serde = { version = "1.0.210", features = ["derive"] }
 serde_json = { version = "1.0.128", features = ["preserve_order"] }
@@ -36,7 +36,7 @@ serde_repr = "0.1.19"
 sys-locale = "0.3.1"
 tauri-plugin-shell = "2.0.0-rc.3"
 tauri-plugin-clipboard-manager = "2.1.0-beta.7"
-thiserror = "1.0.63"
+thiserror = "1.0.64"
 time = { version = "0.3.36", features = ["formatting", "local-offset", "macros", "serde", "serde-human-readable"] }
 tokio = { version = "1.40.0", features = ["macros", "rt", "rt-multi-thread"] }
 tracing = "0.1.40"
@@ -56,7 +56,7 @@ features = [
 
 # https://github.com/tauri-apps/tauri/blob/dev/core/tauri/Cargo.toml
 [dependencies.tauri]
-version = "2.0.0-rc.15"
+version = "2.0.0-rc.16"
 default-features = false
 features = [
   "wry",
@@ -68,7 +68,7 @@ features = [
 # Ensure that some dependencies are version-consistent with tauri to avoid type conflicts
 
 [target.'cfg(windows)'.dependencies]
-windows-registry = "0.2.0"
+windows-registry = "0.3.0"
 windows-version = "0.1.1"
 webview2-com = "0.33.0"
 

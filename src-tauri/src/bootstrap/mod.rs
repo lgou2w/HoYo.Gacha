@@ -34,7 +34,7 @@ pub async fn start() {
   );
 
   panic_hook::install();
-  let singleton = singleton::mutex();
+  let singleton = singleton::Singleton::mutex();
   let tracing = tracing::Tracing::initialize();
   let database = database::Database::new().await;
   tauri::start(singleton, tracing, database).await;

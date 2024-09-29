@@ -3,8 +3,6 @@ use std::num::NonZeroIsize;
 use std::path::PathBuf;
 
 use async_trait::async_trait;
-use raw_window_handle::{RawWindowHandle, Win32WindowHandle, WindowHandle};
-use rfd::AsyncFileDialog;
 use serde::{Deserialize, Serialize};
 use tokio::fs::File as TokioFile;
 use tokio::io::{AsyncBufReadExt, BufReader as TokioBufReader};
@@ -174,18 +172,37 @@ impl DataFolderLocator for ManualDataFolderLocator {
       )
     };
 
-    let mut rfd = AsyncFileDialog::new()
+    let mut rfd = rfd::AsyncFileDialog::new()
       .set_directory(&consts::PLATFORM.user_home)
       .set_title(title);
 
     #[cfg(windows)]
     {
+      use raw_window_handle::{
+        DisplayHandle, HandleError, HasDisplayHandle, HasWindowHandle, RawWindowHandle,
+        Win32WindowHandle, WindowHandle,
+      };
+
+      struct DataFolderWindowHandle(isize);
+
+      impl HasWindowHandle for DataFolderWindowHandle {
+        fn window_handle(&self) -> Result<WindowHandle<'_>, HandleError> {
+          let hwnd = NonZeroIsize::new(self.0).unwrap();
+          let raw_window_handle = RawWindowHandle::Win32(Win32WindowHandle::new(hwnd));
+          let window_handle = unsafe { WindowHandle::borrow_raw(raw_window_handle) };
+          Ok(window_handle)
+        }
+      }
+
+      impl HasDisplayHandle for DataFolderWindowHandle {
+        fn display_handle(&self) -> Result<DisplayHandle<'_>, HandleError> {
+          Ok(DisplayHandle::windows())
+        }
+      }
+
       let hwnd = internals::get_tauri_main_window_hwnd();
       if hwnd != 0 {
-        let hwnd = NonZeroIsize::new(hwnd).unwrap();
-        let raw_window_handle = RawWindowHandle::Win32(Win32WindowHandle::new(hwnd));
-        let window_handle = unsafe { WindowHandle::borrow_raw(raw_window_handle) };
-        rfd = rfd.set_parent(&window_handle);
+        rfd = rfd.set_parent(&DataFolderWindowHandle(hwnd));
       }
     }
 

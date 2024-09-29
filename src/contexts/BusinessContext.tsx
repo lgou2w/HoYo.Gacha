@@ -1,4 +1,4 @@
-import React from 'react'
+import { createContext } from 'react'
 import { Business, KeyofBusinesses } from '@/interfaces/Business'
 
 export interface BusinessState {
@@ -6,7 +6,7 @@ export interface BusinessState {
   readonly keyofBusinesses: KeyofBusinesses
 }
 
-const BusinessContext = React.createContext<BusinessState | null>(null)
+const BusinessContext = createContext<BusinessState | null>(null)
 
 BusinessContext.displayName = 'BusinessContext'
 

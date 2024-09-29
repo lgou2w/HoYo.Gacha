@@ -1,4 +1,4 @@
-import React from 'react'
+import { createContext } from 'react'
 import { ThemeData, ThemeStore } from '@/interfaces/Theme'
 
 export interface ThemeState extends ThemeData {
@@ -6,7 +6,7 @@ export interface ThemeState extends ThemeData {
   update (updated: Partial<ThemeData>): void | Promise<void>
 }
 
-const ThemeContext = React.createContext<ThemeState | null>(null)
+const ThemeContext = createContext<ThemeState | null>(null)
 
 ThemeContext.displayName = 'ThemeContext'
 

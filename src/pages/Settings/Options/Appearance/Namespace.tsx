@@ -1,5 +1,5 @@
 import React from 'react'
-import { Select } from '@fluentui/react-components'
+import { Dropdown, Option } from '@fluentui/react-components'
 import { ColorRegular } from '@fluentui/react-icons'
 import SettingsOptionsItem from '@/components/Settings/OptionsItem'
 import Locale from '@/components/UI/Locale'
@@ -16,16 +16,17 @@ export default function SettingsOptionsAppearanceNamespace () {
       title={<Locale mapping={['Pages.Settings.Options.Appearance.Namespace.Title']} />}
       subtitle={<Locale mapping={['Pages.Settings.Options.Appearance.Namespace.Subtitle']} />}
       action={(
-        <Select
-          value={namespace}
-          onChange={(_, data) => update({ namespace: data.value as Namespace })}
+        <Dropdown
+          value={capitalize(namespace)}
+          defaultSelectedOptions={[namespace]}
+          onOptionSelect={(_, data) => update({ namespace: data.optionValue as Namespace })}
         >
           {KnownNamespaces.map((namespace) => (
-            <option key={namespace} value={namespace}>
+            <Option key={namespace} value={namespace}>
               {capitalize(namespace)}
-            </option>
+            </Option>
           ))}
-        </Select>
+        </Dropdown>
       )}
     />
   )
