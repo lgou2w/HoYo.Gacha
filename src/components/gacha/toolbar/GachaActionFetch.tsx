@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { MouseEventHandler } from 'react'
 import { useImmer } from 'use-immer'
 import { AccountFacet, resolveCurrency } from '@/interfaces/account'
 import { useUpdateAccountGachaUrlFn, useUpdateAccountPropertiesFn } from '@/hooks/useStatefulAccount'
@@ -7,9 +7,15 @@ import { useGachaLayoutContext } from '@/components/gacha/GachaLayoutContext'
 import useGachaRecordsFetcher from '@/hooks/useGachaRecordsFetcher'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
+import ButtonGroup from '@mui/material/ButtonGroup'
+import Menu from '@mui/material/Menu'
+import MenuItem from '@mui/material/MenuItem'
+import ListItemIcon from '@mui/material/ListItemIcon'
 import Backdrop from '@mui/material/Backdrop'
 import Typography from '@mui/material/Typography'
 import CircularProgress from '@mui/material/CircularProgress'
+import AutoModeIcon from '@mui/icons-material/AutoMode'
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
 import CachedIcon from '@mui/icons-material/Cached'
 
 export default function GachaActionFetch () {
@@ -19,11 +25,29 @@ export default function GachaActionFetch () {
   const updateAccountGachaUrl = useUpdateAccountGachaUrlFn()
   const updateAccountProperties = useUpdateAccountPropertiesFn()
   const refetchGachaRecords = useRefetchGachaRecordsFn()
-  const [{ busy }, produceState] = useImmer({
-    busy: false
+  const [{ busy, menu }, produceState] = useImmer({
+    busy: false,
+    menu: false
   })
 
-  const handleFetch = React.useCallback(async () => {
+  const menuRef = React.useRef<HTMLDivElement>(null)
+  const handleToggleMenu = React.useCallback(() => {
+    produceState((draft) => {
+      draft.menu = !draft.menu
+    })
+  }, [produceState])
+
+  const handleMenuClose = React.useCallback(() => {
+    produceState((draft) => {
+      draft.menu = false
+    })
+  }, [menuRef, produceState])
+
+  const handleFetch = React.useCallback<MouseEventHandler>(async (evt) => {
+    produceState((draft) => {
+      draft.menu = false
+    })
+
     if (!selectedAccount.gachaUrl) {
       alert('链接不可用！请先尝试读取链接。')
       return
@@ -33,11 +57,12 @@ export default function GachaActionFetch () {
       draft.busy = true
     })
 
+    const fullAmount = Boolean(evt.currentTarget.getAttribute('data-full-amount'))
     const { facet, uid, gachaUrl } = selectedAccount
     try {
       const { namedValues: { character, weapon, permanent, newbie, anthology, bangboo } } = gachaRecords
       const pullNewbie = shouldPullNewbie(facet, newbie)
-      const fragments = await pull(facet, uid, {
+      const changes = await pull(facet, uid, {
         gachaUrl,
         gachaTypeAndLastEndIdMappings: {
           [character.gachaType]: character.lastEndId ?? null,
@@ -48,7 +73,8 @@ export default function GachaActionFetch () {
           ...(pullNewbie || {})
         },
         eventChannel: 'gachaRecords-fetcher-event-channel',
-        saveToStorage: true
+        saveToStorage: true,
+        fullAmount
       })
       await updateAccountProperties(facet, uid, {
         ...selectedAccount.properties,
@@ -56,15 +82,14 @@ export default function GachaActionFetch () {
       })
       await refetchGachaRecords(facet, uid)
 
-      const total = fragments
-        .reduce((acc, curr) => {
-          if (typeof curr === 'object' && 'data' in curr) {
-            acc += curr.data.length
-          }
-          return acc
-        }, 0)
+      let changesMessage: string
+      if (changes >= 0) {
+        changesMessage = `新增 ${changes} 条数据。`
+      } else {
+        changesMessage = `移除 ${Math.abs(changes)} 条错误数据。`
+      }
 
-      alert(null, `记录更新成功！新增 ${total} 条数据。`)
+      alert(null, `记录更新成功！${changesMessage}`)
     } catch (e) {
       // TODO: optimize error handling
       const isTimeoutdGachaUrlError = e && (e instanceof Error || typeof e === 'object')
@@ -88,16 +113,42 @@ export default function GachaActionFetch () {
 
   return (
     <Box display="inline-flex">
-      <Button
-        variant="outlined"
-        color="primary"
-        size="small"
-        startIcon={<CachedIcon />}
-        onClick={handleFetch}
-        disabled={busy}
+      <ButtonGroup ref={menuRef} disabled={busy}>
+        <Button
+          variant="outlined"
+          color="primary"
+          size="small"
+          startIcon={<CachedIcon />}
+          onClick={handleFetch}
+        >
+          {`更新${action}`}
+        </Button>
+        <Button
+          size="small"
+          aria-controls={menu ? 'split-button-menu' : undefined}
+          aria-expanded={menu ? 'true' : undefined}
+          aria-haspopup="menu"
+          onClick={handleToggleMenu}
+        >
+          <ArrowDropDownIcon fontSize="small" />
+        </Button>
+      </ButtonGroup>
+      <Menu
+        MenuListProps={{ dense: true }}
+        anchorEl={menuRef.current}
+        open={menu}
+        onClose={handleMenuClose}
+        elevation={1}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
       >
-        {`更新${action}`}
-      </Button>
+        <MenuItem onClick={handleFetch} data-full-amount="true">
+          <ListItemIcon>
+            <AutoModeIcon color="warning" />
+          </ListItemIcon>
+          <Typography variant="inherit" color="warning.main">全量更新</Typography>
+        </MenuItem>
+      </Menu>
       {busy && <Backdrop open={busy} sx={{
         zIndex: (theme) => theme.zIndex.drawer + 1,
         bgcolor: 'rgba(0, 0, 0, 0.75)',

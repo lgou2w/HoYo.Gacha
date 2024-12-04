@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react'
 import { useGachaLayoutContext } from '@/components/gacha/GachaLayoutContext'
 import { AccountFacet, resolveCurrency } from '@/interfaces/account'
-import { SxProps, Theme } from '@mui/material'
+import { SxProps, Theme } from '@mui/material/styles'
 import Stack from '@mui/material/Stack'
 import Box from '@mui/material/Box'
 import Typography from '@mui/material/Typography'

@@ -1,16 +1,19 @@
 use super::srgf;
 use super::uigf;
 use super::utilities::{create_default_reqwest, find_gacha_url_and_validate_consistency};
-use super::ZenlessZoneZeroGacha;
 use super::{
-  create_fetcher_channel, GachaRecordFetcherChannelFragment, GachaUrlFinder,
-  GameDataDirectoryFinder, GenshinGacha, StarRailGacha,
+  create_fetcher_channel, GachaUrlFinder, GameDataDirectoryFinder, GenshinGacha,
+  GenshinGachaRecord, StarRailGacha, StarRailGachaRecord, ZenlessZoneZeroGacha,
+  ZenlessZoneZeroGachaRecord,
 };
 use crate::constants;
 use crate::error::{Error, Result};
 use crate::storage::entity_account::AccountFacet;
 use crate::storage::Storage;
+use paste::paste;
+use std::collections::hash_map::Entry;
 use std::collections::BTreeMap;
+use std::collections::HashMap;
 use std::fs::File;
 use std::path::PathBuf;
 use tauri::plugin::{Builder as TauriPluginBuilder, TauriPlugin};
@@ -59,78 +62,90 @@ async fn pull_all_gacha_records(
   window: tauri::Window,
   storage: tauri::State<'_, Storage>,
   facet: AccountFacet,
-  #[allow(unused)] uid: String,
+  uid: String,
   gacha_url: String,
-  gacha_type_and_last_end_id_mappings: BTreeMap<String, Option<String>>,
+  mut gacha_type_and_last_end_id_mappings: BTreeMap<String, Option<String>>,
   event_channel: String,
   save_to_storage: Option<bool>,
-) -> Result<()> {
+  full_amount: Option<bool>,
+) -> Result<i64> {
   let reqwest = create_default_reqwest()?;
   let save_to_storage = save_to_storage.unwrap_or(false);
+  let full_amount = full_amount.unwrap_or(false);
 
   // TODO: validate uid and gacha_url consistency ?
 
-  match facet {
-    AccountFacet::Genshin => {
-      create_fetcher_channel(
-        GenshinGacha,
-        reqwest,
-        GenshinGacha,
-        gacha_url,
-        gacha_type_and_last_end_id_mappings,
-        |fragment| async {
-          window.emit(&event_channel, &fragment)?;
-          if save_to_storage {
-            if let GachaRecordFetcherChannelFragment::Data(data) = fragment {
-              storage.save_genshin_gacha_records(&data).await?;
-            }
-          }
-          Ok(())
-        },
-      )
-      .await?
-    }
-    AccountFacet::StarRail => {
-      create_fetcher_channel(
-        StarRailGacha,
-        reqwest,
-        StarRailGacha,
-        gacha_url,
-        gacha_type_and_last_end_id_mappings,
-        |fragment| async {
-          window.emit(&event_channel, &fragment)?;
-          if save_to_storage {
-            if let GachaRecordFetcherChannelFragment::Data(data) = fragment {
-              storage.save_starrail_gacha_records(&data).await?;
-            }
-          }
-          Ok(())
-        },
-      )
-      .await?
-    }
-    AccountFacet::ZenlessZoneZero => {
-      create_fetcher_channel(
-        ZenlessZoneZeroGacha,
-        reqwest,
-        ZenlessZoneZeroGacha,
-        gacha_url,
-        gacha_type_and_last_end_id_mappings,
-        |fragment| async {
-          window.emit(&event_channel, &fragment)?;
-          if save_to_storage {
-            if let GachaRecordFetcherChannelFragment::Data(data) = fragment {
-              storage.save_zzz_gacha_records(&data).await?;
-            }
-          }
-          Ok(())
-        },
-      )
-      .await?
-    }
+  // Set last_end_id to none
+  if full_amount {
+    gacha_type_and_last_end_id_mappings
+      .values_mut()
+      .for_each(|mapping| {
+        mapping.take();
+      });
   }
 
-  Ok(())
+  macro_rules! fetch {
+    ($name:tt, $record:ident, $fetcher:ident) => {{
+      paste! {
+        let records = create_fetcher_channel(
+          $fetcher,
+          reqwest,
+          $fetcher,
+          gacha_url,
+          gacha_type_and_last_end_id_mappings,
+          window,
+          event_channel,
+        )
+        .await?;
+
+        if records.is_empty() || !save_to_storage {
+          return Ok(0)
+        }
+
+        if !full_amount {
+          storage.[<save_ $name _gacha_records>](&records).await?;
+          return Ok(records.len() as _)
+        }
+
+        let groups: HashMap<String, Vec<$record>> =
+          records.into_iter().fold(HashMap::new(), |mut acc, record| {
+            match acc.entry(record.gacha_type.clone()) {
+              Entry::Occupied(mut o) => { o.get_mut().push(record); }
+              Entry::Vacant(o) => { o.insert(vec![record]); }
+            }
+            acc
+          });
+
+        let mut deleted = 0;
+        let mut new = 0;
+
+        for (gacha_type, records) in groups {
+          if records.is_empty() {
+            continue;
+          }
+
+          let oldest_end_id = records.last().map(|record| record.id.as_str()).unwrap();
+
+          deleted += storage
+            .[<delete_ $name _gacha_records_by_newer_than_end_id>](&uid, &gacha_type, oldest_end_id)
+            .await? as i64;
+
+          new += storage.[<save_ $name _gacha_records>](&records)
+            .await? as i64;
+        }
+
+        new - deleted
+      }
+    }};
+  }
+
+  let changes = match facet {
+    AccountFacet::Genshin => fetch!(genshin, GenshinGachaRecord, GenshinGacha),
+    AccountFacet::StarRail => fetch!(starrail, StarRailGachaRecord, StarRailGacha),
+    AccountFacet::ZenlessZoneZero => fetch!(zzz, ZenlessZoneZeroGachaRecord, ZenlessZoneZeroGacha),
+  };
+
+  Ok(changes)
 }
 
 #[tauri::command]
