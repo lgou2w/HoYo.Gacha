@@ -29,7 +29,6 @@ pub enum Relation {}
 impl ActiveModelBehavior for ActiveModel {}
 
 /// Convert
-
 impl From<ZenlessZoneZeroGachaRecord> for ActiveModel {
   fn from(value: ZenlessZoneZeroGachaRecord) -> Self {
     Self {

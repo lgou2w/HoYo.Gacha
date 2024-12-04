@@ -13,6 +13,7 @@ const BLOCK_VERSION3_0: u32 = 0x30000;
 const BLOCK_HEADER_SIZE: u32 = 8192;
 const BLOCK_MAX_BLOCKS: u32 = (BLOCK_HEADER_SIZE - 80) * 8;
 
+#[allow(dead_code)]
 pub struct BlockFileHeader {
   pub magic: u32,
   pub version: u32,

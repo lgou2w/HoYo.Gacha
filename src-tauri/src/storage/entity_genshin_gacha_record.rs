@@ -26,7 +26,6 @@ pub enum Relation {}
 impl ActiveModelBehavior for ActiveModel {}
 
 /// Convert
-
 impl From<GenshinGachaRecord> for ActiveModel {
   fn from(value: GenshinGachaRecord) -> Self {
     Self {

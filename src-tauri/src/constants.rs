@@ -9,7 +9,6 @@ pub const AUTHOR: &str = env!("CARGO_PKG_AUTHORS");
 pub const REPOSITORY: &str = env!("CARGO_PKG_REPOSITORY");
 
 /// See: https://github.com/baoyachi/shadow-rs
-
 shadow_rs::shadow!(build);
 
 pub const RUST_VERSION: &str = build::RUST_VERSION;

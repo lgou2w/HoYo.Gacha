@@ -35,7 +35,7 @@ use tauri::Runtime;
 use tracing::debug;
 
 /// Storage
-
+#[allow(dead_code)]
 pub struct Storage {
   pub database_file: PathBuf,
   pub database: DatabaseConnection,
@@ -99,7 +99,7 @@ impl Storage {
 
       // Account: facet + uid constraint
       let statement5 = Index::create()
-        .name(&format!(
+        .name(format!(
           "idx-{}-{}-{}",
           EntityName::table_name(&AccountEntity),
           Iden::to_string(&AccountColumn::Facet),

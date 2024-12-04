@@ -45,7 +45,6 @@ pub enum Relation {}
 impl ActiveModelBehavior for ActiveModel {}
 
 /// Account Properties converts
-
 impl std::ops::Deref for AccountProperties {
   type Target = Json<String, JsonValue>;
 

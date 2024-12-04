@@ -15,6 +15,7 @@ const INDEX_VERSION3_0: u32 = 0x30000;
 #[allow(unused)]
 const INDEX_TABLE_SIZE: u32 = 0x10000;
 
+#[allow(dead_code)]
 pub struct LruData {
   pub pad1: [i32; 2],
   pub filled: i32,
@@ -27,6 +28,7 @@ pub struct LruData {
   pub pad2: [i32; 7],
 }
 
+#[allow(dead_code)]
 pub struct IndexFileHeader {
   pub magic: u32,
   pub version: u32,
@@ -43,6 +45,7 @@ pub struct IndexFileHeader {
   pub lru: LruData,
 }
 
+#[allow(dead_code)]
 pub struct IndexFile {
   pub header: IndexFileHeader,
   pub table: Vec<CacheAddr>,

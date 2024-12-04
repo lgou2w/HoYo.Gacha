@@ -1,4 +1,4 @@
 fn main() {
-  shadow_rs::new().ok();
+  shadow_rs::new().unwrap();
   tauri_build::build();
 }

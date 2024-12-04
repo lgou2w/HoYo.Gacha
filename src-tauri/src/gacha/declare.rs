@@ -9,16 +9,13 @@ use std::path::{Path, PathBuf};
 use time::OffsetDateTime;
 
 /// Game Directory
-
 // TODO:
 //    International
-
 pub trait GameDataDirectoryFinder {
   fn find_game_data_directories(&self) -> Result<Vec<PathBuf>>;
 }
 
 /// Gacha Url
-
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct GachaUrl {
   pub addr: u32,
@@ -35,13 +32,11 @@ impl std::ops::Deref for GachaUrl {
 }
 
 /// Gacha Url Finder
-
 pub trait GachaUrlFinder {
   fn find_gacha_urls<P: AsRef<Path>>(&self, game_data_dir: P) -> Result<Vec<GachaUrl>>;
 }
 
 /// Gacha Record
-
 pub trait GachaRecord: Any {
   fn id(&self) -> &str;
   fn as_any(&self) -> &dyn Any;
@@ -55,7 +50,6 @@ impl dyn GachaRecord {
 }
 
 /// Gacha Record Fetcher
-
 #[async_trait]
 pub trait GachaRecordFetcher {
   type Target: GachaRecord;
@@ -76,7 +70,6 @@ pub trait GachaRecordFetcher {
 }
 
 /// Gacha Record Fetcher Channel
-
 #[allow(unused)]
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]

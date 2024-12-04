@@ -71,7 +71,6 @@ pub enum Error {
 pub type Result<T> = std::result::Result<T, Error>;
 
 /// Native error to JavaScript error
-
 macro_rules! impl_error_identifiers {
   ($( $variant: ident => $ident: ident ),*) => {
     impl Error {
