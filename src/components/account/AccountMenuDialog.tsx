@@ -216,7 +216,7 @@ function AccountMenuDialogForm (props: AccountMenuDialogFormProps) {
 
     setBusy(true)
     try {
-      if (isEdit) {
+      if (!isEdit) {
         await handleCreateAccount(uid, data)
       } else {
         await handleUpdateAccount(uid, data)
