@@ -103,8 +103,8 @@ async fn pull_all_gacha_records(
         }
 
         if !full_amount {
-          storage.[<save_ $name _gacha_records>](&records).await?;
-          return Ok(records.len() as _)
+          let changes = storage.[<save_ $name _gacha_records>](&records).await?;
+          return Ok(changes as _)
         }
 
         let groups: HashMap<String, Vec<$record>> =
