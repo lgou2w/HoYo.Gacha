@@ -35,7 +35,7 @@ use tauri::Runtime;
 use tracing::debug;
 
 /// Storage
-
+#[allow(dead_code)]
 pub struct Storage {
   pub database_file: PathBuf,
   pub database: DatabaseConnection,
@@ -99,7 +99,7 @@ impl Storage {
 
       // Account: facet + uid constraint
       let statement5 = Index::create()
-        .name(&format!(
+        .name(format!(
           "idx-{}-{}-{}",
           EntityName::table_name(&AccountEntity),
           Iden::to_string(&AccountColumn::Facet),
@@ -358,6 +358,24 @@ macro_rules! impl_gacha_records_crud {
           }
           txn.commit().await?;
           Ok(changes)
+        }
+
+        pub async fn [<delete_ $name _gacha_records_by_newer_than_end_id>](&self,
+          uid: &str,
+          gacha_type: &str,
+          end_id: &str,
+        ) -> Result<u64> {
+          debug!("Delete {} gacha records by newer than end_id: {}", stringify!($name), end_id);
+
+          let rows_affected = $entity::delete_many()
+            .filter($column::Uid.eq(uid))
+            .filter($column::GachaType.eq(gacha_type))
+            .filter($column::Id.gte(end_id))
+            .exec(&self.database)
+            .await?
+            .rows_affected;
+
+          Ok(rows_affected)
         }
       }
     }

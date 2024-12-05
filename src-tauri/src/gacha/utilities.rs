@@ -353,11 +353,11 @@ fn request_gacha_url_with_retry<T: Sized + DeserializeOwned + Send>(
 
         // Wait and retry only if the error is VisitTooFrequently.
         Err(Error::VisitTooFrequentlyGachaUrl) => {
-          warn!(
-            "Requesting gacha url visit too frequently, wait({}s) and retry...",
-            duration.as_secs_f32()
-          );
-          sleep(duration).await;
+          warn!("Requesting gacha url visit too frequently, retry...");
+          if let Some(duration) = duration {
+            sleep(duration).await;
+          }
+
           continue;
         }
 

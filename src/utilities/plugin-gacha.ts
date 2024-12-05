@@ -25,8 +25,9 @@ export async function pullAllGachaRecords (
     >
     eventChannel: string
     saveToStorage?: boolean
+    fullAmount?: boolean
   }
-): Promise<void> {
+): Promise<number> {
   return invoke('plugin:gacha|pull_all_gacha_records', {
     facet,
     uid,

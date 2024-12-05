@@ -19,7 +19,6 @@ use std::path::{Path, PathBuf};
 pub struct GenshinGacha;
 
 /// Game Directory
-
 impl GameDataDirectoryFinder for GenshinGacha {
   fn find_game_data_directories(&self) -> Result<Vec<PathBuf>> {
     let mihoyo_dir = lookup_mihoyo_dir();
@@ -48,7 +47,6 @@ impl GameDataDirectoryFinder for GenshinGacha {
 }
 
 /// Gacha Url
-
 const ENDPOINT: &str = "/api/getGachaLog?";
 
 impl GachaUrlFinder for GenshinGacha {
@@ -60,7 +58,6 @@ impl GachaUrlFinder for GenshinGacha {
 }
 
 /// Gacha Record
-
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq)]
 pub struct GenshinGachaRecord {
   pub id: String,
@@ -92,7 +89,6 @@ impl PartialOrd for GenshinGachaRecord {
 }
 
 /// Gacha Record Fetcher
-
 #[allow(unused)]
 #[derive(Deserialize)]
 pub(crate) struct GenshinGachaRecordPagination {

@@ -26,22 +26,19 @@ export default function useGachaRecordsFetcher () {
       draft.current = 'idle'
     })
 
-    const fragments: Fragment[] = []
     const [,, { eventChannel }] = args
     try {
       const unlisten = await event.listen<Fragment>(eventChannel, ({ payload }) => {
         produceState((draft) => {
-          fragments.push(payload)
           draft.current = payload
         })
       })
 
       try {
-        await PluginGacha.pullAllGachaRecords(...args)
+        return await PluginGacha.pullAllGachaRecords(...args)
       } finally {
         unlisten()
       }
-      return fragments
     } catch (error) {
       return Promise.reject(error)
     }

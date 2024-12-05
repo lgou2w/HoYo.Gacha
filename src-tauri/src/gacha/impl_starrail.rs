@@ -19,7 +19,6 @@ use std::path::{Path, PathBuf};
 pub struct StarRailGacha;
 
 /// Game Directory
-
 impl GameDataDirectoryFinder for StarRailGacha {
   fn find_game_data_directories(&self) -> Result<Vec<PathBuf>> {
     let cognosphere_dir = lookup_cognosphere_dir();
@@ -48,7 +47,6 @@ impl GameDataDirectoryFinder for StarRailGacha {
 }
 
 /// Gacha Url
-
 const ENDPOINT: &str = "/api/getGachaLog?";
 
 impl GachaUrlFinder for StarRailGacha {
@@ -93,7 +91,6 @@ impl PartialOrd for StarRailGachaRecord {
 }
 
 /// Gacha Record Fetcher
-
 #[allow(unused)]
 #[derive(Deserialize)]
 pub(crate) struct StarRailGachaRecordPagination {

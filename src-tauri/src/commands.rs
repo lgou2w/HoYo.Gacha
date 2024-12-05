@@ -39,11 +39,7 @@ fn get_version() -> Version {
   Version {
     version: constants::VERSION.to_owned(),
     commit_hash: constants::COMMIT_HASH[0..7].to_owned(),
-    commit_tag: if commit_tag.is_empty() {
-      None
-    } else {
-      Some(commit_tag.to_owned())
-    },
+    commit_tag: Some(commit_tag.to_owned()),
     date: constants::COMMIT_DATE.to_owned(),
   }
 }

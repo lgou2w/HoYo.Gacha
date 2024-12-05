@@ -19,7 +19,6 @@ use std::path::{Path, PathBuf};
 pub struct ZenlessZoneZeroGacha;
 
 /// Game Directory
-
 impl GameDataDirectoryFinder for ZenlessZoneZeroGacha {
   fn find_game_data_directories(&self) -> Result<Vec<PathBuf>> {
     let cognosphere_dir = lookup_cognosphere_dir();
@@ -48,7 +47,6 @@ impl GameDataDirectoryFinder for ZenlessZoneZeroGacha {
 }
 
 /// Gacha Url
-
 const ENDPOINT: &str = "/api/getGachaLog?";
 
 impl GachaUrlFinder for ZenlessZoneZeroGacha {
@@ -93,7 +91,6 @@ impl PartialOrd for ZenlessZoneZeroGachaRecord {
 }
 
 /// Gacha Record Fetcher
-
 #[allow(unused)]
 #[derive(Deserialize)]
 pub(crate) struct ZenlessZoneZeroGachaRecordPagination {

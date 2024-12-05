@@ -5,6 +5,7 @@ use std::io::{Error, ErrorKind, Read, Result};
 
 const BLOCK_KEY_SIZE: u32 = 256 - 24 * 4;
 
+#[allow(dead_code)]
 pub struct EntryStore {
   pub hash: u32,
   pub next: CacheAddr,

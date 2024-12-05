@@ -4,21 +4,17 @@ use reqwest::Client as Reqwest;
 use serde::{Deserialize, Serialize};
 use std::any::Any;
 use std::collections::BTreeMap;
-use std::future::Future;
 use std::path::{Path, PathBuf};
 use time::OffsetDateTime;
 
 /// Game Directory
-
 // TODO:
 //    International
-
 pub trait GameDataDirectoryFinder {
   fn find_game_data_directories(&self) -> Result<Vec<PathBuf>>;
 }
 
 /// Gacha Url
-
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct GachaUrl {
   pub addr: u32,
@@ -35,13 +31,11 @@ impl std::ops::Deref for GachaUrl {
 }
 
 /// Gacha Url Finder
-
 pub trait GachaUrlFinder {
   fn find_gacha_urls<P: AsRef<Path>>(&self, game_data_dir: P) -> Result<Vec<GachaUrl>>;
 }
 
 /// Gacha Record
-
 pub trait GachaRecord: Any {
   fn id(&self) -> &str;
   fn as_any(&self) -> &dyn Any;
@@ -55,7 +49,6 @@ impl dyn GachaRecord {
 }
 
 /// Gacha Record Fetcher
-
 #[async_trait]
 pub trait GachaRecordFetcher {
   type Target: GachaRecord;
@@ -76,7 +69,6 @@ pub trait GachaRecordFetcher {
 }
 
 /// Gacha Record Fetcher Channel
-
 #[allow(unused)]
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -199,19 +191,18 @@ pub trait GachaRecordFetcherChannel<T: GachaRecord + Sized + Serialize + Send + 
   }
 }
 
-pub async fn create_fetcher_channel<Record, FetcherChannel, F, Fut>(
+pub async fn create_fetcher_channel<Record, FetcherChannel>(
   fetcher_channel: FetcherChannel,
   reqwest: Reqwest,
   fetcher: FetcherChannel::Fetcher,
   gacha_url: String,
   gacha_type_and_last_end_id_mappings: BTreeMap<String, Option<String>>,
-  receiver_fn: F,
-) -> Result<()>
+  window: tauri::Window,
+  event_channel: String,
+) -> Result<Vec<Record>>
 where
   Record: GachaRecord + Sized + Serialize + Send + Sync,
   FetcherChannel: GachaRecordFetcherChannel<Record> + Send + Sync + 'static,
-  F: Fn(GachaRecordFetcherChannelFragment<Record>) -> Fut,
-  Fut: Future<Output = Result<()>>,
 {
   use tokio::spawn;
   use tokio::sync::mpsc::channel;
@@ -229,11 +220,17 @@ where
       .await
   });
 
+  let mut records = Vec::new();
   while let Some(fragment) = receiver.recv().await {
-    receiver_fn(fragment).await?;
+    window.emit(&event_channel, &fragment)?;
+    if let GachaRecordFetcherChannelFragment::Data(data) = fragment {
+      records.extend(data);
+    }
   }
 
   task
     .await
-    .map_err(|_| Error::GachaRecordFetcherChannelJoin)?
+    .map_err(|_| Error::GachaRecordFetcherChannelJoin)??;
+
+  Ok(records)
 }

@@ -29,7 +29,6 @@ pub enum Relation {}
 impl ActiveModelBehavior for ActiveModel {}
 
 /// Convert
-
 impl From<StarRailGachaRecord> for ActiveModel {
   fn from(value: StarRailGachaRecord) -> Self {
     Self {
