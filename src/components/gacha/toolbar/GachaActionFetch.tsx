@@ -1,5 +1,6 @@
 import React, { MouseEventHandler } from 'react'
 import { useImmer } from 'use-immer'
+import { dialog } from '@tauri-apps/api'
 import { AccountFacet, resolveCurrency } from '@/interfaces/account'
 import { useUpdateAccountGachaUrlFn, useUpdateAccountPropertiesFn } from '@/hooks/useStatefulAccount'
 import { GachaRecords, NamedGachaRecords, useRefetchGachaRecordsFn } from '@/hooks/useGachaRecordsQuery'
@@ -53,11 +54,29 @@ export default function GachaActionFetch () {
       return
     }
 
+    const fullAmount = Boolean(evt.currentTarget.getAttribute('data-full-amount'))
+    const fullAmountMessage = [
+      '确认进行全量更新？',
+      '',
+      '这将会重新获取全部的记录数据，',
+      '然后和本地数据库记录合并覆盖。',
+      '',
+      '过程可能会漫长，这取决于数据总量。'
+    ].join('\n')
+
+    if (fullAmount && !await dialog.confirm(fullAmountMessage, {
+      title: '全量更新',
+      type: 'warning',
+      okLabel: '确定',
+      cancelLabel: '取消'
+    })) {
+      return
+    }
+
     produceState((draft) => {
       draft.busy = true
     })
 
-    const fullAmount = Boolean(evt.currentTarget.getAttribute('data-full-amount'))
     const { facet, uid, gachaUrl } = selectedAccount
     try {
       const { namedValues: { character, weapon, permanent, newbie, anthology, bangboo } } = gachaRecords
