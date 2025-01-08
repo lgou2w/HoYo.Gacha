@@ -19,6 +19,14 @@ impl<T> Error<T> {
   pub fn into_inner(self) -> T {
     self.0
   }
+
+  #[inline]
+  pub fn boxed(self) -> Box<dyn ErrorDetails + Send + 'static>
+  where
+    T: ErrorDetails + Send + 'static,
+  {
+    Box::new(self.0)
+  }
 }
 
 impl<T> AsRef<T> for Error<T> {
@@ -45,16 +53,16 @@ impl<T: ErrorDetails + 'static> StdError for Error<T> {
   }
 }
 
-impl<T: ErrorDetails + 'static> Serialize for Error<T> {
+impl<T: ErrorDetails + Send + 'static> Serialize for Error<T> {
   fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
   where
     S: Serializer,
   {
-    (&self.0 as &dyn ErrorDetails).serialize(serializer)
+    (&self.0 as &(dyn ErrorDetails + Send)).serialize(serializer)
   }
 }
 
-impl Serialize for dyn ErrorDetails + 'static {
+impl Serialize for dyn ErrorDetails + Send + 'static {
   fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
   where
     S: Serializer,
@@ -72,14 +80,17 @@ macro_rules! declare_error_kinds {
   (@field_detail $field:ident) => { $field };
   (@field_detail $field:ident => $field_expr:expr) => { $field_expr };
 
-  ($name:ident, kinds {
-    $(
-      #[$error:meta]
-      $kind:ident$({ $($field:ident:$field_ty:ty$(=> $field_expr:expr)?),* })?,
-    )*
-  }) => {
+  (
+    #[$meta:meta]
+    $name:ident {
+      $(
+        #[$error:meta]
+        $kind:ident$({ $($field:ident:$field_ty:ty$(=> $field_expr:expr)?),* })?,
+      )*
+    }
+  ) => {
     paste::paste! {
-      #[derive(Debug, thiserror::Error)]
+      #[$meta]
       pub enum [<$name Kind>] {
         $(
           #[$error]

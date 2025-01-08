@@ -16,14 +16,14 @@ export type Command<Args extends InvokeArgs | undefined, Result = void> =
 export type CacheableCommand<Args extends InvokeArgs | undefined, Result = void> = Command<Args, Result> & {
   __cached?: Promise<Result>
   readonly hasCached: boolean
-  removeCached (): void
+  invalidate (): void
 }
 
 export function declareCommand<Args extends InvokeArgs | undefined, Result = void> (name: string): Command<Args, Result>
 export function declareCommand<Args extends InvokeArgs | undefined, Result = void> (name: string, cacheable: true): CacheableCommand<Args, Result>
 export function declareCommand<Args extends InvokeArgs | undefined, Result = void> (
   name: string,
-  cacheable?: boolean
+  cacheable?: boolean,
 ): Command<Args, Result> | CacheableCommand<Args, Result> {
   if (import.meta.env.DEV) {
     console.debug(`Declaration ${!cacheable ? '' : 'cacheable '}command:`, name)
@@ -50,7 +50,8 @@ export function declareCommand<Args extends InvokeArgs | undefined, Result = voi
       // If the promise doesn't resolved, then remove the cache.
       return promise.catch((error) => {
         console.warn('The promise of the cached command %s is not resolved: %o', name, error)
-        cacheableCommand.removeCached()
+        cacheableCommand.invalidate()
+        throw error
       })
     } else {
       return cacheableCommand.__cached
@@ -63,13 +64,13 @@ export function declareCommand<Args extends InvokeArgs | undefined, Result = voi
       enumerable: true,
       get () {
         return !!cacheableCommand.__cached
-      }
+      },
     },
-    removeCached: {
+    invalidate: {
       configurable: false,
       value () {
         delete cacheableCommand.__cached
-      }
-    }
+      },
+    },
   })
 }

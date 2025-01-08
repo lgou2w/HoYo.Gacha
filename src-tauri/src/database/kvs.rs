@@ -13,6 +13,7 @@ pub struct KvMut<'a, 'key> {
   pub key: &'key str,
 }
 
+#[allow(dead_code)]
 impl<'a, 'key> KvMut<'a, 'key> {
   pub fn from(database: &'a Database, key: &'key str) -> Self {
     Self { database, key }

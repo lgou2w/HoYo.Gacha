@@ -7,7 +7,7 @@ use tokio::sync::mpsc;
 use crate::database::{
   DatabaseState, GachaRecordOnConflict, GachaRecordQuestioner, GachaRecordQuestionerAdditions,
 };
-use crate::error::ErrorDetails;
+use crate::error::{Error, ErrorDetails};
 use crate::models::{Business, BusinessRegion, GachaMetadata};
 
 mod advanced;
@@ -29,7 +29,7 @@ pub async fn business_locate_data_folder(
   business: Business,
   region: BusinessRegion,
   factory: DataFolderLocatorFactory,
-) -> Result<Option<DataFolder>, DataFolderError> {
+) -> Result<DataFolder, DataFolderError> {
   <&dyn DataFolderLocator>::from(factory)
     .locate_data_folder(business, region)
     .await
@@ -77,7 +77,7 @@ pub async fn business_create_gacha_records_fetcher_channel(
   gacha_url: String,
   gacha_type_and_last_end_id_mappings: Vec<(u32, Option<String>)>,
   options: Option<CreateGachaRecordsFetcherChannelOptions>,
-) -> Result<(), Box<dyn ErrorDetails + 'static>> {
+) -> Result<(), Box<dyn ErrorDetails + Send + 'static>> {
   let options = options.unwrap_or_default();
 
   let event_channel = options.event_channel.unwrap_or_default();
@@ -88,8 +88,8 @@ pub async fn business_create_gacha_records_fetcher_channel(
     .save_on_conflict
     .unwrap_or(GachaRecordOnConflict::Nothing);
 
-  use advanced::GachaRecordsFetcherChannelFragment as Fragment;
-  advanced::create_gacha_records_fetcher_channel(
+  use GachaRecordsFetcherChannelFragment as Fragment;
+  create_gacha_records_fetcher_channel(
     business,
     region,
     uid,
@@ -110,10 +110,9 @@ pub async fn business_create_gacha_records_fetcher_channel(
 
       if save_to_database {
         if let Fragment::Data(records) = fragment {
-          use crate::database::{GachaRecordQuestioner, GachaRecordQuestionerAdditions};
           GachaRecordQuestioner::create_gacha_records(&database, records, save_on_conflict, None)
             .await
-            .map_err(|error| Box::new(error.into_inner()) as _)?;
+            .map_err(Error::boxed)?;
         }
       }
 
@@ -121,7 +120,6 @@ pub async fn business_create_gacha_records_fetcher_channel(
     },
   )
   .await
-  .map_err(|error| error as _)
 }
 
 #[tauri::command]
@@ -133,7 +131,7 @@ pub async fn business_import_gacha_records(
   importer: GachaRecordsImporter,
   save_on_conflict: Option<GachaRecordOnConflict>,
   progress_channel: Option<String>,
-) -> Result<u64, Box<dyn ErrorDetails + 'static>> {
+) -> Result<u64, Box<dyn ErrorDetails + Send + 'static>> {
   let records = importer.import(GachaMetadata::embedded(), input)?;
 
   // Progress reporting
@@ -157,7 +155,7 @@ pub async fn business_import_gacha_records(
     progress_reporter,
   )
   .await
-  .map_err(|error| Box::new(error.into_inner()) as _)?;
+  .map_err(Error::boxed)?;
 
   // Wait for the progress task to finish
   if let Some(progress_task) = progress_task {
@@ -174,7 +172,7 @@ pub async fn business_export_gacha_records(
   database: DatabaseState<'_>,
   output: PathBuf,
   exporter: GachaRecordsExporter,
-) -> Result<(), Box<dyn ErrorDetails + 'static>> {
+) -> Result<(), Box<dyn ErrorDetails + Send + 'static>> {
   // TODO: Progress reporting
 
   let records = match &exporter {
@@ -185,7 +183,7 @@ pub async fn business_export_gacha_records(
         writer.account_uid,
       )
       .await
-      .map_err(|error| Box::new(error.into_inner()) as _)?
+      .map_err(Error::boxed)?
     }
     GachaRecordsExporter::Uigf(writer) => {
       let mut records = Vec::new();
@@ -197,7 +195,7 @@ pub async fn business_export_gacha_records(
           *account_uid,
         )
         .await
-        .map_err(|error| Box::new(error.into_inner()) as _)?;
+        .map_err(Error::boxed)?;
 
         records.extend(account_records);
       }
@@ -211,7 +209,7 @@ pub async fn business_export_gacha_records(
         writer.account_uid,
       )
       .await
-      .map_err(|error| Box::new(error.into_inner()) as _)?
+      .map_err(Error::boxed)?
     }
   };
 

@@ -10,14 +10,14 @@ const useStyles = makeStyles({
     display: 'flex',
     flexDirection: 'row',
     columnGap: tokens.spacingHorizontalL,
-    alignItems: 'center'
+    alignItems: 'center',
   },
   actions: {
     display: 'flex',
     flexDirection: 'row',
     flexGrow: 1,
-    justifyContent: 'space-between'
-  }
+    justifyContent: 'space-between',
+  },
 })
 
 type GachaLegacyViewToolbarTabsProps = ComponentProps<typeof GachaLegacyViewToolbarTabs>

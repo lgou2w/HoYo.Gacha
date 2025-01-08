@@ -1,14 +1,11 @@
 use crate::{consts, database};
 
 mod ffi;
-pub mod internals;
+pub(crate) mod internals;
 mod panic_hook;
 mod singleton;
 mod tauri;
 mod tracing;
-
-#[cfg(test)] // for Unit test
-pub use tracing::Tracing;
 
 pub async fn start() {
   #[cfg(windows)]
@@ -34,6 +31,7 @@ pub async fn start() {
   );
 
   panic_hook::install();
+
   let singleton = singleton::Singleton::mutex();
   let tracing = tracing::Tracing::initialize();
   let database = database::Database::new().await;

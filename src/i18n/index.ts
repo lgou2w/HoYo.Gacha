@@ -12,7 +12,7 @@ i18n
     fallbackLng: DefaultLanguage,
     supportedLngs: SupportedLanguages,
     interpolation: { escapeValue: false },
-    resources: KnownLanguages
+    resources: KnownLanguages,
   })
 
 export default i18n

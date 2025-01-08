@@ -1,11 +1,11 @@
 use std::collections::{HashMap, HashSet};
 use std::fmt::{self, Display};
 use std::fs::File;
-use std::io::{self, BufWriter, Cursor, Read};
+use std::io::{self, Read};
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
+use std::sync::LazyLock;
 
-use once_cell::sync::Lazy;
 use regex::Regex;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use time::format_description::FormatItem;
@@ -14,7 +14,7 @@ use time::serde::rfc3339;
 use time::OffsetDateTime;
 
 use crate::consts;
-use crate::error::declare_error_kinds;
+use crate::error::{declare_error_kinds, Error, ErrorDetails};
 use crate::models::{Business, GachaMetadata, GachaRecord, MetadataStructEntryRef};
 use crate::utilities::serde_helper;
 
@@ -45,14 +45,6 @@ pub trait GachaRecordsReader {
     metadata: &GachaMetadata,
     input: impl AsRef<Path>,
   ) -> Result<Vec<GachaRecord>, Self::Error>;
-
-  fn read_from_slice(
-    &self,
-    metadata: &GachaMetadata,
-    input: impl AsRef<[u8]>,
-  ) -> Result<Vec<GachaRecord>, Self::Error> {
-    self.read(metadata, Cursor::new(input.as_ref()))
-  }
 }
 
 // endregion
@@ -65,8 +57,8 @@ pub struct UigfVersion {
   pub minor: u8,
 }
 
-static VERSION_NUMBER_REGEX: Lazy<Regex> =
-  Lazy::new(|| Regex::new(r"^v(?P<major>\d+)\.(?P<minor>\d+)$").unwrap());
+static VERSION_NUMBER_REGEX: LazyLock<Regex> =
+  LazyLock::new(|| Regex::new(r"^v(?P<major>\d+)\.(?P<minor>\d+)$").unwrap());
 
 impl UigfVersion {
   pub const V2_2: Self = Self::new(2, 2);
@@ -131,7 +123,7 @@ impl Serialize for UigfVersion {
  *       302             |       302
  *       500             |       500
  */
-static UIGF_GACHA_TYPE_MAPPINGS: Lazy<HashMap<u32, u32>> = Lazy::new(|| {
+static UIGF_GACHA_TYPE_MAPPINGS: LazyLock<HashMap<u32, u32>> = LazyLock::new(|| {
   let mut m = HashMap::with_capacity(6);
   m.insert(100, 100);
   m.insert(200, 200);
@@ -152,9 +144,9 @@ const FIELD_REGION_TIME_ZONE: &str = "region_time_zone";
 // Only support: v2.2, v2.3, v2.4, v3.0
 // https://uigf.org/zh/standards/uigf-legacy-v3.0.html
 
-declare_error_kinds!(
-  LegacyUigfGachaRecordsWriteError,
-  kinds {
+declare_error_kinds! {
+  #[derive(Debug, thiserror::Error)]
+  LegacyUigfGachaRecordsWriteError {
     #[error("Incompatible record business: {business}, id: {id}, name: {name}")]
     IncompatibleRecordBusiness {
       business: Business,
@@ -178,33 +170,29 @@ declare_error_kinds!(
     CreateOutput {
       path: PathBuf,
       cause: io::Error => serde_json::json!({
-        "kind": format_args!("{}", cause.kind()),
-        "message": format_args!("{cause}"),
+        "kind": cause.kind().to_string(),
+        "message": cause.to_string(),
       })
     },
 
     #[error("Serialization json error: {cause}")]
-    Serialize {
-      cause: serde_json::Error => format_args!("{}", cause)
-    },
+    Serialize { cause: serde_json::Error => cause.to_string() },
   }
-);
+}
 
-declare_error_kinds!(
-  LegacyUigfGachaRecordsReadError,
-  kinds {
+declare_error_kinds! {
+  #[derive(Debug, thiserror::Error)]
+  LegacyUigfGachaRecordsReadError {
     #[error("Failed to open input: {cause}")]
     OpenInput {
       cause: io::Error => serde_json::json!({
-        "kind": format_args!("{}", cause.kind()),
-        "message": format_args!("{cause}"),
+        "kind": cause.kind().to_string(),
+        "message": cause.to_string(),
       })
     },
 
     #[error("Invalid json input: {cause}")]
-    InvalidInput {
-      cause: serde_json::Error => format_args!("{}", cause)
-    },
+    InvalidInput { cause: serde_json::Error => cause.to_string() },
 
     #[error("Invalid uigf version string: {version}")]
     InvalidVersion { version: String },
@@ -226,7 +214,7 @@ declare_error_kinds!(
       val: String
     },
   }
-);
+}
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct LegacyUigf {
@@ -381,13 +369,11 @@ impl GachaRecordsWriter for LegacyUigfGachaRecordsWriter {
         )?;
       }
 
-      let uigf_gacha_type = *UIGF_GACHA_TYPE_MAPPINGS
-        .get(&record.gacha_type)
-        .ok_or_else(
-          || LegacyUigfGachaRecordsWriteErrorKind::FailedMappingGachaType {
-            value: record.gacha_type,
-          },
-        )?;
+      let uigf_gacha_type = *UIGF_GACHA_TYPE_MAPPINGS.get(&record.gacha_type).ok_or(
+        LegacyUigfGachaRecordsWriteErrorKind::FailedMappingGachaType {
+          value: record.gacha_type,
+        },
+      )?;
 
       // Always fill in these optional fields to ensure compatibility
       uigf.list.push(LegacyUigfItem {
@@ -564,9 +550,9 @@ impl GachaRecordsReader for LegacyUigfGachaRecordsReader {
 // Support: v4.0
 // https://uigf.org/zh/standards/uigf.html
 
-declare_error_kinds!(
-  UigfGachaRecordsWriteError,
-  kinds {
+declare_error_kinds! {
+  #[derive(Debug, thiserror::Error)]
+  UigfGachaRecordsWriteError {
     #[error("Missing account information provided: {uid}")]
     MissingAccountInfo { uid: u32 },
 
@@ -585,33 +571,29 @@ declare_error_kinds!(
     CreateOutput {
       path: PathBuf,
       cause: io::Error => serde_json::json!({
-        "kind": format_args!("{}", cause.kind()),
-        "message": format_args!("{cause}"),
+        "kind": cause.kind().to_string(),
+        "message": cause.to_string(),
       })
     },
 
     #[error("Serialization json error: {cause}")]
-    Serialize {
-      cause: serde_json::Error => format_args!("{}", cause)
-    },
+    Serialize { cause: serde_json::Error => cause.to_string() },
   }
-);
+}
 
-declare_error_kinds!(
-  UigfGachaRecordsReadError,
-  kinds {
+declare_error_kinds! {
+  #[derive(Debug, thiserror::Error)]
+  UigfGachaRecordsReadError {
     #[error("Failed to open input: {cause}")]
     OpenInput {
       cause: io::Error => serde_json::json!({
-        "kind": format_args!("{}", cause.kind()),
-        "message": format_args!("{cause}"),
+        "kind": cause.kind().to_string(),
+        "message": cause.to_string(),
       })
     },
 
     #[error("Invalid json input: {cause}")]
-    InvalidInput {
-      cause: serde_json::Error => format_args!("{}", cause)
-    },
+    InvalidInput { cause: serde_json::Error => cause.to_string() },
 
     #[error("Invalid uigf version string: {version}")]
     InvalidVersion { version: String },
@@ -627,7 +609,7 @@ declare_error_kinds!(
       val: String
     },
   }
-);
+}
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Uigf {
@@ -911,11 +893,11 @@ impl GachaRecordsWriter for UigfGachaRecordsWriter {
         UigfHk4eItem,
         |record: GachaRecord, metadata_entry: MetadataStructEntryRef<'_>| {
           Result::<_, Self::Error>::Ok(UigfHk4eItem {
-            uigf_gacha_type: *UIGF_GACHA_TYPE_MAPPINGS
-              .get(&record.gacha_type)
-              .ok_or_else(|| UigfGachaRecordsWriteErrorKind::FailedMappingGachaType {
+            uigf_gacha_type: *UIGF_GACHA_TYPE_MAPPINGS.get(&record.gacha_type).ok_or(
+              UigfGachaRecordsWriteErrorKind::FailedMappingGachaType {
                 value: record.gacha_type,
-              })?,
+              },
+            )?,
             gacha_type: record.gacha_type,
             item_id: record.item_id.unwrap_or(metadata_entry.id.to_owned()),
             count: Some(record.count),
@@ -980,7 +962,7 @@ impl GachaRecordsWriter for UigfGachaRecordsWriter {
         cause,
       })?;
 
-    serde_json::to_writer(BufWriter::new(output_file), &uigf)
+    serde_json::to_writer(output_file, &uigf)
       .map_err(|cause| UigfGachaRecordsWriteErrorKind::Serialize { cause })?;
 
     Ok(())
@@ -1146,9 +1128,9 @@ impl GachaRecordsReader for UigfGachaRecordsReader {
 // Support: v1.0
 // https://uigf.org/zh/standards/srgf.html
 
-declare_error_kinds!(
-  SrgfGachaRecordsWriteError,
-  kinds {
+declare_error_kinds! {
+  #[derive(Debug, thiserror::Error)]
+  SrgfGachaRecordsWriteError {
     #[error("Incompatible record business: {business}, id: {id}, name: {name}")]
     IncompatibleRecordBusiness {
       business: Business,
@@ -1166,33 +1148,29 @@ declare_error_kinds!(
     CreateOutput {
       path: PathBuf,
       cause: io::Error => serde_json::json!({
-        "kind": format_args!("{}", cause.kind()),
-        "message": format_args!("{cause}"),
+        "kind": cause.kind().to_string(),
+        "message": cause.to_string(),
       })
     },
 
     #[error("Serialization json error: {cause}")]
-    Serialize {
-      cause: serde_json::Error => format_args!("{}", cause)
-    },
+    Serialize { cause: serde_json::Error => cause.to_string() },
   }
-);
+}
 
-declare_error_kinds!(
-  SrgfGachaRecordsReadError,
-  kinds {
+declare_error_kinds! {
+  #[derive(Debug, thiserror::Error)]
+  SrgfGachaRecordsReadError {
     #[error("Failed to open input: {cause}")]
     OpenInput {
       cause: io::Error => serde_json::json!({
-        "kind": format_args!("{}", cause.kind()),
-        "message": format_args!("{cause}"),
+        "kind": cause.kind().to_string(),
+        "message": cause.to_string(),
       })
     },
 
     #[error("Invalid json input: {cause}")]
-    InvalidInput {
-      cause: serde_json::Error => format_args!("{}", cause)
-    },
+    InvalidInput { cause: serde_json::Error => cause.to_string() },
 
     #[error("Invalid uigf version string: {version}")]
     InvalidVersion { version: String },
@@ -1211,7 +1189,7 @@ declare_error_kinds!(
       val: String
     },
   }
-);
+}
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Srgf {
@@ -1372,7 +1350,7 @@ impl GachaRecordsWriter for SrgfGachaRecordsWriter {
         cause,
       })?;
 
-    serde_json::to_writer(BufWriter::new(output_file), &srgf)
+    serde_json::to_writer(output_file, &srgf)
       .map_err(|cause| SrgfGachaRecordsWriteErrorKind::Serialize { cause })?;
 
     Ok(())
@@ -1479,13 +1457,13 @@ impl GachaRecordsReader for SrgfGachaRecordsReader {
 
 // region: Excel Writer
 
-// declare_error_kinds!(
+// declare_error_kinds! {
 //   ExcelGachaRecordsWriteError,
 //   kinds {
 //     #[error("Todo")]
 //     Todo,
 //   }
-// );
+// }
 
 // pub struct ExcelGachaRecordsWriter {}
 
@@ -1504,10 +1482,59 @@ impl GachaRecordsReader for SrgfGachaRecordsReader {
 
 // endregion
 
+// region: Gacha Records Import and Export
+
+#[derive(Clone, Debug, Deserialize)]
+pub enum GachaRecordsImporter {
+  LegacyUigf(LegacyUigfGachaRecordsReader),
+  Uigf(UigfGachaRecordsReader),
+  Srgf(SrgfGachaRecordsReader),
+}
+
+impl GachaRecordsImporter {
+  pub fn import(
+    self,
+    metadata: &GachaMetadata,
+    input: impl AsRef<Path>,
+  ) -> Result<Vec<GachaRecord>, Box<dyn ErrorDetails + Send + 'static>> {
+    match self {
+      Self::LegacyUigf(r) => r.read_from_file(metadata, input).map_err(Error::boxed),
+      Self::Uigf(r) => r.read_from_file(metadata, input).map_err(Error::boxed),
+      Self::Srgf(r) => r.read_from_file(metadata, input).map_err(Error::boxed),
+    }
+  }
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub enum GachaRecordsExporter {
+  LegacyUigf(LegacyUigfGachaRecordsWriter),
+  Uigf(UigfGachaRecordsWriter),
+  Srgf(SrgfGachaRecordsWriter),
+}
+
+impl GachaRecordsExporter {
+  pub fn export(
+    self,
+    metadata: &GachaMetadata,
+    records: Vec<GachaRecord>,
+    output: impl AsRef<Path>,
+  ) -> Result<(), Box<dyn ErrorDetails + Send + 'static>> {
+    match self {
+      Self::LegacyUigf(w) => w.write(metadata, records, output).map_err(Error::boxed),
+      Self::Uigf(w) => w.write(metadata, records, output).map_err(Error::boxed),
+      Self::Srgf(w) => w.write(metadata, records, output).map_err(Error::boxed),
+    }
+  }
+}
+
+// endregion
+
 // region: Tests
 
 #[cfg(test)]
 mod tests {
+  use io::Cursor;
+
   use super::*;
 
   #[test]
@@ -1547,7 +1574,7 @@ mod tests {
       expected_locale: "en-us".to_owned(),
       expected_uid: 100_000_000,
     }
-    .read_from_slice(GachaMetadata::embedded(), input)
+    .read(GachaMetadata::embedded(), Cursor::new(input))
     .unwrap();
 
     assert_eq!(records.len(), 1);
@@ -1590,7 +1617,7 @@ mod tests {
       expected_locale: "en-us".to_owned(),
       expected_uid: 100_000_000,
     }
-    .read_from_slice(GachaMetadata::embedded(), input)
+    .read(GachaMetadata::embedded(), Cursor::new(input))
     .unwrap();
 
     assert_eq!(records.len(), 1);
@@ -1634,7 +1661,7 @@ mod tests {
       expected_locale: "en-us".to_owned(),
       expected_uid: 100_000_000,
     }
-    .read_from_slice(GachaMetadata::embedded(), input)
+    .read(GachaMetadata::embedded(), Cursor::new(input))
     .unwrap_err();
 
     assert!(matches!(
@@ -1749,7 +1776,7 @@ mod tests {
       businesses: None,
       accounts: None,
     }
-    .read_from_slice(GachaMetadata::embedded(), input)
+    .read(GachaMetadata::embedded(), Cursor::new(input))
     .unwrap();
 
     assert_eq!(records.len(), 3);
@@ -1896,7 +1923,7 @@ mod tests {
       expected_locale: "en-us".to_owned(),
       expected_uid: 100_000_000,
     }
-    .read_from_slice(GachaMetadata::embedded(), input)
+    .read(GachaMetadata::embedded(), Cursor::new(input))
     .unwrap();
 
     assert_eq!(records.len(), 1);

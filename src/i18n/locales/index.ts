@@ -5,7 +5,7 @@ import ZH_HANT from './zh-Hant'
 export const KnownLanguages = {
   [EN_US.language]: EN_US,
   [ZH_HANS.language]: ZH_HANS,
-  [ZH_HANT.language]: ZH_HANT
+  [ZH_HANT.language]: ZH_HANT,
 } as const
 
 export type Language = keyof typeof KnownLanguages

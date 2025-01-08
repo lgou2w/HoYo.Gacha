@@ -14,7 +14,8 @@ use crate::error::declare_error_kinds;
 use crate::models::{BizInternals, Business, BusinessRegion};
 
 declare_error_kinds! {
-  DataFolderError, kinds {
+  #[derive(Debug, thiserror::Error)]
+  DataFolderError {
     #[error("Invalid data folder")]
     Invalid,
 
@@ -25,10 +26,13 @@ declare_error_kinds! {
     OpenUnityLogFile {
       path: PathBuf,
       cause: std::io::Error => serde_json::json!({
-        "kind": format_args!("{}", cause.kind()),
-        "message": format_args!("{cause}"),
+        "kind": cause.kind().to_string(),
+        "message": cause.to_string(),
       })
     },
+
+    #[error("Data folder vacant")]
+    Vacant,
   }
 }
 
@@ -45,7 +49,7 @@ pub trait DataFolderLocator {
     &self,
     business: Business,
     region: BusinessRegion,
-  ) -> Result<Option<DataFolder>, DataFolderError>;
+  ) -> Result<DataFolder, DataFolderError>;
 }
 
 // region: Unity log
@@ -60,7 +64,7 @@ impl DataFolderLocator for UnityLogDataFolderLocator {
     &self,
     business: Business,
     region: BusinessRegion,
-  ) -> Result<Option<DataFolder>, DataFolderError> {
+  ) -> Result<DataFolder, DataFolderError> {
     info!("Locating the data folder...");
 
     let biz = BizInternals::mapped(business, region);
@@ -126,18 +130,18 @@ impl DataFolderLocator for UnityLogDataFolderLocator {
               }
             };
 
-            return Ok(Some(DataFolder {
+            return Ok(DataFolder {
               business,
               region,
               value: data_folder,
-            }));
+            });
           }
         }
       }
     }
 
     warn!("Not locating the data folder from the keyword");
-    Ok(None)
+    Err(DataFolderErrorKind::Vacant)?
   }
 }
 
@@ -155,7 +159,7 @@ impl DataFolderLocator for ManualDataFolderLocator {
     &self,
     business: Business,
     region: BusinessRegion,
-  ) -> Result<Option<DataFolder>, DataFolderError> {
+  ) -> Result<DataFolder, DataFolderError> {
     info!("Manually locate the data folder...");
 
     let biz = BizInternals::mapped(business, region);
@@ -210,7 +214,7 @@ impl DataFolderLocator for ManualDataFolderLocator {
       Some(folder) => folder.into(),
       None => {
         warn!("No data folder is selected");
-        return Ok(None);
+        return Err(DataFolderErrorKind::Vacant)?;
       }
     };
 
@@ -220,11 +224,11 @@ impl DataFolderLocator for ManualDataFolderLocator {
     if executable_file.is_file() {
       let data_folder = maybe_data_folder.join(biz.data_folder_name);
       info!("Selected data folder: {data_folder:?}");
-      return Ok(Some(DataFolder {
+      return Ok(DataFolder {
         business,
         region,
         value: data_folder,
-      }));
+      });
     }
 
     // Otherwise, test for the existence of executable file
@@ -241,11 +245,11 @@ impl DataFolderLocator for ManualDataFolderLocator {
     };
 
     info!("Selected data folder: {maybe_data_folder:?}");
-    Ok(Some(DataFolder {
+    Ok(DataFolder {
       business,
       region,
       value: maybe_data_folder,
-    }))
+    })
   }
 }
 
@@ -265,7 +269,7 @@ impl DataFolderLocator for RegistryDataFolderLocator {
     &self,
     business: Business,
     region: BusinessRegion,
-  ) -> Result<Option<DataFolder>, DataFolderError> {
+  ) -> Result<DataFolder, DataFolderError> {
     // TODO: Locating data folder in the Registry
     unimplemented!()
   }

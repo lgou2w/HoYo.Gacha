@@ -1,5 +1,5 @@
 export default {
   language: 'zh-Hant',
   matches: ['zh-HK', 'zh-TW', 'zh-MO'],
-  translation: {}
+  translation: {},
 } as const

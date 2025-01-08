@@ -4,13 +4,13 @@ module.exports = {
   root: true,
   env: {
     node: true,
-    es2020: true
+    es2020: true,
   },
   parser: '@typescript-eslint/parser',
   parserOptions: {
     ecmaVersion: 'latest',
     sourceType: 'module',
-    project: './tsconfig.eslint.json'
+    project: './tsconfig.eslint.json',
   },
   plugins: [
     '@typescript-eslint',
@@ -22,7 +22,7 @@ module.exports = {
     'jest',
     'jest-dom',
     'testing-library',
-    '@tanstack/query'
+    '@tanstack/query',
   ],
   extends: [
     'standard',
@@ -33,31 +33,32 @@ module.exports = {
     'plugin:promise/recommended',
     'plugin:react/recommended',
     'plugin:react-hooks/recommended',
-    'plugin:@tanstack/eslint-plugin-query/recommended'
+    'plugin:@tanstack/eslint-plugin-query/recommended',
   ],
   overrides: [{
     files: [
       '**/__tests__/**/*.+(ts|tsx)',
-      '**/?(*.)+(spec|test).+(ts|tsx)'
+      '**/?(*.)+(spec|test).+(ts|tsx)',
     ],
     extends: [
       'plugin:jest/recommended',
       'plugin:jest-dom/recommended',
-      'plugin:testing-library/react'
-    ]
+      'plugin:testing-library/react',
+    ],
   }],
   settings: {
     react: {
-      version: '18'
+      version: '18',
     },
     'import/resolver': {
       typescript: {
-        alwaysTryTypes: true
-      }
-    }
+        alwaysTryTypes: true,
+      },
+    },
   },
   rules: {
     semi: ['error', 'never'],
+    'comma-dangle': ['error', 'always-multiline'], // HACK: Rust clippy style comma
     '@typescript-eslint/no-unused-expressions': ['error', { allowShortCircuit: true }],
     'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
     'deprecation/deprecation': 'error',
@@ -73,31 +74,31 @@ module.exports = {
           'external',
           'internal',
           ['sibling', 'parent'],
-          'index'
+          'index',
         ],
         pathGroups: [
           {
             pattern: 'react*',
             group: 'builtin',
-            position: 'before'
+            position: 'before',
           },
           {
             pattern: '@/**',
-            group: 'internal'
+            group: 'internal',
           },
           {
             pattern: '@*/**',
-            group: 'external'
-          }
+            group: 'external',
+          },
         ],
         pathGroupsExcludedImportTypes: [],
         'newlines-between': 'never',
         alphabetize: {
           order: 'asc',
           orderImportKind: 'asc',
-          caseInsensitive: false
-        }
-      }
+          caseInsensitive: false,
+        },
+      },
     ],
     'sort-imports': [
       'error',
@@ -106,8 +107,8 @@ module.exports = {
         ignoreCase: false,
         ignoreDeclarationSort: true,
         ignoreMemberSort: false,
-        memberSyntaxSortOrder: ['none', 'all', 'multiple', 'single']
-      }
-    ]
-  }
+        memberSyntaxSortOrder: ['none', 'all', 'multiple', 'single'],
+      },
+    ],
+  },
 }

@@ -15,7 +15,7 @@ active = true
 long-description = "An unofficial tool for managing and analyzing your miHoYo gacha records"
 short-description = "HoYo.Gacha"
 category = "DeveloperTool"
-copyright = ""
+copyright = "Copyright (c) lgou2w <lgou2w@hotmail.com>"
 targets = ["app"]
 icon = [
   "icons/32x32.png",

@@ -3,7 +3,7 @@ import {
   teamsDarkTheme,
   teamsLightTheme,
   webDarkTheme,
-  webLightTheme
+  webLightTheme,
 } from '@fluentui/react-components'
 import OverridedFluentTheme from './Theme.override'
 
@@ -13,17 +13,17 @@ export const KnownColorSchemes = [Light, Dark] as const
 export type ColorScheme = typeof Light | typeof Dark
 
 export function createColorSchemeTheme (
-  [light, dark]: [FluentTheme, FluentTheme]
+  [light, dark]: [FluentTheme, FluentTheme],
 ): Record<ColorScheme, FluentTheme> {
   return {
     [Light]: { ...light, ...OverridedFluentTheme },
-    [Dark]: { ...dark, ...OverridedFluentTheme }
+    [Dark]: { ...dark, ...OverridedFluentTheme },
   }
 }
 
 export const Themes = {
   teams: createColorSchemeTheme([teamsLightTheme, teamsDarkTheme]),
-  web: createColorSchemeTheme([webLightTheme, webDarkTheme])
+  web: createColorSchemeTheme([webLightTheme, webDarkTheme]),
 } as const
 
 export type Namespace = keyof typeof Themes
@@ -44,7 +44,7 @@ export const DefaultThemeData: Readonly<ThemeData> = {
   namespace: 'web',
   // If in the absence of a custom color scheme, keep it the same as the back-end setting
   colorScheme: window.matchMedia('(prefers-color-scheme: light)').matches ? Light : Dark,
-  scale: 16
+  scale: 16,
 }
 
 export interface ThemeStore {

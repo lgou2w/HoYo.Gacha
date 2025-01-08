@@ -1,19 +1,14 @@
 use std::future::Future;
-use std::path::Path;
 use std::time::Duration;
 
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 use tokio::sync::mpsc;
 use tracing::{error, info, warn};
 
-use crate::error::ErrorDetails;
-use crate::models::{Business, BusinessRegion, GachaMetadata, GachaRecord};
+use crate::error::{Error, ErrorDetails};
+use crate::models::{Business, BusinessRegion, GachaRecord};
 
-use super::{
-  GachaRecordsReader, GachaRecordsWriter, GachaUrlError, LegacyUigfGachaRecordsReader,
-  LegacyUigfGachaRecordsWriter, SrgfGachaRecordsReader, SrgfGachaRecordsWriter,
-  UigfGachaRecordsReader, UigfGachaRecordsWriter,
-};
+use super::GachaUrlError;
 
 // region: Gacha Records Fetcher Channel
 
@@ -65,7 +60,7 @@ where
         last_end_id.as_deref(),
       )
       .await
-      .map_err(|error| Box::new(error.into_inner()) as _)?;
+      .map_err(Error::boxed)?;
     }
 
     sender.send(Fragment::Finished).await.unwrap();
@@ -169,65 +164,6 @@ async fn pull_gacha_records(
   sender.send(Fragment::Completed(*gacha_type)).await.unwrap();
 
   Ok(())
-}
-
-// endregion
-
-// region: Gacha Records Import and Export
-
-#[derive(Clone, Debug, Deserialize)]
-pub enum GachaRecordsImporter {
-  LegacyUigf(LegacyUigfGachaRecordsReader),
-  Uigf(UigfGachaRecordsReader),
-  Srgf(SrgfGachaRecordsReader),
-}
-
-impl GachaRecordsImporter {
-  pub fn import(
-    self,
-    metadata: &GachaMetadata,
-    input: impl AsRef<Path>,
-  ) -> Result<Vec<GachaRecord>, Box<dyn ErrorDetails + 'static>> {
-    match self {
-      Self::LegacyUigf(reader) => reader
-        .read_from_file(metadata, input)
-        .map_err(|err| Box::new(err.into_inner()) as _),
-      Self::Uigf(reader) => reader
-        .read_from_file(metadata, input)
-        .map_err(|err| Box::new(err.into_inner()) as _),
-      Self::Srgf(reader) => reader
-        .read_from_file(metadata, input)
-        .map_err(|err| Box::new(err.into_inner()) as _),
-    }
-  }
-}
-
-#[derive(Clone, Debug, Deserialize)]
-pub enum GachaRecordsExporter {
-  LegacyUigf(LegacyUigfGachaRecordsWriter),
-  Uigf(UigfGachaRecordsWriter),
-  Srgf(SrgfGachaRecordsWriter),
-}
-
-impl GachaRecordsExporter {
-  pub fn export(
-    self,
-    metadata: &GachaMetadata,
-    records: Vec<GachaRecord>,
-    output: impl AsRef<Path>,
-  ) -> Result<(), Box<dyn ErrorDetails + 'static>> {
-    match self {
-      Self::LegacyUigf(writer) => writer
-        .write(metadata, records, output)
-        .map_err(|err| Box::new(err.into_inner()) as _),
-      Self::Uigf(writer) => writer
-        .write(metadata, records, output)
-        .map_err(|err| Box::new(err.into_inner()) as _),
-      Self::Srgf(writer) => writer
-        .write(metadata, records, output)
-        .map_err(|err| Box::new(err.into_inner()) as _),
-    }
-  }
 }
 
 // endregion

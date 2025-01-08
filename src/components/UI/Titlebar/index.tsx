@@ -1,5 +1,5 @@
 import React from 'react'
-import { Subtitle2Stronger, makeStyles, shorthands, tokens } from '@fluentui/react-components'
+import { Subtitle2Stronger, makeStyles, tokens } from '@fluentui/react-components'
 import { useLocation } from '@tanstack/react-router'
 import Locale from '@/components/UI/Locale'
 import { NavbarWidth, TitleBarHeight } from '@/components/UI/consts'
@@ -19,15 +19,15 @@ const useStyles = makeStyles({
     userSelect: 'none',
     backgroundColor: 'transparent',
     marginLeft: NavbarWidth,
-    ...shorthands.borderBottom(tokens.strokeWidthThin, 'solid', tokens.colorNeutralStroke1)
+    borderBottom: `${tokens.strokeWidthThin} solid ${tokens.colorNeutralStroke1}`,
   },
   title: {
     display: 'flex',
     alignItems: 'center',
     pointerEvents: 'none',
     height: '100%',
-    ...shorthands.padding(0, tokens.spacingHorizontalL)
-  }
+    padding: `0 ${tokens.spacingHorizontalL}`,
+  },
 })
 
 export default function TitleBar () {
@@ -48,7 +48,8 @@ export default function TitleBar () {
       {import.meta.env.DEV && (
         <pre style={{
           margin: '0 auto',
-          pointerEvents: 'none'
+          pointerEvents: 'none',
+          fontFamily: 'serif',
         }}>CONTENT UNDER DEVELOPMENT, NOT FINAL.</pre>
       )}
       <TitleBarButtons />

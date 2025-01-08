@@ -5,13 +5,13 @@ const useStyles = makeStyles({
   root: {
     display: 'flex',
     flexDirection: 'column',
-    rowGap: tokens.spacingHorizontalM
+    rowGap: tokens.spacingHorizontalM,
   },
   items: {
     display: 'flex',
     flexDirection: 'column',
-    rowGap: tokens.spacingHorizontalMNudge
-  }
+    rowGap: tokens.spacingHorizontalMNudge,
+  },
 })
 
 interface Props {

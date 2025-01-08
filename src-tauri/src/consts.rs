@@ -1,7 +1,7 @@
 use std::env;
 use std::path::PathBuf;
+use std::sync::LazyLock;
 
-use once_cell::sync::Lazy;
 use os_info::{get as get_os_info, Info as OsInfo};
 use reqwest::Client as Reqwest;
 use time::format_description::FormatItem;
@@ -54,6 +54,7 @@ pub const TRACING_LOGS_FILE_NAME_SUFFIX: &str = "log";
 
 pub const TAURI_MAIN_WINDOW_LABEL: &str = "main";
 pub const TAURI_MAIN_WINDOW_ENTRYPOINT: &str = "index.html";
+pub const TAURI_MAIN_WINDOW_CLASSNAME: &str = ID;
 pub const TAURI_MAIN_WINDOW_TITLE: &str = NAME;
 pub const TAURI_MAIN_WINDOW_WIDTH: f64 = 1280.;
 pub const TAURI_MAIN_WINDOW_HEIGHT: f64 = 720.;
@@ -71,11 +72,12 @@ pub const KV_THEME_DATA: &str = "HG_THEME_DATA";
 
 // Lazy
 
-pub static OS_INFO: Lazy<OsInfo> = Lazy::new(get_os_info);
+pub static OS_INFO: LazyLock<OsInfo> = LazyLock::new(get_os_info);
 
-pub static LOCAL_OFFSET: Lazy<UtcOffset> = Lazy::new(|| UtcOffset::current_local_offset().unwrap());
+pub static LOCAL_OFFSET: LazyLock<UtcOffset> =
+  LazyLock::new(|| UtcOffset::current_local_offset().unwrap());
 
-pub static REQWEST: Lazy<Reqwest> = Lazy::new(|| {
+pub static REQWEST: LazyLock<Reqwest> = LazyLock::new(|| {
   Reqwest::builder()
     .user_agent(format!("{}/{}", NAME, VERSION))
     .build()
@@ -108,7 +110,7 @@ impl Locale {
   }
 }
 
-pub static LOCALE: Lazy<Locale> = Lazy::new(Locale::new);
+pub static LOCALE: LazyLock<Locale> = LazyLock::new(Locale::new);
 
 // endregion
 
@@ -147,7 +149,7 @@ impl Windows {
 }
 
 #[cfg(windows)]
-pub static WINDOWS: Lazy<Windows> = Lazy::new(Windows::new);
+pub static WINDOWS: LazyLock<Windows> = LazyLock::new(Windows::new);
 
 // endregion
 
@@ -186,6 +188,6 @@ impl Platform {
   }
 }
 
-pub static PLATFORM: Lazy<Platform> = Lazy::new(Platform::new);
+pub static PLATFORM: LazyLock<Platform> = LazyLock::new(Platform::new);
 
 // endregion

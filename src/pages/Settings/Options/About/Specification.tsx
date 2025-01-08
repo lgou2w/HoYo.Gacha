@@ -4,23 +4,23 @@ import { InfoRegular } from '@fluentui/react-icons'
 import { Await } from '@tanstack/react-router'
 import { writeText } from '@tauri-apps/plugin-clipboard-manager'
 import isPromise from 'is-promise'
-import { osInfo, webview2Version } from '@/api/commands/core'
-import SettingsOptionsCollapse from '@/components/Settings/OptionsCollapse'
+import { osInfo, tauriVersion, webview2Version } from '@/api/commands/core'
 import Locale from '@/components/UI/Locale'
 import { stringifyOsInfoVersion } from '@/interfaces/Os'
+import SettingsOptionsCollapse from '@/pages/Settings/Options/OptionsCollapse'
 
 const useStyles = makeStyles({
   table: {
     [`& .${tableRowClassNames.root}`]: {
       borderBottom: 'none',
       ':hover': {
-        backgroundColor: 'transparent'
-      }
+        backgroundColor: 'transparent',
+      },
     },
     [`& .${tableCellClassNames.root}`]: {
-      padding: 0
-    }
-  }
+      padding: 0,
+    },
+  },
 })
 
 export default function SettingsOptionsAboutSpecification () {
@@ -30,7 +30,8 @@ export default function SettingsOptionsAboutSpecification () {
       OperatingSystem: osInfo().then((value) => value.edition || value.os_type),
       SystemVersion: osInfo().then((value) => stringifyOsInfoVersion(value.version)),
       SystemType: osInfo().then((value) => value.architecture || value.bitness),
-      Webview2: webview2Version()
+      Webview2: webview2Version(),
+      Tauri: tauriVersion(),
     }
   }, [])
 

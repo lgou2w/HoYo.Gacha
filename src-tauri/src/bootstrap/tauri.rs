@@ -59,6 +59,7 @@ pub async fn start(singleton: Singleton, tracing: Tracing, database: Database) {
       #[cfg(windows)]
       ffi::webview_version(&main_window, |version| {
         info!("Webview2 Runtime version: {version}");
+        #[allow(static_mut_refs)]
         unsafe { WEBVIEW2_VERSION.replace(version) };
       })?;
 
@@ -95,6 +96,7 @@ pub async fn start(singleton: Singleton, tracing: Tracing, database: Database) {
       core_os_info,
       core_locale,
       core_webview2_version,
+      core_tauri_version,
       core_change_theme,
       database::kv_questioner::database_find_kv,
       database::kv_questioner::database_create_kv,
@@ -193,6 +195,7 @@ where
     consts::TAURI_MAIN_WINDOW_LABEL,
     WebviewUrl::App(consts::TAURI_MAIN_WINDOW_ENTRYPOINT.into()),
   )
+  .window_classname(consts::TAURI_MAIN_WINDOW_CLASSNAME)
   .title(consts::TAURI_MAIN_WINDOW_TITLE)
   .inner_size(
     consts::TAURI_MAIN_WINDOW_WIDTH,
@@ -222,8 +225,14 @@ fn core_locale() -> &'static Option<String> {
 }
 
 #[tauri::command]
-fn core_webview2_version() -> Result<&'static str, tauri::Error> {
-  Ok(unsafe { WEBVIEW2_VERSION.as_deref() }.unwrap_or("Unknown"))
+fn core_webview2_version() -> &'static str {
+  #[allow(static_mut_refs)]
+  unsafe { WEBVIEW2_VERSION.as_deref() }.unwrap_or("Unknown")
+}
+
+#[tauri::command]
+fn core_tauri_version() -> &'static str {
+  tauri::VERSION
 }
 
 #[tauri::command]

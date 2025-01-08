@@ -31,7 +31,7 @@ export class LocalStorageThemeStore implements ThemeStore {
       console.error(
         'Invalid localStorage theme namespace or color scheme: namespace=%s, colorScheme=%s',
         namespace,
-        colorScheme
+        colorScheme,
       )
       window.localStorage.removeItem(KEY)
       return data

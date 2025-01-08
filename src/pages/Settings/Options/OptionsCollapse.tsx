@@ -1,5 +1,5 @@
 import React, { Fragment, ReactElement, ReactNode, useState } from 'react'
-import { Button, buttonClassNames, makeStyles, mergeClasses, shorthands, tokens } from '@fluentui/react-components'
+import { Button, buttonClassNames, makeStyles, mergeClasses, tokens } from '@fluentui/react-components'
 import { ChevronDownRegular, ChevronUpRegular } from '@fluentui/react-icons'
 import { Collapse } from '@fluentui/react-motion-components-preview'
 import SettingsOptionsItem from './OptionsItem'
@@ -11,25 +11,22 @@ const useStyles = makeStyles({
     [`& .${buttonClassNames.icon}`]: {
       fontSize: tokens.fontSizeBase500,
       width: tokens.fontSizeBase500,
-      height: tokens.fontSizeBase500
-    }
+      height: tokens.fontSizeBase500,
+    },
   },
   mainCollapsed: {
     borderBottomLeftRadius: 0,
     borderBottomRightRadius: 0,
-    ...shorthands.borderBottom(tokens.strokeWidthThin, 'solid', tokens.colorNeutralStroke3)
+    borderBottom: `${tokens.strokeWidthThin} solid ${tokens.colorNeutralStroke3}`,
   },
   collapse: {
     boxShadow: tokens.shadow2,
     borderBottomLeftRadius: tokens.borderRadiusMedium,
     borderBottomRightRadius: tokens.borderRadiusMedium,
     background: tokens.colorNeutralBackground1,
-    ...shorthands.padding(
-      0,
-      // OptionsItem padding + Icon size + OptionsItem gap
-      `calc(${tokens.spacingVerticalM} + ${tokens.fontSizeHero800} + ${tokens.spacingHorizontalM})`
-    )
-  }
+    // OptionsItem padding + Icon size + OptionsItem gap
+    padding: `0 calc(${tokens.spacingVerticalM} + ${tokens.fontSizeHero800} + ${tokens.spacingHorizontalM})`,
+  },
 })
 
 interface Props {
@@ -55,7 +52,7 @@ export default function SettingsOptionsCollapse (props: Props) {
         subtitle={subtitle}
         action={(
           <Fragment>
-            {actionExt && actionExt}
+            {actionExt}
             <Button
               className={classes.collapser}
               appearance="transparent"

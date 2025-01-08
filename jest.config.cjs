@@ -5,16 +5,16 @@ module.exports = {
   preset: 'ts-jest',
   transform: {
     '^.+\\.(ts|tsx)$': ['ts-jest', {
-      tsconfig: '<rootDir>/tsconfig.test.json'
-    }]
+      tsconfig: '<rootDir>/tsconfig.test.json',
+    }],
   },
   setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
   roots: ['<rootDir>/src'],
   testMatch: [
     '**/__tests__/**/*.+(ts|tsx)',
-    '**/?(*.)+(spec|test).+(ts|tsx)'
+    '**/?(*.)+(spec|test).+(ts|tsx)',
   ],
   moduleNameMapper: {
-    '^@/(.*)$': '<rootDir>/src/$1'
-  }
+    '^@/(.*)$': '<rootDir>/src/$1',
+  },
 }

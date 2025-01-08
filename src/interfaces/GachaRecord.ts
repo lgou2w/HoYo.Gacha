@@ -59,7 +59,7 @@ const FasterBusinessRankMappings: Record<
 > = {
   [Businesses.GenshinImpact]: { 3: { Blue: true }, 4: { Purple: true }, 5: { Orange: true } },
   [Businesses.HonkaiStarRail]: { 3: { Blue: true }, 4: { Purple: true }, 5: { Orange: true } },
-  [Businesses.ZenlessZoneZero]: { 2: { Blue: true }, 3: { Purple: true }, 4: { Orange: true } }
+  [Businesses.ZenlessZoneZero]: { 2: { Blue: true }, 3: { Purple: true }, 4: { Orange: true } },
 }
 
 export function isRankBlueGachaRecord<T extends Business> (record: GachaRecord<T>): boolean {

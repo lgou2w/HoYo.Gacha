@@ -13,16 +13,16 @@ const useStyles = makeStyles({
   root: {
     display: 'flex',
     flexDirection: 'column',
-    rowGap: tokens.spacingVerticalL
+    rowGap: tokens.spacingVerticalL,
   },
   toolbar: {},
-  clientarea: {}
+  clientarea: {},
 })
 
 export default function GachaLegacyView () {
   const classes = useStyles()
   const [{ tab }, produceState] = useImmer({
-    tab: Tabs.Overview
+    tab: Tabs.Overview,
   })
 
   return (
@@ -30,8 +30,8 @@ export default function GachaLegacyView () {
       <GachaLegacyViewToolbar
         className={classes.toolbar}
         tab={tab}
-        onTabChange={(_, data) => produceState((draft) => {
-          draft.tab = data.value as Tabs
+        onTabChange={(newValue) => produceState((draft) => {
+          draft.tab = newValue
         })}
       />
       <GachaLegacyViewClientarea

@@ -35,7 +35,7 @@ export const TauriLanguageDetectorModule: LanguageDetectorAsyncModule = {
   cacheUserLanguage (lng: string): void | Promise<void> {
     console.debug('Cache user language:', lng)
     window.localStorage.setItem(TauriLanguageDetectorModuleLocalStorageKey, lng)
-  }
+  },
 }
 
 // https://tauri.app/v1/api/js/os/#locale
@@ -47,7 +47,7 @@ const KnownLanguageMappings = Object
   .entries(KnownLanguages)
   .reduce((acc, [, { language, matches }]) => {
     acc.push([language,
-      { matches: matches as RegExp | string[] }
+      { matches: matches as RegExp | string[] },
     ])
     return acc
   }, [] as Array<[Language, { matches: RegExp | string[] }]>)

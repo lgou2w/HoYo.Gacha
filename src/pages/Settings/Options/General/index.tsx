@@ -1,6 +1,6 @@
 import React from 'react'
-import SettingsOptionsGroup from '@/components/Settings/OptionsGroup'
 import Locale from '@/components/UI/Locale'
+import SettingsOptionsGroup from '@/pages/Settings/Options/OptionsGroup'
 import SettingsOptionsGeneralLanguage from './Language'
 
 export default function SettingsOptionsGeneral () {

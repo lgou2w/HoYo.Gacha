@@ -1,5 +1,5 @@
 import React from 'react'
-import { makeStyles, shorthands, tokens } from '@fluentui/react-components'
+import { makeStyles, tokens } from '@fluentui/react-components'
 import { NavbarWidth } from '@/components/UI/consts'
 import NavbarTabList from './TabList'
 
@@ -10,8 +10,8 @@ const useStyles = makeStyles({
     width: NavbarWidth,
     minWidth: NavbarWidth,
     maxWidth: NavbarWidth,
-    ...shorthands.borderRight(tokens.strokeWidthThin, 'solid', tokens.colorNeutralStroke1)
-  }
+    borderRight: `${tokens.strokeWidthThin} solid ${tokens.colorNeutralStroke1}`,
+  },
 })
 
 export default function Navbar () {

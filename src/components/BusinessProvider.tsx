@@ -11,7 +11,7 @@ export default function BusinessProvider (props: PropsWithChildren<Props>) {
   const { business, keyofBusinesses, children } = props
   const state = useMemo<BusinessState>(() => ({
     business,
-    keyofBusinesses
+    keyofBusinesses,
   }), [business, keyofBusinesses])
 
   return (

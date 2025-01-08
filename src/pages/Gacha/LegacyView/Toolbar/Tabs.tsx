@@ -1,34 +1,29 @@
 import React from 'react'
-import { Field, SelectTabEventHandler, Tab, TabList, makeStyles, tokens } from '@fluentui/react-components'
+import { Label, Tab, TabList, makeStyles, tokens } from '@fluentui/react-components'
 import { Tabs } from '@/pages/Gacha/LegacyView/declares'
 
 const useStyles = makeStyles({
   root: {
     display: 'flex',
-    flexDirection: 'row',
-    columnGap: tokens.spacingHorizontalXS
-  }
+    flexDirection: 'column',
+    rowGap: tokens.spacingVerticalXS,
+  },
 })
 
 interface Props {
   value: Tabs
-  onChange?: SelectTabEventHandler
+  onChange?: (newValue: Tabs) => void
 }
 
 export default function GachaLegacyViewToolbarTabs (props: Props) {
   const { value, onChange } = props
   const classes = useStyles()
   return (
-    <Field
-      label={{
-        size: 'small',
-        children: 'Tabs'
-      }}
-    >
+    <div className={classes.root}>
+      <Label size="small">Tabs</Label>
       <TabList
-        className={classes.root}
         selectedValue={value}
-        onTabSelect={onChange}
+        onTabSelect={(_, data) => onChange?.(data.value as Tabs)}
         size="small"
       >
         {Object.values(Tabs).map((tab) => (
@@ -37,6 +32,6 @@ export default function GachaLegacyViewToolbarTabs (props: Props) {
           </Tab>
         ))}
       </TabList>
-    </Field>
+    </div>
   )
 }

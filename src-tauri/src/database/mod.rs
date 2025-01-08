@@ -1,10 +1,10 @@
 use std::collections::HashSet;
 use std::env;
-use std::future::Future;
 use std::path::PathBuf;
 use std::sync::Arc;
 use std::time::Instant;
 
+use async_trait::async_trait;
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 use sqlx::encode::IsNull;
@@ -392,7 +392,7 @@ impl<'r> Encode<'r, Sqlite> for Business {
   }
 }
 
-impl<'r> Decode<'r, Sqlite> for Business {
+impl Decode<'_, Sqlite> for Business {
   fn decode(value: SqliteValueRef) -> Result<Self, BoxDynError> {
     Business::try_from(u8::decode(value)?).map_err(Into::into)
   }
@@ -419,7 +419,7 @@ impl<'r> Encode<'r, Sqlite> for AccountProperties {
   }
 }
 
-impl<'r> Decode<'r, Sqlite> for AccountProperties {
+impl Decode<'_, Sqlite> for AccountProperties {
   fn decode(value: SqliteValueRef) -> Result<Self, BoxDynError> {
     serde_json::from_str(&String::decode(value)?)
       .map_err(|e| format!("Failed when deserializing account properties: {e}").into())
@@ -510,130 +510,124 @@ impl GachaRecordOnConflict {
   }
 }
 
+#[async_trait]
 pub trait GachaRecordQuestionerAdditions {
   #[tracing::instrument(skip(database, records, progress_reporter), fields(records = records.len()))]
-  fn create_gacha_records(
+  async fn create_gacha_records(
     database: &Database,
     records: Vec<GachaRecord>,
     on_conflict: GachaRecordOnConflict,
     progress_reporter: Option<mpsc::Sender<f32>>,
-  ) -> impl Future<Output = Result<u64, SqlxError>> {
-    async move {
-      info!("Executing create gacha records database operation...");
-      let total = records.len();
-      let start = Instant::now();
-      let sql = on_conflict.sql();
+  ) -> Result<u64, SqlxError> {
+    info!("Executing create gacha records database operation...");
+    let total = records.len();
+    let start = Instant::now();
+    let sql = on_conflict.sql();
 
-      let mut txn = database.as_ref().begin().await?;
-      let mut changes = 0;
-      let mut completes = 0;
-      let mut last_progress_reported = Instant::now();
+    let mut txn = database.as_ref().begin().await?;
+    let mut changes = 0;
+    let mut completes = 0;
+    let mut last_progress_reported = Instant::now();
 
-      for record in records {
-        completes += 1;
-        changes += sqlx::query(sql)
-          .bind(record.business)
-          .bind(record.uid)
-          .bind(record.id)
-          .bind(record.gacha_type)
-          .bind(record.gacha_id)
-          .bind(record.rank_type)
-          .bind(record.count)
-          .bind(record.time)
-          .bind(record.lang)
-          .bind(record.name)
-          .bind(record.item_type)
-          .bind(record.item_id)
-          .execute(&mut *txn)
-          .await?
-          .rows_affected();
+    for record in records {
+      completes += 1;
+      changes += sqlx::query(sql)
+        .bind(record.business)
+        .bind(record.uid)
+        .bind(record.id)
+        .bind(record.gacha_type)
+        .bind(record.gacha_id)
+        .bind(record.rank_type)
+        .bind(record.count)
+        .bind(record.time)
+        .bind(record.lang)
+        .bind(record.name)
+        .bind(record.item_type)
+        .bind(record.item_id)
+        .execute(&mut *txn)
+        .await?
+        .rows_affected();
 
-        // Progress reporting: 200ms interval
-        // Avoiding excessive recording leading to frequent reporting
-        if let Some(reporter) = &progress_reporter {
-          if last_progress_reported.elapsed().as_millis() > 200 {
-            last_progress_reported = Instant::now();
+      // Progress reporting: 200ms interval
+      // Avoiding excessive recording leading to frequent reporting
+      if let Some(reporter) = &progress_reporter {
+        if last_progress_reported.elapsed().as_millis() > 200 {
+          last_progress_reported = Instant::now();
 
-            let progress = completes as f32 / total as f32;
-            let progress = (progress * 100.).round() / 100.;
-            if progress > 0. {
-              let _ = reporter.try_send(progress);
-            }
+          let progress = completes as f32 / total as f32;
+          let progress = (progress * 100.).round() / 100.;
+          if progress > 0. {
+            let _ = reporter.try_send(progress);
           }
         }
       }
-      txn.commit().await?;
-
-      // Avoiding incomplete progress due to reporting intervals
-      let _ = progress_reporter.map(|reporter| reporter.try_send(1.0));
-
-      info!(
-        message = "Creation of gacha records completed",
-        changes = ?changes,
-        elapsed = ?start.elapsed()
-      );
-
-      Ok(changes)
     }
+    txn.commit().await?;
+
+    // Avoiding incomplete progress due to reporting intervals
+    let _ = progress_reporter.map(|reporter| reporter.try_send(1.0));
+
+    info!(
+      message = "Creation of gacha records completed",
+      changes = ?changes,
+      elapsed = ?start.elapsed()
+    );
+
+    Ok(changes)
   }
 
   #[tracing::instrument(skip(database))]
-  fn delete_gacha_records_by_business_and_uid(
+  async fn delete_gacha_records_by_business_and_uid(
     database: &Database,
     business: Business,
     uid: u32,
-  ) -> impl Future<Output = Result<u64, SqlxError>> {
-    async move {
-      info!("Executing delete gacha records database operation...");
-      let start = Instant::now();
-      let changes =
-        sqlx::query("DELETE FROM `hg.gacha_records` WHERE `business` = ? AND `uid` = ?;")
-          .bind(business)
-          .bind(uid)
-          .execute(database.as_ref())
-          .await?
-          .rows_affected();
+  ) -> Result<u64, SqlxError> {
+    info!("Executing delete gacha records database operation...");
+    let start = Instant::now();
+    let changes = sqlx::query("DELETE FROM `hg.gacha_records` WHERE `business` = ? AND `uid` = ?;")
+      .bind(business)
+      .bind(uid)
+      .execute(database.as_ref())
+      .await?
+      .rows_affected();
 
-      info!(
-        message = "Deletion of gacha records completed",
-        changes = ?changes,
-        elapsed = ?start.elapsed(),
-      );
+    info!(
+      message = "Deletion of gacha records completed",
+      changes = ?changes,
+      elapsed = ?start.elapsed(),
+    );
 
-      Ok(changes)
-    }
+    Ok(changes)
   }
 
   #[tracing::instrument(skip(database))]
-  fn find_gacha_records_by_businesses_and_uid(
+  async fn find_gacha_records_by_businesses_and_uid(
     database: &Database,
     businesses: &HashSet<Business>,
     uid: u32,
-  ) -> impl Future<Output = Result<Vec<GachaRecord>, SqlxError>> {
-    async move {
-      info!("Executing find gacha records by businesses and uid database operation...");
-      let start = Instant::now();
-      let records =
-        sqlx::query_as("SELECT * FROM `hg.gacha_records` WHERE `business` IN (?) AND `uid` = ?;")
-          .bind(
-            businesses
-              .iter()
-              .map(|b| (*b as u8).to_string())
-              .collect::<Vec<_>>()
-              .join(","),
-          )
-          .bind(uid)
-          .fetch_all(database.as_ref())
-          .await?;
+  ) -> Result<Vec<GachaRecord>, SqlxError> {
+    info!("Executing find gacha records by businesses and uid database operation...");
+    let start = Instant::now();
+    let records =
+      sqlx::query_as("SELECT * FROM `hg.gacha_records` WHERE `business` IN (?) AND `uid` = ?;")
+        .bind(
+          businesses
+            .iter()
+            .map(|b| (*b as u8).to_string())
+            .collect::<Vec<_>>()
+            .join(","),
+        )
+        .bind(uid)
+        .fetch_all(database.as_ref())
+        .await?;
 
-      info!(
-        message = "Finding of gacha records completed",
-        records = ?records.len(),
-        elapsed = ?start.elapsed(),
-      );
+    info!(
+      message = "Finding of gacha records completed",
+      records = ?records.len(),
+      elapsed = ?start.elapsed(),
+    );
 
-      Ok(records)
-    }
+    Ok(records)
   }
 
   #[tracing::instrument(skip(database))]

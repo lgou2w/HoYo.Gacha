@@ -11,10 +11,10 @@ const rootRoute = createRootRoute({
     const initialThemeData = await themeStore.load()
     return {
       initialThemeData,
-      themeStore
+      themeStore,
     }
   },
-  component: Root
+  component: Root,
 })
 
 export default rootRoute

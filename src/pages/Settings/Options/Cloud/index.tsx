@@ -1,5 +1,5 @@
 import React from 'react'
-import SettingsOptionsGroup from '@/components/Settings/OptionsGroup'
+import SettingsOptionsGroup from '@/pages/Settings/Options/OptionsGroup'
 import SettingsOptionsCloudTest from './Test'
 
 export default function SettingsOptionsCloud () {

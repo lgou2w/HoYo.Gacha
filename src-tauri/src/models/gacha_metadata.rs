@@ -3,17 +3,17 @@ use std::fs::File;
 use std::io::{self, Read};
 use std::ops::Deref;
 use std::path::Path;
+use std::sync::LazyLock;
 use std::time::Instant;
 
-use once_cell::sync::Lazy;
 use sha1::{Digest, Sha1};
 use tracing::info;
 
-use super::{Metadata, MetadataSource};
+use super::Metadata;
 
 const EMBEDDED_JSON_METADATA: &[u8] = include_bytes!("./gacha_metadata.json");
 
-static EMBEDDED_METADATA: Lazy<GachaMetadata> = Lazy::new(|| {
+static EMBEDDED_METADATA: LazyLock<GachaMetadata> = LazyLock::new(|| {
   let start = Instant::now();
   let metadata =
     GachaMetadata::from_bytes(EMBEDDED_JSON_METADATA).expect("Failed to load embedded metadata");
@@ -46,13 +46,13 @@ impl GachaMetadata {
     Ok(Self::from_bytes(&buffer))
   }
 
-  pub fn from_bytes(slice: &[u8]) -> serde_json::Result<Self> {
+  pub fn from_bytes(slice: impl AsRef<[u8]>) -> serde_json::Result<Self> {
     let hash = {
       let mut sha1 = Sha1::new();
-      sha1.update(slice);
+      sha1.update(slice.as_ref());
       sha1
         .finalize()
-        .iter()
+        .into_iter()
         .fold(String::with_capacity(40), |mut output, b| {
           use std::fmt::Write;
           let _ = write!(output, "{b:02x}"); // lowercase
@@ -60,7 +60,7 @@ impl GachaMetadata {
         })
     };
 
-    let inner = Metadata::from_json(MetadataSource::Bytes(slice))?;
+    let inner = Metadata::from_json(slice)?;
 
     Ok(Self { hash, inner })
   }

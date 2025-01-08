@@ -1,5 +1,5 @@
 import React, { ReactNode } from 'react'
-import { Body1Strong, Caption1, makeStyles, mergeClasses, shorthands, tokens } from '@fluentui/react-components'
+import { Body1Strong, Caption1, makeStyles, mergeClasses, tokens } from '@fluentui/react-components'
 
 const useStyles = makeStyles({
   root: {
@@ -8,28 +8,28 @@ const useStyles = makeStyles({
     alignItems: 'center',
     columnGap: tokens.spacingHorizontalM,
     borderRadius: tokens.borderRadiusMedium,
-    ...shorthands.padding(tokens.spacingVerticalM, tokens.spacingHorizontalM)
+    padding: `${tokens.spacingVerticalM} ${tokens.spacingHorizontalM}`,
   },
   rootPaper: {
     boxShadow: tokens.shadow2,
-    background: tokens.colorNeutralBackground1
+    background: tokens.colorNeutralBackground1,
   },
   icon: {
     display: 'flex',
     fontSize: tokens.fontSizeHero800,
-    color: tokens.colorBrandForeground2
+    color: tokens.colorBrandForeground2,
   },
   header: {
     display: 'flex',
     flexDirection: 'column',
-    flexGrow: 1
+    flexGrow: 1,
   },
   actions: {
     display: 'flex',
     flexDirection: 'row',
     alignItems: 'center',
-    columnGap: tokens.spacingHorizontalM
-  }
+    columnGap: tokens.spacingHorizontalM,
+  },
 })
 
 interface Props {
@@ -47,7 +47,7 @@ export default function SettingsOptionsItem (props: Props) {
   const rootClasses = mergeClasses(
     classes.root,
     !transparent && classes.rootPaper,
-    className
+    className,
   )
 
   return (

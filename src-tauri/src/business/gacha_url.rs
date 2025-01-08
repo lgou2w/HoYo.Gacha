@@ -2,12 +2,12 @@ use std::collections::HashMap;
 use std::fmt::{self, Debug};
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
+use std::sync::LazyLock;
 use std::time::Duration;
 
 use exponential_backoff::Backoff;
 use futures_util::future::BoxFuture;
 use futures_util::FutureExt;
-use once_cell::sync::Lazy;
 use regex::Regex;
 use serde::{Deserialize, Deserializer, Serialize};
 use time::serde::rfc3339;
@@ -22,23 +22,24 @@ use crate::models::{BizInternals, Business, BusinessRegion, GachaRecord};
 use crate::utilities::serde_helper;
 
 declare_error_kinds! {
-  GachaUrlError, kinds {
+  #[derive(Debug, thiserror::Error)]
+  GachaUrlError {
     #[error("Webcaches path does not exist: {path}")]
     WebCachesNotFound { path: PathBuf },
 
     #[error("Error opening webcaches: {cause}")]
     OpenWebCaches {
       cause: std::io::Error => serde_json::json!({
-        "kind": format_args!("{}", cause.kind()),
-        "message": format_args!("{cause}"),
+        "kind": cause.kind().to_string(),
+        "message": cause.to_string(),
       })
     },
 
     #[error("Error reading disk cache: {cause}")]
     ReadDiskCache {
       cause: std::io::Error => serde_json::json!({
-        "kind": format_args!("{}", cause.kind()),
-        "message": format_args!("{cause}"),
+        "kind": cause.kind().to_string(),
+        "message": cause.to_string(),
       })
     },
 
@@ -58,14 +59,10 @@ declare_error_kinds! {
     InvalidParams { params: Vec<String> },
 
     #[error("Failed to parse gacha url: {cause}")]
-    Parse {
-      cause: url::ParseError => format_args!("{cause}")
-    },
+    Parse { cause: url::ParseError => cause.to_string() },
 
     #[error("Error sending http request: {cause}")]
-    Reqwest {
-      cause: reqwest::Error => format_args!("{cause}")
-    },
+    Reqwest { cause: reqwest::Error => cause.to_string() },
 
     #[error("Authkey timeout for gacha url")]
     AuthkeyTimeout,
@@ -81,12 +78,12 @@ declare_error_kinds! {
   }
 }
 
-static REGEX_GACHA_URL: Lazy<Regex> = Lazy::new(|| {
+static REGEX_GACHA_URL: LazyLock<Regex> = LazyLock::new(|| {
   Regex::new(r"(?i)^https:\/\/.*(mihoyo.com|hoyoverse.com).*(\/getGachaLog\?).*(authkey\=).*$")
     .unwrap()
 });
 
-static REGEX_WEBCACHES_VERSION: Lazy<Regex> = Lazy::new(|| {
+static REGEX_WEBCACHES_VERSION: LazyLock<Regex> = LazyLock::new(|| {
   Regex::new(r"^(?P<major>\d+)\.(?P<minor>\d+)\.(?P<patch>\d+)(\.(?P<build>\d+))?$").unwrap()
 });
 

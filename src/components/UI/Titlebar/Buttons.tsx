@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react'
-import { Button, GriffelStyle, buttonClassNames, makeStyles, shorthands, tokens } from '@fluentui/react-components'
+import { Button, GriffelStyle, buttonClassNames, makeStyles, tokens } from '@fluentui/react-components'
 import { DismissFilled, MaximizeFilled, SquareMultipleRegular, SubtractFilled } from '@fluentui/react-icons'
 import { WebviewWindow, getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow'
 import debounce from 'debounce'
@@ -7,41 +7,41 @@ import debounce from 'debounce'
 const useStyles = makeStyles({
   root: {
     marginLeft: 'auto',
-    height: '100%'
+    height: '100%',
   },
   buttonMinimize: createButtonStyles([
     tokens.colorBrandBackgroundHover,
-    tokens.colorBrandBackgroundPressed
+    tokens.colorBrandBackgroundPressed,
   ]),
   buttonMaximize: createButtonStyles([
     tokens.colorBrandBackgroundHover,
-    tokens.colorBrandBackgroundPressed
+    tokens.colorBrandBackgroundPressed,
   ]),
   buttonClose: createButtonStyles([
     tokens.colorStatusDangerBackground3,
-    tokens.colorStatusDangerBackground2
-  ])
+    tokens.colorStatusDangerBackground2,
+  ]),
 })
 
 function createButtonStyles ([hover, pressed]: [string, string]): GriffelStyle {
   return {
     height: 'inherit',
-    'min-width': '2.8rem',
+    minWidth: '2.8rem',
     backgroundColor: tokens.colorTransparentBackground,
-    ...shorthands.border(0),
+    border: 0,
     ':hover': {
       color: tokens.colorNeutralForegroundOnBrand,
-      backgroundColor: hover
+      backgroundColor: hover,
     },
     ':hover:active': {
       color: tokens.colorNeutralForegroundOnBrand,
-      backgroundColor: pressed
+      backgroundColor: pressed,
     },
     [`& .${buttonClassNames.icon}`]: {
       fontSize: tokens.fontSizeBase500,
       width: tokens.fontSizeBase500,
-      height: tokens.fontSizeBase500
-    }
+      height: tokens.fontSizeBase500,
+    },
   }
 }
 
@@ -59,7 +59,7 @@ export default function TitleBarButtons () {
     let unlisten: Awaited<ReturnType<WebviewWindow['onResized']>>
     ;(async () => {
       unlisten = await getCurrentWebviewWindow().onResized(
-        debounce(updateMaximized, 500, { immediate: false })
+        debounce(updateMaximized, 500, { immediate: false }),
       )
     })()
 

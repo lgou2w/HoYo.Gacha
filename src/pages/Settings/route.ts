@@ -5,7 +5,7 @@ import Settings from '.'
 const settingsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/settings',
-  component: Settings
+  component: Settings,
 })
 
 export default settingsRoute

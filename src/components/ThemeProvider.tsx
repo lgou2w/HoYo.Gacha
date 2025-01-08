@@ -25,12 +25,12 @@ export default function ThemeProvider (props: PropsWithChildren<Props>) {
 
       await store.save(newData)
       updateData(newData)
-    }
+    },
   }), [data, store, updateData])
 
   useEffect(
     () => applyScaling(data.scale),
-    [data.scale]
+    [data.scale],
   )
 
   const theme: FluentTheme | undefined = Themes[state.namespace]?.[state.colorScheme]

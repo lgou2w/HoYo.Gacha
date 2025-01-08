@@ -24,12 +24,12 @@ export function useColorScheme () {
 
   const toggle = useCallback(
     () => change(colorScheme === Dark ? Light : Dark),
-    [change, colorScheme]
+    [change, colorScheme],
   )
 
   return {
     colorScheme,
     change,
-    toggle
+    toggle,
   }
 }

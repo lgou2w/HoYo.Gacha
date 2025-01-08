@@ -1,5 +1,5 @@
 import React, { ReactNode, createRef, useEffect } from 'react'
-import { Divider, Image, Tab, TabList, Tooltip, imageClassNames, makeStyles, shorthands, tabClassNames, tokens } from '@fluentui/react-components'
+import { Divider, Image, Tab, TabList, Tooltip, imageClassNames, makeStyles, tabClassNames, tokens } from '@fluentui/react-components'
 import { SettingsFilled, SettingsRegular } from '@fluentui/react-icons'
 import { useLocation, useNavigate } from '@tanstack/react-router'
 import Locale from '@/components/UI/Locale'
@@ -11,7 +11,7 @@ const useStyles = makeStyles({
     display: 'flex',
     justifyContent: 'center',
     borderRadius: tokens.borderRadiusSmall,
-    ...shorthands.padding(tokens.spacingVerticalMNudge, tokens.spacingHorizontalMNudge),
+    padding: `${tokens.spacingVerticalMNudge} ${tokens.spacingHorizontalMNudge}`,
     [`& .${tabClassNames.icon}`]: {
       width: tokens.fontSizeHero900,
       height: tokens.fontSizeHero900,
@@ -22,17 +22,17 @@ const useStyles = makeStyles({
         width: 'inherit',
         height: 'inherit',
         borderRadius: tokens.borderRadiusLarge,
-        ...shorthands.border(tokens.strokeWidthThick, 'solid', 'transparent')
-      }
+        border: `${tokens.strokeWidthThick} solid transparent`,
+      },
     },
-    ':hover': { [`& .${tabClassNames.icon}`]: { color: tokens.colorBrandForeground1 } },
-    ':active': { [`& .${tabClassNames.icon}`]: { color: tokens.colorCompoundBrandForeground1Pressed } },
+    ':enabled:hover': { [`& .${tabClassNames.icon}`]: { color: tokens.colorBrandForeground1 } },
+    ':enabled:active': { [`& .${tabClassNames.icon}`]: { color: tokens.colorCompoundBrandForeground1Pressed } },
     [`[aria-selected=true] .${tabClassNames.icon} .${imageClassNames.root}`]: {
-      ...shorthands.border(tokens.strokeWidthThick, 'solid', tokens.colorBrandStroke2Hover)
-    }
+      border: `${tokens.strokeWidthThick} solid ${tokens.colorBrandStroke2Hover}`,
+    },
   },
   spacing: { flexGrow: 1 },
-  divider: { flexGrow: 0.025 }
+  divider: { flexGrow: 0.025 },
 })
 
 type NavIcon = { normal: ReactNode, selected?: ReactNode }
@@ -49,7 +49,7 @@ const Navs: NavItem[] = [
     .map(([key, business]) => {
       return {
         path: `/gacha/${key}`,
-        icon: `/${ReversedBusinesses[business]}/Icon.png`
+        icon: `/${ReversedBusinesses[business]}/Icon.png`,
       } as NavItem
     }),
   { divider: true },
@@ -57,9 +57,9 @@ const Navs: NavItem[] = [
     path: '/settings',
     icon: {
       normal: <SettingsRegular />,
-      selected: <SettingsFilled />
-    }
-  }
+      selected: <SettingsFilled />,
+    },
+  },
 ]
 
 export default function NavbarTabList () {
@@ -73,8 +73,8 @@ export default function NavbarTabList () {
   //   Avoid bottom routing buttons being covered.
   const tabListRef = createRef<HTMLDivElement>()
   useEffect(() => {
-    if (!tabListRef.current) return
     if (!import.meta.env.DEV) return
+    if (!tabListRef.current) return
 
     const container = tabListRef.current
     const devtoolsContainer = document.getElementsByClassName('tsqd-parent-container').item(0)
@@ -105,7 +105,7 @@ export default function NavbarTabList () {
     observer.observe(devtoolsContainer, {
       attributes: true,
       subtree: true,
-      childList: true
+      childList: true,
     })
 
     return () => {
@@ -146,7 +146,7 @@ export default function NavbarTabList () {
                     ? <Image src={item.icon} />
                     : location.pathname === item.path
                       ? item.icon.selected || item.icon.normal
-                      : item.icon.normal
+                      : item.icon.normal,
                 }}
               />
             </Tooltip>

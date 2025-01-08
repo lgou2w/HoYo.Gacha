@@ -12,14 +12,14 @@ const useStyles = makeStyles({
     justifyContent: 'center',
     alignItems: 'center',
     fontSize: '8rem',
-    color: tokens.colorNeutralBackground6
-  }
+    color: tokens.colorNeutralBackground6,
+  },
 })
 
 const Areas = Object
   .values(Tabs)
   .reduce((acc, tab) => {
-    acc[tab] = lazy(() => import(`./${tab}`))
+    acc[tab] = lazy(() => import(`./${tab}/index.tsx`))
     return acc
   }, {} as Record<Tabs, LazyExoticComponent<ComponentType>>)
 

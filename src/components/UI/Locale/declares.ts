@@ -1,18 +1,20 @@
-import { ElementType } from 'react'
+import { ElementType, ReactNode } from 'react'
 import type { useTranslation } from 'react-i18next'
 
-export type LocaleOptions = [string, Record<string, unknown>?]
 export type LocaleTFn = ReturnType<typeof useTranslation>['t']
 
 export interface LocaleProps<T extends ElementType = ElementType> {
   component?: T
-  mapping: LocaleOptions | ((t: LocaleTFn) => string)
+  mapping:
+    | ReactNode
+    | Parameters<LocaleTFn>
+    | ((t: LocaleTFn) => ReactNode)
 }
 
 export function acceptLocale<T extends ElementType = ElementType> (
   t: LocaleTFn,
-  mapping: LocaleProps<T>['mapping']
-): string {
+  mapping: LocaleProps<T>['mapping'],
+): ReactNode {
   if (typeof mapping === 'function') {
     return mapping(t)
   } else if (Array.isArray(mapping)) {

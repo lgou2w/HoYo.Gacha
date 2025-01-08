@@ -32,53 +32,47 @@ impl Tracing {
       .add_directive("tao::platform_impl=error".parse().unwrap())
       .add_directive("wry::webview=error".parse().unwrap());
 
+    macro_rules! fmt {
+      ($ansi:expr, $writer:expr) => {
+        tracing_subscriber::fmt::layer()
+          .with_ansi($ansi)
+          .with_line_number(true)
+          .with_file(true)
+          .with_thread_ids(true)
+          .with_thread_names(true)
+          .with_timer(LocalTime::new(consts::TRACING_TIME_FORMAT))
+          .with_writer($writer)
+          .log_internal_errors(true)
+      };
+    }
+
     let file_appender = if cfg!(any(debug_assertions, test)) {
       tracing_subscriber::registry()
-        .with(
-          tracing_subscriber::fmt::layer()
-            .with_ansi(true)
-            .with_line_number(true)
-            .with_file(true)
-            .with_thread_ids(true)
-            .with_thread_names(true)
-            .with_timer(LocalTime::new(consts::TRACING_TIME_FORMAT))
-            .log_internal_errors(true)
-            .pretty(),
-        )
         .with(filter)
+        .with(fmt! { true, std::io::stdout }.pretty())
         .init();
 
       None
     } else {
-      let logs_dir = consts::PLATFORM
-        .appdata_local
-        .join(consts::ID)
-        .join(consts::TRACING_LOGS_DIRECTORY);
-
       let file_appender = RollingFileAppender::builder()
         .rotation(consts::TRACING_LOGS_ROTATION)
         .max_log_files(consts::TRACING_LOGS_MAX_FILES)
         .filename_prefix(consts::TRACING_LOGS_FILE_NAME_PREFIX)
         .filename_suffix(consts::TRACING_LOGS_FILE_NAME_SUFFIX)
-        .build(logs_dir)
+        .build(
+          consts::PLATFORM
+            .appdata_local
+            .join(consts::ID)
+            .join(consts::TRACING_LOGS_DIRECTORY),
+        )
         .expect("Failed to initialize rolling file appender");
 
       let (non_blocking, appender_guard) = tracing_appender::non_blocking(file_appender);
 
       tracing_subscriber::registry()
-        .with(
-          tracing_subscriber::fmt::layer()
-            .with_ansi(false)
-            .with_line_number(true)
-            .with_file(true)
-            .with_thread_ids(true)
-            .with_thread_names(true)
-            .with_timer(LocalTime::new(consts::TRACING_TIME_FORMAT))
-            .log_internal_errors(true)
-            .with_writer(non_blocking)
-            .pretty(),
-        )
         .with(filter)
+        .with(fmt! { false, non_blocking })
+        .with(fmt! { true, std::io::stdout }.pretty())
         .init();
 
       Some(appender_guard)

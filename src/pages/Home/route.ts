@@ -5,7 +5,7 @@ import Home from '.'
 const homeRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/',
-  component: Home
+  component: Home,
 })
 
 export default homeRoute

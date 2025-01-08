@@ -1,5 +1,5 @@
 import React from 'react'
-import { Button, Caption1, Caption1Strong, Caption2, Image, buttonClassNames, makeStyles, mergeClasses, shorthands, tokens } from '@fluentui/react-components'
+import { Button, Caption1, Caption1Strong, Caption2, Image, buttonClassNames, makeStyles, mergeClasses, tokens } from '@fluentui/react-components'
 import { ChatBubblesQuestionFilled, HomeFilled } from '@fluentui/react-icons'
 import Locale from '@/components/UI/Locale'
 
@@ -13,7 +13,7 @@ const useStyles = makeStyles({
     boxShadow: tokens.shadow2,
     borderRadius: tokens.borderRadiusMedium,
     background: tokens.colorNeutralBackground1,
-    ...shorthands.padding(tokens.spacingVerticalM, tokens.spacingHorizontalM)
+    padding: `${tokens.spacingVerticalM} ${tokens.spacingHorizontalM}`,
   },
   brand: {
     display: 'flex',
@@ -21,7 +21,7 @@ const useStyles = makeStyles({
     rowGap: tokens.spacingVerticalS,
     userSelect: 'none',
     pointerEvents: 'none',
-    ...shorthands.margin(tokens.spacingVerticalL, 'auto')
+    margin: `${tokens.spacingVerticalL} auto`,
   },
   actions: {
     display: 'flex',
@@ -31,12 +31,12 @@ const useStyles = makeStyles({
     [`& .${buttonClassNames.icon}`]: {
       fontSize: tokens.fontSizeBase500,
       width: tokens.fontSizeBase500,
-      height: tokens.fontSizeBase500
-    }
+      height: tokens.fontSizeBase500,
+    },
   },
   copyright: {
-    display: 'flex'
-  }
+    display: 'flex',
+  },
 })
 
 export default function SettingsHero (props: React.JSX.IntrinsicElements['div']) {

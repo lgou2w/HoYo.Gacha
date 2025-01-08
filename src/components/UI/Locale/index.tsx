@@ -4,7 +4,7 @@ import { LocaleProps, acceptLocale } from './declares'
 
 export default function Locale<T extends ElementType> (
   { component: Component, mapping, ...rest }: LocaleProps<T> &
-    Omit<ComponentPropsWithoutRef<T>, keyof LocaleProps<T>>
+    Omit<ComponentPropsWithoutRef<T>, keyof LocaleProps<T>>,
 ) {
   const { t } = useTranslation()
   const children = acceptLocale(t, mapping)

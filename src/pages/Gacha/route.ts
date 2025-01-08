@@ -25,7 +25,7 @@ const gachaRoute = createRoute({
 
     return {
       business,
-      keyofBusinesses
+      keyofBusinesses,
     }
   },
   component: Gacha,
@@ -40,7 +40,7 @@ const gachaRoute = createRoute({
     return (
       'Error: ' + (error instanceof Error ? error.message : String(error))
     )
-  }
+  },
 })
 
 export default gachaRoute

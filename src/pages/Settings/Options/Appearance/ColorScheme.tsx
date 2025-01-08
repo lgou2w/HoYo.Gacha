@@ -1,10 +1,10 @@
 import React from 'react'
 import { Switch } from '@fluentui/react-components'
 import { DarkThemeRegular } from '@fluentui/react-icons'
-import SettingsOptionsItem from '@/components/Settings/OptionsItem'
 import Locale from '@/components/UI/Locale'
 import { useColorScheme } from '@/hooks/useTheme'
 import { Dark } from '@/interfaces/Theme'
+import SettingsOptionsItem from '@/pages/Settings/Options/OptionsItem'
 import capitalize from '@/utilities/capitalize'
 
 export default function SettingsOptionsAppearanceColorScheme () {

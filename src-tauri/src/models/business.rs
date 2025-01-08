@@ -2,9 +2,9 @@ use std::collections::HashMap;
 use std::env;
 use std::fmt::{self, Display};
 use std::path::{Path, PathBuf};
+use std::sync::LazyLock;
 
 use num_enum::{IntoPrimitive, TryFromPrimitive};
-use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 
@@ -52,7 +52,6 @@ impl Display for BusinessRegion {
 }
 
 /// Business and Region internals
-
 pub struct BizInternals {
   pub business: Business,
   pub region: BusinessRegion,
@@ -146,8 +145,8 @@ impl BizInternals {
   }
 }
 
-static BIZ_INTERNALS: Lazy<HashMap<(Business, BusinessRegion), &'static BizInternals>> =
-  Lazy::new(|| {
+static BIZ_INTERNALS: LazyLock<HashMap<(Business, BusinessRegion), &'static BizInternals>> =
+  LazyLock::new(|| {
     use Business::*;
     use BusinessRegion::*;
 

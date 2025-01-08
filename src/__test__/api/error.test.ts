@@ -10,7 +10,7 @@ test('DetailedError - isDetailedError - it is not', () => {
     undefined,
     [],
     {},
-    { [Marker]: true } // Because there are no name and message fields
+    { [Marker]: true }, // Because there are no name and message fields
   ]) {
     expect(isDetailedError(actual))
       .toBeFalsy()
@@ -21,7 +21,7 @@ test('DetailedError - isDetailedError', () => {
   expect(isDetailedError({
     name: 'foo',
     message: 'msg',
-    [Marker]: true
+    [Marker]: true,
   }))
     .toBeTruthy()
 
@@ -29,7 +29,7 @@ test('DetailedError - isDetailedError', () => {
     name: 'bar',
     message: 'msg',
     details: { ext: 'helloworld' },
-    [Marker]: true
+    [Marker]: true,
   }))
     .toBeTruthy()
 })

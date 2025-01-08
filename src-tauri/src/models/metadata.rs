@@ -1,7 +1,7 @@
 use std::collections::hash_map::{Entry as MapEntry, Keys};
 use std::collections::{HashMap, HashSet};
+use std::sync::OnceLock;
 
-use once_cell::sync::OnceCell;
 use serde::Deserialize;
 
 use super::Business;
@@ -41,22 +41,18 @@ pub struct Metadata(
 );
 
 impl Metadata {
-  #[inline]
   pub fn obtain(&self, business: Business, locale: impl AsRef<str>) -> Option<&MetadataStruct> {
     self.0.get(&business)?.get(locale.as_ref())
   }
 
-  #[inline]
   pub fn businesses(&self) -> Keys<'_, Business, HashMap<String, MetadataStruct>> {
     self.0.keys()
   }
 
-  #[inline]
   pub fn locales(&self, business: Business) -> Option<Keys<'_, String, MetadataStruct>> {
     self.0.get(&business).map(|locales| locales.keys())
   }
 
-  #[inline]
   pub fn categories(
     &self,
     business: Business,
@@ -77,7 +73,7 @@ pub struct MetadataStruct {
   pub locale: String,                            // Locale: en-us, zh-cn, etc...
   categories: HashMap<&'static str, String>,     // Category: Category Name
   entries: HashMap<String, MetadataStructEntry>, // Id: Entry
-  reverses: OnceCell<HashMap<String, MetadataStructNameId>>, // Name: Id (Lazy init)
+  reverses: OnceLock<HashMap<String, MetadataStructNameId>>, // Name: Id (Lazy init)
 }
 
 #[derive(Debug)]
@@ -259,7 +255,7 @@ fn convert_json_structs(structs: Vec<JsonMetadataStruct>) -> HashMap<String, Met
             locale,
             categories: HashMap::from_iter([(category, category_name.clone())]),
             entries: new_entries,
-            reverses: OnceCell::new(),
+            reverses: OnceLock::new(),
           });
         }
       }
@@ -269,18 +265,9 @@ fn convert_json_structs(structs: Vec<JsonMetadataStruct>) -> HashMap<String, Met
   locales
 }
 
-pub enum MetadataSource<'a> {
-  Bytes(&'a [u8]),
-  Str(&'a str),
-}
-
 impl Metadata {
-  pub fn from_json(source: MetadataSource<'_>) -> serde_json::Result<Self> {
-    let json: JsonMetadata = match source {
-      MetadataSource::Bytes(slice) => serde_json::from_slice(slice)?,
-      MetadataSource::Str(str) => serde_json::from_str(str)?,
-    };
-
+  pub fn from_json(slice: impl AsRef<[u8]>) -> serde_json::Result<Self> {
+    let json: JsonMetadata = serde_json::from_slice(slice.as_ref())?;
     let inner = json
       .into_iter()
       .map(|(business, structs)| (business, convert_json_structs(structs)))
@@ -296,8 +283,7 @@ mod tests {
 
   #[test]
   fn test_example() {
-    let metadata = Metadata::from_json(MetadataSource::Str(
-      r#"
+    let json = r#"
       {
         "0": [
           {
@@ -350,9 +336,9 @@ mod tests {
             }
           }
         ]
-      }"#,
-    ))
-    .unwrap();
+      }"#;
+
+    let metadata = Metadata::from_json(json.as_bytes()).unwrap();
 
     assert!(metadata.businesses().eq([Business::GenshinImpact].iter()));
 

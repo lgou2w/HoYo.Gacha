@@ -1,30 +1,37 @@
 import React from 'react'
-import { Button, Field, Input, SplitButton, buttonClassNames, makeStyles, tokens } from '@fluentui/react-components'
+import { Button, Input, Label, SplitButton, buttonClassNames, makeStyles, tokens } from '@fluentui/react-components'
 import { ArrowClockwiseRegular, CopyRegular, LinkRegular } from '@fluentui/react-icons'
 
 const useStyles = makeStyles({
   root: {
     display: 'flex',
+    flexDirection: 'column',
+    rowGap: tokens.spacingVerticalXS,
+  },
+  content: {
+    display: 'flex',
     flexDirection: 'row',
-    columnGap: tokens.spacingHorizontalL
-  }
+    columnGap: tokens.spacingHorizontalL,
+  },
 })
 
 export default function GachaLegacyViewToolbarUrl () {
   const classes = useStyles()
   return (
     <div className={classes.root}>
-      <GachaLegacyViewToolbarUrlInput />
-      <GachaLegacyViewToolbarUrlButton />
+      <Label size="small">Gacha URL</Label>
+      <div className={classes.content}>
+        <GachaLegacyViewToolbarUrlInput />
+        <GachaLegacyViewToolbarUrlButton />
+      </div>
     </div>
   )
 }
 
 const useInputStyles = makeStyles({
-  root: {},
-  inner: {
-    maxWidth: '12rem'
-  }
+  root: {
+    maxWidth: '12rem',
+  },
 })
 
 interface InputProps {
@@ -34,30 +41,22 @@ interface InputProps {
 function GachaLegacyViewToolbarUrlInput (props: InputProps) {
   const classes = useInputStyles()
   return (
-    <Field
+    <Input
       className={classes.root}
-      label={{
-        size: 'small',
-        children: 'Gacha URL'
-      }}
-    >
-      <Input
-        className={classes.inner}
-        contentBefore={<LinkRegular />}
-        contentAfter={(
-          <Button
-            icon={<CopyRegular />}
-            appearance="subtle"
-            shape="circular"
-          />
-        )}
-        size="large"
-        appearance="outline"
-        placeholder="Gacha URL"
-        value={props.value ?? ''}
-        readOnly
-      />
-    </Field>
+      contentBefore={<LinkRegular />}
+      contentAfter={(
+        <Button
+          icon={<CopyRegular />}
+          appearance="subtle"
+          shape="circular"
+        />
+      )}
+      size="large"
+      appearance="outline"
+      placeholder="Gacha URL"
+      value={props.value ?? ''}
+      readOnly
+    />
   )
 }
 
@@ -68,9 +67,9 @@ const useButtonStyles = makeStyles({
     [`& .${buttonClassNames.icon}`]: {
       fontSize: tokens.fontSizeBase500,
       width: tokens.fontSizeBase500,
-      height: tokens.fontSizeBase500
-    }
-  }
+      height: tokens.fontSizeBase500,
+    },
+  },
 })
 
 function GachaLegacyViewToolbarUrlButton () {

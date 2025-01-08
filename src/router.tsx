@@ -7,7 +7,7 @@ import settingsRoute from '@/pages/Settings/route'
 const routeTree = rootRoute.addChildren([
   gachaRoute,
   homeRoute,
-  settingsRoute
+  settingsRoute,
 ])
 
 const router = createRouter({ routeTree })

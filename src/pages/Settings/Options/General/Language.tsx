@@ -2,9 +2,9 @@ import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { Dropdown, Option } from '@fluentui/react-components'
 import { LocalLanguageRegular } from '@fluentui/react-icons'
-import SettingsOptionsItem from '@/components/Settings/OptionsItem'
 import Locale from '@/components/UI/Locale'
 import { SupportedLanguages } from '@/i18n/locales'
+import SettingsOptionsItem from '@/pages/Settings/Options/OptionsItem'
 
 export default function SettingsOptionsGeneralLanguage () {
   const { t, i18n } = useTranslation()

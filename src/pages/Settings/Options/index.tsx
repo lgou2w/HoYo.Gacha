@@ -9,8 +9,8 @@ const useStyles = makeStyles({
   root: {
     display: 'flex',
     flexDirection: 'column',
-    rowGap: tokens.spacingHorizontalL
-  }
+    rowGap: tokens.spacingHorizontalL,
+  },
 })
 
 type Props = Omit<React.JSX.IntrinsicElements['div'], 'children'>

@@ -47,7 +47,7 @@ const OverridedFluentTheme: Partial<FluentTheme> = {
   spacingVerticalL: '1rem',
   spacingVerticalXL: '1.25rem',
   spacingVerticalXXL: '1.5rem',
-  spacingVerticalXXXL: '2rem'
+  spacingVerticalXXXL: '2rem',
 }
 
 export default OverridedFluentTheme

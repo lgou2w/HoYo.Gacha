@@ -19,9 +19,7 @@ pub fn install() {
     .join(consts::ID)
     .join(consts::CRASHS_DIRECTORY);
 
-  if !crashs_dir.exists() {
-    fs::create_dir_all(&crashs_dir).expect("Failed to create crashs folder");
-  }
+  fs::create_dir_all(&crashs_dir).expect("Failed to create crashs folder");
 
   panic::set_hook(Box::new(move |panic| {
     Crash::collect(panic)
@@ -40,7 +38,6 @@ struct Crash<'a> {
 }
 
 impl<'a> Crash<'a> {
-  #[inline]
   fn collect(panic: &'a PanicHookInfo) -> Self {
     // See: https://github.com/rust-lang/rfcs/issues/1389
     #[inline]
@@ -110,7 +107,7 @@ impl<'a> Crash<'a> {
   }
 }
 
-impl<'a> Display for Crash<'a> {
+impl Display for Crash<'_> {
   fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
     f.debug_map()
       .entry(&"Name", &self.name)
@@ -122,8 +119,7 @@ impl<'a> Display for Crash<'a> {
   }
 }
 
-impl<'a> Crash<'a> {
-  #[inline]
+impl Crash<'_> {
   fn report(self, dir: impl AsRef<Path>) -> io::Result<()> {
     let datetime = OffsetDateTime::now_utc()
       .to_offset(*consts::LOCAL_OFFSET)
@@ -204,11 +200,12 @@ fn crash_notify(message: String, report_path: impl AsRef<Path>) {
       )
     }
   {
-    Command::new("explorer")
+    let _ = Command::new("explorer")
       .arg("/select,")
       .raw_arg(format!("\"{}\"", report_path.as_ref().display()))
       .spawn()
-      .unwrap();
+      .unwrap()
+      .wait();
   }
 }
 

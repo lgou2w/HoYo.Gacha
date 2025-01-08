@@ -5,16 +5,21 @@ import {
   DeleteAccountByBusinessAndUidArgs,
   SqlxDatabaseError,
   SqlxError,
+  UpdateAccountDataFolderByBusinessAndUidArgs,
+  UpdateAccountPropertiesByBusinessAndUidArgs,
   createAccount,
   deleteAccountByBusinessAndUid,
+  deleteKv,
   findAccountsByBusiness,
+  findKv,
   updateAccountDataFolderByBusinessAndUid,
   updateAccountGachaUrlByBusinessAndUid,
-  updateAccountPropertiesByBusinessAndUid
+  updateAccountPropertiesByBusinessAndUid,
+  upsertKv,
 } from '@/api/commands/database'
 import { Account, isSamePrimaryKeyAccount } from '@/interfaces/Account'
-import { Businesses, KeyofBusinesses, ReversedBusinesses } from '@/interfaces/Business'
-import { OmitParametersFirst } from '@/interfaces/Declare'
+import { Business, Businesses, KeyofBusinesses, ReversedBusinesses } from '@/interfaces/Business'
+import { OmitParametersFirst } from '@/interfaces/declares'
 import queryClient from '@/queryClient'
 
 type AccountsKey = [KeyofBusinesses, 'Accounts']
@@ -28,8 +33,12 @@ function setAccountsData (
 ) {
   return queryClient.setQueryData<Account[], AccountsKey>(
     accountsKey(keyofBusinesses),
-    ...rest
-  )
+    ...rest,
+  ) ?? null
+}
+
+function getAccountsData (keyofBusinesses: KeyofBusinesses) {
+  return queryClient.getQueryData<Account[]>(accountsKey(keyofBusinesses))
 }
 
 export function accountsQueryOptions (keyofBusinesses: KeyofBusinesses) {
@@ -42,8 +51,8 @@ export function accountsQueryOptions (keyofBusinesses: KeyofBusinesses) {
     staleTime: Infinity,
     queryKey: accountsKey(keyofBusinesses),
     queryFn: () => findAccountsByBusiness({
-      business: Businesses[keyofBusinesses]
-    })
+      business: Businesses[keyofBusinesses],
+    }),
   })
 }
 
@@ -59,20 +68,18 @@ export function useCreateAccountMutation () {
     onSuccess (data) {
       setAccountsData(
         ReversedBusinesses[data.business],
-        (prev) => {
-          return produce(prev || [], (draft) => {
-            draft.push(data)
-          })
-        }
+        produce((draft = []) => {
+          draft.push(data)
+        }),
       )
-    }
+    },
   })
 }
 
 function createUpdateAccountFieldMutation<Args, U extends keyof Account> (
   mutationKey: MutationKey,
   mutationFn: MutationFunction<Account | null, Args>,
-  field: U
+  field: U,
 ) {
   return () => {
     return useMutation<
@@ -83,20 +90,16 @@ function createUpdateAccountFieldMutation<Args, U extends keyof Account> (
       mutationKey,
       mutationFn,
       onSuccess (data) {
-        if (data) {
-          setAccountsData(
-            ReversedBusinesses[data.business],
-            (prev) => {
-              return prev && produce(prev, (draft) => {
-                let index: number
-                if ((index = draft.findIndex((el) => isSamePrimaryKeyAccount(el, data))) !== -1) {
-                  draft[index][field] = data[field]
-                }
-              })
+        data && setAccountsData(
+          ReversedBusinesses[data.business],
+          produce((draft = []) => {
+            let index: number
+            if ((index = draft.findIndex((el) => isSamePrimaryKeyAccount(el, data))) !== -1) {
+              draft[index][field] = data[field]
             }
-          )
-        }
-      }
+          }),
+        )
+      },
     })
   }
 }
@@ -104,20 +107,37 @@ function createUpdateAccountFieldMutation<Args, U extends keyof Account> (
 export const useUpdateAccountDataFolderMutation = createUpdateAccountFieldMutation(
   ['Accounts', 'Update', 'DataFolder'],
   updateAccountDataFolderByBusinessAndUid,
-  'dataFolder'
+  'dataFolder',
 )
 
 export const useUpdateAccountGachaUrlMutation = createUpdateAccountFieldMutation(
   ['Accounts', 'Update', 'GachaUrl'],
   updateAccountGachaUrlByBusinessAndUid,
-  'gachaUrl'
+  'gachaUrl',
 )
 
 export const useUpdateAccountPropertiesMutation = createUpdateAccountFieldMutation(
   ['Accounts', 'Update', 'Properties'],
   updateAccountPropertiesByBusinessAndUid,
-  'properties'
+  'properties',
 )
+
+export function useUpdateAccountDataFolderAndPropertiesMutation () {
+  const updateAccountDataFolderMutation = useUpdateAccountDataFolderMutation()
+  const updateAccountPropertiesMutation = useUpdateAccountPropertiesMutation()
+  return useMutation<
+    Account | null,
+    SqlxError | SqlxDatabaseError | Error,
+    UpdateAccountDataFolderByBusinessAndUidArgs & UpdateAccountPropertiesByBusinessAndUidArgs
+  >({
+    mutationKey: ['Accounts', 'Update', 'DataFolderAndProperties'],
+    async mutationFn (args) {
+      const { business, uid, dataFolder, properties } = args
+      await updateAccountDataFolderMutation.mutateAsync({ business, uid, dataFolder })
+      return await updateAccountPropertiesMutation.mutateAsync({ business, uid, properties })
+    },
+  })
+}
 
 const DeleteAccountKey = ['Accounts', 'Delete']
 export function useDeleteAccountMutation () {
@@ -129,19 +149,97 @@ export function useDeleteAccountMutation () {
     mutationKey: DeleteAccountKey,
     mutationFn: deleteAccountByBusinessAndUid,
     onSuccess (data) {
-      if (data) {
-        setAccountsData(
-          ReversedBusinesses[data.business],
-          (prev) => {
-            return prev && produce(prev, (draft) => {
-              let index: number
-              if ((index = draft.findIndex((el) => isSamePrimaryKeyAccount(el, data))) !== -1) {
-                draft.splice(index, 1)
-              }
-            })
+      data && setAccountsData(
+        ReversedBusinesses[data.business],
+        produce((draft = []) => {
+          let index: number
+          if ((index = draft.findIndex((el) => isSamePrimaryKeyAccount(el, data))) !== -1) {
+            draft.splice(index, 1)
           }
-        )
+        }),
+      )
+    },
+  })
+}
+
+type SelectedAccountKey = [KeyofBusinesses, 'SelectedAccount']
+function selectedAccountKey (keyofBusinesses: KeyofBusinesses): SelectedAccountKey {
+  return [keyofBusinesses, 'SelectedAccount']
+}
+
+function setSelectedAccountData (
+  keyofBusinesses: KeyofBusinesses,
+  ...rest: OmitParametersFirst<typeof queryClient.setQueryData<Account | null, SelectedAccountKey>>
+) {
+  return queryClient.setQueryData<Account | null, SelectedAccountKey>(
+    selectedAccountKey(keyofBusinesses),
+    ...rest,
+  ) ?? null
+}
+
+function selectedAccountKvKey (keyofBusinesses: KeyofBusinesses) {
+  return `Query:${keyofBusinesses}:SelectedAccount`
+}
+
+export function selectedAccountQueryOptions (keyofBusinesses: KeyofBusinesses) {
+  return queryOptions<
+    Account | null,
+    SqlxError | SqlxDatabaseError | Error,
+    Account | null,
+    SelectedAccountKey
+  >({
+    staleTime: Infinity,
+    queryKey: selectedAccountKey(keyofBusinesses),
+    async queryFn ({ queryKey }) {
+      const [keyofBusinesses] = queryKey
+      const data = await findKv({
+        key: selectedAccountKvKey(keyofBusinesses),
+      })
+
+      return (data && getAccountsData(keyofBusinesses)
+        ?.find((el) => el.uid === +data.val)) ?? null
+    },
+  })
+}
+
+const SetSelectedAccountKey = ['SelectedAccount', 'Set']
+
+export interface SetSelectedAccountArgs<T extends Business> {
+  business: T
+  data: Account<T> | null
+}
+
+export function useSetSelectedAccountMutation<T extends Business> () {
+  return useMutation<
+    Account<T> | null,
+    SqlxError | SqlxDatabaseError | Error,
+    SetSelectedAccountArgs<T>
+  >({
+    mutationKey: SetSelectedAccountKey,
+    async mutationFn (args) {
+      const keyofBusinesses = ReversedBusinesses[args.business]
+
+      if (args.data) {
+        const existed = getAccountsData?.(keyofBusinesses)?.find((el) => isSamePrimaryKeyAccount(el, args.data!))
+
+        if (!existed) {
+          console.warn('The selected account %o does not exist in the accounts list', args.data)
+          return null
+        }
+
+        await upsertKv({
+          key: selectedAccountKvKey(keyofBusinesses),
+          val: String(existed.uid),
+        })
+
+        return existed as Account<T>
+      } else {
+        await deleteKv({ key: selectedAccountKvKey(keyofBusinesses) })
+        return null
       }
-    }
+    },
+    onSuccess (data, args) {
+      setSelectedAccountData(ReversedBusinesses[args.business], data)
+    },
   })
 }

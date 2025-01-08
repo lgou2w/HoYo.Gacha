@@ -20,6 +20,7 @@ export type DataFolderError = DetailedError<typeof NamedDataFolderError,
   | { kind: 'Invalid' }
   | { kind: 'UnityLogFileNotFound', path: string }
   | { kind: 'OpenUnityLogFile', path: string, cause: { kind: string, message: string } }
+  | { kind: 'Vacant' }
 >
 
 export function isDataFolderError (error: unknown): error is DataFolderError {
@@ -33,13 +34,19 @@ export interface DataFolder<T extends Business> {
   value: string
 }
 
+export enum LocateDataFolderFactory {
+  UnityLog = 'UnityLog',
+  Manual = 'Manual',
+  Registry = 'Registry',
+}
+
 export type LocateDataFolderArgs<T extends Business> = NonNullable<{
   business: T
   region: BusinessRegion
-  factory: 'UnityLog' | 'Manual' | 'Registry'
+  factory: LocateDataFolderFactory
 }>
 
-export type LocateDataFolder = <T extends Business>(args: LocateDataFolderArgs<T>, options?: InvokeOptions) => Promise<DataFolder<T> | null>
+export type LocateDataFolder = <T extends Business>(args: LocateDataFolderArgs<T>, options?: InvokeOptions) => Promise<DataFolder<T>>
 export const locateDataFolder: LocateDataFolder = declareCommand('business_locate_data_folder')
 
 // Gacha Url

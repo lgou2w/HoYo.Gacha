@@ -9,15 +9,15 @@ const useStyles = makeStyles({
     flexDirection: 'row',
     flexWrap: 'wrap',
     columnGap: tokens.spacingHorizontalL,
-    rowGap: tokens.spacingVerticalL
+    rowGap: tokens.spacingVerticalL,
   },
   options: {
-    flex: 1
+    flex: 1,
   },
   hero: {
     flex: 0.3,
-    flexShrink: 0
-  }
+    flexShrink: 0,
+  },
 })
 
 export default function SettingsPageView () {
