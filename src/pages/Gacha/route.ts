@@ -1,5 +1,7 @@
 import { createRoute } from '@tanstack/react-router'
-import { accountsQueryOptions } from '@/api/queries/account'
+import { isDetailedError } from '@/api/error'
+import { accountsQueryOptions, selectedAccountQueryOptions } from '@/api/queries/account'
+import { prettizedGachaRecordsQueryOptions } from '@/api/queries/business'
 import { Business, Businesses, KeyofBusinesses } from '@/interfaces/Business'
 import rootRoute from '@/pages/Root/route'
 import queryClient from '@/queryClient'
@@ -17,11 +19,16 @@ const gachaRoute = createRoute({
       throw new Error(`Invalid path parameter business: ${keyofBusinesses}`)
     }
 
-    // TODO:
-    //   1. Load accounts
-    //   2. Get current activated account (CAC)
-    //   3. Preload CAC gacha records...
+    // Gacha business data loading strategy:
+    //   1. Load all accounts
+    //   2. Get current selected account
+    //   3. Preload account gacha records
     await queryClient.ensureQueryData(accountsQueryOptions(keyofBusinesses))
+    const selectedAccount = await queryClient.ensureQueryData(selectedAccountQueryOptions(keyofBusinesses))
+    queryClient.prefetchQuery(prettizedGachaRecordsQueryOptions(
+      business,
+      selectedAccount?.uid ?? null,
+    ))
 
     return {
       business,
@@ -38,7 +45,7 @@ const gachaRoute = createRoute({
   errorComponent: ({ error }) => {
     // TODO
     return (
-      'Error: ' + (error instanceof Error ? error.message : String(error))
+      'Error: ' + (isDetailedError(error) || error instanceof Error ? error.message : String(error))
     )
   },
 })

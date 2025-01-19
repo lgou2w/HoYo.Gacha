@@ -1,4 +1,4 @@
-import { Business, Businesses, GenshinImpact, HonkaiStarRail, ZenlessZoneZero } from './Business'
+import { Business, GenshinImpact, HonkaiStarRail, ZenlessZoneZero } from './Business'
 
 // GachaRecord
 //   See: src-tauri/src/models/gacha_record.rs
@@ -32,44 +32,82 @@ export type GenshinImpactGachaRecord = GachaRecord<GenshinImpact>
 export type HonkaiStarRailGachaRecord = GachaRecord<HonkaiStarRail>
 export type ZenlessZoneZeroGachaRecord = GachaRecord<ZenlessZoneZero>
 
-// Utilities
+// Prettized
 
-export function isGenshinImpactGachaRecord (record: GachaRecord<Business>): record is GenshinImpactGachaRecord {
-  return record.business === Businesses.GenshinImpact
+export interface PrettyGachaRecord {
+  id: GachaRecord<Business>['id']
+  // See: src-tauri/src/models/gacha_metadata.rs::GachaMetadata::KNOWN_CATEGORIES
+  itemCategory: 'Character' | 'Weapon' | 'Bangboo'
+  itemId: NonNullable<GachaRecord<Business>['itemId']>
+  name: GachaRecord<Business>['name']
+  time: GachaRecord<Business>['time']
+  usedPity: number | undefined // Purple and Golden only
+  limited: boolean | undefined // Golden only
 }
 
-export function isHonkaiStarRailGachaRecord (record: GachaRecord<Business>): record is HonkaiStarRailGachaRecord {
-  return record.business === Businesses.HonkaiStarRail
+export enum PrettyCategory {
+  Beginner = 'Beginner', // 'Genshin Impact' and 'Honkai: Star Rail' only
+  Permanent = 'Permanent',
+  Character = 'Character',
+  Weapon = 'Weapon',
+  Chronicled = 'Chronicled', // 'Genshin Impact' only
+  Bangboo = 'Bangboo', // 'Zenless Zone Zero' only
 }
 
-export function isZenlessZoneZeroGachaRecord (record: GachaRecord<Business>): record is ZenlessZoneZeroGachaRecord {
-  return record.business === Businesses.ZenlessZoneZero
+export interface CategorizedMetadataBlueRanking {
+  values: PrettyGachaRecord[]
+  sum: number
+  sumPercentage: string
 }
 
-export function sortGachaRecordById<T extends Business> (a: GachaRecord<T>, b: GachaRecord<T>): number {
-  return a.id.localeCompare(b.id)
+export interface CategorizedMetadataPurpleRanking
+extends CategorizedMetadataBlueRanking {
+  sumAverage: number
+  nextPity: number
 }
 
-const FasterBusinessRankMappings: Record<
-  Business,
-  Partial<Record<
-    GachaRecord<Business>['rankType'],
-    Partial<Record<'Blue' | 'Purple' | 'Orange', true>>
-  >>
-> = {
-  [Businesses.GenshinImpact]: { 3: { Blue: true }, 4: { Purple: true }, 5: { Orange: true } },
-  [Businesses.HonkaiStarRail]: { 3: { Blue: true }, 4: { Purple: true }, 5: { Orange: true } },
-  [Businesses.ZenlessZoneZero]: { 2: { Blue: true }, 3: { Purple: true }, 4: { Orange: true } },
+export interface CategorizedMetadataGoldenRanking
+extends CategorizedMetadataPurpleRanking {
+  sumLimited: number
 }
 
-export function isRankBlueGachaRecord<T extends Business> (record: GachaRecord<T>): boolean {
-  return !!FasterBusinessRankMappings[record.business]?.[record.rankType]?.Blue
+export interface CategorizedMetadataRankings {
+  blue: CategorizedMetadataBlueRanking
+  purple: CategorizedMetadataPurpleRanking
+  golden: CategorizedMetadataGoldenRanking
 }
 
-export function isRankPurpleGachaRecord<T extends Business> (record: GachaRecord<T>): boolean {
-  return !!FasterBusinessRankMappings[record.business]?.[record.rankType]?.Purple
+export interface CategorizedMetadata<T extends Business> {
+  category: PrettyCategory
+  total: number
+  gachaType: GachaRecord<T>['gachaType']
+  startTime: string | null
+  endTime: string | null
+  lastEndId: GachaRecord<T>['id'] | null
+  rankings: CategorizedMetadataRankings
 }
 
-export function isRankOrangeGachaRecord<T extends Business> (record: GachaRecord<T>): boolean {
-  return !!FasterBusinessRankMappings[record.business]?.[record.rankType]?.Orange
+export type AggregatedGoldenTag =
+  | { Luck: PrettyGachaRecord }
+  | { Unluck: PrettyGachaRecord }
+  | { Relation: { record: PrettyGachaRecord, sum: number } }
+  | { Crazy: { date: string, sum: number } }
+
+export interface AggregatedMetadata {
+  total: number
+  startTime: string | null
+  endTime: string | null
+  rankings: CategorizedMetadataRankings
+  goldenTags: AggregatedGoldenTag[]
+}
+
+export interface PrettizedGachaRecords<T extends Business = Business> {
+  business: T,
+  uid: number
+  total: number
+  startTime: string | null
+  endTime: string | null
+  gachaTypeCategories: Record<GachaRecord<T>['gachaType'], PrettyCategory>
+  categorizeds: Record<PrettyCategory, CategorizedMetadata<T> | null>
+  aggregated: AggregatedMetadata
 }

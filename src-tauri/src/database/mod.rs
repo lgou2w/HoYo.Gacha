@@ -433,18 +433,18 @@ impl Decode<'_, Sqlite> for AccountProperties {
 declare_questioner_with_handlers! {
   GachaRecord,
 
-  "SELECT * FROM `hg.gacha_records` WHERE `uid` = ?;"
+  "SELECT * FROM `hg.gacha_records` WHERE `uid` = ? ORDER BY `id` ASC;"
     = find_gacha_records_by_uid {
         uid: u32,
       }: fetch_all -> Vec<GachaRecord>,
 
-  "SELECT * FROM `hg.gacha_records` WHERE `business` = ? AND `uid` = ?;"
+  "SELECT * FROM `hg.gacha_records` WHERE `business` = ? AND `uid` = ? ORDER BY `id` ASC;"
     = find_gacha_records_by_business_and_uid {
         business: Business,
         uid: u32,
       }: fetch_all -> Vec<GachaRecord>,
 
-  "SELECT * FROM `hg.gacha_records` WHERE `business` = ? AND `uid` = ? AND `gacha_type` = ?;"
+  "SELECT * FROM `hg.gacha_records` WHERE `business` = ? AND `uid` = ? AND `gacha_type` = ? ORDER BY `id` ASC;"
     = find_gacha_records_by_business_and_uid_with_gacha_type {
         business: Business,
         uid: u32,
@@ -608,18 +608,19 @@ pub trait GachaRecordQuestionerAdditions {
   ) -> Result<Vec<GachaRecord>, SqlxError> {
     info!("Executing find gacha records by businesses and uid database operation...");
     let start = Instant::now();
-    let records =
-      sqlx::query_as("SELECT * FROM `hg.gacha_records` WHERE `business` IN (?) AND `uid` = ?;")
-        .bind(
-          businesses
-            .iter()
-            .map(|b| (*b as u8).to_string())
-            .collect::<Vec<_>>()
-            .join(","),
-        )
-        .bind(uid)
-        .fetch_all(database.as_ref())
-        .await?;
+    let records = sqlx::query_as(
+      "SELECT * FROM `hg.gacha_records` WHERE `business` IN (?) AND `uid` = ? ORDER BY `id` ASC;",
+    )
+    .bind(
+      businesses
+        .iter()
+        .map(|b| (*b as u8).to_string())
+        .collect::<Vec<_>>()
+        .join(","),
+    )
+    .bind(uid)
+    .fetch_all(database.as_ref())
+    .await?;
 
     info!(
       message = "Finding of gacha records completed",

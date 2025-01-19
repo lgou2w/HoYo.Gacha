@@ -1,4 +1,5 @@
 export default {
+  text: 'English (US)',
   language: 'en-US',
   matches: /^en/,
   translation: {
@@ -54,6 +55,9 @@ export default {
     Pages: {
       Gacha: {
         LegacyView: {
+          GachaItem: {
+            Limited: 'Limited',
+          },
           UpsertAccountForm: {
             CancelBtn: 'Cancel',
             SubmitBtn: 'Confirm',
@@ -106,9 +110,6 @@ export default {
             Language: {
               Title: 'Language',
               Subtitle: 'Change the primary language used by the application.',
-              'en-US': 'English (US)',
-              'zh-Hans': 'Chinese (Simplified)',
-              'zh-Hant': 'Chinese (Traditional)',
             },
           },
           Appearance: {

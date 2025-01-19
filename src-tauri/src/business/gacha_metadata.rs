@@ -1,0 +1,635 @@
+use std::collections::hash_map::{Entry as MapEntry, Keys};
+use std::collections::{HashMap, HashSet};
+use std::fmt::{self, Debug};
+use std::fs::File;
+use std::io::{self, Read};
+use std::path::Path;
+use std::sync::{LazyLock, OnceLock};
+use std::time::Instant;
+
+use serde::Deserialize;
+use sha1::{Digest, Sha1};
+use tracing::info;
+
+use super::Business;
+
+// Raw Json Metadata
+
+type RawGachaMetadata = HashMap<Business, Vec<RawGachaMetadataCategorization>>;
+
+#[derive(Deserialize)]
+#[serde(rename_all = "PascalCase")]
+struct RawGachaMetadataCategorization {
+  pub category: String,
+  pub entries: Vec<RawGachaMetadataEntry>,
+  pub i18n: HashMap<String, RawGachaMetadataI18n>,
+}
+
+#[derive(Clone, Deserialize)]
+#[serde(untagged)]
+enum RawGachaMetadataEntry {
+  Limited(String, u8),
+  Permanent(String, u8, bool),
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "PascalCase")]
+struct RawGachaMetadataI18n {
+  pub category: String,
+  pub entries: Vec<String>,
+}
+
+// Wrapped
+
+#[derive(Debug)]
+pub struct GachaMetadataEntry {
+  pub category: &'static str, // Avoid too many String allocations
+  pub name: String,
+  pub rank: u8,
+  pub limited: bool,
+}
+
+#[derive(Debug)]
+pub enum GachaMetadataEntryNameId {
+  Unique(String),
+  Multiple(HashSet<String>),
+}
+
+#[derive(Debug)]
+pub struct GachaMetadataLocale {
+  pub language: String,                         // Language: en-us, zh-cn, etc...
+  categories: HashMap<&'static str, String>,    // Category: Category Name
+  entries: HashMap<String, GachaMetadataEntry>, // Id: Entry
+  reverses: OnceLock<HashMap<String, GachaMetadataEntryNameId>>, // Name: Id (Lazy init)
+}
+
+#[derive(Debug, PartialEq, Eq, Hash)]
+pub struct GachaMetadataEntryRef<'a> {
+  pub language: &'a str,
+  pub category: &'static str, // Category type name
+  pub category_name: &'a str, // Category locale name
+  pub id: &'a str,
+  pub name: &'a str, // Entry locale name
+  pub rank: u8,
+  pub limited: bool,
+}
+
+impl GachaMetadataLocale {
+  pub fn ids(&self) -> Keys<String, GachaMetadataEntry> {
+    self.entries.keys()
+  }
+
+  pub fn names(&self) -> Keys<String, GachaMetadataEntryNameId> {
+    self.reverses().keys()
+  }
+
+  pub fn entry_from_id<'a, 'id: 'a>(&'a self, id: &'id str) -> Option<GachaMetadataEntryRef<'a>> {
+    self.entries.get(id).map(|entry| self.entry_ref(id, entry))
+  }
+
+  pub fn entry_from_name<'a, 'name: 'a>(
+    &'a self,
+    name: &'name str,
+  ) -> Option<HashSet<GachaMetadataEntryRef<'a>>> {
+    match self.reverses().get(name)? {
+      GachaMetadataEntryNameId::Unique(id) => Some(HashSet::from_iter([
+        self.entry_ref(id, self.entries.get(id)?)
+      ])),
+      GachaMetadataEntryNameId::Multiple(ids) => Some(
+        ids
+          .iter()
+          .filter_map(|id| self.entries.get(id).map(|entry| self.entry_ref(id, entry)))
+          .collect(),
+      ),
+    }
+  }
+
+  pub fn entry_from_name_first<'a, 'name: 'a>(
+    &'a self,
+    name: &'name str,
+  ) -> Option<GachaMetadataEntryRef<'a>> {
+    match self.reverses().get(name)? {
+      GachaMetadataEntryNameId::Unique(id) => Some(self.entry_ref(id, self.entries.get(id)?)),
+      GachaMetadataEntryNameId::Multiple(ids) => ids
+        .iter()
+        .next()
+        .and_then(|id| self.entries.get(id).map(|entry| self.entry_ref(id, entry))),
+    }
+  }
+
+  fn reverses(&self) -> &HashMap<String, GachaMetadataEntryNameId> {
+    self.reverses.get_or_init(|| {
+      let mut name_ids = HashMap::with_capacity(self.entries.len());
+      for (id, entry) in &self.entries {
+        name_ids
+          .entry(entry.name.clone())
+          .and_modify(|name_id| match name_id {
+            GachaMetadataEntryNameId::Unique(prev_id) => {
+              *name_id = GachaMetadataEntryNameId::Multiple(HashSet::from_iter([
+                prev_id.clone(),
+                id.clone(),
+              ]));
+            }
+            GachaMetadataEntryNameId::Multiple(ids) => {
+              ids.insert(id.clone());
+            }
+          })
+          .or_insert(GachaMetadataEntryNameId::Unique(id.clone()));
+      }
+      name_ids
+    })
+  }
+
+  #[inline]
+  fn entry_ref<'a, 'id: 'a>(
+    &'a self,
+    id: &'id str,
+    entry: &'a GachaMetadataEntry,
+  ) -> GachaMetadataEntryRef<'a> {
+    GachaMetadataEntryRef {
+      language: &self.language,
+      category: entry.category,
+      category_name: self.categories.get(entry.category).unwrap(), // SAFETY
+      id,
+      name: &entry.name,
+      rank: entry.rank,
+      limited: entry.limited,
+    }
+  }
+}
+
+pub struct GachaMetadata {
+  pub metadata: HashMap<Business, HashMap<String, GachaMetadataLocale>>,
+  pub hash: String, // SHA-1
+}
+
+impl GachaMetadata {
+  pub const CATEGORY_CHARACTER: &'static str = "Character";
+  pub const CATEGORY_WEAPON: &'static str = "Weapon";
+  pub const CATEGORY_BANGBOO: &'static str = "Bangboo"; // 'Zenless Zone Zero' only
+  pub const KNOWN_CATEGORIES: [&'static str; 3] = [
+    Self::CATEGORY_CHARACTER,
+    Self::CATEGORY_WEAPON,
+    Self::CATEGORY_BANGBOO,
+  ];
+}
+
+impl GachaMetadata {
+  pub fn obtain(
+    &self,
+    business: Business,
+    locale: impl AsRef<str>,
+  ) -> Option<&GachaMetadataLocale> {
+    self.metadata.get(&business)?.get(locale.as_ref())
+  }
+
+  pub fn businesses(&self) -> Keys<'_, Business, HashMap<String, GachaMetadataLocale>> {
+    self.metadata.keys()
+  }
+
+  pub fn locales(&self, business: Business) -> Option<Keys<'_, String, GachaMetadataLocale>> {
+    self.metadata.get(&business).map(|locales| locales.keys())
+  }
+
+  pub fn categories(
+    &self,
+    business: Business,
+    locale: impl AsRef<str>,
+  ) -> Option<HashMap<&'static str, &'_ str>> {
+    self
+      .metadata
+      .get(&business)?
+      .get(locale.as_ref())
+      .map(|locale| {
+        locale
+          .categories
+          .iter()
+          .map(|(category, category_name)| (*category, category_name.as_str()))
+          .collect()
+      })
+  }
+}
+
+impl Debug for GachaMetadata {
+  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    f.debug_struct("GachaMetadata")
+      .field("metadata", &self.metadata)
+      .field("hash", &self.hash)
+      .finish()
+  }
+}
+
+// From Raw Json
+
+// Convert multiple categorizations into (Language: GachaMetadataLocale) hashmap
+fn raw_categorizations_into_locales(
+  categorizations: Vec<RawGachaMetadataCategorization>,
+) -> HashMap<String, GachaMetadataLocale> {
+  let sum_i18n = categorizations
+    .iter()
+    .map(|categorization| categorization.i18n.len())
+    .sum();
+
+  let mut locales: HashMap<String, GachaMetadataLocale> = HashMap::with_capacity(sum_i18n);
+  for RawGachaMetadataCategorization {
+    category,
+    entries,
+    i18n,
+  } in categorizations
+  {
+    let entries_len = entries.len();
+    let category: &'static str = match category.as_str() {
+      GachaMetadata::CATEGORY_CHARACTER => GachaMetadata::CATEGORY_CHARACTER,
+      GachaMetadata::CATEGORY_WEAPON => GachaMetadata::CATEGORY_WEAPON,
+      GachaMetadata::CATEGORY_BANGBOO => GachaMetadata::CATEGORY_BANGBOO,
+      _ => panic!(
+        "Unsupported metadata category: {category} (Allowed: {})",
+        GachaMetadata::KNOWN_CATEGORIES.join(", ")
+      ),
+    };
+
+    for (
+      language,
+      RawGachaMetadataI18n {
+        category: category_name,
+        entries: names,
+      },
+    ) in i18n
+    {
+      let new_entries = entries.clone().into_iter().zip(names).fold(
+        HashMap::with_capacity(entries_len),
+        |mut acc, (entry, name)| {
+          let (id, rank, limited) = match entry {
+            RawGachaMetadataEntry::Limited(id, rank) => (id, rank, true),
+            RawGachaMetadataEntry::Permanent(id, rank, is_permanent) => (id, rank, !is_permanent),
+          };
+
+          acc.insert(
+            id,
+            GachaMetadataEntry {
+              category,
+              name,
+              rank,
+              limited,
+            },
+          );
+          acc
+        },
+      );
+
+      match locales.entry(language.clone()) {
+        MapEntry::Occupied(mut o) => {
+          let locale = o.get_mut();
+          locale.entries.extend(new_entries);
+          locale.categories.insert(category, category_name.clone());
+        }
+        MapEntry::Vacant(o) => {
+          o.insert(GachaMetadataLocale {
+            language,
+            categories: HashMap::from_iter([(category, category_name.clone())]),
+            entries: new_entries,
+            reverses: OnceLock::new(),
+          });
+        }
+      }
+    }
+  }
+
+  locales
+}
+
+impl GachaMetadata {
+  pub fn from_bytes(slice: impl AsRef<[u8]>) -> serde_json::Result<Self> {
+    let metadata = serde_json::from_slice::<RawGachaMetadata>(slice.as_ref())?
+      .into_iter()
+      .map(|(business, categorizations)| {
+        (business, raw_categorizations_into_locales(categorizations))
+      })
+      .collect();
+
+    let hash =
+      Sha1::digest(slice.as_ref())
+        .into_iter()
+        .fold(String::with_capacity(40), |mut output, b| {
+          use std::fmt::Write;
+          let _ = write!(output, "{b:02x}"); // lowercase
+          output
+        });
+
+    Ok(Self { metadata, hash })
+  }
+
+  pub fn from_file(path: impl AsRef<Path>) -> io::Result<serde_json::Result<Self>> {
+    let mut file = File::open(path)?;
+    let mut buffer = Vec::new();
+    file.read_to_end(&mut buffer)?;
+
+    Ok(Self::from_bytes(&buffer))
+  }
+}
+
+// Embedded Metadata
+
+const EMBEDDED_RAW_METADATA: &[u8] = include_bytes!("./gacha_metadata.json");
+
+static EMBEDDED_METADATA: LazyLock<GachaMetadata> = LazyLock::new(|| {
+  let start = Instant::now();
+  let metadata =
+    GachaMetadata::from_bytes(EMBEDDED_RAW_METADATA).expect("Failed to load embedded metadata");
+
+  info!(
+    message = "Embedded gacha metadata loaded successfully",
+    elapsed = ?start.elapsed(),
+    %metadata.hash,
+  );
+
+  metadata
+});
+
+impl GachaMetadata {
+  #[inline]
+  pub fn embedded() -> &'static Self {
+    &EMBEDDED_METADATA
+  }
+}
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[test]
+  fn test_example() {
+    let json = r#"
+      {
+        "0": [
+          {
+            "Category": "Character",
+            "Entries": [
+              ["10000002", 5],
+              ["10000003", 5, true],
+              ["10000005", 5, true],
+              ["10000007", 5, true]
+            ],
+            "I18n": {
+              "en-us": {
+                "Category": "Character",
+                "Entries": [
+                  "Kamisato Ayaka",
+                  "Jean",
+                  "Traveler",
+                  "Traveler"
+                ]
+              },
+              "zh-cn": {
+                "Category": "角色",
+                "Entries": [
+                  "神里绫华",
+                  "琴",
+                  "旅行者",
+                  "旅行者"
+                ]
+              }
+            }
+          },
+          {
+            "Category": "Weapon",
+            "Entries": [
+              ["11509", 5]
+            ],
+            "I18n": {
+              "en-us": {
+                "Category": "Weapon",
+                "Entries": [
+                  "Mistsplitter Reforged"
+                ]
+              },
+              "zh-cn": {
+                "Category": "武器",
+                "Entries": [
+                  "雾切之回光"
+                ]
+              }
+            }
+          }
+        ]
+      }"#;
+
+    let metadata = GachaMetadata::from_bytes(json.as_bytes()).unwrap();
+
+    assert!(metadata.businesses().eq([Business::GenshinImpact].iter()));
+
+    assert!(metadata
+      .locales(Business::GenshinImpact)
+      .unwrap()
+      // Because the keys of a HashMap is unordered
+      .any(|locale| locale == "en-us" || locale == "zh-cn"));
+
+    assert!(metadata
+      .categories(Business::GenshinImpact, "en-us")
+      .unwrap()
+      .into_iter()
+      .any(|(category, category_name)| {
+        category == GachaMetadata::CATEGORY_CHARACTER && category_name == "Character"
+          || category == GachaMetadata::CATEGORY_WEAPON && category_name == "Weapon"
+      }));
+
+    assert!(metadata
+      .categories(Business::GenshinImpact, "zh-cn")
+      .unwrap()
+      .into_iter()
+      .any(|(category, category_name)| {
+        category == GachaMetadata::CATEGORY_CHARACTER && category_name == "角色"
+          || category == GachaMetadata::CATEGORY_WEAPON && category_name == "武器"
+      }));
+
+    let mut s = metadata.obtain(Business::GenshinImpact, "en-us").unwrap();
+
+    assert!(s.ids().any(|id| id == "10000002"
+      || id == "10000003"
+      || id == "10000005"
+      || id == "10000007"
+      || id == "11509"));
+
+    assert!(s.names().any(|name| name == "Kamisato Ayaka"
+      || name == "Jean"
+      || name == "Traveler"
+      || name == "Mistsplitter Reforged"));
+
+    assert_eq!(
+      s.entry_from_id("10000002"),
+      Some(GachaMetadataEntryRef {
+        language: "en-us",
+        category: GachaMetadata::CATEGORY_CHARACTER,
+        category_name: "Character",
+        id: "10000002",
+        name: "Kamisato Ayaka",
+        rank: 5,
+        limited: true
+      })
+    );
+
+    assert_eq!(
+      s.entry_from_name_first("Jean"),
+      Some(GachaMetadataEntryRef {
+        language: "en-us",
+        category: GachaMetadata::CATEGORY_CHARACTER,
+        category_name: "Character",
+        id: "10000003",
+        name: "Jean",
+        rank: 5,
+        limited: false
+      })
+    );
+
+    assert_eq!(
+      s.entry_from_name("Traveler"),
+      Some(HashSet::from_iter([
+        GachaMetadataEntryRef {
+          language: "en-us",
+          category: GachaMetadata::CATEGORY_CHARACTER,
+          category_name: "Character",
+          id: "10000005",
+          name: "Traveler",
+          rank: 5,
+          limited: false
+        },
+        GachaMetadataEntryRef {
+          language: "en-us",
+          category: GachaMetadata::CATEGORY_CHARACTER,
+          category_name: "Character",
+          id: "10000007",
+          name: "Traveler",
+          rank: 5,
+          limited: false
+        }
+      ]))
+    );
+
+    assert_eq!(
+      s.entry_from_name_first("Mistsplitter Reforged"),
+      Some(GachaMetadataEntryRef {
+        language: "en-us",
+        category: GachaMetadata::CATEGORY_WEAPON,
+        category_name: "Weapon",
+        id: "11509",
+        name: "Mistsplitter Reforged",
+        rank: 5,
+        limited: true
+      })
+    );
+
+    assert_eq!(
+      s.entry_from_name_first("Kamisato Ayaka"),
+      s.entry_from_id("10000002")
+    );
+    assert_eq!(s.entry_from_name_first("Jean"), s.entry_from_id("10000003"));
+    assert_eq!(
+      s.entry_from_name("Traveler"),
+      Some(HashSet::from_iter([
+        s.entry_from_id("10000005").unwrap(),
+        s.entry_from_id("10000007").unwrap()
+      ]))
+    );
+    assert_eq!(
+      s.entry_from_name_first("Mistsplitter Reforged"),
+      s.entry_from_id("11509")
+    );
+
+    s = metadata.obtain(Business::GenshinImpact, "zh-cn").unwrap();
+
+    assert!(s.ids().any(|id| id == "10000002"
+      || id == "10000003"
+      || id == "10000005"
+      || id == "10000007"
+      || id == "11509"));
+
+    assert!(s
+      .names()
+      .any(|name| name == "神里绫华" || name == "琴" || name == "旅行者" || name == "雾切之回光"));
+
+    assert_eq!(
+      s.entry_from_name_first("神里绫华"),
+      Some(GachaMetadataEntryRef {
+        language: "zh-cn",
+        category: GachaMetadata::CATEGORY_CHARACTER,
+        category_name: "角色",
+        id: "10000002",
+        name: "神里绫华",
+        rank: 5,
+        limited: true
+      })
+    );
+
+    assert_eq!(
+      s.entry_from_id("10000003"),
+      Some(GachaMetadataEntryRef {
+        language: "zh-cn",
+        category: GachaMetadata::CATEGORY_CHARACTER,
+        category_name: "角色",
+        id: "10000003",
+        name: "琴",
+        rank: 5,
+        limited: false
+      })
+    );
+
+    assert_eq!(
+      s.entry_from_name("旅行者"),
+      Some(HashSet::from_iter([
+        GachaMetadataEntryRef {
+          language: "zh-cn",
+          category: GachaMetadata::CATEGORY_CHARACTER,
+          category_name: "角色",
+          id: "10000005",
+          name: "旅行者",
+          rank: 5,
+          limited: false
+        },
+        GachaMetadataEntryRef {
+          language: "zh-cn",
+          category: GachaMetadata::CATEGORY_CHARACTER,
+          category_name: "角色",
+          id: "10000007",
+          name: "旅行者",
+          rank: 5,
+          limited: false
+        }
+      ]))
+    );
+
+    assert_eq!(
+      s.entry_from_id("11509"),
+      Some(GachaMetadataEntryRef {
+        language: "zh-cn",
+        category: GachaMetadata::CATEGORY_WEAPON,
+        category_name: "武器",
+        id: "11509",
+        name: "雾切之回光",
+        rank: 5,
+        limited: true
+      })
+    );
+
+    assert_eq!(
+      s.entry_from_name_first("神里绫华"),
+      s.entry_from_id("10000002")
+    );
+    assert_eq!(s.entry_from_name_first("琴"), s.entry_from_id("10000003"));
+    assert_eq!(
+      s.entry_from_name("旅行者"),
+      Some(HashSet::from_iter([
+        s.entry_from_id("10000005").unwrap(),
+        s.entry_from_id("10000007").unwrap()
+      ]))
+    );
+    assert_eq!(
+      s.entry_from_name_first("雾切之回光"),
+      s.entry_from_id("11509")
+    );
+  }
+
+  #[test]
+  fn test_embedded_metadata() {
+    let _ = GachaMetadata::embedded();
+  }
+}

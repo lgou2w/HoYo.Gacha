@@ -13,9 +13,10 @@ use time::macros::format_description;
 use time::serde::rfc3339;
 use time::OffsetDateTime;
 
+use crate::business::{GachaMetadata, GachaMetadataEntryRef};
 use crate::consts;
 use crate::error::{declare_error_kinds, Error, ErrorDetails};
-use crate::models::{Business, GachaMetadata, GachaRecord, MetadataStructEntryRef};
+use crate::models::{Business, GachaRecord};
 use crate::utilities::serde_helper;
 
 // region: Declares
@@ -183,8 +184,9 @@ declare_error_kinds! {
 declare_error_kinds! {
   #[derive(Debug, thiserror::Error)]
   LegacyUigfGachaRecordsReadError {
-    #[error("Failed to open input: {cause}")]
+    #[error("Failed to open input: '{path}' {cause}")]
     OpenInput {
+      path: PathBuf,
       cause: io::Error => serde_json::json!({
         "kind": cause.kind().to_string(),
         "message": cause.to_string(),
@@ -421,10 +423,13 @@ impl GachaRecordsReader for LegacyUigfGachaRecordsReader {
     metadata: &GachaMetadata,
     input: impl AsRef<Path>,
   ) -> Result<Vec<GachaRecord>, Self::Error> {
-    let input = File::open(input)
-      .map_err(|cause| LegacyUigfGachaRecordsReadErrorKind::OpenInput { cause })?;
+    let file =
+      File::open(&input).map_err(|cause| LegacyUigfGachaRecordsReadErrorKind::OpenInput {
+        path: input.as_ref().to_path_buf(),
+        cause,
+      })?;
 
-    self.read(metadata, input)
+    self.read(metadata, file)
   }
 
   fn read(
@@ -584,8 +589,9 @@ declare_error_kinds! {
 declare_error_kinds! {
   #[derive(Debug, thiserror::Error)]
   UigfGachaRecordsReadError {
-    #[error("Failed to open input: {cause}")]
+    #[error("Failed to open input: '{path}' {cause}")]
     OpenInput {
+      path: PathBuf,
       cause: io::Error => serde_json::json!({
         "kind": cause.kind().to_string(),
         "message": cause.to_string(),
@@ -891,7 +897,7 @@ impl GachaRecordsWriter for UigfGachaRecordsWriter {
         GenshinImpact,
         hk4e,
         UigfHk4eItem,
-        |record: GachaRecord, metadata_entry: MetadataStructEntryRef<'_>| {
+        |record: GachaRecord, metadata_entry: GachaMetadataEntryRef<'_>| {
           Result::<_, Self::Error>::Ok(UigfHk4eItem {
             uigf_gacha_type: *UIGF_GACHA_TYPE_MAPPINGS.get(&record.gacha_type).ok_or(
               UigfGachaRecordsWriteErrorKind::FailedMappingGachaType {
@@ -915,7 +921,7 @@ impl GachaRecordsWriter for UigfGachaRecordsWriter {
         HonkaiStarRail,
         hkrpg,
         UigfHkrpgItem,
-        |record: GachaRecord, metadata_entry: MetadataStructEntryRef<'_>| {
+        |record: GachaRecord, metadata_entry: GachaMetadataEntryRef<'_>| {
           // HACK: In Honkai Star Rail business,
           //   the gacha_id value of the Record must exist.
           //   Unless the user manually modifies the database record
@@ -940,7 +946,7 @@ impl GachaRecordsWriter for UigfGachaRecordsWriter {
         ZenlessZoneZero,
         nap,
         UigfNapItem,
-        |record: GachaRecord, metadata_entry: MetadataStructEntryRef<'_>| {
+        |record: GachaRecord, metadata_entry: GachaMetadataEntryRef<'_>| {
           Result::<_, Self::Error>::Ok(UigfNapItem {
             gacha_id: record.gacha_id,
             gacha_type: record.gacha_type,
@@ -984,10 +990,12 @@ impl GachaRecordsReader for UigfGachaRecordsReader {
     metadata: &GachaMetadata,
     input: impl AsRef<Path>,
   ) -> Result<Vec<GachaRecord>, Self::Error> {
-    let input =
-      File::open(input).map_err(|cause| UigfGachaRecordsReadErrorKind::OpenInput { cause })?;
+    let file = File::open(&input).map_err(|cause| UigfGachaRecordsReadErrorKind::OpenInput {
+      path: input.as_ref().to_path_buf(),
+      cause,
+    })?;
 
-    self.read(metadata, input)
+    self.read(metadata, file)
   }
 
   fn read(
@@ -1161,8 +1169,9 @@ declare_error_kinds! {
 declare_error_kinds! {
   #[derive(Debug, thiserror::Error)]
   SrgfGachaRecordsReadError {
-    #[error("Failed to open input: {cause}")]
+    #[error("Failed to open input: '{path}' {cause}")]
     OpenInput {
+      path: PathBuf,
       cause: io::Error => serde_json::json!({
         "kind": cause.kind().to_string(),
         "message": cause.to_string(),
@@ -1175,8 +1184,8 @@ declare_error_kinds! {
     #[error("Invalid uigf version string: {version}")]
     InvalidVersion { version: String },
 
-    #[error("Unsupported uigf version: {version} (Allowed: {allowed})")]
-    UnsupportedVersion { version: UigfVersion, allowed: String },
+    #[error("Unsupported uigf version: {version} (Allowed: {allowed:?})")]
+    UnsupportedVersion { version: UigfVersion, allowed: &'static [UigfVersion] },
 
     #[error("Inconsistent with expected uid: expected: {expected}, actual: {actual}")]
     InconsistentUid { expected: u32, actual: u32 },
@@ -1372,10 +1381,12 @@ impl GachaRecordsReader for SrgfGachaRecordsReader {
     metadata: &GachaMetadata,
     input: impl AsRef<Path>,
   ) -> Result<Vec<GachaRecord>, Self::Error> {
-    let input =
-      File::open(input).map_err(|cause| SrgfGachaRecordsReadErrorKind::OpenInput { cause })?;
+    let file = File::open(&input).map_err(|cause| SrgfGachaRecordsReadErrorKind::OpenInput {
+      path: input.as_ref().to_path_buf(),
+      cause,
+    })?;
 
-    self.read(metadata, input)
+    self.read(metadata, file)
   }
 
   fn read(
@@ -1403,11 +1414,7 @@ impl GachaRecordsReader for SrgfGachaRecordsReader {
     if !Srgf::SUPPORTED_VERSIONS.contains(&srgf_version) {
       return Err(SrgfGachaRecordsReadErrorKind::UnsupportedVersion {
         version: srgf_version,
-        allowed: Srgf::SUPPORTED_VERSIONS
-          .iter()
-          .map(ToString::to_string)
-          .collect::<Vec<_>>()
-          .join(", "),
+        allowed: &Srgf::SUPPORTED_VERSIONS,
       })?;
     }
 

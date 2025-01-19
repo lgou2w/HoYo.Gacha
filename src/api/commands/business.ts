@@ -2,8 +2,8 @@ import { DetailedError, isDetailedError } from '@/api/error'
 import { InvokeOptions } from '@/api/invoke'
 import { Account } from '@/interfaces/Account'
 import { Business, BusinessRegion, GenshinImpact } from '@/interfaces/Business'
-import { GachaRecord } from '@/interfaces/GachaRecord'
-import { SqlxDatabaseError, SqlxError } from './database'
+import { GachaRecord, PrettizedGachaRecords } from '@/interfaces/GachaRecord'
+import { FindGachaRecordsByBusinessAndUidArgs, SqlxDatabaseError, SqlxError } from './database'
 import { declareCommand } from '.'
 
 // See:
@@ -285,3 +285,19 @@ export type ExportGachaRecordsArgs = NonNullable<{
 }>
 
 export const exportGachaRecords = declareCommand<ExportGachaRecordsArgs, void>('business_export_gacha_records')
+
+const NamedPrettyGachaRecordsError = 'PrettyGachaRecordsError' as const
+
+export type PrettyGachaRecordsError = DetailedError<typeof NamedPrettyGachaRecordsError,
+  | { kind: 'MissingMetadataEntry', business: Business, locale: string, name: string, itemId: string }
+>
+
+export function isPrettyGachaRecordsError (error: unknown): error is PrettyGachaRecordsError {
+  return isDetailedError(error) &&
+    error.name === NamedPrettyGachaRecordsError
+}
+
+export type FindAndPrettyGachaRecordsArgs<T extends Business> = FindGachaRecordsByBusinessAndUidArgs<T>
+
+export type FindAndPrettyGachaRecords = <T extends Business>(args: FindAndPrettyGachaRecordsArgs<T>, options?: InvokeOptions) => Promise<PrettizedGachaRecords<T>>
+export const findAndPrettyGachaRecords: FindAndPrettyGachaRecords = declareCommand('business_find_and_pretty_gacha_records')

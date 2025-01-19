@@ -1,18 +1,11 @@
 import React, { ComponentType, LazyExoticComponent, Suspense, createElement, lazy } from 'react'
-import { makeStyles, mergeClasses, tokens } from '@fluentui/react-components'
+import { makeStyles, mergeClasses } from '@fluentui/react-components'
 import { Tabs } from '@/pages/Gacha/LegacyView/declares'
 
 const useStyles = makeStyles({
   root: {
     display: 'flex',
     flexDirection: 'column',
-
-    // Test
-    height: '60vh',
-    justifyContent: 'center',
-    alignItems: 'center',
-    fontSize: '8rem',
-    color: tokens.colorNeutralBackground6,
   },
 })
 

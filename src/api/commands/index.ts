@@ -39,6 +39,7 @@ export function declareCommand<Args extends InvokeArgs | undefined, Result = voi
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore: 2556
       let promise = (cacheableCommand.__cached = command.apply(this, ...args))
+
       if (import.meta.env.DEV) {
         promise = promise.then((result) => {
           console.debug('Cache the promise result of command: %s, result = %o', name, result)

@@ -27,13 +27,11 @@ use super::Business;
 //   `Empty` : Is the empty string.
 //
 
-#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq, PartialOrd, Ord)]
 #[serde(rename_all = "camelCase")]
 pub struct GachaRecord {
   pub business: Business,
   pub uid: u32,
-  // HACK: SQLite cannot store u64,
-  //   and Id can only use String.
   pub id: String,
   pub gacha_type: u32,
   pub gacha_id: Option<u32>,
@@ -44,4 +42,30 @@ pub struct GachaRecord {
   pub name: String,
   pub item_type: String,
   pub item_id: Option<String>,
+}
+
+impl GachaRecord {
+  #[inline]
+  pub const fn is_rank_type_blue(&self) -> bool {
+    match self.business {
+      Business::GenshinImpact | Business::HonkaiStarRail => self.rank_type == 3,
+      Business::ZenlessZoneZero => self.rank_type == 2,
+    }
+  }
+
+  #[inline]
+  pub const fn is_rank_type_purple(&self) -> bool {
+    match self.business {
+      Business::GenshinImpact | Business::HonkaiStarRail => self.rank_type == 4,
+      Business::ZenlessZoneZero => self.rank_type == 3,
+    }
+  }
+
+  #[inline]
+  pub const fn is_rank_type_golden(&self) -> bool {
+    match self.business {
+      Business::GenshinImpact | Business::HonkaiStarRail => self.rank_type == 5,
+      Business::ZenlessZoneZero => self.rank_type == 4,
+    }
+  }
 }

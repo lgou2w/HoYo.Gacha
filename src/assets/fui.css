@@ -83,7 +83,11 @@
 .fui-FluentProvider
 .fui-SplitButton
 .fui-Button.fui-SplitButton__menuButton
-.fui-MenuButton__menuIcon {
+.fui-MenuButton__menuIcon,
+.fui-FluentProvider
+.fui-SplitButton
+.fui-Button.fui-SplitButton__menuButton
+.fui-MenuButton__menuIcon svg {
   font-size: 0.75rem;
   width: 0.75rem;
   height: 0.75rem;
@@ -91,7 +95,10 @@
 
 .fui-FluentProvider
 .fui-MenuButton
-.fui-MenuButton__menuIcon {
+.fui-MenuButton__menuIcon,
+.fui-FluentProvider
+.fui-MenuButton
+.fui-MenuButton__menuIcon svg {
   font-size: 0.75rem;
   width: 0.75rem;
   height: 0.75rem;
@@ -138,7 +145,12 @@
 .fui-MenuPopover
 .fui-MenuList
 .fui-MenuItem
-.fui-MenuItem__checkmark {
+.fui-MenuItem__checkmark,
+.fui-FluentProvider
+.fui-MenuPopover
+.fui-MenuList
+.fui-MenuItem
+.fui-MenuItem__checkmark svg {
   width: 1rem;
   height: 1rem;
 }

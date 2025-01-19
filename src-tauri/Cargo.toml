@@ -2,6 +2,7 @@
 name = "hoyo_gacha"
 version = "1.0.0"
 edition = "2021"
+rust-version = "1.84"
 authors = ["lgou2w <lgou2w@hotmail.com>"]
 description = "An unofficial tool for managing and analyzing your miHoYo gacha records"
 homepage = "https://github.com/lgou2w/HoYo.Gacha#readme"
@@ -20,7 +21,7 @@ publish = false
 custom-protocol = [ "tauri/custom-protocol" ]
 
 [build-dependencies]
-tauri-build = { version = "2.0.4", default-features = false, features = ["config-toml"] }
+tauri-build = { version = "2.0.5", default-features = false, features = ["config-toml"] }
 
 [dependencies]
 async-trait = "0.1.85"
@@ -36,14 +37,14 @@ reqwest = { version = "0.12.12", features = ["json"] }
 rfd = { version = "0.15.2", default-features = false }
 sha1 = "0.10.6"
 serde = { version = "1.0.217", features = ["derive"] }
-serde_json = { version = "1.0.135", features = ["preserve_order"] }
+serde_json = "1.0.136"
 serde_repr = "0.1.19"
 sys-locale = "0.3.2"
 tauri-plugin-shell = "2.2.0"
 tauri-plugin-clipboard-manager = "2.2.0"
-thiserror = "2.0.9"
+thiserror = "2.0.11"
 time = { version = "0.3.37", features = ["formatting", "local-offset", "macros", "serde", "serde-human-readable"] }
-tokio = { version = "1.42.0", features = ["macros", "rt", "rt-multi-thread"] }
+tokio = { version = "1.43.0", features = ["macros", "rt", "rt-multi-thread"] }
 tracing = "0.1.41"
 tracing-appender = "0.2.3"
 tracing-subscriber = { version = "0.3.19", features = ["env-filter", "local-time"] }
@@ -61,7 +62,7 @@ features = [
 
 # https://github.com/tauri-apps/tauri/blob/dev/crates/tauri/Cargo.toml
 [dependencies.tauri]
-version = "2.2.0"
+version = "2.2.3"
 default-features = false
 features = [
   "wry",

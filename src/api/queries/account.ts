@@ -50,9 +50,31 @@ export function accountsQueryOptions (keyofBusinesses: KeyofBusinesses) {
   >({
     staleTime: Infinity,
     queryKey: accountsKey(keyofBusinesses),
-    queryFn: () => findAccountsByBusiness({
-      business: Businesses[keyofBusinesses],
-    }),
+    async queryFn () {
+      const accounts = await findAccountsByBusiness({
+        business: Businesses[keyofBusinesses],
+      })
+
+      let selected = await SelectedAccountStorage.load(keyofBusinesses)
+      if (selected) {
+        const existed = accounts.find((el) => el.uid === selected)
+        if (!existed) {
+          console.warn('The selected account %o does not exist in the %s accounts list', selected, keyofBusinesses)
+          await SelectedAccountStorage.delete(keyofBusinesses)
+          selected = null
+        }
+      }
+
+      if (!selected) {
+        const firstAccount = accounts[0] ?? null
+        if (firstAccount) {
+          console.warn('Auto-selecting first account %o for %s', firstAccount, keyofBusinesses)
+          await SelectedAccountStorage.save(keyofBusinesses, firstAccount)
+        }
+      }
+
+      return accounts
+    },
   })
 }
 
@@ -65,13 +87,21 @@ export function useCreateAccountMutation () {
   >({
     mutationKey: CreateAccountKey,
     mutationFn: createAccount,
-    onSuccess (data) {
+    async onSuccess (data) {
+      const keyofBusinesses = ReversedBusinesses[data.business]
+
       setAccountsData(
-        ReversedBusinesses[data.business],
+        keyofBusinesses,
         produce((draft = []) => {
           draft.push(data)
         }),
       )
+
+      // If not selected, then set to the currently created
+      if (!getSelectedAccountData(keyofBusinesses)) {
+        await SelectedAccountStorage.save(keyofBusinesses, data)
+        setSelectedAccountData(keyofBusinesses, data)
+      }
     },
   })
 }
@@ -177,9 +207,32 @@ function setSelectedAccountData (
   ) ?? null
 }
 
-function selectedAccountKvKey (keyofBusinesses: KeyofBusinesses) {
-  return `Query:${keyofBusinesses}:SelectedAccount`
+function getSelectedAccountData (keyofBusinesses: KeyofBusinesses) {
+  return queryClient.getQueryData<Account | null>(selectedAccountKey(keyofBusinesses)) ?? null
 }
+
+const SelectedAccountStorage = Object.freeze({
+  stringifyKey (keyofBusinesses: KeyofBusinesses): string {
+    return `Query:${keyofBusinesses}:SelectedAccount`
+  },
+  async load (keyofBusinesses: KeyofBusinesses): Promise<number | null> {
+    const kv = await findKv({
+      key: this.stringifyKey(keyofBusinesses),
+    })
+    return kv ? +kv.val : null
+  },
+  async save (keyofBusinesses: KeyofBusinesses, data: Account) {
+    await upsertKv({
+      key: this.stringifyKey(keyofBusinesses),
+      val: String(data.uid),
+    })
+  },
+  async delete (keyofBusinesses: KeyofBusinesses) {
+    await deleteKv({
+      key: this.stringifyKey(keyofBusinesses),
+    })
+  },
+})
 
 export function selectedAccountQueryOptions (keyofBusinesses: KeyofBusinesses) {
   return queryOptions<
@@ -192,12 +245,10 @@ export function selectedAccountQueryOptions (keyofBusinesses: KeyofBusinesses) {
     queryKey: selectedAccountKey(keyofBusinesses),
     async queryFn ({ queryKey }) {
       const [keyofBusinesses] = queryKey
-      const data = await findKv({
-        key: selectedAccountKvKey(keyofBusinesses),
-      })
-
-      return (data && getAccountsData(keyofBusinesses)
-        ?.find((el) => el.uid === +data.val)) ?? null
+      const data = await SelectedAccountStorage.load(keyofBusinesses)
+      return data
+        ? getAccountsData(keyofBusinesses)?.find((el) => el.uid === data) ?? null
+        : null
     },
   })
 }
@@ -220,21 +271,16 @@ export function useSetSelectedAccountMutation<T extends Business> () {
       const keyofBusinesses = ReversedBusinesses[args.business]
 
       if (args.data) {
-        const existed = getAccountsData?.(keyofBusinesses)?.find((el) => isSamePrimaryKeyAccount(el, args.data!))
-
+        const existed = getAccountsData(keyofBusinesses)?.find((el) => isSamePrimaryKeyAccount(el, args.data!))
         if (!existed) {
-          console.warn('The selected account %o does not exist in the accounts list', args.data)
+          console.warn('The selected account %o does not exist in the %s accounts list', args.data, keyofBusinesses)
           return null
         }
 
-        await upsertKv({
-          key: selectedAccountKvKey(keyofBusinesses),
-          val: String(existed.uid),
-        })
-
+        await SelectedAccountStorage.save(keyofBusinesses, existed)
         return existed as Account<T>
       } else {
-        await deleteKv({ key: selectedAccountKvKey(keyofBusinesses) })
+        await SelectedAccountStorage.delete(keyofBusinesses)
         return null
       }
     },

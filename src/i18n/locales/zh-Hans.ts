@@ -1,4 +1,5 @@
 export default {
+  text: '简体中文',
   language: 'zh-Hans',
   matches: ['zh-CN', 'zh-SG'],
   translation: {
@@ -52,9 +53,6 @@ export default {
             Language: {
               Title: '语言',
               Subtitle: '更改应用使用的主要语言。',
-              'en-US': '英语 (US)',
-              'zh-Hans': '简体中文',
-              'zh-Hant': '繁体中文',
             },
           },
           Appearance: {

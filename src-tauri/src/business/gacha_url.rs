@@ -453,8 +453,8 @@ impl ParsedGachaUrl {
     page_size: Option<u8>, // 1 - 20, None Default is 20
   ) -> Result<Self, GachaUrlError> {
     if !REGEX_GACHA_URL.is_match(gacha_url) {
-      Err(GachaUrlErrorKind::Illegal {
-        url: gacha_url.into(),
+      return Err(GachaUrlErrorKind::Illegal {
+        url: gacha_url.to_owned(),
       })?;
     }
 
@@ -485,10 +485,10 @@ impl ParsedGachaUrl {
 
     // Verify that the game biz matches
     if param_game_biz != biz.codename {
-      Err(GachaUrlErrorKind::IllegalBiz {
+      return Err(GachaUrlErrorKind::IllegalBiz {
         url: gacha_url.into(),
         expected: biz.codename.into(),
-        actual: param_game_biz.clone(),
+        actual: param_game_biz,
       })?;
     }
 

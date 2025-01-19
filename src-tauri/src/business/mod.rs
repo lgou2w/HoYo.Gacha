@@ -8,17 +8,21 @@ use crate::database::{
   DatabaseState, GachaRecordOnConflict, GachaRecordQuestioner, GachaRecordQuestionerAdditions,
 };
 use crate::error::{Error, ErrorDetails};
-use crate::models::{Business, BusinessRegion, GachaMetadata};
+use crate::models::{Business, BusinessRegion};
 
 mod advanced;
 mod data_folder_locator;
 mod disk_cache;
 mod gacha_convert;
+mod gacha_metadata;
+mod gacha_prettied;
 mod gacha_url;
 
 pub use advanced::*;
 pub use data_folder_locator::*;
 pub use gacha_convert::*;
+pub use gacha_metadata::*;
+pub use gacha_prettied::*;
 pub use gacha_url::*;
 
 // region: Tauri plugin
@@ -214,6 +218,25 @@ pub async fn business_export_gacha_records(
   };
 
   exporter.export(GachaMetadata::embedded(), records, output)
+}
+
+#[tauri::command]
+#[tracing::instrument(skip_all)]
+pub async fn business_find_and_pretty_gacha_records(
+  database: DatabaseState<'_>,
+  business: Business,
+  uid: u32,
+) -> Result<PrettiedGachaRecords, Box<dyn ErrorDetails + Send + 'static>> {
+  let records =
+    GachaRecordQuestioner::find_gacha_records_by_business_and_uid(database.as_ref(), business, uid)
+      .await
+      .map_err(Error::boxed)?;
+
+  let prettied =
+    PrettiedGachaRecords::pretty(GachaMetadata::embedded(), business, uid, &records[..])
+      .map_err(Error::boxed)?;
+
+  Ok(prettied)
 }
 
 // endregion

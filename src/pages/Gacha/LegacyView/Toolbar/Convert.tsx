@@ -1,6 +1,7 @@
 import React from 'react'
 import { Button, Label, makeStyles, tokens } from '@fluentui/react-components'
 import { ArrowDownloadRegular, ArrowUploadRegular } from '@fluentui/react-icons'
+import { importGachaRecords } from '@/api/commands/business'
 
 const useStyles = makeStyles({
   root: {
@@ -17,6 +18,22 @@ const useStyles = makeStyles({
 
 export default function GachaLegacyViewToolbarConvert () {
   const classes = useStyles()
+
+  // FIXME: TEST CODE
+  const importData = () => {
+    importGachaRecords({
+      input: 'your_legacy_uigf_v2_v3_data.json',
+      importer: {
+        LegacyUigf: {
+          expectedUid: 100000000,
+          expectedLocale: 'zh-cn',
+        },
+      },
+    })
+      .then(console.log)
+      .catch(console.error)
+  }
+
   return (
     <div className={classes.root}>
       <div className={classes.content}>
@@ -26,6 +43,7 @@ export default function GachaLegacyViewToolbarConvert () {
           appearance="subtle"
           shape="circular"
           size="large"
+          onClick={importData}
         />
       </div>
       <div className={classes.content}>

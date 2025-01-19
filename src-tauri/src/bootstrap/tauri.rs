@@ -123,6 +123,7 @@ pub async fn start(singleton: Singleton, tracing: Tracing, database: Database) {
       business::business_create_gacha_records_fetcher_channel,
       business::business_import_gacha_records,
       business::business_export_gacha_records,
+      business::business_find_and_pretty_gacha_records,
     ])
     .build(generate_context!())
     .expect("Error while building Tauri application");
