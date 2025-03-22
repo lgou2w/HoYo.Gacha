@@ -1577,20 +1577,23 @@ mod tests {
     .unwrap();
 
     assert_eq!(records.len(), 1);
-
-    let record = &records[0];
-    assert_eq!(record.business, Business::GenshinImpact);
-    assert_eq!(record.uid, 100_000_000);
-    assert_eq!(record.id, "1000000000000000000");
-    assert_eq!(record.gacha_type, 301);
-    assert_eq!(record.gacha_id, None);
-    assert_eq!(record.rank_type, 5);
-    assert_eq!(record.count, 1);
-    assert_eq!(record.lang, "en-us");
-    assert_eq!(record.time, "2023-01-01 00:00:00");
-    assert_eq!(record.name, "Kamisato Ayaka");
-    assert_eq!(record.item_type, "Character");
-    assert_eq!(record.item_id.as_deref(), Some("10000002"));
+    assert_eq!(
+      records[0],
+      GachaRecord {
+        business: Business::GenshinImpact,
+        uid: 100_000_000,
+        id: "1000000000000000000".to_owned(),
+        gacha_type: 301,
+        gacha_id: None,
+        rank_type: 5,
+        count: 1,
+        lang: "en-us".to_owned(),
+        time: "2023-01-01 00:00:00".to_owned(),
+        name: "Kamisato Ayaka".to_owned(),
+        item_type: "Character".to_owned(),
+        item_id: Some("10000002".to_owned()),
+      }
+    );
   }
 
   #[test]
@@ -1620,20 +1623,23 @@ mod tests {
     .unwrap();
 
     assert_eq!(records.len(), 1);
-
-    let record = &records[0];
-    assert_eq!(record.business, Business::GenshinImpact);
-    assert_eq!(record.uid, 100_000_000);
-    assert_eq!(record.id, "1000000000000000000");
-    assert_eq!(record.gacha_type, 301);
-    assert_eq!(record.gacha_id, None);
-    assert_eq!(record.rank_type, 5);
-    assert_eq!(record.count, 1);
-    assert_eq!(record.lang, "en-us");
-    assert_eq!(record.time, "2023-01-01 00:00:00");
-    assert_eq!(record.name, "Kamisato Ayaka");
-    assert_eq!(record.item_type, "Character");
-    assert_eq!(record.item_id.as_deref(), Some("10000002"));
+    assert_eq!(
+      records[0],
+      GachaRecord {
+        business: Business::GenshinImpact,
+        uid: 100_000_000,
+        id: "1000000000000000000".to_owned(),
+        gacha_type: 301,
+        gacha_id: None,
+        rank_type: 5,
+        count: 1,
+        lang: "en-us".to_owned(),
+        time: "2023-01-01 00:00:00".to_owned(),
+        name: "Kamisato Ayaka".to_owned(),
+        item_type: "Character".to_owned(),
+        item_id: Some("10000002".to_owned()),
+      }
+    );
   }
 
   #[test]
@@ -1780,47 +1786,59 @@ mod tests {
 
     assert_eq!(records.len(), 3);
 
-    let record = &records[0];
-    assert_eq!(record.business, Business::GenshinImpact);
-    assert_eq!(record.uid, 100_000_000);
-    assert_eq!(record.id, "1000000000000000000");
-    assert_eq!(record.gacha_type, 301);
-    assert_eq!(record.gacha_id, None);
-    assert_eq!(record.rank_type, 5);
-    assert_eq!(record.count, 1);
-    assert_eq!(record.lang, "en-us");
-    assert_eq!(record.time, "2023-01-01 00:00:00");
-    assert_eq!(record.name, "Kamisato Ayaka");
-    assert_eq!(record.item_type, "Character");
-    assert_eq!(record.item_id.as_deref(), Some("10000002"));
+    assert_eq!(
+      records[0],
+      GachaRecord {
+        business: Business::GenshinImpact,
+        uid: 100_000_000,
+        id: "1000000000000000000".to_owned(),
+        gacha_type: 301,
+        gacha_id: None,
+        rank_type: 5,
+        count: 1,
+        lang: "en-us".to_owned(),
+        time: "2023-01-01 00:00:00".to_owned(),
+        name: "Kamisato Ayaka".to_owned(),
+        item_type: "Character".to_owned(),
+        item_id: Some("10000002".to_owned()),
+      }
+    );
 
-    let record = &records[1];
-    assert_eq!(record.business, Business::HonkaiStarRail);
-    assert_eq!(record.uid, 100_000_001);
-    assert_eq!(record.id, "1000000000000000001");
-    assert_eq!(record.gacha_type, 11);
-    assert_eq!(record.gacha_id, Some(1));
-    assert_eq!(record.rank_type, 4);
-    assert_eq!(record.count, 1);
-    assert_eq!(record.lang, "en-us");
-    assert_eq!(record.time, "2023-01-01 00:00:00");
-    assert_eq!(record.name, "March 7th");
-    assert_eq!(record.item_type, "Character");
-    assert_eq!(record.item_id.as_deref(), Some("1001"));
+    assert_eq!(
+      records[1],
+      GachaRecord {
+        business: Business::HonkaiStarRail,
+        uid: 100_000_001,
+        id: "1000000000000000001".to_owned(),
+        gacha_type: 11,
+        gacha_id: Some(1),
+        rank_type: 4,
+        count: 1,
+        lang: "en-us".to_owned(),
+        time: "2023-01-01 00:00:00".to_owned(),
+        name: "March 7th".to_owned(),
+        item_type: "Character".to_owned(),
+        item_id: Some("1001".to_owned()),
+      }
+    );
 
-    let record = &records[2];
-    assert_eq!(record.business, Business::ZenlessZoneZero);
-    assert_eq!(record.uid, 100_000_002);
-    assert_eq!(record.id, "1000000000000000002");
-    assert_eq!(record.gacha_type, 1);
-    assert_eq!(record.gacha_id, None);
-    assert_eq!(record.rank_type, 3);
-    assert_eq!(record.count, 1);
-    assert_eq!(record.lang, "en-us");
-    assert_eq!(record.time, "2023-01-01 00:00:00");
-    assert_eq!(record.name, "Anby");
-    assert_eq!(record.item_type, "Agents");
-    assert_eq!(record.item_id.as_deref(), Some("1011"));
+    assert_eq!(
+      records[2],
+      GachaRecord {
+        business: Business::ZenlessZoneZero,
+        uid: 100_000_002,
+        id: "1000000000000000002".to_owned(),
+        gacha_type: 1,
+        gacha_id: None,
+        rank_type: 3,
+        count: 1,
+        lang: "en-us".to_owned(),
+        time: "2023-01-01 00:00:00".to_owned(),
+        name: "Anby".to_owned(),
+        item_type: "Agents".to_owned(),
+        item_id: Some("1011".to_owned()),
+      }
+    );
   }
 
   #[test]
@@ -1926,20 +1944,23 @@ mod tests {
     .unwrap();
 
     assert_eq!(records.len(), 1);
-
-    let record = &records[0];
-    assert_eq!(record.business, Business::HonkaiStarRail);
-    assert_eq!(record.uid, 100_000_000);
-    assert_eq!(record.id, "1000000000000000000");
-    assert_eq!(record.gacha_type, 301);
-    assert_eq!(record.gacha_id, Some(1));
-    assert_eq!(record.rank_type, 4);
-    assert_eq!(record.count, 1);
-    assert_eq!(record.lang, "en-us");
-    assert_eq!(record.time, "2023-01-01 00:00:00");
-    assert_eq!(record.name, "March 7th");
-    assert_eq!(record.item_type, "Character");
-    assert_eq!(record.item_id.as_deref(), Some("1001"));
+    assert_eq!(
+      records[0],
+      GachaRecord {
+        business: Business::HonkaiStarRail,
+        uid: 100_000_000,
+        id: "1000000000000000000".to_owned(),
+        gacha_type: 301,
+        gacha_id: Some(1),
+        rank_type: 4,
+        count: 1,
+        lang: "en-us".to_owned(),
+        time: "2023-01-01 00:00:00".to_owned(),
+        name: "March 7th".to_owned(),
+        item_type: "Character".to_owned(),
+        item_id: Some("1001".to_owned()),
+      }
+    );
   }
 
   #[test]
