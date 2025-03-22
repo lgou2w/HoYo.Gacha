@@ -199,8 +199,8 @@ declare_error_kinds! {
     #[error("Invalid uigf version string: {version}")]
     InvalidVersion { version: String },
 
-    #[error("Unsupported uigf version: {version} (Allowed: {allowed})")]
-    UnsupportedVersion { version: UigfVersion, allowed: String },
+    #[error("Unsupported uigf version: {version} (Allowed: {allowed:?})")]
+    UnsupportedVersion { version: UigfVersion, allowed: &'static [UigfVersion] },
 
     #[error("Inconsistent with expected uid: expected: {expected}, actual: {actual}")]
     InconsistentUid { expected: u32, actual: u32 },
@@ -457,11 +457,7 @@ impl GachaRecordsReader for LegacyUigfGachaRecordsReader {
     if !LegacyUigf::SUPPORTED_VERSIONS.contains(&uigf_version) {
       return Err(LegacyUigfGachaRecordsReadErrorKind::UnsupportedVersion {
         version: uigf_version,
-        allowed: LegacyUigf::SUPPORTED_VERSIONS
-          .iter()
-          .map(ToString::to_string)
-          .collect::<Vec<_>>()
-          .join(", "),
+        allowed: &LegacyUigf::SUPPORTED_VERSIONS,
       })?;
     }
 
@@ -604,8 +600,8 @@ declare_error_kinds! {
     #[error("Invalid uigf version string: {version}")]
     InvalidVersion { version: String },
 
-    #[error("Unsupported uigf version: {version} (Allowed: {allowed})")]
-    UnsupportedVersion { version: UigfVersion, allowed: String },
+    #[error("Unsupported uigf version: {version} (Allowed: {allowed:?})")]
+    UnsupportedVersion { version: UigfVersion, allowed: &'static [UigfVersion] },
 
     #[error("Missing metadata entry: {business}, locale: {locale}, {key}: {val}")]
     MissingMetadataEntry {
@@ -1020,11 +1016,7 @@ impl GachaRecordsReader for UigfGachaRecordsReader {
     if !Uigf::SUPPORTED_VERSIONS.contains(&uigf_version) {
       return Err(UigfGachaRecordsReadErrorKind::UnsupportedVersion {
         version: uigf_version,
-        allowed: Uigf::SUPPORTED_VERSIONS
-          .iter()
-          .map(ToString::to_string)
-          .collect::<Vec<_>>()
-          .join(", "),
+        allowed: &Uigf::SUPPORTED_VERSIONS,
       })?;
     }
 
