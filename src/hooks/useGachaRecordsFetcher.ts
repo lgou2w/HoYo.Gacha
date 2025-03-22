@@ -28,9 +28,8 @@ export default function useGachaRecordsFetcher<T extends Business> () {
       return null
     }
 
-    // Reset state
     produce({
-      isFetching: false,
+      isFetching: true,
       fragment: 'Idle',
     })
 
