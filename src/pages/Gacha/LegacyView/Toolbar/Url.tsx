@@ -143,19 +143,20 @@ function GachaLegacyViewToolbarUrlInput () {
   const selectedAccount = useSelectedAccountSuspenseQueryData(keyofBusinesses)
   const i18n = useI18n()
 
-  const deadline = computeGachaUrlDeadline(selectedAccount?.properties?.gachaUrlCreationTime)
+  const { gachaUrl, gachaUrlCreationTime } = selectedAccount?.properties || {}
+  const deadline = computeGachaUrlDeadline(gachaUrlCreationTime)
     ?.locale(i18n.constants.dayjs)
   const hasExpired = !!deadline && deadline.isBefore()
 
+  const [copyVisible, setCopyVisible] = useState(false)
   const copyUrl = useCallback<MouseEventHandler>(async (evt) => {
     evt.preventDefault()
 
-    const gachaUrl = selectedAccount?.properties?.gachaUrl
     if (gachaUrl) {
-      console.debug('Copying URL to clipboard:', gachaUrl)
       await clipboard.writeText(gachaUrl)
+      console.debug('Copying URL to clipboard:', gachaUrl)
     }
-  }, [selectedAccount])
+  }, [gachaUrl])
 
   return (
     <Field validationState={hasExpired ? 'error' : undefined}>
@@ -169,6 +170,8 @@ function GachaLegacyViewToolbarUrlInput () {
             content={i18n.t('Pages.Gacha.LegacyView.Toolbar.Url.CopyBtn')}
             relationship="label"
             positioning="before"
+            visible={copyVisible && !!gachaUrl}
+            onVisibleChange={(_, data) => setCopyVisible(data.visible)}
             withArrow
           >
             <Button
@@ -177,13 +180,14 @@ function GachaLegacyViewToolbarUrlInput () {
               shape="circular"
               size="small"
               onClick={copyUrl}
+              disabled={!gachaUrl}
             />
           </Tooltip>
         )}
         size="large"
         appearance="outline"
         placeholder={i18n.t('Pages.Gacha.LegacyView.Toolbar.Url.Input.Placeholder', { keyofBusinesses })}
-        value={selectedAccount?.properties?.gachaUrl ?? ''}
+        value={gachaUrl ?? ''}
         readOnly
       />
     </Field>
