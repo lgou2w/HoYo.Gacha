@@ -139,7 +139,7 @@ export type LegacyUigfGachaRecordsReadError = DetailedError<typeof NamedLegacyUi
   | { kind: 'OpenInput', path: string, cause: NativeIOError }
   | { kind: 'InvalidInput', cause: string }
   | { kind: 'InvalidVersion', version: string }
-  | { kind: 'UnsupportedVersion', version: string, allowed: string }
+  | { kind: 'UnsupportedVersion', version: string, allowed: string[] }
   | { kind: 'InconsistentUid', expected: Account['uid'], actual: Account['uid'] }
   | { kind: 'RequiredField', field: string }
   | { kind: 'MissingMetadataEntry', business: Business, locale: string, key: string, val: string }
@@ -171,7 +171,7 @@ export type UigfGachaRecordsReadError = DetailedError<typeof NamedUigfGachaRecor
   | { kind: 'OpenInput', path: string, cause: NativeIOError }
   | { kind: 'InvalidInput', cause: string }
   | { kind: 'InvalidVersion', version: string }
-  | { kind: 'UnsupportedVersion', version: string, allowed: string }
+  | { kind: 'UnsupportedVersion', version: string, allowed: string[] }
   | { kind: 'MissingMetadataEntry', business: Business, locale: string, key: string, val: string }
 >
 
@@ -201,7 +201,7 @@ export type SrgfGachaRecordsReadError = DetailedError<typeof NamedSrgfGachaRecor
   | { kind: 'OpenInput', path: string, cause: NativeIOError }
   | { kind: 'InvalidInput', cause: string }
   | { kind: 'InvalidVersion', version: string }
-  | { kind: 'UnsupportedVersion', version: string, allowed: string }
+  | { kind: 'UnsupportedVersion', version: string, allowed: string[] }
   | { kind: 'InconsistentUid', expected: Account['uid'], actual: Account['uid'] }
   | { kind: 'MissingMetadataEntry', business: Business, locale: string, key: string, val: string }
 >
