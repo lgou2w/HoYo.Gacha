@@ -1,4 +1,6 @@
-identifier = "com.lgou2w.hoyo.gacha"
+# Legacy ID
+# identifier = "com.lgou2w.hoyo.gacha"
+identifier = "com.lgou2w.hoyo.gacha.v1"
 product-name = "HoYo.Gacha"
 # HACK: Binary file cannot use dots, they will be truncated by Tauri.
 main-binary-name = "HoYo_Gacha"

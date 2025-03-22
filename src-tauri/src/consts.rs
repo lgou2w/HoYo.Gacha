@@ -12,7 +12,9 @@ use tracing_appender::rolling::Rotation;
 
 // App
 
-pub const ID: &str = "com.lgou2w.hoyo.gacha";
+// Legacy ID
+// pub const ID: &str = "com.lgou2w.hoyo.gacha";
+pub const ID: &str = "com.lgou2w.hoyo.gacha.v1";
 
 cfg_if! {if #[cfg(any(debug_assertions, test))] {
   // for Development
