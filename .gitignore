@@ -147,5 +147,3 @@ Cargo.lock
 # User custom
 !.vscode/settings.json
 .idea/
-
-_v1/

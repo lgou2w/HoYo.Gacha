@@ -165,7 +165,7 @@ unsafe fn slice_to_u8_mut<T: Copy>(slice: &mut [T]) -> &mut [u8] {
   #[allow(clippy::manual_slice_size_calculation)]
   let len = size_of::<T>() * slice.len();
 
-  from_raw_parts_mut(slice.as_mut_ptr() as *mut u8, len)
+  unsafe { from_raw_parts_mut(slice.as_mut_ptr() as *mut u8, len) }
 }
 
 // Don't export
@@ -252,7 +252,9 @@ impl IndexFile {
     if version != INDEX_VERSION2_0 && version != INDEX_VERSION2_1 {
       return Err(Error::new(
         ErrorKind::InvalidData,
-        format!("Unsupported index file version: 0x{version:X} (Valid: 0x{INDEX_VERSION2_0:X}, 0x{INDEX_VERSION2_1:X})")
+        format!(
+          "Unsupported index file version: 0x{version:X} (Valid: 0x{INDEX_VERSION2_0:X}, 0x{INDEX_VERSION2_1:X})"
+        ),
       ));
     }
 

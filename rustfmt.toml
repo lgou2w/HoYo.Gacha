@@ -1,0 +1,8 @@
+edition = "2024"
+tab_spaces = 2
+use_field_init_shorthand = true
+use_small_heuristics = "Default"
+
+# Nightly channel
+#imports_granularity = "Module"
+#group_imports = "StdExternalCrate"

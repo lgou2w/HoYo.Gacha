@@ -1,7 +1,12 @@
 import React, { Fragment } from 'react'
-import { Menu, MenuButtonProps, MenuItem, MenuList, MenuPopover, MenuTrigger, SplitButton } from '@fluentui/react-components'
-import { ArrowClockwiseRegular } from '@fluentui/react-icons'
-import Locale from '@/components/UI/Locale'
+import { MenuTrigger } from '@fluentui/react-components'
+import { ArrowClockwiseRegular, SparkleRegular, WarningRegular } from '@fluentui/react-icons'
+import Locale from '@/components/Locale'
+import Menu from '@/components/UI/Menu'
+import MenuItem from '@/components/UI/MenuItem'
+import MenuList from '@/components/UI/MenuList'
+import MenuPopover from '@/components/UI/MenuPopover'
+import SplitButton from '@/components/UI/SplitButton'
 import SettingsOptionsItem from '@/pages/Settings/Options/OptionsItem'
 
 // TODO: Check Application Version Updates
@@ -16,12 +21,11 @@ export default function SettingsOptionsAboutUpdater () {
         <Fragment>
           <Menu positioning="below-end">
             <MenuTrigger disableButtonEnhancement>
-              {(triggerProps: MenuButtonProps) => (
+              {(triggerProps) => (
                 <Locale
                   component={SplitButton}
-                  appearance="primary"
-                  size="small"
                   menuButton={triggerProps}
+                  appearance="primary"
                   mapping={['Pages.Settings.Options.About.Updater.CheckBtn']}
                 />
               )}
@@ -30,10 +34,12 @@ export default function SettingsOptionsAboutUpdater () {
               <MenuList>
                 <Locale
                   component={MenuItem}
+                  icon={<SparkleRegular />}
                   mapping={['Pages.Settings.Options.About.Updater.Channel.Stable']}
-                />
+                  />
                 <Locale
                   component={MenuItem}
+                  icon={<WarningRegular />}
                   mapping={['Pages.Settings.Options.About.Updater.Channel.Insider']}
                 />
               </MenuList>

@@ -8,14 +8,14 @@ use std::sync::LazyLock;
 
 use regex::Regex;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use time::OffsetDateTime;
 use time::format_description::FormatItem;
 use time::macros::format_description;
 use time::serde::rfc3339;
-use time::OffsetDateTime;
 
 use crate::business::{GachaMetadata, GachaMetadataEntryRef};
 use crate::consts;
-use crate::error::{declare_error_kinds, Error, ErrorDetails};
+use crate::error::{Error, ErrorDetails, declare_error_kinds};
 use crate::models::{Business, GachaRecord};
 use crate::utilities::serde_helper;
 
@@ -125,14 +125,14 @@ impl Serialize for UigfVersion {
  *       500             |       500
  */
 static UIGF_GACHA_TYPE_MAPPINGS: LazyLock<HashMap<u32, u32>> = LazyLock::new(|| {
-  let mut m = HashMap::with_capacity(6);
-  m.insert(100, 100);
-  m.insert(200, 200);
-  m.insert(301, 301);
-  m.insert(400, 301); // 400 -> 301
-  m.insert(302, 302);
-  m.insert(500, 500);
-  m
+  HashMap::from_iter([
+    (100, 100),
+    (200, 200),
+    (301, 301),
+    (400, 301), // 400 -> 301
+    (302, 302),
+    (500, 500),
+  ])
 });
 
 const FIELD_NAME: &str = "name";

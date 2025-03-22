@@ -1,7 +1,7 @@
 use std::str::FromStr;
 
-use serde::de::DeserializeOwned;
 use serde::Serialize;
+use serde::de::DeserializeOwned;
 
 use super::{Database, KvQuestioner, SqlxError};
 use crate::models::Kv;

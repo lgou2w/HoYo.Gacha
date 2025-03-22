@@ -1,11 +1,13 @@
 import React, { Suspense, createRef, useCallback, useMemo } from 'react'
-import { Button, Table, TableBody, TableCell, TableRow, makeStyles, tableCellClassNames, tableRowClassNames } from '@fluentui/react-components'
+import { Table, TableBody, TableCell, TableRow, makeStyles, tableCellClassNames, tableRowClassNames } from '@fluentui/react-components'
 import { InfoRegular } from '@fluentui/react-icons'
 import { Await } from '@tanstack/react-router'
 import { writeText } from '@tauri-apps/plugin-clipboard-manager'
 import isPromise from 'is-promise'
 import { osInfo, tauriVersion, webview2Version } from '@/api/commands/core'
-import Locale from '@/components/UI/Locale'
+import Locale from '@/components/Locale'
+import Button from '@/components/UI/Button'
+import Spinner from '@/components/UI/Spinner'
 import { stringifyOsInfoVersion } from '@/interfaces/Os'
 import SettingsOptionsCollapse from '@/pages/Settings/Options/OptionsCollapse'
 
@@ -19,12 +21,13 @@ const useStyles = makeStyles({
     },
     [`& .${tableCellClassNames.root}`]: {
       padding: 0,
+      minHeight: '2.125rem',
     },
   },
 })
 
 export default function SettingsOptionsAboutSpecification () {
-  const classes = useStyles()
+  const styles = useStyles()
   const data: Record<string, string | Promise<string>> = useMemo(() => {
     return {
       OperatingSystem: osInfo().then((value) => value.edition || value.os_type),
@@ -59,13 +62,12 @@ export default function SettingsOptionsAboutSpecification () {
       actionExt={(
         <Locale
           component={Button}
-          size="small"
           onClick={handleCopy}
           mapping={['Pages.Settings.Options.About.Specification.CopyBtn']}
         />
       )}
     >
-      <Table ref={tableRef} className={classes.table} size="small" noNativeElements>
+      <Table ref={tableRef} className={styles.table} size="small" noNativeElements>
         <TableBody>
           {Object.entries(data).map(([key, val]) => (
             <TableRow key={key} data-clipboard-entry>
@@ -77,7 +79,7 @@ export default function SettingsOptionsAboutSpecification () {
               <TableCell data-clipboard-val>
                 {isPromise(val)
                   ? (
-                      <Suspense fallback="Loading...">
+                      <Suspense fallback={<Spinner />}>
                         <Await promise={val}>
                           {(data) => data}
                         </Await>

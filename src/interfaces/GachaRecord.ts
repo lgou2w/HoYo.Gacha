@@ -1,4 +1,4 @@
-import { Business, GenshinImpact, HonkaiStarRail, ZenlessZoneZero } from './Business'
+import { Business, Businesses, GenshinImpact, HonkaiStarRail, ZenlessZoneZero } from './Business'
 
 // GachaRecord
 //   See: src-tauri/src/models/gacha_record.rs
@@ -57,18 +57,20 @@ export enum PrettyCategory {
 export interface CategorizedMetadataBlueRanking {
   values: PrettyGachaRecord[]
   sum: number
-  sumPercentage: string
+  percentage: number
 }
 
 export interface CategorizedMetadataPurpleRanking
 extends CategorizedMetadataBlueRanking {
-  sumAverage: number
+  average: number
   nextPity: number
 }
 
 export interface CategorizedMetadataGoldenRanking
 extends CategorizedMetadataPurpleRanking {
-  sumLimited: number
+  limitedSum: number
+  limitedPercentage: number
+  limitedAverage: number
 }
 
 export interface CategorizedMetadataRankings {
@@ -91,7 +93,7 @@ export type AggregatedGoldenTag =
   | { Luck: PrettyGachaRecord }
   | { Unluck: PrettyGachaRecord }
   | { Relation: { record: PrettyGachaRecord, sum: number } }
-  | { Crazy: { date: string, sum: number } }
+  | { Crazy: { time: string, sum: number } }
 
 export interface AggregatedMetadata {
   total: number
@@ -110,4 +112,47 @@ export interface PrettizedGachaRecords<T extends Business = Business> {
   gachaTypeCategories: Record<GachaRecord<T>['gachaType'], PrettyCategory>
   categorizeds: Record<PrettyCategory, CategorizedMetadata<T> | null>
   aggregated: AggregatedMetadata
+}
+
+// Utilities
+
+export type GachaTypeAndLastEndIdMappings<T extends Business = Business>
+  = Array<[GachaRecord<T>['gachaType'], GachaRecord<T>['id'] | null]>
+
+export function computeGachaTypeAndLastEndIdMappings<T extends Business = Business> (
+  business: Business,
+  categorizeds: PrettizedGachaRecords<T>['categorizeds'],
+  excludeBeginner: boolean = true,
+) {
+  const result: GachaTypeAndLastEndIdMappings<T> = []
+
+  for (const category in categorizeds) {
+    const categorized = categorizeds[category as PrettyCategory]
+    if (!categorized) {
+      continue
+    }
+
+    const isBeginner = categorized.category === PrettyCategory.Beginner
+    if (isBeginner && excludeBeginner) {
+      // HACK:
+      //   Genshin Impact    : Beginner Gacha Pool = 20 times
+      //   Honkai: Star Rail :                     = 50 times
+      //   Zenless Zone Zero : Useless
+      const exclude =
+        (business === Businesses.GenshinImpact && categorized.total >= 20) ||
+        (business === Businesses.HonkaiStarRail && categorized.total >= 50)
+
+      if (exclude) {
+        console.debug('Exclude beginner banner, because it has reached the limit')
+        continue
+      }
+    }
+
+    result.push([
+      categorized.gachaType,
+      categorized.lastEndId ?? null,
+    ])
+  }
+
+  return result
 }

@@ -1,11 +1,12 @@
 import { createRoute } from '@tanstack/react-router'
-import rootRoute from '@/pages/Root/route'
+import RootRoute from '@/pages/Root/route'
+import Routes from '@/routes'
 import Settings from '.'
 
-const settingsRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/settings',
+const SettingsRoute = createRoute({
+  getParentRoute: () => RootRoute,
+  path: Routes.Settings,
   component: Settings,
 })
 
-export default settingsRoute
+export default SettingsRoute

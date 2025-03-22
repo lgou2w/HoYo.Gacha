@@ -1,3 +1,4 @@
+use std::collections::{HashMap, hash_map};
 use std::path::PathBuf;
 
 use serde::Deserialize;
@@ -5,22 +6,22 @@ use tauri::{Emitter, WebviewWindow};
 use tokio::sync::mpsc;
 
 use crate::database::{
-  DatabaseState, GachaRecordOnConflict, GachaRecordQuestioner, GachaRecordQuestionerAdditions,
+  DatabaseState, GachaRecordQuestioner, GachaRecordQuestionerAdditions, GachaRecordSaveOnConflict,
 };
 use crate::error::{Error, ErrorDetails};
-use crate::models::{Business, BusinessRegion};
+use crate::models::{Business, BusinessRegion, GachaRecord};
 
-mod advanced;
 mod data_folder_locator;
 mod disk_cache;
 mod gacha_convert;
+mod gacha_fetcher;
 mod gacha_metadata;
 mod gacha_prettied;
 mod gacha_url;
 
-pub use advanced::*;
 pub use data_folder_locator::*;
 pub use gacha_convert::*;
+pub use gacha_fetcher::*;
 pub use gacha_metadata::*;
 pub use gacha_prettied::*;
 pub use gacha_url::*;
@@ -34,9 +35,7 @@ pub async fn business_locate_data_folder(
   region: BusinessRegion,
   factory: DataFolderLocatorFactory,
 ) -> Result<DataFolder, DataFolderError> {
-  <&dyn DataFolderLocator>::from(factory)
-    .locate_data_folder(business, region)
-    .await
+  factory.locate_data_folder(business, region).await
 }
 
 #[tauri::command]
@@ -61,12 +60,11 @@ pub async fn business_from_dirty_gacha_url(
   GachaUrl::from_dirty(business, region, dirty_url, expected_uid).await
 }
 
-#[derive(Debug, Default, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct CreateGachaRecordsFetcherChannelOptions {
-  event_channel: Option<String>,
-  save_to_database: Option<bool>,
-  save_on_conflict: Option<GachaRecordOnConflict>,
+#[derive(Copy, Clone, Debug, Deserialize)]
+pub enum GachaRecordSaveToDatabase {
+  No,
+  Yes,
+  FullUpdate,
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -79,51 +77,92 @@ pub async fn business_create_gacha_records_fetcher_channel(
   region: BusinessRegion,
   uid: u32,
   gacha_url: String,
-  gacha_type_and_last_end_id_mappings: Vec<(u32, Option<String>)>,
-  options: Option<CreateGachaRecordsFetcherChannelOptions>,
-) -> Result<(), Box<dyn ErrorDetails + Send + 'static>> {
-  let options = options.unwrap_or_default();
+  mut gacha_type_and_last_end_id_mappings: Vec<(u32, Option<String>)>,
+  event_channel: Option<String>,
+  save_to_database: Option<GachaRecordSaveToDatabase>,
+  save_on_conflict: Option<GachaRecordSaveOnConflict>,
+) -> Result<i64, Box<dyn ErrorDetails + Send + 'static>> {
+  let save_to_database = save_to_database.unwrap_or(GachaRecordSaveToDatabase::No);
+  let save_on_conflict = save_on_conflict.unwrap_or(GachaRecordSaveOnConflict::Nothing);
 
-  let event_channel = options.event_channel.unwrap_or_default();
-  let event_emit = !event_channel.is_empty();
+  // The last_end_id value is discarded on full update
+  if matches!(save_to_database, GachaRecordSaveToDatabase::FullUpdate) {
+    for (_, last_end_id) in gacha_type_and_last_end_id_mappings.iter_mut() {
+      last_end_id.take();
+    }
+  }
 
-  let save_to_database = options.save_to_database.unwrap_or_default();
-  let save_on_conflict = options
-    .save_on_conflict
-    .unwrap_or(GachaRecordOnConflict::Nothing);
-
-  use GachaRecordsFetcherChannelFragment as Fragment;
-  create_gacha_records_fetcher_channel(
+  let records = create_gacha_records_fetcher_channel(
     business,
     region,
     uid,
     gacha_url,
     gacha_type_and_last_end_id_mappings,
-    |fragment| async {
-      // FIXME: emit SAFETY?
-      if event_emit {
-        // If the fragment is the actual records data, then just send the length
-        if let Fragment::Data(records) = &fragment {
-          window
-            .emit(&event_channel, &Fragment::DataRef(records.len()))
-            .unwrap();
-        } else {
-          window.emit(&event_channel, &fragment).unwrap();
-        }
-      }
+    window,
+    event_channel,
+  )
+  .await?
+  .unwrap_or(Vec::new());
 
-      if save_to_database {
-        if let Fragment::Data(records) = fragment {
+  if records.is_empty() {
+    return Ok(0);
+  }
+
+  match save_to_database {
+    GachaRecordSaveToDatabase::No => Ok(0),
+    GachaRecordSaveToDatabase::Yes => {
+      let changes =
+        GachaRecordQuestioner::create_gacha_records(&database, records, save_on_conflict, None)
+          .await
+          .map_err(Error::boxed)? as i64;
+
+      Ok(changes)
+    }
+    GachaRecordSaveToDatabase::FullUpdate => {
+      let groups: HashMap<u32, Vec<GachaRecord>> =
+        records.into_iter().fold(HashMap::new(), |mut acc, record| {
+          match acc.entry(record.gacha_type) {
+            hash_map::Entry::Occupied(mut o) => {
+              o.get_mut().push(record);
+            }
+            hash_map::Entry::Vacant(o) => {
+              o.insert(vec![record]);
+            }
+          }
+          acc
+        });
+
+      let mut deleted: i64 = 0;
+      let mut created: i64 = 0;
+
+      for (gacha_type, records) in groups {
+        if records.is_empty() {
+          continue;
+        }
+
+        let oldest_end_id = records.last().map(|record| record.id.as_str()).unwrap();
+
+        deleted += GachaRecordQuestioner::delete_gacha_records_by_newer_than_end_id(
+          &database,
+          business,
+          uid,
+          gacha_type,
+          oldest_end_id,
+        )
+        .await
+        .map_err(Error::boxed)? as i64;
+
+        created +=
           GachaRecordQuestioner::create_gacha_records(&database, records, save_on_conflict, None)
             .await
-            .map_err(Error::boxed)?;
-        }
+            .map_err(Error::boxed)? as i64;
       }
 
-      Ok(())
-    },
-  )
-  .await
+      let changes = created - deleted;
+
+      Ok(changes)
+    }
+  }
 }
 
 #[tauri::command]
@@ -133,7 +172,7 @@ pub async fn business_import_gacha_records(
   database: DatabaseState<'_>,
   input: PathBuf,
   importer: GachaRecordsImporter,
-  save_on_conflict: Option<GachaRecordOnConflict>,
+  save_on_conflict: Option<GachaRecordSaveOnConflict>,
   progress_channel: Option<String>,
 ) -> Result<u64, Box<dyn ErrorDetails + Send + 'static>> {
   let records = importer.import(GachaMetadata::embedded(), input)?;
@@ -155,7 +194,7 @@ pub async fn business_import_gacha_records(
   let changes = GachaRecordQuestioner::create_gacha_records(
     database.as_ref(),
     records,
-    save_on_conflict.unwrap_or(GachaRecordOnConflict::Nothing),
+    save_on_conflict.unwrap_or(GachaRecordSaveOnConflict::Nothing),
     progress_reporter,
   )
   .await

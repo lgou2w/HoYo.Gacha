@@ -1,15 +1,43 @@
+/* eslint-disable camelcase */
+
 export default {
-  text: 'English (US)',
   language: 'en-US',
   matches: /^en/,
+  constants: {
+    text: 'English (US)',
+    dayjs: 'en',
+  },
   translation: {
     Business: {
       GenshinImpact: {
         Name: 'Genshin Impact',
-        Player: 'Traveler',
-        Currency: 'Primogem',
+        Player: {
+          Name: 'Traveler',
+          Girl: 'Lumine',
+          Boy: 'Aether',
+        },
+        Currency: {
+          Name01: 'Primogem',
+          Name02: 'Genesis Crystal',
+        },
         Gacha: {
           Name: 'Wish',
+          Ticket01: 'Acquaint Fate',
+          Ticket02: 'Intertwined Fate',
+          Category: {
+            Beginner: {
+              Badge: 'Novice Wish',
+              Title: 'Beginners\' Wish',
+            },
+            Permanent: {
+              Badge: 'Standard Wish',
+              Title: 'Wanderlust Invocation',
+            },
+            Character: 'Character Event Wish',
+            Weapon: 'Weapon Event Wish',
+            Chronicled: 'Chronicled Wish',
+            Aggregated: 'Aggregated',
+          },
         },
         DataFolder: {
           Example: 'X:/Genshin Impact/Genshin Impact Game/GenshinImpact_Data',
@@ -17,10 +45,32 @@ export default {
       },
       HonkaiStarRail: {
         Name: 'Honkai: Star Rail',
-        Player: 'Trailblazer',
-        Currency: 'Stellar Jade',
+        Player: {
+          Name: 'Trailblazer',
+          Girl: 'Stelle',
+          Boy: 'Caelus',
+        },
+        Currency: {
+          Name01: 'Stellar Jade',
+          Name02: 'Oneiric Shard',
+        },
         Gacha: {
           Name: 'Wrap',
+          Ticket01: 'Star Rail Pass',
+          Ticket02: 'Star Rail Special Pass',
+          Category: {
+            Beginner: {
+              Badge: 'Starter Warp',
+              Title: 'Departure Warp',
+            },
+            Permanent: {
+              Badge: 'Regular Warp',
+              Title: 'Stellar Warp',
+            },
+            Character: 'Character Event Wrap',
+            Weapon: 'Light Cone Event Warp',
+            Aggregated: 'Aggregated',
+          },
         },
         DataFolder: {
           Example: 'X:/Star Rail/Game/StarRail_Data',
@@ -28,29 +78,45 @@ export default {
       },
       ZenlessZoneZero: {
         Name: 'Zenless Zone Zero',
-        Player: 'Proxy',
-        Currency: 'Polychrome',
+        Player: {
+          Name: 'Proxy',
+          Girl: 'Belle',
+          Boy: 'Wise',
+        },
+        Currency: {
+          Name01: 'Polychrome',
+          Name02: 'Monochrome',
+        },
         Gacha: {
           Name: 'Signal Search',
+          Ticket01: 'Master Tape',
+          Ticket02: 'Encrypted Master Tape',
+          Ticket03: 'Boopon',
+          Category: {
+            Permanent: {
+              Badge: 'Stable Channel',
+              Title: 'Star-Studded Cast',
+            },
+            Character: 'Exclusive Channel',
+            Weapon: 'W-Engine Channel',
+            Bangboo: {
+              Badge: 'Bangboo Channel',
+              Title: 'An Outstanding Partner',
+            },
+            Aggregated: 'Aggregated',
+          },
         },
         DataFolder: {
           Example: 'X:/ZenlessZoneZero Game/ZenlessZoneZero_Data',
         },
       },
     },
-    Components: {
-      UI: {
-        Navbar: {
-          TabList: {
-            '/': 'Homepage',
-            '/accounts': 'Accounts',
-            '/settings': 'Settings',
-            '/gacha/GenshinImpact': '$t(Business.GenshinImpact.Name)',
-            '/gacha/HonkaiStarRail': '$t(Business.HonkaiStarRail.Name)',
-            '/gacha/ZenlessZoneZero': '$t(Business.ZenlessZoneZero.Name)',
-          },
-        },
-      },
+    Routes: {
+      '/': 'Homepage',
+      '/Settings': 'Settings',
+      '/Gacha/GenshinImpact': '$t(Business.GenshinImpact.Name)',
+      '/Gacha/HonkaiStarRail': '$t(Business.HonkaiStarRail.Name)',
+      '/Gacha/ZenlessZoneZero': '$t(Business.ZenlessZoneZero.Name)',
     },
     Pages: {
       Gacha: {
@@ -58,12 +124,42 @@ export default {
           GachaItem: {
             Limited: 'Limited',
           },
+          Toolbar: {
+            Account: {
+              Title: 'Account',
+              Available: 'Available',
+              NoAvailable: 'No account',
+              AddNewAccount: 'Add new account',
+            },
+            Url: {
+              Title: '$t(Business.{{keyofBusinesses}}.Gacha.Name) URL',
+              Deadline: '(Valid with {{deadline}})',
+              Expired: '(Has expired)',
+              Input: {
+                Placeholder: '$t(Business.{{keyofBusinesses}}.Gacha.Name) URL',
+              },
+              CopyBtn: 'Copy',
+              UpdateBtn: 'Update',
+            },
+            Tabs: {
+              Title: 'Tabs',
+              Overview: 'Overview',
+              Analysis: 'Analysis',
+              Chart: 'Chart',
+            },
+            Convert: {
+              Import: {
+                Title: 'Import',
+              },
+              Export: {
+                Title: 'Export',
+              },
+            },
+          },
           UpsertAccountForm: {
             CancelBtn: 'Cancel',
             SubmitBtn: 'Confirm',
             Valid: 'It\'s valid.',
-            SuccessAdded: 'Account successfully Added: {{uid}}',
-            SuccessEdited: 'Account successfully Edited: {{uid}}',
             Uid: {
               Label: 'UID',
               Placeholder: 'UID for in-game account',
@@ -73,22 +169,60 @@ export default {
             },
             DisplayName: {
               Label: 'Display Name',
-              Placeholder: 'Display name of the account (for identification only)',
+              Placeholder: 'Display name (Optional, for identification purposes only)',
               Length: 'Maximum character length limit exceeded.',
             },
             DataFolder: {
               Label: 'Data Folder',
-              Placeholder: 'Full path to the game data folder. \nFor Example: "$t(Business.{{business}}.DataFolder.Example)"',
+              Placeholder: 'Full path to the game data folder. \nFor Example: "$t(Business.{{keyofBusinesses}}.DataFolder.Example)"',
               Required: 'Please set the game data folder.',
               AutoFindBtn: 'Auto Find',
               ManualFindBtn: 'Manual Choice',
-              ManualFindTitle: 'Please choice the game data directory Manually:',
+              ManualFindTitle: 'Please choice the game data folder for $t(Business.{{keyofBusinesses}}.Name)',
               EmptyFind: 'A valid game data folder was not found. Please check that the game is installed and running.',
             },
           },
           UpsertAccountDialog: {
-            AddTitle: 'Add new Account: $t(Business.{{business}}.Name)',
-            EditTitle: 'Edit Account: $t(Business.{{business}}.Name)',
+            AddTitle: 'Add new account: "$t(Business.{{keyofBusinesses}}.Name)"',
+            AddSuccess: 'Successfully added new account: {{uid}}',
+            EditTitle: 'Edit account: "$t(Business.{{keyofBusinesses}}.Name)"',
+            EditSuccess: 'Successfully edited account: {{uid}}',
+          },
+          Clientarea: {
+            Overview: {
+              GridCard: {
+                Labels: {
+                  Total_zero: 'No pulls recorded yet',
+                  Total_one: '{{count}} pull in total',
+                  Total_other: '{{count, number}} pulls in total',
+                  GoldenSum_zero: 'No gold pulled yet',
+                  GoldenSum_other: 'Pulled {{count, number}} gold',
+                  NextPity_zero: 'No pulls into pity yet',
+                  NextPity_one: '{{count}} pull into pity',
+                  NextPity_other: '{{count}} pulls into pity',
+                  Beginner: 'Beginner: {{name}}',
+                  Average: 'Average rate per gold: {{count}}',
+                  Percentage: 'Gold rate: {{count}}%',
+                  LimitedAverage: 'Average limited gold: {{count}}',
+                  LimitedPercentage: 'Limited gold rate: {{count}}%',
+                  LastGolden: 'Last gold: {{name}} ({{usedPity}})',
+                  LastGoldenNone: 'Last gold: None',
+                },
+              },
+              LastUpdated: {
+                Title: 'Latest update date of $t(Business.{{keyofBusinesses}}.Gacha.Name) records: ',
+              },
+              Tooltips: {
+                Fragment1: {
+                  Token1: ' Total $t(Business.{{keyofBusinesses}}.Gacha.Name) ',
+                  Token2: '{{total, number}}',
+                  Token3: ' times, Total value: ',
+                  Token4: '{{value, number}}',
+                },
+                Fragment2: ' $t(Business.{{keyofBusinesses}}.Gacha.Name) records date coverage: ',
+                Fragment3: ' Due to official settings, the latest data is subject to a delay of approximately one hour. During peak periods for new pools, this delay may be extended. For precise timing, please refer to the in-game data.',
+              },
+            },
           },
         },
       },

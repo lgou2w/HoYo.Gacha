@@ -129,50 +129,18 @@ pub const BIZ_ZENLESS_ZONE_ZERO_GLOBAL: BizInternals = biz!(
   "ZenlessZoneZero_Data"
 );
 
-impl BizInternals {
-  pub const GENSHIN_IMPACT_OFFICIAL: &'static Self = &BIZ_GENSHIN_IMPACT_OFFICIAL;
-  pub const GENSHIN_IMPACT_GLOBAL: &'static Self = &BIZ_GENSHIN_IMPACT_GLOBAL;
-  pub const HONKAI_STAR_RAIL_OFFICIAL: &'static Self = &BIZ_HONKAI_STAR_RAIL_OFFICIAL;
-  pub const HONKAI_STAR_RAIL_GLOBAL: &'static Self = &BIZ_HONKAI_STAR_RAIL_GLOBAL;
-  pub const ZENLESS_ZONE_ZERO_OFFICIAL: &'static Self = &BIZ_ZENLESS_ZONE_ZERO_OFFICIAL;
-  pub const ZENLESS_ZONE_ZERO_GLOBAL: &'static Self = &BIZ_ZENLESS_ZONE_ZERO_GLOBAL;
-
-  #[inline]
-  pub fn join_executable_file(&self, folder: impl AsRef<Path>) -> PathBuf {
-    let mut executable = folder.as_ref().join(self.executable_name);
-    executable.set_extension(env::consts::EXE_EXTENSION);
-    executable
-  }
-}
-
 static BIZ_INTERNALS: LazyLock<HashMap<(Business, BusinessRegion), &'static BizInternals>> =
   LazyLock::new(|| {
     use Business::*;
     use BusinessRegion::*;
-
-    let mut m = HashMap::with_capacity(6);
-    m.insert(
-      (GenshinImpact, Official),
-      BizInternals::GENSHIN_IMPACT_OFFICIAL,
-    );
-    m.insert((GenshinImpact, Global), BizInternals::GENSHIN_IMPACT_GLOBAL);
-    m.insert(
-      (HonkaiStarRail, Official),
-      BizInternals::HONKAI_STAR_RAIL_OFFICIAL,
-    );
-    m.insert(
-      (HonkaiStarRail, Global),
-      BizInternals::HONKAI_STAR_RAIL_GLOBAL,
-    );
-    m.insert(
-      (ZenlessZoneZero, Official),
-      BizInternals::ZENLESS_ZONE_ZERO_OFFICIAL,
-    );
-    m.insert(
-      (ZenlessZoneZero, Global),
-      BizInternals::ZENLESS_ZONE_ZERO_GLOBAL,
-    );
-    m
+    HashMap::from_iter([
+      ((GenshinImpact, Official), &BIZ_GENSHIN_IMPACT_OFFICIAL),
+      ((GenshinImpact, Global), &BIZ_GENSHIN_IMPACT_GLOBAL),
+      ((HonkaiStarRail, Official), &BIZ_HONKAI_STAR_RAIL_OFFICIAL),
+      ((HonkaiStarRail, Global), &BIZ_HONKAI_STAR_RAIL_GLOBAL),
+      ((ZenlessZoneZero, Official), &BIZ_ZENLESS_ZONE_ZERO_OFFICIAL),
+      ((ZenlessZoneZero, Global), &BIZ_ZENLESS_ZONE_ZERO_GLOBAL),
+    ])
   });
 
 impl BizInternals {
@@ -184,5 +152,12 @@ impl BizInternals {
 
   pub fn is_official(&self) -> bool {
     matches!(self.region, BusinessRegion::Official)
+  }
+
+  #[inline]
+  pub fn join_executable_file(&self, folder: impl AsRef<Path>) -> PathBuf {
+    let mut executable = folder.as_ref().join(self.executable_name);
+    executable.set_extension(env::consts::EXE_EXTENSION);
+    executable
   }
 }

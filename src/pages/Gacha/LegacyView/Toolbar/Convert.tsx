@@ -1,7 +1,9 @@
 import React from 'react'
-import { Button, Label, makeStyles, tokens } from '@fluentui/react-components'
+import { Caption1, makeStyles, tokens } from '@fluentui/react-components'
 import { ArrowDownloadRegular, ArrowUploadRegular } from '@fluentui/react-icons'
 import { importGachaRecords } from '@/api/commands/business'
+import Locale from '@/components/Locale'
+import Button from '@/components/UI/Button'
 
 const useStyles = makeStyles({
   root: {
@@ -13,11 +15,12 @@ const useStyles = makeStyles({
     display: 'flex',
     flexDirection: 'column',
     rowGap: tokens.spacingVerticalXS,
+    alignItems: 'center',
   },
 })
 
 export default function GachaLegacyViewToolbarConvert () {
-  const classes = useStyles()
+  const styles = useStyles()
 
   // FIXME: TEST CODE
   const importData = () => {
@@ -35,9 +38,12 @@ export default function GachaLegacyViewToolbarConvert () {
   }
 
   return (
-    <div className={classes.root}>
-      <div className={classes.content}>
-        <Label size="small">Import</Label>
+    <div className={styles.root}>
+      <div className={styles.content}>
+        <Locale
+          component={Caption1}
+          mapping={['Pages.Gacha.LegacyView.Toolbar.Convert.Import.Title']}
+        />
         <Button
           icon={<ArrowDownloadRegular />}
           appearance="subtle"
@@ -46,8 +52,11 @@ export default function GachaLegacyViewToolbarConvert () {
           onClick={importData}
         />
       </div>
-      <div className={classes.content}>
-        <Label size="small">Export</Label>
+      <div className={styles.content}>
+        <Locale
+          component={Caption1}
+          mapping={['Pages.Gacha.LegacyView.Toolbar.Convert.Export.Title']}
+        />
         <Button
           icon={<ArrowUploadRegular />}
           appearance="subtle"

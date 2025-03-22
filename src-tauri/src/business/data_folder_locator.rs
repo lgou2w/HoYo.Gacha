@@ -3,10 +3,11 @@ use std::num::NonZeroIsize;
 use std::path::PathBuf;
 
 use async_trait::async_trait;
+use cfg_if::cfg_if;
 use serde::{Deserialize, Serialize};
 use tokio::fs::File as TokioFile;
 use tokio::io::{AsyncBufReadExt, BufReader as TokioBufReader};
-use tracing::{info, warn, Span};
+use tracing::{Span, info, warn};
 
 use crate::bootstrap::internals;
 use crate::consts;
@@ -31,7 +32,7 @@ declare_error_kinds! {
       })
     },
 
-    #[error("Data folder vacant")]
+    #[error("Data folder is vacant")]
     Vacant,
   }
 }
@@ -54,7 +55,7 @@ pub trait DataFolderLocator {
 
 // region: Unity log
 
-#[derive(Debug)]
+#[derive(Debug, Deserialize)]
 pub struct UnityLogDataFolderLocator;
 
 #[async_trait]
@@ -149,8 +150,10 @@ impl DataFolderLocator for UnityLogDataFolderLocator {
 
 // region: Manual
 
-#[derive(Debug)]
-pub struct ManualDataFolderLocator;
+#[derive(Debug, Deserialize)]
+pub struct ManualDataFolderLocator {
+  pub title: String,
+}
 
 #[async_trait]
 impl DataFolderLocator for ManualDataFolderLocator {
@@ -163,22 +166,9 @@ impl DataFolderLocator for ManualDataFolderLocator {
     info!("Manually locate the data folder...");
 
     let biz = BizInternals::mapped(business, region);
-
-    let title = if crate::consts::LOCALE.is_chinese {
-      format!(
-        "请选择 {} 的游戏数据目录：{}",
-        biz.display_name, biz.data_folder_name
-      )
-    } else {
-      format!(
-        "Please select the game data folder for {}: {}",
-        biz.display_name, biz.data_folder_name
-      )
-    };
-
     let mut rfd = rfd::AsyncFileDialog::new()
       .set_directory(&consts::PLATFORM.user_home)
-      .set_title(title);
+      .set_title(format!("{}: {}", &self.title, biz.data_folder_name));
 
     #[cfg(windows)]
     {
@@ -257,41 +247,51 @@ impl DataFolderLocator for ManualDataFolderLocator {
 
 // region: Registry
 
-#[cfg(windows)]
-#[derive(Debug)]
-pub struct RegistryDataFolderLocator;
+cfg_if! {if #[cfg(windows)] {
+  #[derive(Debug, Deserialize)]
+  pub struct RegistryDataFolderLocator;
 
-#[cfg(windows)]
-#[async_trait]
-impl DataFolderLocator for RegistryDataFolderLocator {
-  #[tracing::instrument]
-  async fn locate_data_folder(
-    &self,
-    business: Business,
-    region: BusinessRegion,
-  ) -> Result<DataFolder, DataFolderError> {
-    // TODO: Locating data folder in the Registry
-    unimplemented!()
+  #[async_trait]
+  impl DataFolderLocator for RegistryDataFolderLocator {
+    #[tracing::instrument]
+    async fn locate_data_folder(
+      &self,
+      business: Business,
+      region: BusinessRegion,
+    ) -> Result<DataFolder, DataFolderError> {
+      // TODO: Locating data folder in the Registry
+      unimplemented!()
+    }
   }
-}
+}}
 
 // endreigon
 
 #[derive(Debug, Deserialize)]
 pub enum DataFolderLocatorFactory {
-  UnityLog,
-  Manual,
+  UnityLog(UnityLogDataFolderLocator),
+  Manual(ManualDataFolderLocator),
   #[cfg(windows)]
-  Registry,
+  Registry(RegistryDataFolderLocator),
 }
 
-impl From<DataFolderLocatorFactory> for &dyn DataFolderLocator {
-  fn from(value: DataFolderLocatorFactory) -> Self {
-    match value {
-      DataFolderLocatorFactory::UnityLog => &UnityLogDataFolderLocator,
-      DataFolderLocatorFactory::Manual => &ManualDataFolderLocator,
-      #[cfg(windows)]
-      DataFolderLocatorFactory::Registry => &RegistryDataFolderLocator,
+#[async_trait]
+impl DataFolderLocator for DataFolderLocatorFactory {
+  async fn locate_data_folder(
+    &self,
+    business: Business,
+    region: BusinessRegion,
+  ) -> Result<DataFolder, DataFolderError> {
+    macro_rules! proxies {
+      ($($t:ident),*) => {
+        match self {
+          $(
+            Self::$t(inner) => inner.locate_data_folder(business, region).await,
+          )*
+        }
+      }
     }
+
+    proxies! { UnityLog, Manual, Registry }
   }
 }

@@ -2,6 +2,7 @@ import path from 'node:path'
 import griffel from '@griffel/vite-plugin'
 import react from '@vitejs/plugin-react-swc'
 import { defineConfig } from 'vite'
+import packageJson from './package.json'
 
 export default defineConfig(({ command }) => {
   const isDev = command === 'serve'
@@ -9,7 +10,7 @@ export default defineConfig(({ command }) => {
 
   const env = process.env
   const isWindows = process.platform === 'win32' || env.TAURI_ENV_PLATFORM === 'windows'
-  const appName = (isDev ? '__DEV__' : '') + env.npm_package_displayName
+  const appName = (isDev ? '__DEV__' : '') + packageJson.displayName
 
   return {
     plugins: [
@@ -42,11 +43,12 @@ export default defineConfig(({ command }) => {
     ],
     define: {
       __APP_NAME__: `"${appName}"`,
-      __APP_VERSION__: `"${env.npm_package_version}"`,
-      __APP_DESCRIPTION__: `"${env.npm_package_description}"`,
-      __APP_AUTHOR__: `"${env.npm_package_author}"`,
-      __APP_HOMEPAGE__: `"${env.npm_package_homepage}"`,
-      __APP_REPOSITORY__: `"${env.npm_package_repository}"`,
+      __APP_VERSION__: `"${packageJson.version}"`,
+      __APP_DESCRIPTION__: `"${packageJson.description}"`,
+      __APP_AUTHOR__: `"${packageJson.author}"`,
+      __APP_HOMEPAGE__: `"${packageJson.homepage}"`,
+      __APP_REPOSITORY__: `"${packageJson.repository}"`,
+      __APP_ISSUES__: `"${packageJson.bugs}"`,
     },
     resolve: {
       extensions: ['.js', '.jsx', '.ts', '.tsx'],

@@ -1,7 +1,8 @@
 import React from 'react'
-import { Button, Caption1, Caption1Strong, Caption2, Image, buttonClassNames, makeStyles, mergeClasses, tokens } from '@fluentui/react-components'
+import { Caption1, Caption1Strong, Caption2, Image, makeStyles, mergeClasses, tokens } from '@fluentui/react-components'
 import { ChatBubblesQuestionFilled, HomeFilled } from '@fluentui/react-icons'
-import Locale from '@/components/UI/Locale'
+import Locale from '@/components/Locale'
+import Button from '@/components/UI/Button'
 
 const useStyles = makeStyles({
   root: { alignSelf: 'flex-start' },
@@ -28,11 +29,6 @@ const useStyles = makeStyles({
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
-    [`& .${buttonClassNames.icon}`]: {
-      fontSize: tokens.fontSizeBase500,
-      width: tokens.fontSizeBase500,
-      height: tokens.fontSizeBase500,
-    },
   },
   copyright: {
     display: 'flex',
@@ -40,35 +36,38 @@ const useStyles = makeStyles({
 })
 
 export default function SettingsHero (props: React.JSX.IntrinsicElements['div']) {
+  const styles = useStyles()
   const { className, ...rest } = props
-  const classes = useStyles()
+
   return (
-    <div className={mergeClasses(classes.root, className)} {...rest}>
-      <div className={classes.hero}>
-        <div className={classes.brand}>
-          <Image src="/Logo.png" />
+    <div className={mergeClasses(styles.root, className)} {...rest}>
+      <div className={styles.hero}>
+        <div className={styles.brand}>
+          <Image src="/Logo.webp" />
           <Caption1Strong align="center">{__APP_NAME__}</Caption1Strong>
           <Caption2 align="center">v{__APP_VERSION__}</Caption2>
         </div>
-        <div className={classes.actions}>
+        <div className={styles.actions}>
           <Button
+            as="a"
             appearance="transparent"
             icon={<HomeFilled />}
-            as="a"
-            href="https://hoyo-gacha.lgou2w.com"
+            href={__APP_HOMEPAGE__}
             target="_blank"
           >
             <Locale mapping={['Pages.Settings.Hero.OfficialBtn']} />
           </Button>
           <Button
+            as="a"
             appearance="transparent"
             icon={<ChatBubblesQuestionFilled />}
-            as="a"
-            href="https://github.com/lgou2w/HoYo.Gacha/issues"
+            href={__APP_ISSUES__}
             target="_blank"
-          ><Locale mapping={['Pages.Settings.Hero.FeedbackBtn']} /></Button>
+          >
+            <Locale mapping={['Pages.Settings.Hero.FeedbackBtn']} />
+          </Button>
         </div>
-        <div className={classes.copyright}>
+        <div className={styles.copyright}>
           <Caption1>
             License MIT OR Apache-2.0
             <br/>

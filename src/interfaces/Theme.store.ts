@@ -19,8 +19,8 @@ export class LocalStorageThemeStore implements ThemeStore {
     let parsed: Partial<ThemeData>
     try {
       parsed = JSON.parse(dirty)
-    } catch (e) {
-      console.error(`Invalid localStorage theme data: ${dirty}`, e)
+    } catch (error) {
+      console.error(`Invalid localStorage theme data: ${dirty}`, error)
       window.localStorage.removeItem(KEY)
       return data
     }

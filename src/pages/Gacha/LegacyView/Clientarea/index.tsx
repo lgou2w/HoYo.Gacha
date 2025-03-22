@@ -1,5 +1,6 @@
-import React, { ComponentType, LazyExoticComponent, Suspense, createElement, lazy } from 'react'
+import React, { ComponentType, LazyExoticComponent, Suspense, lazy, useMemo } from 'react'
 import { makeStyles, mergeClasses } from '@fluentui/react-components'
+import Spinner from '@/components/UI/Spinner'
 import { Tabs } from '@/pages/Gacha/LegacyView/declares'
 
 const useStyles = makeStyles({
@@ -21,12 +22,14 @@ type Props = Omit<React.JSX.IntrinsicElements['div'], 'children'> & {
 }
 
 export default function GachaLegacyViewClientarea (props: Props) {
+  const styles = useStyles()
   const { className, tab, ...rest } = props
-  const classes = useStyles()
+  const Area = useMemo(() => Areas[tab], [tab])
+
   return (
-    <div className={mergeClasses(classes.root, className)} {...rest}>
-      <Suspense fallback="Loading...">
-        {createElement(Areas[tab])}
+    <div className={mergeClasses(styles.root, className)} {...rest}>
+      <Suspense fallback={<Spinner />}>
+        <Area />
       </Suspense>
     </div>
   )

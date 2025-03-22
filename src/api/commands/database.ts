@@ -65,9 +65,6 @@ export const createAccount = declareCommand<CreateAccountArgs, Account>('databas
 export type UpdateAccountDataFolderByBusinessAndUidArgs = Pick<Account, 'business' | 'uid' | 'dataFolder'>
 export const updateAccountDataFolderByBusinessAndUid = declareCommand<UpdateAccountDataFolderByBusinessAndUidArgs, Account | null>('database_update_account_data_folder_by_business_and_uid')
 
-export type UpdateAccountGachaUrlByBusinessAndUidArgs = Pick<Account, 'business' | 'uid' | 'gachaUrl'>
-export const updateAccountGachaUrlByBusinessAndUid = declareCommand<UpdateAccountGachaUrlByBusinessAndUidArgs, Account | null>('database_update_account_gacha_url_by_business_and_uid')
-
 export type UpdateAccountPropertiesByBusinessAndUidArgs = Pick<Account, 'business' | 'uid' | 'properties'>
 export const updateAccountPropertiesByBusinessAndUid = declareCommand<UpdateAccountPropertiesByBusinessAndUidArgs, Account | null>('database_update_account_properties_by_business_and_uid')
 

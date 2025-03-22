@@ -1,15 +1,16 @@
 import React, { ReactNode } from 'react'
 import { UseControllerProps, UseControllerReturn, useController } from 'react-hook-form'
-import { useTranslation } from 'react-i18next'
-import { Field, Input, Textarea } from '@fluentui/react-components'
-import Locale from '@/components/UI/Locale'
-import { LocaleProps, LocaleTFn } from '@/components/UI/Locale/declares'
+import Locale, { LocaleProps, UseI18nResponse } from '@/components/Locale'
+import Field from '@/components/UI/Field'
+import Input from '@/components/UI/Input'
+import Textarea from '@/components/UI/Textarea'
+import useI18n from '@/hooks/useI18n'
 import { UpsertAccountFormData } from './declares'
 
 interface Props extends UseControllerProps<UpsertAccountFormData> {
   component: typeof Input | typeof Textarea
   labelMapping: LocaleProps['mapping']
-  placeholderMapping: Parameters<LocaleTFn>
+  placeholderMapping: Parameters<UseI18nResponse['t']>
   required?: boolean
   readOnly?: boolean
 
@@ -22,7 +23,7 @@ interface Props extends UseControllerProps<UpsertAccountFormData> {
 }
 
 export default function UpsertAccountFormField (props: Props) {
-  const { t } = useTranslation()
+  const i18n = useI18n()
   const {
     component: Component,
     labelMapping,
@@ -74,7 +75,7 @@ export default function UpsertAccountFormField (props: Props) {
       <Component
         autoComplete="off"
         appearance="filled-darker"
-        placeholder={t(...placeholderMapping)}
+        placeholder={i18n.t(...placeholderMapping)}
         required={required}
         readOnly={readOnly}
         disabled={disabled || formState.isSubmitting}

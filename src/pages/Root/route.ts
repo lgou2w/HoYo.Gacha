@@ -4,7 +4,7 @@ import Root from '.'
 
 const themeStore = new DatabaseThemeStore()
 
-const rootRoute = createRootRoute({
+const RootRoute = createRootRoute({
   shouldReload: false,
   pendingMinMs: 0,
   async loader () {
@@ -17,4 +17,4 @@ const rootRoute = createRootRoute({
   component: Root,
 })
 
-export default rootRoute
+export default RootRoute

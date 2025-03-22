@@ -7,9 +7,9 @@ const useStyles = makeStyles({
 })
 
 export default function GachaPageView () {
-  const classes = useStyles()
+  const styles = useStyles()
   return (
-    <div className={classes.root}>
+    <div className={styles.root}>
       <GachaLegacyView />
     </div>
   )

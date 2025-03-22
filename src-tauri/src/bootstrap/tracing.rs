@@ -2,10 +2,10 @@ use tracing::info;
 use tracing::level_filters::LevelFilter;
 use tracing_appender::non_blocking::WorkerGuard;
 use tracing_appender::rolling::RollingFileAppender;
+use tracing_subscriber::EnvFilter;
 use tracing_subscriber::fmt::time::LocalTime;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
-use tracing_subscriber::EnvFilter;
 
 use super::internals;
 use crate::consts;
@@ -71,7 +71,7 @@ impl Tracing {
 
       tracing_subscriber::registry()
         .with(filter)
-        .with(fmt! { false, non_blocking })
+        .with(fmt! { false, non_blocking }.pretty())
         .with(fmt! { true, std::io::stdout }.pretty())
         .init();
 

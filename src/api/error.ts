@@ -21,3 +21,15 @@ export function isDetailedError (error: unknown): error is DetailedError<string>
     ('name' in error && typeof error.name === 'string') &&
     ('message' in error && typeof error.message === 'string')
 }
+
+export function extractErrorMessage (error: unknown): string {
+  if (error instanceof Error || isDetailedError(error)) {
+    return error.message
+  }
+
+  if (error && typeof error === 'object' && 'message' in error) {
+    return String(error.message)
+  } else {
+    return String(error)
+  }
+}

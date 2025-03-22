@@ -1,21 +1,20 @@
 use std::mem::{self, MaybeUninit};
 
 use tauri::{Theme, WebviewWindow};
-use webview2_com::Microsoft::Web::WebView2::Win32::{ICoreWebView2_13, ICoreWebView2_2};
 use webview2_com::Microsoft::Web::WebView2::Win32::{
   COREWEBVIEW2_PREFERRED_COLOR_SCHEME_DARK, COREWEBVIEW2_PREFERRED_COLOR_SCHEME_LIGHT,
 };
-use windows::core::Interface;
-use windows::core::{w, PWSTR};
-use windows::Win32::Foundation::{BOOL, FALSE, HANDLE, TRUE};
+use webview2_com::Microsoft::Web::WebView2::Win32::{ICoreWebView2_2, ICoreWebView2_13};
+use windows::Win32::Foundation::{FALSE, HANDLE, TRUE};
 use windows::Win32::Graphics::Dwm::{
-  DwmExtendFrameIntoClientArea, DwmSetWindowAttribute, DWMSBT_MAINWINDOW,
-  DWMWA_SYSTEMBACKDROP_TYPE, DWMWA_USE_IMMERSIVE_DARK_MODE, DWMWINDOWATTRIBUTE,
-  DWM_SYSTEMBACKDROP_TYPE,
+  DWM_SYSTEMBACKDROP_TYPE, DWMSBT_MAINWINDOW, DWMWA_SYSTEMBACKDROP_TYPE,
+  DWMWA_USE_IMMERSIVE_DARK_MODE, DWMWINDOWATTRIBUTE, DwmExtendFrameIntoClientArea,
+  DwmSetWindowAttribute,
 };
-use windows::Win32::System::Console::{AttachConsole, ATTACH_PARENT_PROCESS};
+use windows::Win32::System::Console::{ATTACH_PARENT_PROCESS, AttachConsole};
 use windows::Win32::UI::Controls::MARGINS;
 use windows::Win32::UI::WindowsAndMessaging::SetPropW;
+use windows::core::{BOOL, Interface, PWSTR, w};
 
 use crate::consts;
 
@@ -92,7 +91,7 @@ pub fn set_window_theme(window: &WebviewWindow, color_scheme: Theme) {
       let _ = SetPropW(
         hwnd,
         w!("UseImmersiveDarkModeColors"),
-        HANDLE(&mut dark as *mut _ as _),
+        Some(HANDLE(&mut dark as *mut _ as _)),
       );
     }
   }

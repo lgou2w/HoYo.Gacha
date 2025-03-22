@@ -20,22 +20,22 @@ const useStyles = makeStyles({
 })
 
 export default function GachaLegacyView () {
-  const classes = useStyles()
+  const styles = useStyles()
   const [{ tab }, produceState] = useImmer({
     tab: Tabs.Overview,
   })
 
   return (
-    <div className={classes.root}>
+    <div className={styles.root}>
       <GachaLegacyViewToolbar
-        className={classes.toolbar}
+        className={styles.toolbar}
         tab={tab}
         onTabChange={(newValue) => produceState((draft) => {
           draft.tab = newValue
         })}
       />
       <GachaLegacyViewClientarea
-        className={classes.clientarea}
+        className={styles.clientarea}
         tab={tab}
       />
     </div>

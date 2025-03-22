@@ -4,14 +4,16 @@ import { Business, BusinessRegion, Businesses, GenshinImpact, HonkaiStarRail, Ze
 //   See: src-tauri/src/models/account.rs
 
 export interface KnownAccountProperties {
-  displayName: string | null
+  displayName?: string | null
+  gachaUrl?: string | null
+  gachaUrlCreationTime?: string | null
+  lastGachaRecordsUpdated?: string | null
 }
 
 export interface Account<T extends Business = Business> {
   business: T
   uid: number
   dataFolder: string
-  gachaUrl: string | null
   properties: KnownAccountProperties & Record<string, unknown> | null
 }
 

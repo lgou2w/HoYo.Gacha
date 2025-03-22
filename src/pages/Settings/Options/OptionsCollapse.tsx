@@ -1,19 +1,13 @@
 import React, { Fragment, ReactElement, ReactNode, useState } from 'react'
-import { Button, buttonClassNames, makeStyles, mergeClasses, tokens } from '@fluentui/react-components'
+import { makeStyles, mergeClasses, tokens } from '@fluentui/react-components'
 import { ChevronDownRegular, ChevronUpRegular } from '@fluentui/react-icons'
 import { Collapse } from '@fluentui/react-motion-components-preview'
+import Button from '@/components/UI/Button'
 import SettingsOptionsItem from './OptionsItem'
 
 const useStyles = makeStyles({
   root: {},
   main: {},
-  collapser: {
-    [`& .${buttonClassNames.icon}`]: {
-      fontSize: tokens.fontSizeBase500,
-      width: tokens.fontSizeBase500,
-      height: tokens.fontSizeBase500,
-    },
-  },
   mainCollapsed: {
     borderBottomLeftRadius: 0,
     borderBottomRightRadius: 0,
@@ -39,14 +33,14 @@ interface Props {
 }
 
 export default function SettingsOptionsCollapse (props: Props) {
+  const styles = useStyles()
   const { icon, title, subtitle, children, initialVisible, actionExt } = props
-  const classes = useStyles()
   const [visible, setVisible] = useState(!!initialVisible)
 
   return (
-    <div className={classes.root}>
+    <div className={styles.root}>
       <SettingsOptionsItem
-        className={mergeClasses(classes.main, visible && classes.mainCollapsed)}
+        className={mergeClasses(styles.main, visible && styles.mainCollapsed)}
         icon={icon}
         title={title}
         subtitle={subtitle}
@@ -54,7 +48,6 @@ export default function SettingsOptionsCollapse (props: Props) {
           <Fragment>
             {actionExt}
             <Button
-              className={classes.collapser}
               appearance="transparent"
               icon={visible ? <ChevronUpRegular /> : <ChevronDownRegular />}
               onClick={() => setVisible(!visible)}
@@ -63,7 +56,7 @@ export default function SettingsOptionsCollapse (props: Props) {
         )}
       />
       <Collapse visible={visible}>
-        <div className={classes.collapse}>
+        <div className={styles.collapse}>
           {children}
         </div>
       </Collapse>

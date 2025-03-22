@@ -18,7 +18,7 @@ use sqlx::{Decode, Encode, Executor, FromRow, Row, Type};
 use tauri::State as TauriState;
 use time::OffsetDateTime;
 use tokio::sync::mpsc;
-use tracing::{info, Span};
+use tracing::{Span, info};
 
 use crate::consts;
 use crate::error::{Error, ErrorDetails};
@@ -126,24 +126,23 @@ pub type DatabaseState<'r> = TauriState<'r, Arc<Database>>;
 const SQL_V1: &str = r"
 BEGIN TRANSACTION;
 
-CREATE TABLE IF NOT EXISTS `hg.kvs` (
+CREATE TABLE IF NOT EXISTS `HG_KVS` (
   `key`        TEXT NOT NULL PRIMARY KEY,
   `val`        TEXT NOT NULL,
   `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE IF NOT EXISTS `hg.accounts` (
+CREATE TABLE IF NOT EXISTS `HG_ACCOUNTS` (
   `business`    INTEGER NOT NULL,
   `uid`         INTEGER NOT NULL,
   `data_folder` TEXT    NOT NULL,
-  `gacha_url`   TEXT,
   `properties`  TEXT,
   PRIMARY KEY (`business`, `uid`)
 );
-CREATE INDEX IF NOT EXISTS `hg.accounts.business_idx`     ON `hg.accounts` (`business`);
-CREATE INDEX IF NOT EXISTS `hg.accounts.uid_idx`          ON `hg.accounts` (`uid`);
+CREATE INDEX IF NOT EXISTS `HG_ACCOUNTS.business_idx` ON `HG_ACCOUNTS` (`business`);
+CREATE INDEX IF NOT EXISTS `HG_ACCOUNTS.uid_idx`      ON `HG_ACCOUNTS` (`uid`);
 
-CREATE TABLE IF NOT EXISTS `hg.gacha_records` (
+CREATE TABLE IF NOT EXISTS `HG_GACHA_RECORDS` (
   `business`   INTEGER NOT NULL,
   `uid`        INTEGER NOT NULL,
   `id`         TEXT    NOT NULL,
@@ -158,11 +157,11 @@ CREATE TABLE IF NOT EXISTS `hg.gacha_records` (
   `item_id`    TEXT,
   PRIMARY KEY (`business`, `uid`, `id`)
 );
-CREATE INDEX IF NOT EXISTS `hg.gacha_records.id_idx`                      ON `hg.gacha_records` (`id`);
-CREATE INDEX IF NOT EXISTS `hg.gacha_records.gacha_type_idx`              ON `hg.gacha_records` (`gacha_type`);
-CREATE INDEX IF NOT EXISTS `hg.gacha_records.rank_type_idx`               ON `hg.gacha_records` (`rank_type`);
-CREATE INDEX IF NOT EXISTS `hg.gacha_records.business_uid_idx`            ON `hg.gacha_records` (`business`, `uid`);
-CREATE INDEX IF NOT EXISTS `hg.gacha_records.business_uid_gacha_type_idx` ON `hg.gacha_records` (`business`, `uid`, `gacha_type`);
+CREATE INDEX IF NOT EXISTS `HG_GACHA_RECORDS.id_idx`                      ON `HG_GACHA_RECORDS` (`id`);
+CREATE INDEX IF NOT EXISTS `HG_GACHA_RECORDS.gacha_type_idx`              ON `HG_GACHA_RECORDS` (`gacha_type`);
+CREATE INDEX IF NOT EXISTS `HG_GACHA_RECORDS.rank_type_idx`               ON `HG_GACHA_RECORDS` (`rank_type`);
+CREATE INDEX IF NOT EXISTS `HG_GACHA_RECORDS.business_uid_idx`            ON `HG_GACHA_RECORDS` (`business`, `uid`);
+CREATE INDEX IF NOT EXISTS `HG_GACHA_RECORDS.business_uid_gacha_type_idx` ON `HG_GACHA_RECORDS` (`business`, `uid`, `gacha_type`);
 
 PRAGMA USER_VERSION = 1;
 COMMIT TRANSACTION;
@@ -274,27 +273,27 @@ macro_rules! declare_questioner_with_handlers {
 declare_questioner_with_handlers! {
   Kv,
 
-  "SELECT * FROM `hg.kvs` WHERE `key` = ?;"
+  "SELECT * FROM `HG_KVS` WHERE `key` = ?;"
     = find_kv { key: String, }: fetch_optional -> Option<Kv>,
 
-  "INSERT INTO `hg.kvs` (`key`, `val`) VALUES (?, ?) RETURNING *;"
+  "INSERT INTO `HG_KVS` (`key`, `val`) VALUES (?, ?) RETURNING *;"
     = create_kv { key: String, val: String, }: fetch_one -> Kv,
 
-  "UPDATE `hg.kvs` SET `val` = ?, `updated_at` = ? WHERE `key` = ? RETURNING *;"
+  "UPDATE `HG_KVS` SET `val` = ?, `updated_at` = ? WHERE `key` = ? RETURNING *;"
     = update_kv {
       val: String,
       updated_at: Option<OffsetDateTime>,
       key: String,
     }: fetch_optional -> Option<Kv>,
 
-  "INSERT OR REPLACE INTO `hg.kvs` (`key`, `val`, `updated_at`) VALUES (?, ?, ?) RETURNING *;"
+  "INSERT OR REPLACE INTO `HG_KVS` (`key`, `val`, `updated_at`) VALUES (?, ?, ?) RETURNING *;"
     = upsert_kv {
       key: String,
       val: String,
       updated_at: Option<OffsetDateTime>,
     }: fetch_one -> Kv,
 
-  "DELETE FROM `hg.kvs` WHERE `key` = ? RETURNING *;"
+  "DELETE FROM `HG_KVS` WHERE `key` = ? RETURNING *;"
     = delete_kv { key: String, }: fetch_optional -> Option<Kv>,
 }
 
@@ -315,18 +314,18 @@ impl<'r> FromRow<'r, SqliteRow> for Kv {
 declare_questioner_with_handlers! {
   Account,
 
-  "SELECT * FROM `hg.accounts` WHERE `business` = ?;"
+  "SELECT * FROM `HG_ACCOUNTS` WHERE `business` = ?;"
     = find_accounts_by_business {
         business: Business,
       }: fetch_all -> Vec<Account>,
 
-  "SELECT * FROM `hg.accounts` WHERE `business` = ? AND `uid` = ?;"
+  "SELECT * FROM `HG_ACCOUNTS` WHERE `business` = ? AND `uid` = ?;"
     = find_account_by_business_and_uid {
         business: Business,
         uid: u32,
       }: fetch_optional -> Option<Account>,
 
-  "INSERT INTO `hg.accounts` (`business`, `uid`, `data_folder`, `properties`) VALUES (?, ?, ?, ?) RETURNING *;"
+  "INSERT INTO `HG_ACCOUNTS` (`business`, `uid`, `data_folder`, `properties`) VALUES (?, ?, ?, ?) RETURNING *;"
     = create_account {
         business: Business,
         uid: u32,
@@ -334,27 +333,21 @@ declare_questioner_with_handlers! {
         properties: Option<AccountProperties>,
       }: fetch_one -> Account,
 
-  "UPDATE `hg.accounts` SET `data_folder` = ? WHERE `business` = ? AND `uid` = ? RETURNING *;"
+  "UPDATE `HG_ACCOUNTS` SET `data_folder` = ? WHERE `business` = ? AND `uid` = ? RETURNING *;"
     = update_account_data_folder_by_business_and_uid {
         data_folder: String,
         business: Business,
         uid: u32,
       }: fetch_optional -> Option<Account>,
 
-  "UPDATE `hg.accounts` SET `gacha_url` = ? WHERE `business` = ? AND `uid` = ? RETURNING *;"
-    = update_account_gacha_url_by_business_and_uid {
-        gacha_url: Option<String>,
+  "UPDATE `HG_ACCOUNTS` SET `properties` = ? WHERE `business` = ? AND `uid` = ? RETURNING *;"
+    = update_account_properties_by_business_and_uid {
+        properties: Option<AccountProperties>,
         business: Business,
         uid: u32,
       }: fetch_optional -> Option<Account>,
 
-  "UPDATE `hg.accounts` SET `properties` = ? WHERE `business` = ? AND `uid` = ? RETURNING *;"
-    = update_account_properties_by_business_and_uid {
-        properties: Option<AccountProperties>,
-        uid: u32,
-      }: fetch_optional -> Option<Account>,
-
-  "DELETE FROM `hg.accounts` WHERE `business` = ? AND `uid` = ? RETURNING *;"
+  "DELETE FROM `HG_ACCOUNTS` WHERE `business` = ? AND `uid` = ? RETURNING *;"
     = delete_account_by_business_and_uid {
         business: Business,
         uid: u32,
@@ -367,7 +360,6 @@ impl<'r> FromRow<'r, SqliteRow> for Account {
       business: row.try_get("business")?,
       uid: row.try_get("uid")?,
       data_folder: row.try_get("data_folder")?,
-      gacha_url: row.try_get("gacha_url")?,
       properties: row.try_get("properties")?,
     })
   }
@@ -433,18 +425,18 @@ impl Decode<'_, Sqlite> for AccountProperties {
 declare_questioner_with_handlers! {
   GachaRecord,
 
-  "SELECT * FROM `hg.gacha_records` WHERE `uid` = ? ORDER BY `id` ASC;"
+  "SELECT * FROM `HG_GACHA_RECORDS` WHERE `uid` = ? ORDER BY `id` ASC;"
     = find_gacha_records_by_uid {
         uid: u32,
       }: fetch_all -> Vec<GachaRecord>,
 
-  "SELECT * FROM `hg.gacha_records` WHERE `business` = ? AND `uid` = ? ORDER BY `id` ASC;"
+  "SELECT * FROM `HG_GACHA_RECORDS` WHERE `business` = ? AND `uid` = ? ORDER BY `id` ASC;"
     = find_gacha_records_by_business_and_uid {
         business: Business,
         uid: u32,
       }: fetch_all -> Vec<GachaRecord>,
 
-  "SELECT * FROM `hg.gacha_records` WHERE `business` = ? AND `uid` = ? AND `gacha_type` = ? ORDER BY `id` ASC;"
+  "SELECT * FROM `HG_GACHA_RECORDS` WHERE `business` = ? AND `uid` = ? AND `gacha_type` = ? ORDER BY `id` ASC;"
     = find_gacha_records_by_business_and_uid_with_gacha_type {
         business: Business,
         uid: u32,
@@ -472,16 +464,16 @@ impl<'r> FromRow<'r, SqliteRow> for GachaRecord {
 }
 
 #[derive(Copy, Clone, Debug, Deserialize)]
-pub enum GachaRecordOnConflict {
+pub enum GachaRecordSaveOnConflict {
   Nothing,
   Update,
 }
 
-impl GachaRecordOnConflict {
+impl GachaRecordSaveOnConflict {
   fn sql(&self) -> &'static str {
     match *self {
       Self::Nothing => {
-        "INSERT INTO `hg.gacha_records` (
+        "INSERT INTO `HG_GACHA_RECORDS` (
           `business`, `uid`, `id`, `gacha_type`, `gacha_id`, `rank_type`,
           `count`, `time`, `lang`, `name`, `item_type`, `item_id`
         ) VALUES (
@@ -490,7 +482,7 @@ impl GachaRecordOnConflict {
         ) ON CONFLICT (`business`, `uid`, `id`) DO NOTHING;"
       }
       Self::Update => {
-        "INSERT INTO `hg.gacha_records` (
+        "INSERT INTO `HG_GACHA_RECORDS` (
           `business`, `uid`, `id`, `gacha_type`, `gacha_id`, `rank_type`,
           `count`, `time`, `lang`, `name`, `item_type`, `item_id`
         ) VALUES (
@@ -516,13 +508,13 @@ pub trait GachaRecordQuestionerAdditions {
   async fn create_gacha_records(
     database: &Database,
     records: Vec<GachaRecord>,
-    on_conflict: GachaRecordOnConflict,
+    save_on_conflict: GachaRecordSaveOnConflict,
     progress_reporter: Option<mpsc::Sender<f32>>,
   ) -> Result<u64, SqlxError> {
     info!("Executing create gacha records database operation...");
     let total = records.len();
     let start = Instant::now();
-    let sql = on_conflict.sql();
+    let sql = save_on_conflict.sql();
 
     let mut txn = database.as_ref().begin().await?;
     let mut changes = 0;
@@ -584,7 +576,7 @@ pub trait GachaRecordQuestionerAdditions {
   ) -> Result<u64, SqlxError> {
     info!("Executing delete gacha records database operation...");
     let start = Instant::now();
-    let changes = sqlx::query("DELETE FROM `hg.gacha_records` WHERE `business` = ? AND `uid` = ?;")
+    let changes = sqlx::query("DELETE FROM `HG_GACHA_RECORDS` WHERE `business` = ? AND `uid` = ?;")
       .bind(business)
       .bind(uid)
       .execute(database.as_ref())
@@ -601,6 +593,34 @@ pub trait GachaRecordQuestionerAdditions {
   }
 
   #[tracing::instrument(skip(database))]
+  async fn delete_gacha_records_by_newer_than_end_id(
+    database: &Database,
+    business: Business,
+    uid: u32,
+    gacha_type: u32,
+    end_id: &str,
+  ) -> Result<u64, SqlxError> {
+    info!("Executing delete gacha records by newer than end_id database operation...");
+    let start = Instant::now();
+    let changes = sqlx::query("DELETE FROM `HG_GACHA_RECORDS` WHERE `business` = ? AND `uid` = ? AND `gacha_type` = ? AND `id` >= ?;")
+      .bind(business)
+      .bind(uid)
+      .bind(gacha_type)
+      .bind(end_id)
+      .execute(database.as_ref())
+      .await?
+      .rows_affected();
+
+    info!(
+      message = "Deletion of gacha records by newer than end_id completed",
+      changes = ?changes,
+      elapsed = ?start.elapsed(),
+    );
+
+    Ok(changes)
+  }
+
+  #[tracing::instrument(skip(database))]
   async fn find_gacha_records_by_businesses_and_uid(
     database: &Database,
     businesses: &HashSet<Business>,
@@ -609,7 +629,7 @@ pub trait GachaRecordQuestionerAdditions {
     info!("Executing find gacha records by businesses and uid database operation...");
     let start = Instant::now();
     let records = sqlx::query_as(
-      "SELECT * FROM `hg.gacha_records` WHERE `business` IN (?) AND `uid` = ? ORDER BY `id` ASC;",
+      "SELECT * FROM `HG_GACHA_RECORDS` WHERE `business` IN (?) AND `uid` = ? ORDER BY `id` ASC;",
     )
     .bind(
       businesses
@@ -654,7 +674,7 @@ pub mod gacha_record_questioner_additions {
   pub async fn database_create_gacha_records(
     database: DatabaseState<'_>,
     records: Vec<GachaRecord>,
-    on_conflict: GachaRecordOnConflict,
+    on_conflict: GachaRecordSaveOnConflict,
   ) -> Result<u64, SqlxError> {
     GachaRecordQuestioner::create_gacha_records(database.as_ref(), records, on_conflict, None).await
   }

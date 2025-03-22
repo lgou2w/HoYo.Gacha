@@ -40,14 +40,19 @@ export interface ThemeData {
   scale: ScaleLevel
 }
 
-export const DefaultThemeData: Readonly<ThemeData> = {
+export const DefaultThemeData = {
   namespace: 'web',
   // If in the absence of a custom color scheme, keep it the same as the back-end setting
   colorScheme: window.matchMedia('(prefers-color-scheme: light)').matches ? Light : Dark,
   scale: 16,
-}
+} as const satisfies ThemeData
 
 export interface ThemeStore {
   load (): ThemeData | Promise<ThemeData>
   save (data: ThemeData): void | Promise<void>
 }
+
+// CSS Properties
+
+export const VAR_BASE_FONT_SIZE = '--base-font-size'
+export const DEFAULT_BASE_FONT_SIZE = `${DefaultThemeData.scale}px` as const

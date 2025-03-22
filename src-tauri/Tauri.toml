@@ -1,6 +1,7 @@
 identifier = "com.lgou2w.hoyo.gacha"
 product-name = "HoYo.Gacha"
-main-binary-name = "HoYo.Gacha"
+# HACK: Binary file cannot use dots, they will be truncated by Tauri.
+main-binary-name = "HoYo_Gacha"
 version = "1.0.0"
 
 [build]

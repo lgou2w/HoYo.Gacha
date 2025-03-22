@@ -1,78 +1,48 @@
 import React from 'react'
-import { makeStyles } from '@fluentui/react-components'
-import { useSuspenseQuery } from '@tanstack/react-query'
-import { selectedAccountQueryOptions } from '@/api/queries/account'
-import { prettizedGachaRecordsQueryOptions } from '@/api/queries/business'
-import useBusiness from '@/hooks/useBusiness'
-import { ReversedBusinesses } from '@/interfaces/Business'
-import { CategorizedMetadataRankings, PrettizedGachaRecords, PrettyCategory } from '@/interfaces/GachaRecord'
-import GachaItem from '@/pages/Gacha/LegacyView/GachaItem'
+import { makeStyles, tokens } from '@fluentui/react-components'
+import { useSelectedAccountSuspenseQueryData } from '@/api/queries/accounts'
+import { usePrettizedGachaRecordsSuspenseQueryData } from '@/api/queries/business'
+import useBusinessContext from '@/hooks/useBusinessContext'
+import GachaLegacyViewClientareaOverviewGrid from './Grid'
+import GachaLegacyViewClientareaOverviewLastUpdated from './LastUpdated'
+import GachaLegacyViewClientareaOverviewTooltips from './Tooltips'
+import { ParentCompositeState } from './declares'
 
 const useStyles = makeStyles({
   root: {
     display: 'flex',
-    flexWrap: 'wrap',
-    gap: '0.5rem',
+    flexDirection: 'column',
+    rowGap: tokens.spacingVerticalS,
   },
 })
 
 export default function GachaLegacyViewClientareaOverview () {
-  const classes = useStyles()
+  const styles = useStyles()
+  const { business, keyofBusinesses } = useBusinessContext()
+  const selectedAccount = useSelectedAccountSuspenseQueryData(keyofBusinesses)
+  const prettized = usePrettizedGachaRecordsSuspenseQueryData(business, selectedAccount?.uid)
 
-  const { business, keyofBusinesses } = useBusiness()
-  const { data: selectedAccount } = useSuspenseQuery(selectedAccountQueryOptions(keyofBusinesses))
-  const { data: prettized } = useSuspenseQuery(prettizedGachaRecordsQueryOptions(business, selectedAccount?.uid ?? null))
-
-  if (!prettized) {
+  if (!selectedAccount) {
     return null
   }
 
-  return (
-    <div className={classes.root}>
-      <CategorizedGachaItemList prettized={prettized} category={PrettyCategory.Character} ranking="golden" />
-      <CategorizedGachaItemList prettized={prettized} category={PrettyCategory.Weapon} ranking="golden" />
-      <CategorizedGachaItemList prettized={prettized} category={PrettyCategory.Permanent} ranking="golden" />
-      {/* <CategorizedGachaItemList prettized={prettized} ranking="golden" /> */}
-    </div>
-  )
-}
+  if (!prettized) {
+    // TODO: Tell the user to fetch or import records
+    return null
+  }
 
-// FIXME: TEST CODE
-const useStyles2 = makeStyles({
-  root: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    gap: '0.5rem',
-  },
-})
-
-interface Props {
-  prettized: PrettizedGachaRecords
-  category?: PrettyCategory
-  ranking: keyof CategorizedMetadataRankings
-}
-
-function CategorizedGachaItemList (props: Props) {
-  const classes = useStyles2()
-  const { prettized, category, ranking } = props
-  const keyofBusinesses = ReversedBusinesses[prettized.business]
-  const values = category
-    ? prettized.categorizeds[category]?.rankings[ranking].values ?? []
-    : prettized.aggregated.rankings[ranking].values
+  const state: ParentCompositeState = {
+    business,
+    keyofBusinesses,
+    selectedAccount,
+    prettized,
+  }
 
   return (
-    <div>
-      <p>{category}</p>
-      <div className={classes.root}>
-        {values.map((record) => (
-          <GachaItem
-            key={record.id}
-            keyofBusinesses={keyofBusinesses}
-            ranking={ranking}
-            record={record}
-          />
-        ))}
-      </div>
+    <div className={styles.root}>
+      <GachaLegacyViewClientareaOverviewLastUpdated {...state} />
+      <GachaLegacyViewClientareaOverviewGrid {...state} />
+      <GachaLegacyViewClientareaOverviewTooltips {...state} />
     </div>
   )
 }

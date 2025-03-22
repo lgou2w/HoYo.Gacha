@@ -1,14 +1,15 @@
 import React from 'react'
-import { Dropdown, Option } from '@fluentui/react-components'
+import { Option } from '@fluentui/react-components'
 import { ColorRegular } from '@fluentui/react-icons'
-import Locale from '@/components/UI/Locale'
-import useTheme from '@/hooks/useTheme'
+import Locale from '@/components/Locale'
+import Dropdown from '@/components/UI/Dropdown'
+import useThemeContext from '@/hooks/useThemeContext'
 import { KnownNamespaces, Namespace } from '@/interfaces/Theme'
 import SettingsOptionsItem from '@/pages/Settings/Options/OptionsItem'
 import capitalize from '@/utilities/capitalize'
 
 export default function SettingsOptionsAppearanceNamespace () {
-  const { namespace, update } = useTheme()
+  const { namespace, update } = useThemeContext()
 
   return (
     <SettingsOptionsItem
@@ -20,6 +21,7 @@ export default function SettingsOptionsAppearanceNamespace () {
           value={capitalize(namespace)}
           defaultSelectedOptions={[namespace]}
           onOptionSelect={(_, data) => update({ namespace: data.optionValue as Namespace })}
+          style={{ minWidth: '10rem' }}
         >
           {KnownNamespaces.map((namespace) => (
             <Option key={namespace} value={namespace}>

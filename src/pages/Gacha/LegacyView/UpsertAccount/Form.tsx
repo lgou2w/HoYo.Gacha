@@ -1,17 +1,26 @@
 import React, { MouseEventHandler, useCallback } from 'react'
 import { SubmitHandler, useForm } from 'react-hook-form'
-import { useTranslation } from 'react-i18next'
-import { Button, Input, Textarea, buttonClassNames, makeStyles, tokens } from '@fluentui/react-components'
+import { buttonClassNames, makeStyles, tokens } from '@fluentui/react-components'
 import { CursorHoverRegular, FolderSearchRegular, PersonTagRegular } from '@fluentui/react-icons'
 import { produce } from 'immer'
-import { DataFolder, LocateDataFolderFactory, isDataFolderError, locateDataFolder } from '@/api/commands/business'
-import { isDetailedError } from '@/api/error'
-import { useCreateAccountMutation, useUpdateAccountDataFolderAndPropertiesMutation } from '@/api/queries/account'
-import Locale from '@/components/UI/Locale'
+import { DataFolder, LocateDataFolderFactory, locateDataFolder } from '@/api/commands/business'
+import { extractErrorMessage } from '@/api/error'
+import { useCreateAccountMutation, useUpdateAccountDataFolderAndPropertiesMutation } from '@/api/queries/accounts'
+import Locale from '@/components/Locale'
+import Button from '@/components/UI/Button'
+import Input from '@/components/UI/Input'
+import Textarea from '@/components/UI/Textarea'
+import useI18n from '@/hooks/useI18n'
 import { Account, detectAccountUidRegion } from '@/interfaces/Account'
 import { Business, KeyofBusinesses } from '@/interfaces/Business'
 import UpsertAccountFormField from './FormField'
 import { DisplayNameMaxLength, UpsertAccountFormData } from './declares'
+
+const LocateDataFolderFactoryTypes = {
+  UnityLog: 'UnityLog',
+  Manual: 'Manual',
+  Registry: 'Registry',
+} as const
 
 const useStyles = makeStyles({
   root: {
@@ -29,17 +38,11 @@ const useStyles = makeStyles({
     flexDirection: 'row',
     columnGap: tokens.spacingHorizontalS,
     [`& .${buttonClassNames.root}`]: {
-      minWidth: '4rem',
-      [`& .${buttonClassNames.icon}`]: {
-        fontSize: tokens.fontSizeBase500,
-        width: tokens.fontSizeBase500,
-        height: tokens.fontSizeBase500,
-      },
-      [`&[data-factory="${LocateDataFolderFactory.UnityLog}"]:not([disabled])`]: {
+      [`&[data-factory="${LocateDataFolderFactoryTypes.UnityLog}"]:not([disabled])`]: {
         color: tokens.colorPaletteBerryForeground1,
         border: `${tokens.strokeWidthThin} solid ${tokens.colorPaletteBerryForeground1}`,
       },
-      [`&[data-factory="${LocateDataFolderFactory.Manual}"]:not([disabled])`]: {
+      [`&[data-factory="${LocateDataFolderFactoryTypes.Manual}"]:not([disabled])`]: {
         color: tokens.colorPaletteGreenForeground1,
         border: `${tokens.strokeWidthThin} solid ${tokens.colorPaletteGreenForeground1}`,
       },
@@ -63,11 +66,11 @@ interface Props {
 }
 
 export default function GachaLegacyViewUpsertAccountForm (props: Props) {
-  const classes = useStyles()
+  const styles = useStyles()
   const { edit, business, keyofBusinesses, accounts, onCancel, onSuccess } = props
 
   const isEditMode = !!edit
-  const { t } = useTranslation()
+  const i18n = useI18n()
   const {
     handleSubmit,
     control,
@@ -91,13 +94,31 @@ export default function GachaLegacyViewUpsertAccountForm (props: Props) {
   })
 
   const handleLocateDataFolder = useCallback<MouseEventHandler>(async (evt) => {
-    const factory = (evt.currentTarget as HTMLButtonElement).dataset?.factory as LocateDataFolderFactory | null
-    if (!factory) return
+    const factoryType = evt.currentTarget.getAttribute('data-factory') as keyof typeof LocateDataFolderFactoryTypes | null
+    if (!factoryType) {
+      console.error('Invalid locate data folder factory type for element:', evt.currentTarget)
+      return
+    }
 
     const region = detectAccountUidRegion(business, getValues('uid'))
     if (!region) {
       trigger('uid', { shouldFocus: true })
       return
+    }
+
+    let factory: LocateDataFolderFactory
+    if (factoryType === LocateDataFolderFactoryTypes.Manual) {
+      // Need to set the title of the file dialog
+      factory = {
+        [factoryType]: {
+          title: i18n.t(
+            'Pages.Gacha.LegacyView.UpsertAccountForm.DataFolder.ManualFindTitle',
+            { keyofBusinesses },
+          ),
+        },
+      }
+    } else {
+      factory = { [factoryType]: null } as LocateDataFolderFactory
     }
 
     let dataFolder: DataFolder<Business>
@@ -107,12 +128,9 @@ export default function GachaLegacyViewUpsertAccountForm (props: Props) {
         region,
         factory,
       })
-    } catch (e) {
-      setError('dataFolder', {
-        message: isDataFolderError(e) || e instanceof Error
-          ? e.message
-          : String(e),
-      })
+    } catch (error) {
+      const message = extractErrorMessage(error)
+      setError('dataFolder', { message }, { shouldFocus: true })
       return
     }
 
@@ -120,7 +138,7 @@ export default function GachaLegacyViewUpsertAccountForm (props: Props) {
       shouldDirty: true,
       shouldValidate: true,
     })
-  }, [business, getValues, setError, setValue, trigger])
+  }, [business, getValues, i18n, keyofBusinesses, setError, setValue, trigger])
 
   const createAccountMutation = useCreateAccountMutation()
   const updateAccountDataFolderAndPropertiesMutation = useUpdateAccountDataFolderAndPropertiesMutation()
@@ -152,12 +170,9 @@ export default function GachaLegacyViewUpsertAccountForm (props: Props) {
       result = !isEditMode
         ? await createAccountMutation.mutateAsync(args)
         : await updateAccountDataFolderAndPropertiesMutation.mutateAsync(args) || edit
-    } catch (e) {
-      setError('uid', {
-        message: isDetailedError(e) || e instanceof Error
-          ? e.message
-          : String(e),
-      })
+    } catch (error) {
+      const message = extractErrorMessage(error)
+      setError('uid', { message }, { shouldFocus: true })
       return
     }
 
@@ -166,7 +181,7 @@ export default function GachaLegacyViewUpsertAccountForm (props: Props) {
 
   return (
     <form
-      className={classes.root}
+      className={styles.root}
       onSubmit={handleSubmit(onSubmit)}
       noValidate
     >
@@ -174,20 +189,17 @@ export default function GachaLegacyViewUpsertAccountForm (props: Props) {
         name="uid"
         control={control}
         rules={{
-          required: {
-            value: true,
-            message: t('Pages.Gacha.LegacyView.UpsertAccountForm.Uid.Required'),
-          },
+          required: i18n.t('Pages.Gacha.LegacyView.UpsertAccountForm.Uid.Required'),
           validate (value) {
             if (isEditMode) return
 
             const uid = value && parseInt(value)
             if (!uid || !detectAccountUidRegion(business, uid)) {
-              return t('Pages.Gacha.LegacyView.UpsertAccountForm.Uid.Pattern')
+              return i18n.t('Pages.Gacha.LegacyView.UpsertAccountForm.Uid.Pattern')
             }
 
             if (accounts.find((v) => v.uid === uid)) {
-              return t('Pages.Gacha.LegacyView.UpsertAccountForm.Uid.AlreadyExists')
+              return i18n.t('Pages.Gacha.LegacyView.UpsertAccountForm.Uid.AlreadyExists')
             }
           },
         }}
@@ -211,7 +223,7 @@ export default function GachaLegacyViewUpsertAccountForm (props: Props) {
         rules={{
           maxLength: {
             value: DisplayNameMaxLength,
-            message: t('Pages.Gacha.LegacyView.UpsertAccountForm.DisplayName.Length'),
+            message: i18n.t('Pages.Gacha.LegacyView.UpsertAccountForm.DisplayName.Length'),
           },
         }}
         component={Input}
@@ -223,58 +235,54 @@ export default function GachaLegacyViewUpsertAccountForm (props: Props) {
           return length ? `${length} / ${DisplayNameMaxLength}` : undefined
         }}
       />
-      <div className={classes.dataFolder}>
+      <div className={styles.dataFolder}>
         <UpsertAccountFormField
           name="dataFolder"
           control={control}
           rules={{
-            required: {
-              value: true,
-              message: t('Pages.Gacha.LegacyView.UpsertAccountForm.DataFolder.Required'),
-            },
+            required: i18n.t('Pages.Gacha.LegacyView.UpsertAccountForm.DataFolder.Required'),
           }}
           component={Textarea}
           labelMapping={['Pages.Gacha.LegacyView.UpsertAccountForm.DataFolder.Label']}
           placeholderMapping={[
             'Pages.Gacha.LegacyView.UpsertAccountForm.DataFolder.Placeholder',
-            { business: keyofBusinesses },
+            { keyofBusinesses },
           ]}
           rows={3}
           required
           readOnly
         />
-        <div className={classes.dataFolderBtns}>
+        <div className={styles.dataFolderBtns}>
           <Locale
             component={Button}
-            mapping={['Pages.Gacha.LegacyView.UpsertAccountForm.DataFolder.AutoFindBtn']}
             size="small"
             icon={<FolderSearchRegular />}
             disabled={isSubmitting}
             onClick={handleLocateDataFolder}
-            data-factory={LocateDataFolderFactory.UnityLog}
+            data-factory={LocateDataFolderFactoryTypes.UnityLog}
+            mapping={['Pages.Gacha.LegacyView.UpsertAccountForm.DataFolder.AutoFindBtn']}
           />
           <Locale
             component={Button}
-            mapping={['Pages.Gacha.LegacyView.UpsertAccountForm.DataFolder.ManualFindBtn']}
             size="small"
             icon={<CursorHoverRegular />}
             disabled={isSubmitting}
             onClick={handleLocateDataFolder}
-            data-factory={LocateDataFolderFactory.Manual}
+            data-factory={LocateDataFolderFactoryTypes.Manual}
+            mapping={['Pages.Gacha.LegacyView.UpsertAccountForm.DataFolder.ManualFindBtn']}
           />
         </div>
       </div>
-      <div className={classes.actions}>
+      <div className={styles.actions}>
         <Locale
           component={Button}
-          mapping={['Pages.Gacha.LegacyView.UpsertAccountForm.CancelBtn']}
           appearance="secondary"
           disabled={isSubmitting}
           onClick={onCancel}
+          mapping={['Pages.Gacha.LegacyView.UpsertAccountForm.CancelBtn']}
         />
         <Locale
           component={Button}
-          mapping={['Pages.Gacha.LegacyView.UpsertAccountForm.SubmitBtn']}
           appearance="primary"
           type="submit"
           disabled={
@@ -282,6 +290,7 @@ export default function GachaLegacyViewUpsertAccountForm (props: Props) {
               ? !isDirty || !isValid || isSubmitting
               : !isValid || isSubmitting
           }
+          mapping={['Pages.Gacha.LegacyView.UpsertAccountForm.SubmitBtn']}
         />
       </div>
     </form>

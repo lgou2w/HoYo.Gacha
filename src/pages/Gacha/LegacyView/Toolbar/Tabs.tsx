@@ -1,5 +1,9 @@
 import React from 'react'
-import { Label, Tab, TabList, makeStyles, tokens } from '@fluentui/react-components'
+import { Caption1, makeStyles, tokens } from '@fluentui/react-components'
+import { TabsRegular } from '@fluentui/react-icons'
+import Locale from '@/components/Locale'
+import Tab from '@/components/UI/Tab'
+import TabList from '@/components/UI/TabList'
 import { Tabs } from '@/pages/Gacha/LegacyView/declares'
 
 const useStyles = makeStyles({
@@ -7,6 +11,12 @@ const useStyles = makeStyles({
     display: 'flex',
     flexDirection: 'column',
     rowGap: tokens.spacingVerticalXS,
+  },
+  label: {
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    columnGap: tokens.spacingHorizontalXS,
   },
 })
 
@@ -16,20 +26,31 @@ interface Props {
 }
 
 export default function GachaLegacyViewToolbarTabs (props: Props) {
+  const styles = useStyles()
   const { value, onChange } = props
-  const classes = useStyles()
+
   return (
-    <div className={classes.root}>
-      <Label size="small">Tabs</Label>
+    <div className={styles.root}>
+      <div className={styles.label}>
+        <TabsRegular />
+        <Locale
+          component={Caption1}
+          mapping={['Pages.Gacha.LegacyView.Toolbar.Tabs.Title']}
+        />
+      </div>
       <TabList
         selectedValue={value}
         onTabSelect={(_, data) => onChange?.(data.value as Tabs)}
         size="small"
       >
         {Object.values(Tabs).map((tab) => (
-          <Tab key={tab} value={tab}>
-            {tab}
-          </Tab>
+          <Locale
+            component={Tab}
+            key={tab}
+            value={tab}
+            tabIndex={-1}
+            mapping={[`Pages.Gacha.LegacyView.Toolbar.Tabs.${tab}`]}
+          />
         ))}
       </TabList>
     </div>

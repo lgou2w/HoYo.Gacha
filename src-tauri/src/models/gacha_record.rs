@@ -46,6 +46,14 @@ pub struct GachaRecord {
 
 impl GachaRecord {
   #[inline]
+  pub const fn is_gacha_type_bangboo(&self) -> bool {
+    match self.business {
+      Business::ZenlessZoneZero => self.gacha_type == 5,
+      _ => false,
+    }
+  }
+
+  #[inline]
   pub const fn is_rank_type_blue(&self) -> bool {
     match self.business {
       Business::GenshinImpact | Business::HonkaiStarRail => self.rank_type == 3,

@@ -1,5 +1,5 @@
 import React, { PropsWithChildren, ReactNode } from 'react'
-import { Subtitle2, makeStyles, mergeClasses, tokens } from '@fluentui/react-components'
+import { Body2, makeStyles, mergeClasses, tokens } from '@fluentui/react-components'
 
 const useStyles = makeStyles({
   root: {
@@ -20,12 +20,13 @@ interface Props {
 }
 
 export default function SettingsOptionsGroup (props: PropsWithChildren<Props>) {
+  const styles = useStyles()
   const { className, title, children } = props
-  const classes = useStyles()
+
   return (
-    <div className={mergeClasses(classes.root, className)}>
-      {title && <Subtitle2 as="h6">{title}</Subtitle2>}
-      <div className={classes.items}>
+    <div className={mergeClasses(styles.root, className)}>
+      {title && <Body2 as="h6">{title}</Body2>}
+      <div className={styles.items}>
         {children}
       </div>
     </div>

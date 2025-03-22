@@ -1,10 +1,18 @@
 import React, { ElementRef, Fragment, MouseEventHandler, useCallback, useRef } from 'react'
-import { Body1Strong, Caption2, Label, Menu, MenuButton, MenuDivider, MenuGroup, MenuGroupHeader, MenuItem, MenuItemRadio, MenuList, MenuListProps, MenuPopover, MenuTrigger, makeStyles, menuButtonClassNames, menuItemClassNames, mergeClasses, tokens } from '@fluentui/react-components'
-import { PersonAddRegular } from '@fluentui/react-icons'
-import { useQuery } from '@tanstack/react-query'
-import { accountsQueryOptions, selectedAccountQueryOptions, useSetSelectedAccountMutation } from '@/api/queries/account'
-import Locale from '@/components/UI/Locale'
-import useBusiness from '@/hooks/useBusiness'
+import { Body1Strong, Caption1, MenuDivider, MenuTrigger, makeStyles, menuButtonClassNames, menuItemClassNames, tokens } from '@fluentui/react-components'
+import { PeopleListRegular, PersonAddRegular } from '@fluentui/react-icons'
+import { useAccountsSuspenseQueryData, useSelectedAccountSuspenseQueryData, useUpdateSelectedAccountUidMutation } from '@/api/queries/accounts'
+import BizImages from '@/components/BizImages'
+import Locale from '@/components/Locale'
+import Menu from '@/components/UI/Menu'
+import MenuButton from '@/components/UI/MenuButton'
+import MenuGroup from '@/components/UI/MenuGroup'
+import MenuGroupHeader from '@/components/UI/MenuGroupHeader'
+import MenuItem from '@/components/UI/MenuItem'
+import MenuItemRadio from '@/components/UI/MenuItemRadio'
+import MenuList, { MenuListProps } from '@/components/UI/MenuList'
+import MenuPopover from '@/components/UI/MenuPopover'
+import useBusinessContext from '@/hooks/useBusinessContext'
 import type { Account } from '@/interfaces/Account'
 import { Business, KeyofBusinesses, ReversedBusinesses } from '@/interfaces/Business'
 import UpsertAccountDialog from '@/pages/Gacha/LegacyView/UpsertAccount/Dialog'
@@ -15,6 +23,12 @@ const useStyles = makeStyles({
     flexDirection: 'column',
     rowGap: tokens.spacingVerticalXS,
   },
+  label: {
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    columnGap: tokens.spacingHorizontalXS,
+  },
   content: {
     height: '2.5rem',
     minWidth: `calc(8.625rem + (${tokens.spacingHorizontalXS} * 2) + 4px)`,
@@ -22,10 +36,10 @@ const useStyles = makeStyles({
 })
 
 export default function GachaLegacyViewToolbarAccount () {
-  const classes = useStyles()
+  const styles = useStyles()
 
-  const { business, keyofBusinesses } = useBusiness()
-  const { data: accounts = [] } = useQuery(accountsQueryOptions(keyofBusinesses))
+  const { business, keyofBusinesses } = useBusinessContext()
+  const accounts = useAccountsSuspenseQueryData(keyofBusinesses)
 
   const addAccountDialogRef = useRef<ElementRef<typeof UpsertAccountDialog>>(null)
   const handleAddAccountClick = useCallback<MouseEventHandler>(() => {
@@ -33,9 +47,15 @@ export default function GachaLegacyViewToolbarAccount () {
   }, [])
 
   return (
-    <div className={classes.root}>
-      <Label size="small">Account</Label>
-      <div className={classes.content}>
+    <div className={styles.root}>
+      <div className={styles.label}>
+        <PeopleListRegular />
+        <Locale
+          component={Caption1}
+          mapping={['Pages.Gacha.LegacyView.Toolbar.Account.Title']}
+        />
+      </div>
+      <div className={styles.content}>
         <AccountList
           business={business}
           keyofBusinesses={keyofBusinesses}
@@ -67,7 +87,9 @@ const useAccountListStyle = makeStyles({
   },
   menuList: {
     [`& .${menuItemClassNames.root}`]: {
-      gap: '0 !important',
+      '&[aria-checked="true"]': {
+        color: tokens.colorBrandBackground,
+      },
     },
   },
   addAccountBtn: {
@@ -83,20 +105,19 @@ interface AccountListProps {
 }
 
 function AccountList (props: AccountListProps) {
+  const styles = useAccountListStyle()
   const { business, keyofBusinesses, accounts, onAddAccountClick } = props
-  const classes = useAccountListStyle()
 
-  const { data: selectedAccount = null } = useQuery(selectedAccountQueryOptions(keyofBusinesses))
-
-  const setSelectedAccount = useSetSelectedAccountMutation()
+  const selectedAccount = useSelectedAccountSuspenseQueryData(keyofBusinesses)
+  const updateSelectedAccountUidMutation = useUpdateSelectedAccountUidMutation()
   const handleAccountSelect = useCallback<Required<MenuListProps>['onCheckedValueChange']>(async (_, data) => {
     if (data.name === 'account') {
-      await setSelectedAccount.mutateAsync({
+      await updateSelectedAccountUidMutation.mutateAsync({
         business,
-        data: accounts.find((el) => el.uid === +data.checkedItems[0]) ?? null,
+        data: accounts.find((el) => el.uid === +data.checkedItems[0])?.uid ?? null,
       })
     }
-  }, [accounts, business, setSelectedAccount])
+  }, [accounts, business, updateSelectedAccountUidMutation])
 
   return (
     <Menu
@@ -105,15 +126,21 @@ function AccountList (props: AccountListProps) {
       onCheckedValueChange={handleAccountSelect}
     >
       <MenuTrigger disableButtonEnhancement>
-        <MenuButton className={classes.menuBtn} appearance="transparent">
-          <AccountItem account={selectedAccount} />
+        <MenuButton className={styles.menuBtn} appearance="transparent" size="large">
+          <AccountItem
+            keyofBusinesses={keyofBusinesses}
+            account={selectedAccount}
+          />
         </MenuButton>
       </MenuTrigger>
       <MenuPopover>
-        <MenuList className={classes.menuList}>
-          <MenuGroupHeader>Available</MenuGroupHeader>
+        <MenuList className={styles.menuList}>
           {accounts.length > 0 && (
             <Fragment>
+              <Locale
+                component={MenuGroupHeader}
+                mapping={['Pages.Gacha.LegacyView.Toolbar.Account.Available']}
+              />
               <MenuGroup>
                 {accounts.map((account) => (
                   <MenuItemRadio
@@ -121,7 +148,11 @@ function AccountList (props: AccountListProps) {
                     name="account"
                     value={String(account.uid)}
                   >
-                    <AccountItem account={account} size="small" />
+                    <AccountItem
+                      keyofBusinesses={keyofBusinesses}
+                      account={account}
+                      // size="small"
+                    />
                   </MenuItemRadio>
                 ))}
               </MenuGroup>
@@ -129,13 +160,13 @@ function AccountList (props: AccountListProps) {
             </Fragment>
           )}
           <MenuGroup>
-            <MenuItem
-              className={classes.addAccountBtn}
+            <Locale
+              component={MenuItem}
+              className={styles.addAccountBtn}
               onClick={onAddAccountClick}
               icon={<PersonAddRegular />}
-            >
-              Add New Account
-            </MenuItem>
+              mapping={['Pages.Gacha.LegacyView.Toolbar.Account.AddNewAccount']}
+            />
           </MenuGroup>
         </MenuList>
       </MenuPopover>
@@ -147,7 +178,7 @@ const useAccountItemStyles = makeStyles({
   root: {
     display: 'flex',
     flexDirection: 'row',
-    columnGap: tokens.spacingHorizontalSNudge,
+    columnGap: tokens.spacingHorizontalS,
     alignItems: 'center',
   },
   avatar: {
@@ -156,10 +187,6 @@ const useAccountItemStyles = makeStyles({
     alignItems: 'center',
     width: '2.5rem',
     height: '2.5rem',
-    '&.small': {
-      width: '2rem',
-      height: '2rem',
-    },
     '& img': {
       width: '100%',
       height: '100%',
@@ -172,36 +199,37 @@ const useAccountItemStyles = makeStyles({
     flexDirection: 'column',
     flexGrow: 1,
     maxWidth: '5rem',
-    '&.small': {
-      maxWidth: '4rem',
-    },
   },
 })
 
 interface AccountItemProps {
+  keyofBusinesses: KeyofBusinesses
   account: Account | null
-  size?: 'small' | 'default'
 }
 
 function AccountItem (props: AccountItemProps) {
-  const { account, size } = props
-  const classes = useAccountItemStyles()
+  const styles = useAccountItemStyles()
+  const { keyofBusinesses, account } = props
+
+  // TODO: Custom avatar
+  const avatarSrc = BizImages[keyofBusinesses].Material!.Icon!
+
   return (
-    <div className={classes.root}>
-      <div className={mergeClasses(classes.avatar, size)}>
-        <span>HG</span>
+    <div className={styles.root}>
+      <div className={styles.avatar}>
+        <img src={avatarSrc} />
       </div>
-      <div className={mergeClasses(classes.information, size)}>
+      <div className={styles.information}>
         <Locale
           component={Body1Strong}
           wrap={false}
           truncate
-          mapping={account?.properties?.displayName ?? (account
-            ? [`Business.${ReversedBusinesses[account.business]}.Player`]
-            : 'No account')
+          mapping={account
+            ? account?.properties?.displayName || [`Business.${ReversedBusinesses[account.business]}.Player.Name`]
+            : ['Pages.Gacha.LegacyView.Toolbar.Account.NoAvailable']
           }
         />
-        {account && <Caption2>{account.uid}</Caption2>}
+        {account && <Caption1>{account.uid}</Caption1>}
       </div>
     </div>
   )

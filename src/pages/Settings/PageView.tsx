@@ -21,11 +21,12 @@ const useStyles = makeStyles({
 })
 
 export default function SettingsPageView () {
-  const classes = useStyles()
+  const styles = useStyles()
+
   return (
-    <div className={classes.root}>
-      <SettingsOptions className={classes.options} />
-      <SettingsHero className={classes.hero} />
+    <div className={styles.root}>
+      <SettingsOptions className={styles.options} />
+      <SettingsHero className={styles.hero} />
     </div>
   )
 }

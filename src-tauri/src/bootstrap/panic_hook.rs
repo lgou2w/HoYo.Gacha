@@ -51,11 +51,13 @@ impl<'a> Crash<'a> {
     let cause = descript_panic(panic.payload());
     let explanation = match panic.location() {
       None => "Panic location unknown".into(),
-      Some(location) => format!(
-        "Panic occurrecd in file '{}' at line {}",
-        location.file(),
-        location.line()
-      ),
+      Some(location) => {
+        format!(
+          "Panic occurrecd in file '{}' at line {}",
+          location.file(),
+          location.line()
+        )
+      }
     };
 
     const HEX_WIDTH: usize = std::mem::size_of::<usize>() + 2;
@@ -178,11 +180,11 @@ fn crash_notify(message: String, report_path: impl AsRef<Path>) {
   use std::os::windows::process::CommandExt;
   use std::process::Command;
 
-  use windows::core::{w, PCWSTR};
   use windows::Win32::Foundation::HWND;
   use windows::Win32::UI::WindowsAndMessaging::{
-    MessageBoxW, IDYES, MB_DEFBUTTON1, MB_ICONERROR, MB_YESNO,
+    IDYES, MB_DEFBUTTON1, MB_ICONERROR, MB_YESNO, MessageBoxW,
   };
+  use windows::core::{PCWSTR, w};
 
   let hwnd = internals::get_tauri_main_window_hwnd();
   let lptext = message
@@ -193,7 +195,7 @@ fn crash_notify(message: String, report_path: impl AsRef<Path>) {
   if IDYES
     == unsafe {
       MessageBoxW(
-        HWND(hwnd as _),
+        Some(HWND(hwnd as _)),
         PCWSTR::from_raw(lptext.as_ptr()),
         w!("Application crash"),
         MB_ICONERROR | MB_YESNO | MB_DEFBUTTON1,

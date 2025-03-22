@@ -1,8 +1,9 @@
 import React, { ReactNode } from 'react'
-import { Dropdown, Option } from '@fluentui/react-components'
+import { Option } from '@fluentui/react-components'
 import { Multiplier12XRegular, Multiplier15XRegular, Multiplier18XRegular, Multiplier1XRegular, Multiplier2XRegular } from '@fluentui/react-icons'
-import Locale from '@/components/UI/Locale'
-import useTheme from '@/hooks/useTheme'
+import Locale from '@/components/Locale'
+import Dropdown from '@/components/UI/Dropdown'
+import useThemeContext from '@/hooks/useThemeContext'
 import { ScaleLevel } from '@/interfaces/Theme'
 import SettingsOptionsItem from '@/pages/Settings/Options/OptionsItem'
 
@@ -15,7 +16,7 @@ const ScaleLevelMappings: Record<ScaleLevel, { label: string, icon: ReactNode }>
 }
 
 export default function SettingsOptionsAppearanceScaleLevel () {
-  const { scale, update } = useTheme()
+  const { scale, update } = useThemeContext()
 
   return (
     <SettingsOptionsItem
@@ -27,6 +28,7 @@ export default function SettingsOptionsAppearanceScaleLevel () {
           value={ScaleLevelMappings[scale].label}
           defaultSelectedOptions={[String(scale)]}
           onOptionSelect={(_, data) => update({ scale: +data.optionValue! as ScaleLevel })}
+          style={{ minWidth: '10rem' }}
         >
           {Object.entries(ScaleLevelMappings).map(([value, { label }]) => (
             <Option key={value} value={value}>

@@ -2,28 +2,27 @@ use std::env;
 use std::path::PathBuf;
 use std::sync::LazyLock;
 
-use os_info::{get as get_os_info, Info as OsInfo};
+use cfg_if::cfg_if;
+use os_info::{Info as OsInfo, get as get_os_info};
 use reqwest::Client as Reqwest;
+use time::UtcOffset;
 use time::format_description::FormatItem;
 use time::macros::format_description;
-use time::UtcOffset;
 use tracing_appender::rolling::Rotation;
 
 // App
 
 pub const ID: &str = "com.lgou2w.hoyo.gacha";
 
-// for Production
-#[cfg(not(debug_assertions))]
-pub const NAME: &str = "HoYo.Gacha";
-#[cfg(not(debug_assertions))]
-pub const DATABASE: &str = "HoYo.Gacha.db";
-
-// for Development
-#[cfg(debug_assertions)]
-pub const NAME: &str = "__DEV__HoYo.Gacha";
-#[cfg(debug_assertions)]
-pub const DATABASE: &str = "__DEV__HoYo.Gacha.db";
+cfg_if! {if #[cfg(any(debug_assertions, test))] {
+  // for Development
+  pub const NAME: &str = "__DEV__HoYo.Gacha";
+  pub const DATABASE: &str = "__DEV__HoYo.Gacha.db";
+} else {
+  // for Production
+  pub const NAME: &str = "HoYo.Gacha";
+  pub const DATABASE: &str = "HoYo.Gacha.db";
+}}
 
 // Package info
 pub const PKG_NAME: &str = env!("CARGO_PKG_NAME");
@@ -116,40 +115,39 @@ pub static LOCALE: LazyLock<Locale> = LazyLock::new(Locale::new);
 
 // region: Windows
 
-#[cfg(windows)]
-pub struct Windows {
-  // https://en.wikipedia.org/wiki/Windows_10_version_history
-  // https://en.wikipedia.org/wiki/Windows_11_version_history
-  pub version: windows_version::OsVersion,
-  /// `Windows 10 . 1507` Build `10240` and higher. (First Windows 10 release)
-  pub is_1507_and_higher: bool,
-  /// `Windows 10 . 1809` Build `17763` and higher.
-  pub is_1809_and_higher: bool,
-  /// `Windows 10 . 19H1` Build `18362` and higher.
-  pub is_19h1_and_higher: bool,
-  /// `Windows 11 . 21H2` Build `22000` and higher. (First Windows 11 release)
-  pub is_21h2_and_higher: bool,
-  /// `Windows 11 . 22H2` Build `22621` and higher.
-  pub is_22h2_and_higher: bool,
-}
+cfg_if! {if #[cfg(windows)] {
+  pub struct Windows {
+    // https://en.wikipedia.org/wiki/Windows_10_version_history
+    // https://en.wikipedia.org/wiki/Windows_11_version_history
+    pub version: windows_version::OsVersion,
+    /// `Windows 10 . 1507` Build `10240` and higher. (First Windows 10 release)
+    pub is_1507_and_higher: bool,
+    /// `Windows 10 . 1809` Build `17763` and higher.
+    pub is_1809_and_higher: bool,
+    /// `Windows 10 . 19H1` Build `18362` and higher.
+    pub is_19h1_and_higher: bool,
+    /// `Windows 11 . 21H2` Build `22000` and higher. (First Windows 11 release)
+    pub is_21h2_and_higher: bool,
+    /// `Windows 11 . 22H2` Build `22621` and higher.
+    pub is_22h2_and_higher: bool,
+  }
 
-#[cfg(windows)]
-impl Windows {
-  fn new() -> Self {
-    let version = windows_version::OsVersion::current();
-    Self {
-      version,
-      is_1507_and_higher: version.build >= 10240,
-      is_1809_and_higher: version.build >= 17763,
-      is_19h1_and_higher: version.build >= 18362,
-      is_21h2_and_higher: version.build >= 22000,
-      is_22h2_and_higher: version.build >= 22621,
+  impl Windows {
+    fn new() -> Self {
+      let version = windows_version::OsVersion::current();
+      Self {
+        version,
+        is_1507_and_higher: version.build >= 10240,
+        is_1809_and_higher: version.build >= 17763,
+        is_19h1_and_higher: version.build >= 18362,
+        is_21h2_and_higher: version.build >= 22000,
+        is_22h2_and_higher: version.build >= 22621,
+      }
     }
   }
-}
 
-#[cfg(windows)]
-pub static WINDOWS: LazyLock<Windows> = LazyLock::new(Windows::new);
+  pub static WINDOWS: LazyLock<Windows> = LazyLock::new(Windows::new);
+}}
 
 // endregion
 
@@ -163,29 +161,43 @@ pub struct Platform {
 }
 
 impl Platform {
-  fn new() -> Self {
-    let (user_home, appdata_local, appdata_locallow) = if cfg!(windows) {
-      let user_home = env::var("USERPROFILE").map(PathBuf::from).unwrap();
+  pub const FOLDER_MIHOYO: &'static str = "miHoYo";
+  pub const FOLDER_COGNOSPHERE: &'static str = "Cognosphere";
+
+  cfg_if! {if #[cfg(windows)] {
+    fn new() -> Self {
+      let user_home = env::var("USERPROFILE")
+        .map(PathBuf::from)
+        .expect("Failed to get user home directory");
       let appdata = user_home.join("AppData");
       let appdata_local = appdata.join("Local");
       let appdata_locallow = appdata.join("LocalLow");
-      (user_home, appdata_local, appdata_locallow)
-    } else if cfg!(target_os = "macos") {
-      let user_home = env::var("HOME").map(PathBuf::from).unwrap();
+      Self {
+        user_home,
+        appdata_local,
+        appdata_locallow_mihoyo: appdata_locallow.join(Self::FOLDER_MIHOYO),
+        appdata_locallow_cognosphere: appdata_locallow.join(Self::FOLDER_COGNOSPHERE),
+      }
+    }
+  } else if #[cfg(target_os = "macos")] {
+    fn new() -> Self {
+      let user_home = env::var("HOME")
+        .map(PathBuf::from)
+        .expect("Failed to get user home directory");
       let appdata = user_home.join("Library");
       let appdata_local = appdata.join("Caches");
-      (user_home, appdata_local.clone(), appdata_local)
-    } else {
-      unimplemented!()
-    };
-
-    Self {
-      user_home,
-      appdata_local,
-      appdata_locallow_mihoyo: appdata_locallow.join("miHoYo"),
-      appdata_locallow_cognosphere: appdata_locallow.join("Cognosphere"),
+      Self {
+        user_home,
+        appdata_locallow_mihoyo: appdata_local.join(Self::FOLDER_MIHOYO),
+        appdata_locallow_cognosphere: appdata_local.join(Self::FOLDER_COGNOSPHERE),
+        appdata_local: appdata_local,
+      }
     }
-  }
+  } else {
+    fn new() -> Self {
+      unimplemented!()
+    }
+  }}
 }
 
 pub static PLATFORM: LazyLock<Platform> = LazyLock::new(Platform::new);

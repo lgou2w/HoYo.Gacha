@@ -2,15 +2,24 @@ import { DetailedError, isDetailedError } from '@/api/error'
 import { InvokeOptions } from '@/api/invoke'
 import { Account } from '@/interfaces/Account'
 import { Business, BusinessRegion, GenshinImpact } from '@/interfaces/Business'
-import { GachaRecord, PrettizedGachaRecords } from '@/interfaces/GachaRecord'
+import { GachaRecord, GachaTypeAndLastEndIdMappings, PrettizedGachaRecords } from '@/interfaces/GachaRecord'
 import { FindGachaRecordsByBusinessAndUidArgs, SqlxDatabaseError, SqlxError } from './database'
 import { declareCommand } from '.'
 
 // See:
 //   src-tauri/src/business/mod.rs
 //   src-tauri/src/business/data_folder_locator.rs
-//   src-tauri/src/business/gacha_url.rs
 //   src-tauri/src/business/gacha_convert.rs
+//   src-tauri/src/business/gacha_fetcher.rs
+//   src-tauri/src/business/gacha_metadata.rs
+//   src-tauri/src/business/gacha_prettied.rs
+//   src-tauri/src/business/gacha_url.rs
+
+// See: https://doc.rust-lang.org/std/io/struct.Error.html
+export interface NativeIOError {
+  kind: string
+  message: string
+}
 
 // Data Folder
 
@@ -19,7 +28,7 @@ const NamedDataFolderError = 'DataFolderError' as const
 export type DataFolderError = DetailedError<typeof NamedDataFolderError,
   | { kind: 'Invalid' }
   | { kind: 'UnityLogFileNotFound', path: string }
-  | { kind: 'OpenUnityLogFile', path: string, cause: { kind: string, message: string } }
+  | { kind: 'OpenUnityLogFile', path: string, cause: NativeIOError }
   | { kind: 'Vacant' }
 >
 
@@ -34,11 +43,10 @@ export interface DataFolder<T extends Business> {
   value: string
 }
 
-export enum LocateDataFolderFactory {
-  UnityLog = 'UnityLog',
-  Manual = 'Manual',
-  Registry = 'Registry',
-}
+export type LocateDataFolderFactory =
+  | { UnityLog: null }
+  | { Manual: { title: string } }
+  | { Registry: null } // HACK: only Windows
 
 export type LocateDataFolderArgs<T extends Business> = NonNullable<{
   business: T
@@ -55,8 +63,8 @@ const NamedGachaUrlError = 'GachaUrlError' as const
 
 export type GachaUrlError = DetailedError<typeof NamedGachaUrlError,
   | { kind: 'WebCachesNotFound', path: string }
-  | { kind: 'OpenWebCaches', cause: { kind: string, message: string } }
-  | { kind: 'ReadDiskCache', cause: { kind: string, message: string } }
+  | { kind: 'OpenWebCaches', cause: NativeIOError }
+  | { kind: 'ReadDiskCache', cause: NativeIOError }
   | { kind: 'EmptyData' }
   | { kind: 'NotFound' }
   | { kind: 'Illegal', url: string }
@@ -116,7 +124,7 @@ export type LegacyUigfGachaRecordsWriteError = DetailedError<typeof NamedLegacyU
   | { kind: 'IncompatibleRecordOwner', expected: Account['uid'], actual: Account['uid'] }
   | { kind: 'IncompatibleRecordLocale', expected: string, actual: string }
   | { kind: 'FailedMappingGachaType', value: GachaRecord<GenshinImpact>['gachaType'] }
-  | { kind: 'CreateOutput', path: string, cause: { kind: string, message: string } }
+  | { kind: 'CreateOutput', path: string, cause: NativeIOError }
   | { kind: 'Serialize', cause: string }
 >
 
@@ -128,7 +136,7 @@ export function isLegacyUigfGachaRecordsWriteError (error: unknown): error is Le
 const NamedLegacyUigfGachaRecordsReadError = 'LegacyUigfGachaRecordsReadError' as const
 
 export type LegacyUigfGachaRecordsReadError = DetailedError<typeof NamedLegacyUigfGachaRecordsReadError,
-  | { kind: 'OpenInput', path: string, cause: { kind: string, message: string } }
+  | { kind: 'OpenInput', path: string, cause: NativeIOError }
   | { kind: 'InvalidInput', cause: string }
   | { kind: 'InvalidVersion', version: string }
   | { kind: 'UnsupportedVersion', version: string, allowed: string }
@@ -148,7 +156,7 @@ export type UigfGachaRecordsWriteError = DetailedError<typeof NamedUigfGachaReco
   | { kind: 'MissingAccountInfo', uid: Account['uid'] }
   | { kind: 'MissingMetadataEntry', business: Business, locale: string, key: string, val: string }
   | { kind: 'FailedMappingGachaType', value: GachaRecord<GenshinImpact>['gachaType'] }
-  | { kind: 'CreateOutput', path: string, cause: { kind: string, message: string } }
+  | { kind: 'CreateOutput', path: string, cause: NativeIOError }
   | { kind: 'Serialize', cause: string }
 >
 
@@ -160,7 +168,7 @@ export function isUigfGachaRecordsWriteError (error: unknown): error is UigfGach
 const NamedUigfGachaRecordsReadError = 'UigfGachaRecordsReadError' as const
 
 export type UigfGachaRecordsReadError = DetailedError<typeof NamedUigfGachaRecordsReadError,
-  | { kind: 'OpenInput', path: string, cause: { kind: string, message: string } }
+  | { kind: 'OpenInput', path: string, cause: NativeIOError }
   | { kind: 'InvalidInput', cause: string }
   | { kind: 'InvalidVersion', version: string }
   | { kind: 'UnsupportedVersion', version: string, allowed: string }
@@ -178,7 +186,7 @@ export type SrgfGachaRecordsWriteError = DetailedError<typeof NamedSrgfGachaReco
   | { kind: 'IncompatibleRecordBusiness', business: Business, id: string, name: string }
   | { kind: 'IncompatibleRecordOwner', expected: Account['uid'], actual: Account['uid'] }
   | { kind: 'IncompatibleRecordLocale', expected: string, actual: string }
-  | { kind: 'CreateOutput', path: string, cause: { kind: string, message: string } }
+  | { kind: 'CreateOutput', path: string, cause: NativeIOError }
   | { kind: 'Serialize', cause: string }
 >
 
@@ -190,7 +198,7 @@ export function isSrgfGachaRecordsWriteError (error: unknown): error is SrgfGach
 const NamedSrgfGachaRecordsReadError = 'SrgfGachaRecordsReadError' as const
 
 export type SrgfGachaRecordsReadError = DetailedError<typeof NamedSrgfGachaRecordsReadError,
-  | { kind: 'OpenInput', path: string, cause: { kind: string, message: string } }
+  | { kind: 'OpenInput', path: string, cause: NativeIOError }
   | { kind: 'InvalidInput', cause: string }
   | { kind: 'InvalidVersion', version: string }
   | { kind: 'UnsupportedVersion', version: string, allowed: string }
@@ -228,16 +236,23 @@ export type CreateGachaRecordsFetcherChannelArgs<T extends Business> = NonNullab
   region: BusinessRegion
   uid: Account['uid']
   gachaUrl: string
-  gachaTypeAndLastEndIdMappings: Array<[GachaRecord<T>['gachaType'], GachaRecord<T>['id'] | null]>
-  options?: {
-    eventChannel?: string
-    saveToDatabase?: boolean
-    saveOnConflict?: 'Nothing' | 'Update'
-  }
+  gachaTypeAndLastEndIdMappings: GachaTypeAndLastEndIdMappings<T>
+  eventChannel?: string
+  saveToDatabase?: 'No' | 'Yes' | 'FullUpdate'
+  saveOnConflict?: 'Nothing' | 'Update'
 }>
 
-export type CreateGachaRecordsFetcherChannel = <T extends Business>(args: CreateGachaRecordsFetcherChannelArgs<T>, options?: InvokeOptions) => Promise<void>
+export type CreateGachaRecordsFetcherChannel = <T extends Business>(args: CreateGachaRecordsFetcherChannelArgs<T>, options?: InvokeOptions) => Promise<number>
 export const createGachaRecordsFetcherChannel: CreateGachaRecordsFetcherChannel = declareCommand('business_create_gacha_records_fetcher_channel')
+
+export type GachaRecordsFetcherChannelFragment<T extends Business> =
+  | 'Sleeping'
+  | { Ready: GachaRecord<T>['gachaType'] }
+  | { Pagination: number }
+  | { DataRef: number }
+  | { Data: GachaRecord<T>[] }
+  | { Completed: GachaRecord<T>['gachaType'] }
+  | 'Finished'
 
 export type ImportGachaRecordsArgs = NonNullable<{
   input: string

@@ -1,13 +1,13 @@
 import { createRouter } from '@tanstack/react-router'
-import gachaRoute from '@/pages/Gacha/route'
-import homeRoute from '@/pages/Home/route'
-import rootRoute from '@/pages/Root/route'
-import settingsRoute from '@/pages/Settings/route'
+import GachaRoute from '@/pages/Gacha/route'
+import HomeRoute from '@/pages/Home/route'
+import RootRoute from '@/pages/Root/route'
+import SettingsRoute from '@/pages/Settings/route'
 
-const routeTree = rootRoute.addChildren([
-  gachaRoute,
-  homeRoute,
-  settingsRoute,
+const routeTree = RootRoute.addChildren([
+  HomeRoute,
+  SettingsRoute,
+  GachaRoute,
 ])
 
 const router = createRouter({ routeTree })

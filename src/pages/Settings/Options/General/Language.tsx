@@ -1,13 +1,13 @@
 import React from 'react'
-import { useTranslation } from 'react-i18next'
-import { Dropdown, Option } from '@fluentui/react-components'
+import { Option } from '@fluentui/react-components'
 import { LocalLanguageRegular } from '@fluentui/react-icons'
-import Locale from '@/components/UI/Locale'
-import { KnownLanguages, Language, SupportedLanguages } from '@/i18n/locales'
+import Locale from '@/components/Locale'
+import Dropdown from '@/components/UI/Dropdown'
+import useI18n, { KnownLanguages, SupportedLanguages } from '@/hooks/useI18n'
 import SettingsOptionsItem from '@/pages/Settings/Options/OptionsItem'
 
 export default function SettingsOptionsGeneralLanguage () {
-  const { i18n } = useTranslation()
+  const i18n = useI18n()
 
   return (
     <SettingsOptionsItem
@@ -18,12 +18,12 @@ export default function SettingsOptionsGeneralLanguage () {
         <Dropdown
           defaultSelectedOptions={[i18n.language]}
           onOptionSelect={(_, data) => i18n.changeLanguage(data.optionValue)}
-          value={KnownLanguages[i18n.language as Language].text}
+          value={i18n.constants.text}
           style={{ minWidth: '12.5rem' }}
         >
           {SupportedLanguages.map((language) => (
             <Option key={language} value={language}>
-              {KnownLanguages[language].text}
+              {KnownLanguages[language].constants.text}
             </Option>
           ))}
         </Dropdown>

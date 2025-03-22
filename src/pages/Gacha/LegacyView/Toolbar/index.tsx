@@ -28,13 +28,14 @@ type Props = Omit<React.JSX.IntrinsicElements['div'], 'children'> & {
 }
 
 export default function GachaLegacyViewToolbar (props: Props) {
+  const styles = useStyles()
   const { className, tab, onTabChange, ...rest } = props
-  const classes = useStyles()
+
   return (
-    <div className={mergeClasses(classes.root, className)} {...rest}>
+    <div className={mergeClasses(styles.root, className)} {...rest}>
       <GachaLegacyViewToolbarAccount />
       <GachaLegacyViewToolbarUrl />
-      <div className={classes.actions}>
+      <div className={styles.actions}>
         <div aria-label="placeholder" aria-hidden />
         <GachaLegacyViewToolbarTabs value={tab} onChange={onTabChange} />
         <GachaLegacyViewToolbarConvert />

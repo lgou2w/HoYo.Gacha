@@ -9,6 +9,9 @@ use std::time::Instant;
 
 use serde::Deserialize;
 use sha1::{Digest, Sha1};
+use time::PrimitiveDateTime;
+use time::format_description::FormatItem;
+use time::macros::format_description;
 use tracing::info;
 
 use super::Business;
@@ -29,6 +32,7 @@ struct RawGachaMetadataCategorization {
 #[serde(untagged)]
 enum RawGachaMetadataEntry {
   Limited(String, u8),
+  LimitedDeadline(String, u8, String),
   Permanent(String, u8, bool),
 }
 
@@ -41,12 +45,24 @@ struct RawGachaMetadataI18n {
 
 // Wrapped
 
+#[derive(Debug, PartialEq, Eq, Hash)]
+pub enum GachaMetadataEntryLimited {
+  // Permanent
+  No,
+  // Limited
+  Yes,
+  // Before the deadline, it was limited.
+  // Format: Standard Gacha Time (UTC+8)
+  //   YYYY-MM-dd HH:mm:ss
+  Deadline(PrimitiveDateTime),
+}
+
 #[derive(Debug)]
 pub struct GachaMetadataEntry {
   pub category: &'static str, // Avoid too many String allocations
   pub name: String,
   pub rank: u8,
-  pub limited: bool,
+  pub limited: GachaMetadataEntryLimited,
 }
 
 #[derive(Debug)]
@@ -71,7 +87,7 @@ pub struct GachaMetadataEntryRef<'a> {
   pub id: &'a str,
   pub name: &'a str, // Entry locale name
   pub rank: u8,
-  pub limited: bool,
+  pub limited: &'a GachaMetadataEntryLimited,
 }
 
 impl GachaMetadataLocale {
@@ -153,7 +169,7 @@ impl GachaMetadataLocale {
       id,
       name: &entry.name,
       rank: entry.rank,
-      limited: entry.limited,
+      limited: &entry.limited,
     }
   }
 }
@@ -172,6 +188,9 @@ impl GachaMetadata {
     Self::CATEGORY_WEAPON,
     Self::CATEGORY_BANGBOO,
   ];
+
+  pub const TIME_FORMAT: &[FormatItem<'_>] =
+    format_description!("[year]-[month]-[day] [hour]:[minute]:[second]");
 }
 
 impl GachaMetadata {
@@ -260,8 +279,21 @@ fn raw_categorizations_into_locales(
         HashMap::with_capacity(entries_len),
         |mut acc, (entry, name)| {
           let (id, rank, limited) = match entry {
-            RawGachaMetadataEntry::Limited(id, rank) => (id, rank, true),
-            RawGachaMetadataEntry::Permanent(id, rank, is_permanent) => (id, rank, !is_permanent),
+            RawGachaMetadataEntry::Limited(id, rank) => (id, rank, GachaMetadataEntryLimited::Yes),
+            RawGachaMetadataEntry::LimitedDeadline(id, rank, deadline) => {
+              let deadline =
+                PrimitiveDateTime::parse(&deadline, GachaMetadata::TIME_FORMAT).unwrap(); // FIXME: Maybe unsafe
+              (id, rank, GachaMetadataEntryLimited::Deadline(deadline))
+            }
+            RawGachaMetadataEntry::Permanent(id, rank, permanently) => (
+              id,
+              rank,
+              // FIXME: Permanently always true
+              match permanently {
+                true => GachaMetadataEntryLimited::No,
+                false => GachaMetadataEntryLimited::Yes,
+              },
+            ),
           };
 
           acc.insert(
@@ -418,29 +450,35 @@ mod tests {
 
     assert!(metadata.businesses().eq([Business::GenshinImpact].iter()));
 
-    assert!(metadata
-      .locales(Business::GenshinImpact)
-      .unwrap()
-      // Because the keys of a HashMap is unordered
-      .any(|locale| locale == "en-us" || locale == "zh-cn"));
+    assert!(
+      metadata
+        .locales(Business::GenshinImpact)
+        .unwrap()
+        // Because the keys of a HashMap is unordered
+        .any(|locale| locale == "en-us" || locale == "zh-cn")
+    );
 
-    assert!(metadata
-      .categories(Business::GenshinImpact, "en-us")
-      .unwrap()
-      .into_iter()
-      .any(|(category, category_name)| {
-        category == GachaMetadata::CATEGORY_CHARACTER && category_name == "Character"
-          || category == GachaMetadata::CATEGORY_WEAPON && category_name == "Weapon"
-      }));
+    assert!(
+      metadata
+        .categories(Business::GenshinImpact, "en-us")
+        .unwrap()
+        .into_iter()
+        .any(|(category, category_name)| {
+          category == GachaMetadata::CATEGORY_CHARACTER && category_name == "Character"
+            || category == GachaMetadata::CATEGORY_WEAPON && category_name == "Weapon"
+        })
+    );
 
-    assert!(metadata
-      .categories(Business::GenshinImpact, "zh-cn")
-      .unwrap()
-      .into_iter()
-      .any(|(category, category_name)| {
-        category == GachaMetadata::CATEGORY_CHARACTER && category_name == "角色"
-          || category == GachaMetadata::CATEGORY_WEAPON && category_name == "武器"
-      }));
+    assert!(
+      metadata
+        .categories(Business::GenshinImpact, "zh-cn")
+        .unwrap()
+        .into_iter()
+        .any(|(category, category_name)| {
+          category == GachaMetadata::CATEGORY_CHARACTER && category_name == "角色"
+            || category == GachaMetadata::CATEGORY_WEAPON && category_name == "武器"
+        })
+    );
 
     let mut s = metadata.obtain(Business::GenshinImpact, "en-us").unwrap();
 
@@ -464,7 +502,7 @@ mod tests {
         id: "10000002",
         name: "Kamisato Ayaka",
         rank: 5,
-        limited: true
+        limited: &GachaMetadataEntryLimited::Yes,
       })
     );
 
@@ -477,7 +515,7 @@ mod tests {
         id: "10000003",
         name: "Jean",
         rank: 5,
-        limited: false
+        limited: &GachaMetadataEntryLimited::No,
       })
     );
 
@@ -491,7 +529,7 @@ mod tests {
           id: "10000005",
           name: "Traveler",
           rank: 5,
-          limited: false
+          limited: &GachaMetadataEntryLimited::No,
         },
         GachaMetadataEntryRef {
           language: "en-us",
@@ -500,7 +538,7 @@ mod tests {
           id: "10000007",
           name: "Traveler",
           rank: 5,
-          limited: false
+          limited: &GachaMetadataEntryLimited::No,
         }
       ]))
     );
@@ -514,7 +552,7 @@ mod tests {
         id: "11509",
         name: "Mistsplitter Reforged",
         rank: 5,
-        limited: true
+        limited: &GachaMetadataEntryLimited::Yes,
       })
     );
 
@@ -543,9 +581,10 @@ mod tests {
       || id == "10000007"
       || id == "11509"));
 
-    assert!(s
-      .names()
-      .any(|name| name == "神里绫华" || name == "琴" || name == "旅行者" || name == "雾切之回光"));
+    assert!(
+      s.names()
+        .any(|name| name == "神里绫华" || name == "琴" || name == "旅行者" || name == "雾切之回光")
+    );
 
     assert_eq!(
       s.entry_from_name_first("神里绫华"),
@@ -556,7 +595,7 @@ mod tests {
         id: "10000002",
         name: "神里绫华",
         rank: 5,
-        limited: true
+        limited: &GachaMetadataEntryLimited::Yes,
       })
     );
 
@@ -569,7 +608,7 @@ mod tests {
         id: "10000003",
         name: "琴",
         rank: 5,
-        limited: false
+        limited: &GachaMetadataEntryLimited::No,
       })
     );
 
@@ -583,7 +622,7 @@ mod tests {
           id: "10000005",
           name: "旅行者",
           rank: 5,
-          limited: false
+          limited: &GachaMetadataEntryLimited::No,
         },
         GachaMetadataEntryRef {
           language: "zh-cn",
@@ -592,7 +631,7 @@ mod tests {
           id: "10000007",
           name: "旅行者",
           rank: 5,
-          limited: false
+          limited: &GachaMetadataEntryLimited::No,
         }
       ]))
     );
@@ -606,7 +645,7 @@ mod tests {
         id: "11509",
         name: "雾切之回光",
         rank: 5,
-        limited: true
+        limited: &GachaMetadataEntryLimited::Yes,
       })
     );
 

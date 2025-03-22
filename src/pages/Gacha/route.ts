@@ -1,17 +1,18 @@
 import { createRoute } from '@tanstack/react-router'
 import { isDetailedError } from '@/api/error'
-import { accountsQueryOptions, selectedAccountQueryOptions } from '@/api/queries/account'
-import { prettizedGachaRecordsQueryOptions } from '@/api/queries/business'
+import { ensureAccountsQueryData, ensureSelectedAccountUidQueryData } from '@/api/queries/accounts'
+import { prefetchPrettizedGachaRecordsQuery } from '@/api/queries/business'
+import Spinner from '@/components/UI/Spinner'
 import { Business, Businesses, KeyofBusinesses } from '@/interfaces/Business'
-import rootRoute from '@/pages/Root/route'
-import queryClient from '@/queryClient'
+import RootRoute from '@/pages/Root/route'
+import Routes from '@/routes'
 import Gacha from '.'
 
-const gachaRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/gacha/$business',
+const GachaRoute = createRoute({
+  getParentRoute: () => RootRoute,
+  path: Routes.Gacha,
   async loader (ctx) {
-    const keyofBusinesses: KeyofBusinesses = ctx.params.business as KeyofBusinesses
+    const keyofBusinesses = ctx.params.keyofBusinesses as KeyofBusinesses
     const business: Business | undefined = Businesses[keyofBusinesses]
 
     // You can't use `!business` because 0 is also a valid value.
@@ -23,12 +24,9 @@ const gachaRoute = createRoute({
     //   1. Load all accounts
     //   2. Get current selected account
     //   3. Preload account gacha records
-    await queryClient.ensureQueryData(accountsQueryOptions(keyofBusinesses))
-    const selectedAccount = await queryClient.ensureQueryData(selectedAccountQueryOptions(keyofBusinesses))
-    queryClient.prefetchQuery(prettizedGachaRecordsQueryOptions(
-      business,
-      selectedAccount?.uid ?? null,
-    ))
+    await ensureAccountsQueryData(keyofBusinesses)
+    const selectedAccountUid = await ensureSelectedAccountUidQueryData(keyofBusinesses)
+    await prefetchPrettizedGachaRecordsQuery(business, selectedAccountUid)
 
     return {
       business,
@@ -36,12 +34,7 @@ const gachaRoute = createRoute({
     }
   },
   component: Gacha,
-  pendingComponent: function Pending () {
-    // TODO
-    return (
-      'loading...'
-    )
-  },
+  pendingComponent: Spinner,
   errorComponent: ({ error }) => {
     // TODO
     return (
@@ -50,4 +43,4 @@ const gachaRoute = createRoute({
   },
 })
 
-export default gachaRoute
+export default GachaRoute

@@ -1,6 +1,6 @@
 import React from 'react'
 import { CloudDatabaseRegular } from '@fluentui/react-icons'
-import Locale from '@/components/UI/Locale'
+import Locale from '@/components/Locale'
 import SettingsOptionsCollapse from '@/pages/Settings/Options/OptionsCollapse'
 
 // TODO: Cloud storage

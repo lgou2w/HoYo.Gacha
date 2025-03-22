@@ -6,12 +6,12 @@ use std::sync::LazyLock;
 use std::time::Duration;
 
 use exponential_backoff::Backoff;
-use futures_util::future::BoxFuture;
 use futures_util::FutureExt;
+use futures_util::future::BoxFuture;
 use regex::Regex;
 use serde::{Deserialize, Deserializer, Serialize};
-use time::serde::rfc3339;
 use time::OffsetDateTime;
+use time::serde::rfc3339;
 use tracing::{info, warn};
 use url::Url;
 
@@ -741,12 +741,13 @@ pub async fn fetch_gacha_records(
 #[cfg(test)]
 mod tests {
   use crate::error::Error;
+  use crate::models::BIZ_GENSHIN_IMPACT_OFFICIAL;
 
   use super::*;
 
   #[test]
   fn test_parse_gacha_url() {
-    let biz = BizInternals::GENSHIN_IMPACT_OFFICIAL;
+    let biz = &BIZ_GENSHIN_IMPACT_OFFICIAL;
 
     assert!(matches!(
       ParsedGachaUrl::parse(biz, "", None, None, None).map_err(Error::into_inner),

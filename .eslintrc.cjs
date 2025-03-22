@@ -58,6 +58,7 @@ module.exports = {
   },
   rules: {
     semi: ['error', 'never'],
+    camelcase: ['error', { ignoreImports: true }], // HACK: Allow imports
     'comma-dangle': ['error', 'always-multiline'], // HACK: Rust clippy style comma
     '@typescript-eslint/no-unused-expressions': ['error', { allowShortCircuit: true }],
     'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],

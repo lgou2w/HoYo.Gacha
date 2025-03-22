@@ -24,8 +24,8 @@ export const TauriLanguageDetectorModule: LanguageDetectorAsyncModule = {
     let locale: string | null = null
     try {
       locale = await localeFn()
-    } catch (e) {
-      console.error('Failed to get Tauri locale:', e)
+    } catch (error) {
+      console.error('Failed to get Tauri locale:', error)
     }
 
     return locale

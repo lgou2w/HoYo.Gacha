@@ -1,6 +1,9 @@
 export default {
-  text: '繁體中文',
   language: 'zh-Hant',
   matches: ['zh-HK', 'zh-TW', 'zh-MO'],
+  constants: {
+    text: '繁體中文',
+    dayjs: 'zh-tw',
+  },
   translation: {},
 } as const

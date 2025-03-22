@@ -16,10 +16,11 @@ const useStyles = makeStyles({
 type Props = Omit<React.JSX.IntrinsicElements['div'], 'children'>
 
 export default function SettingsOptions (props: Props) {
+  const styles = useStyles()
   const { className, ...rest } = props
-  const classes = useStyles()
+
   return (
-    <div className={mergeClasses(classes.root, className)} {...rest}>
+    <div className={mergeClasses(styles.root, className)} {...rest}>
       <SettingsOptionsCloud />
       <SettingsOptionsGeneral />
       <SettingsOptionsAppearance />

@@ -3,7 +3,7 @@ import { FluentProvider, Theme as FluentTheme } from '@fluentui/react-components
 import { produce } from 'immer'
 import { useImmer } from 'use-immer'
 import ThemeContext, { ThemeState } from '@/contexts/ThemeContext'
-import { ScaleLevel, ThemeData, ThemeStore, Themes } from '@/interfaces/Theme'
+import { ScaleLevel, ThemeData, ThemeStore, Themes, VAR_BASE_FONT_SIZE } from '@/interfaces/Theme'
 
 interface Props {
   initialData: ThemeData
@@ -47,11 +47,11 @@ export default function ThemeProvider (props: PropsWithChildren<Props>) {
   )
 }
 
-// See: src/assets/global.css -> :root
+// See: src/hooks/useAppInit/useGlobalStyles.ts -> :root
 function applyScaling (scale: ScaleLevel) {
   window
     .document
     .documentElement
     .style
-    .setProperty('--base-font-size', `${scale}px`)
+    .setProperty(VAR_BASE_FONT_SIZE, `${scale}px`)
 }

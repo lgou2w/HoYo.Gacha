@@ -1,11 +1,12 @@
 import { createRoute } from '@tanstack/react-router'
-import rootRoute from '@/pages/Root/route'
+import RootRoute from '@/pages/Root/route'
+import Routes from '@/routes'
 import Home from '.'
 
-const homeRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/',
+const HomeRoute = createRoute({
+  getParentRoute: () => RootRoute,
+  path: Routes.Home,
   component: Home,
 })
 
-export default homeRoute
+export default HomeRoute
