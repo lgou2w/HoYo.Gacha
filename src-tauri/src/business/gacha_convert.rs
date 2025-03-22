@@ -184,7 +184,7 @@ declare_error_kinds! {
 declare_error_kinds! {
   #[derive(Debug, thiserror::Error)]
   LegacyUigfGachaRecordsReadError {
-    #[error("Failed to open input: '{path}' {cause}")]
+    #[error("Failed to open input '{path}': {cause}")]
     OpenInput {
       path: PathBuf,
       cause: io::Error => serde_json::json!({
@@ -585,7 +585,7 @@ declare_error_kinds! {
 declare_error_kinds! {
   #[derive(Debug, thiserror::Error)]
   UigfGachaRecordsReadError {
-    #[error("Failed to open input: '{path}' {cause}")]
+    #[error("Failed to open input '{path}': {cause}")]
     OpenInput {
       path: PathBuf,
       cause: io::Error => serde_json::json!({
@@ -1161,7 +1161,7 @@ declare_error_kinds! {
 declare_error_kinds! {
   #[derive(Debug, thiserror::Error)]
   SrgfGachaRecordsReadError {
-    #[error("Failed to open input: '{path}' {cause}")]
+    #[error("Failed to open input '{path}': {cause}")]
     OpenInput {
       path: PathBuf,
       cause: io::Error => serde_json::json!({
