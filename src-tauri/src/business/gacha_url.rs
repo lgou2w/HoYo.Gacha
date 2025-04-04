@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::fmt::{self, Debug};
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
@@ -74,7 +74,7 @@ declare_error_kinds! {
     UnexpectedResponse { retcode: i32, message: String },
 
     #[error("Owner uid of the gacha url does not match (expected: {expected}, actual: {actual:?})")]
-    InconsistentUid { expected: u32, actual: Vec<u32> },
+    InconsistentUid { expected: u32, actual: HashSet<u32> },
   }
 }
 
@@ -344,7 +344,7 @@ impl GachaUrl {
   ) -> Result<GachaUrl, GachaUrlError> {
     info!("Find owner consistency gacha url...");
 
-    let mut actual = Vec::with_capacity(dirty_urls.len());
+    let mut actual = HashSet::with_capacity(dirty_urls.len());
     let mut contains_empty: usize = 0;
 
     for dirty in dirty_urls {
@@ -398,7 +398,7 @@ impl GachaUrl {
               });
             } else {
               // The gacha url does not match the expected uid
-              actual.push(record.uid);
+              actual.insert(record.uid);
             }
           }
         },
