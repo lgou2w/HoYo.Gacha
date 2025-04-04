@@ -64,15 +64,14 @@ impl Database {
   pub async fn new() -> Self {
     // Database storage folder
     //   In debug mode  : is in the src-tauri folder
-    //   In release mode:
-    //     Windows -> %USERPROFILE%\\AppData\\Local\\{ID}
-    //     MacOS   -> %HOME%/Library/Caches/{ID}
+    //   In release mode: Current executable folder
     let filename = if cfg!(debug_assertions) {
       PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(consts::DATABASE)
     } else {
-      consts::PLATFORM
-        .appdata_local
-        .join(consts::ID)
+      env::current_exe()
+        .expect("Failed to get current executable path")
+        .parent()
+        .unwrap()
         .join(consts::DATABASE)
     };
 
