@@ -205,6 +205,10 @@ export default {
               Format: {
                 Label: '格式',
               },
+              Locale: {
+                Label: '语言',
+                Info: '导入文件格式的预期语言区域。',
+              },
               SaveOnConflict: {
                 Label: '保存冲突时',
                 Values: {
@@ -214,6 +218,10 @@ export default {
               },
               CancelBtn: '取消',
               SubmitBtn: '导入',
+              Success: {
+                Title: '导入成功',
+                Body: '新增 {{changes}} 条新记录。',
+              },
             },
           },
           Clientarea: {

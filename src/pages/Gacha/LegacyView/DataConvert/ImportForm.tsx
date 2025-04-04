@@ -1,6 +1,6 @@
 import React, { ComponentProps, MouseEventHandler, useCallback, useMemo } from 'react'
 import { ProgressBar, makeStyles, tokens } from '@fluentui/react-components'
-import { AttachRegular } from '@fluentui/react-icons'
+import { AttachRegular, InfoFilled } from '@fluentui/react-icons'
 import { listen } from '@tauri-apps/api/event'
 import { useImmer } from 'use-immer'
 import { ImportGachaRecordsArgs, importGachaRecords } from '@/api/commands/business'
@@ -46,6 +46,9 @@ const useStyles = makeStyles({
       color: tokens.colorPaletteBerryForeground1,
       border: `${tokens.strokeWidthThin} solid ${tokens.colorPaletteBerryForeground1}`,
     },
+  },
+  localeIcon: {
+    color: tokens.colorBrandForeground1,
   },
   bottom: {
     display: 'flex',
@@ -197,16 +200,17 @@ export default function GachaLegacyViewDataConvertImportForm (props: Props) {
 
     onSuccess?.(changes)
 
-    // TODO: i18n
-    notifier.success('Import Success', {
-      body: `Added ${changes} new records.`,
+    notifier.success(i18n.t('Pages.Gacha.LegacyView.DataConvert.ImportForm.Success.Title'), {
+      body: i18n.t('Pages.Gacha.LegacyView.DataConvert.ImportForm.Success.Body', {
+        changes,
+      }),
     })
 
     if (changes > 0) {
       // HACK: If the change is greater than 0, invalidate the gacha records
       invalidatePrettizedGachaRecordsQuery(selectedAccount.business, selectedAccount.uid)
     }
-  }, [file, format, formatLegacyUigfLocale, notifier, onSuccess, produce, saveOnConflict, selectedAccount])
+  }, [file, format, formatLegacyUigfLocale, i18n, notifier, onSuccess, produce, saveOnConflict, selectedAccount])
 
   return (
     <div className={styles.root}>
@@ -264,8 +268,13 @@ export default function GachaLegacyViewDataConvertImportForm (props: Props) {
       </Field>
       {format === 'LegacyUigf' && (
         <Field
-          label="语言"
           size="large"
+          label={<Locale mapping={['Pages.Gacha.LegacyView.DataConvert.ImportForm.Locale.Label']} />}
+          validationState="none"
+          validationMessageIcon={<InfoFilled className={styles.localeIcon} />}
+          validationMessage={<Locale
+            mapping={['Pages.Gacha.LegacyView.DataConvert.ImportForm.Locale.Info']}
+          />}
         >
           <Select
             appearance="filled-darker"
@@ -273,6 +282,7 @@ export default function GachaLegacyViewDataConvertImportForm (props: Props) {
             onChange={(_, data) => produce((draft) => {
               draft.formatLegacyUigfLocale = data.value as SupportedGachaLocale
             })}
+            disabled={busy}
           >
             {GachaLocales.map((locale) => (
               <option key={locale} value={locale}>

@@ -216,6 +216,10 @@ export default {
               Format: {
                 Label: 'Format',
               },
+              Locale: {
+                Label: 'Locale',
+                Info: 'Expected locale of the import file format.',
+              },
               SaveOnConflict: {
                 Label: 'Save on conflict',
                 Values: {
@@ -225,6 +229,10 @@ export default {
               },
               CancelBtn: 'Cancel',
               SubmitBtn: 'Import',
+              Success: {
+                Title: 'Import Success',
+                Body: 'Added {{changes}} new records.',
+              },
             },
           },
           Clientarea: {
