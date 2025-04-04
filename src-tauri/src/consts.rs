@@ -19,11 +19,11 @@ pub const ID: &str = "com.lgou2w.hoyo.gacha.v1";
 cfg_if! {if #[cfg(any(debug_assertions, test))] {
   // for Development
   pub const NAME: &str = "__DEV__HoYo.Gacha";
-  pub const DATABASE: &str = "__DEV__HoYo.Gacha.db";
+  pub const DATABASE: &str = "__DEV__HoYo.Gacha.v1.db";
 } else {
   // for Production
   pub const NAME: &str = "HoYo.Gacha";
-  pub const DATABASE: &str = "HoYo.Gacha.db";
+  pub const DATABASE: &str = "HoYo.Gacha.v1.db"; // Legacy: HoYo.Gacha.db
 }}
 
 // Package info
