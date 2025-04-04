@@ -188,6 +188,45 @@ export default {
             EditTitle: 'Edit account: "$t(Business.{{keyofBusinesses}}.Name)"',
             EditSuccess: 'Successfully edited account: {{uid}}',
           },
+          DataConvert: {
+            Dialog: {
+              ImportTitle: 'Import $t(Business.{{keyofBusinesses}}.Gacha.Name) Records',
+              ExportTitle: 'Export $t(Business.{{keyofBusinesses}}.Gacha.Name) Records',
+            },
+            Format: {
+              Uigf: {
+                Text: 'UIGF',
+                Info: 'Uniformed Interchangeable GachaLog Format standard (UIGF) v4.0',
+              },
+              LegacyUigf: {
+                Text: 'UIGF (Legacy)',
+                Info: 'Uniformed Interchangeable GachaLog Format standard (UIGF) v2.2, v2.3, v2.4, v3.0',
+              },
+              Srgf: {
+                Text: 'SRGF',
+                Info: 'Star Rail GachaLog Format standard (SRGF) v1.0',
+              },
+            },
+            ImportForm: {
+              File: {
+                Label: 'File',
+                Placeholder: 'Importing file',
+                SelectBtn: 'Select...',
+              },
+              Format: {
+                Label: 'Format',
+              },
+              SaveOnConflict: {
+                Label: 'Save on conflict',
+                Values: {
+                  Nothing: 'Nothing',
+                  Update: 'Update',
+                },
+              },
+              CancelBtn: 'Cancel',
+              SubmitBtn: 'Import',
+            },
+          },
           Clientarea: {
             Overview: {
               GridCard: {

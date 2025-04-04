@@ -208,6 +208,12 @@ declare_error_kinds! {
     #[error("Required field missing: {field}")]
     RequiredField { field: &'static str },
 
+    #[error("Missing metadata locale: {business}, locale: {locale}")]
+    MissingMetadataLocale {
+      business: Business,
+      locale: String
+    },
+
     #[error("Missing metadata entry: {business}, locale: {locale}, {key}: {val}")]
     MissingMetadataEntry {
       business: Business,
@@ -480,11 +486,6 @@ impl GachaRecordsReader for LegacyUigfGachaRecordsReader {
 
     let mut records = Vec::with_capacity(uigf.list.len());
     for item in uigf.list {
-      let locale = item
-        .lang
-        .or(uigf.info.lang.clone())
-        .unwrap_or(expected_locale.clone());
-
       if is_v2_2 {
         if item.name.is_none() {
           return Err(LegacyUigfGachaRecordsReadErrorKind::RequiredField { field: FIELD_NAME })?;
@@ -501,27 +502,36 @@ impl GachaRecordsReader for LegacyUigfGachaRecordsReader {
 
       let name = item.name.clone();
       let item_id = item.item_id.clone();
-      let metadata_entry = metadata
-        .obtain(BUSINESS, &locale)
-        .and_then(|map| {
-          if is_v2_2 {
-            map.entry_from_name_first(name.as_ref().unwrap())
+
+      let locale = item
+        .lang
+        .or(uigf.info.lang.clone())
+        .unwrap_or(expected_locale.clone());
+
+      let metadata_locale = metadata.obtain(BUSINESS, &locale).ok_or_else(|| {
+        LegacyUigfGachaRecordsReadErrorKind::MissingMetadataLocale {
+          business: BUSINESS,
+          locale: locale.clone(),
+        }
+      })?;
+
+      let metadata_entry = if is_v2_2 {
+        metadata_locale.entry_from_name_first(name.as_ref().unwrap())
+      } else {
+        metadata_locale.entry_from_id(item_id.as_ref().unwrap())
+      }
+      .ok_or_else(
+        || LegacyUigfGachaRecordsReadErrorKind::MissingMetadataEntry {
+          business: BUSINESS,
+          locale: locale.clone(),
+          key: if is_v2_2 { FIELD_NAME } else { FIELD_ITEM_ID },
+          val: if is_v2_2 {
+            name.clone().unwrap()
           } else {
-            map.entry_from_id(item_id.as_ref().unwrap())
-          }
-        })
-        .ok_or_else(
-          || LegacyUigfGachaRecordsReadErrorKind::MissingMetadataEntry {
-            business: BUSINESS,
-            locale: locale.clone(),
-            key: if is_v2_2 { FIELD_NAME } else { FIELD_ITEM_ID },
-            val: if is_v2_2 {
-              name.clone().unwrap()
-            } else {
-              item_id.clone().unwrap()
-            },
+            item_id.clone().unwrap()
           },
-        )?;
+        },
+      )?;
 
       // Priority is given to the use of user-provided data
       // over the metadata entry.
@@ -1182,10 +1192,16 @@ declare_error_kinds! {
     #[error("Inconsistent with expected uid: expected: {expected}, actual: {actual}")]
     InconsistentUid { expected: u32, actual: u32 },
 
-    #[error("Missing metadata entry: {business}, locale: {lang}, {key}: {val}")]
+    #[error("Missing metadata locale: {business}, locale: {locale}")]
+    MissingMetadataLocale {
+      business: Business,
+      locale: String
+    },
+
+    #[error("Missing metadata entry: {business}, locale: {locale}, {key}: {val}")]
     MissingMetadataEntry {
       business: Business,
-      lang: String,
+      locale: String,
       key: &'static str,
       val: String
     },
@@ -1361,7 +1377,6 @@ impl GachaRecordsWriter for SrgfGachaRecordsWriter {
 #[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SrgfGachaRecordsReader {
-  pub expected_locale: String,
   pub expected_uid: u32,
 }
 
@@ -1389,10 +1404,7 @@ impl GachaRecordsReader for SrgfGachaRecordsReader {
     // Legacy SRGF Gacha Records only support: Honkai Star Rail
     const BUSINESS: Business = Business::HonkaiStarRail;
 
-    let Self {
-      expected_locale,
-      expected_uid,
-    } = self;
+    let Self { expected_uid } = self;
 
     let srgf: Srgf = serde_json::from_reader(input)
       .map_err(|cause| SrgfGachaRecordsReadErrorKind::InvalidInput { cause })?;
@@ -1419,13 +1431,20 @@ impl GachaRecordsReader for SrgfGachaRecordsReader {
 
     let mut records = Vec::with_capacity(srgf.list.len());
     for item in srgf.list {
-      let locale = item.lang.unwrap_or(expected_locale.clone());
-      let metadata_entry = metadata
-        .obtain(BUSINESS, &locale)
-        .and_then(|map| map.entry_from_id(&item.item_id))
+      let locale = item.lang.unwrap_or(srgf.info.lang.clone());
+
+      let metadata_locale = metadata.obtain(BUSINESS, &locale).ok_or_else(|| {
+        SrgfGachaRecordsReadErrorKind::MissingMetadataLocale {
+          business: BUSINESS,
+          locale: locale.clone(),
+        }
+      })?;
+
+      let metadata_entry = metadata_locale
+        .entry_from_id(&item.item_id)
         .ok_or_else(|| SrgfGachaRecordsReadErrorKind::MissingMetadataEntry {
           business: BUSINESS,
-          lang: locale.clone(),
+          locale: locale.clone(),
           key: FIELD_ITEM_ID,
           val: item.item_id.clone(),
         })?;
@@ -1937,7 +1956,6 @@ mod tests {
     }"#;
 
     let records = SrgfGachaRecordsReader {
-      expected_locale: "en-us".to_owned(),
       expected_uid: 100_000_000,
     }
     .read(GachaMetadata::embedded(), Cursor::new(input))
@@ -1995,7 +2013,6 @@ mod tests {
 
     let input = File::open(output.with_extension("json")).unwrap();
     let read_records = SrgfGachaRecordsReader {
-      expected_locale: "en-us".to_owned(),
       expected_uid: 100_000_000,
     }
     .read(GachaMetadata::embedded(), input)

@@ -3,7 +3,8 @@ import { Option } from '@fluentui/react-components'
 import { LocalLanguageRegular } from '@fluentui/react-icons'
 import Locale from '@/components/Locale'
 import Dropdown from '@/components/UI/Dropdown'
-import useI18n, { KnownLanguages, SupportedLanguages } from '@/hooks/useI18n'
+import useI18n from '@/hooks/useI18n'
+import { KnownLanguages, SupportedLanguages } from '@/i18n/locales'
 import SettingsOptionsItem from '@/pages/Settings/Options/OptionsItem'
 
 export default function SettingsOptionsGeneralLanguage () {

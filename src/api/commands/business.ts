@@ -142,6 +142,7 @@ export type LegacyUigfGachaRecordsReadError = DetailedError<typeof NamedLegacyUi
   | { kind: 'UnsupportedVersion', version: string, allowed: string[] }
   | { kind: 'InconsistentUid', expected: Account['uid'], actual: Account['uid'] }
   | { kind: 'RequiredField', field: string }
+  | { kind: 'MissingMetadataLocale', business: Business, locale: string }
   | { kind: 'MissingMetadataEntry', business: Business, locale: string, key: string, val: string }
 >
 
@@ -203,6 +204,7 @@ export type SrgfGachaRecordsReadError = DetailedError<typeof NamedSrgfGachaRecor
   | { kind: 'InvalidVersion', version: string }
   | { kind: 'UnsupportedVersion', version: string, allowed: string[] }
   | { kind: 'InconsistentUid', expected: Account['uid'], actual: Account['uid'] }
+  | { kind: 'MissingMetadataLocale', business: Business, locale: string }
   | { kind: 'MissingMetadataEntry', business: Business, locale: string, key: string, val: string }
 >
 
@@ -266,7 +268,6 @@ export type ImportGachaRecordsArgs = NonNullable<{
       accounts?: Account['uid'][]
     } }
     | { Srgf: {
-      expectedLocale: string,
       expectedUid: Account['uid']
     } }
   saveOnConflict?: 'Nothing' | 'Update'

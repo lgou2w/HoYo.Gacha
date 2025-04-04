@@ -1,9 +1,11 @@
-import React from 'react'
+import React, { ComponentProps, ElementRef, Fragment, MouseEventHandler, PropsWithoutRef, useCallback, useRef } from 'react'
 import { Caption1, makeStyles, tokens } from '@fluentui/react-components'
 import { ArrowDownloadRegular, ArrowUploadRegular } from '@fluentui/react-icons'
-import { importGachaRecords } from '@/api/commands/business'
+import { useSelectedAccountSuspenseQueryData } from '@/api/queries/accounts'
 import Locale from '@/components/Locale'
 import Button from '@/components/UI/Button'
+import useBusinessContext from '@/hooks/useBusinessContext'
+import DataConvertDialog from '@/pages/Gacha/LegacyView/DataConvert/Dialog'
 
 const useStyles = makeStyles({
   root: {
@@ -22,21 +24,6 @@ const useStyles = makeStyles({
 export default function GachaLegacyViewToolbarConvert () {
   const styles = useStyles()
 
-  // FIXME: TEST CODE
-  const importData = () => {
-    importGachaRecords({
-      input: 'your_legacy_uigf_v2_v3_data.json',
-      importer: {
-        LegacyUigf: {
-          expectedUid: 100000000,
-          expectedLocale: 'zh-cn',
-        },
-      },
-    })
-      .then(console.log)
-      .catch(console.error)
-  }
-
   return (
     <div className={styles.root}>
       <div className={styles.content}>
@@ -44,26 +31,43 @@ export default function GachaLegacyViewToolbarConvert () {
           component={Caption1}
           mapping={['Pages.Gacha.LegacyView.Toolbar.Convert.Import.Title']}
         />
-        <Button
-          icon={<ArrowDownloadRegular />}
-          appearance="subtle"
-          shape="circular"
-          size="large"
-          onClick={importData}
-        />
+        <DataConvertPreset preset="Import" />
       </div>
       <div className={styles.content}>
         <Locale
           component={Caption1}
           mapping={['Pages.Gacha.LegacyView.Toolbar.Convert.Export.Title']}
         />
-        <Button
-          icon={<ArrowUploadRegular />}
-          appearance="subtle"
-          shape="circular"
-          size="large"
-        />
+        <DataConvertPreset preset="Export" />
       </div>
     </div>
+  )
+}
+
+function DataConvertPreset (props: PropsWithoutRef<ComponentProps<typeof DataConvertDialog>>) {
+  const { preset } = props
+  const { keyofBusinesses } = useBusinessContext()
+  const selectedAccount = useSelectedAccountSuspenseQueryData(keyofBusinesses)
+
+  const dialogRef = useRef<ElementRef<typeof DataConvertDialog>>(null)
+  const handleClick = useCallback<MouseEventHandler>(() => {
+    dialogRef.current?.setOpen(true)
+  }, [])
+
+  return (
+    <Fragment>
+      <Button
+        icon={preset === 'Import' ? <ArrowDownloadRegular /> : <ArrowUploadRegular />}
+        appearance="subtle"
+        shape="circular"
+        size="large"
+        onClick={handleClick}
+        disabled={!selectedAccount}
+      />
+      <DataConvertDialog
+        ref={dialogRef}
+        preset={preset}
+      />
+    </Fragment>
   )
 }

@@ -1,3 +1,4 @@
+use std::path::PathBuf;
 use std::sync::Arc;
 use std::{env, process};
 
@@ -15,6 +16,7 @@ use super::singleton::Singleton;
 use super::tracing::Tracing;
 use crate::database::{self, Database, KvMut};
 use crate::models::ThemeData;
+use crate::utilities::file_dialog;
 use crate::{business, consts};
 
 #[tracing::instrument(skip_all)]
@@ -97,6 +99,8 @@ pub async fn start(singleton: Singleton, tracing: Tracing, database: Database) {
       core_webview2_version,
       core_tauri_version,
       core_change_theme,
+      core_pick_file,
+      core_pick_folder,
       database::kv_questioner::database_find_kv,
       database::kv_questioner::database_create_kv,
       database::kv_questioner::database_update_kv,
@@ -196,4 +200,33 @@ fn core_change_theme(window: WebviewWindow, color_scheme: Theme) -> Result<(), t
     ffi::set_webview_theme(&window, color_scheme)?;
   }
   Ok(())
+}
+
+#[tauri::command]
+async fn core_pick_file(
+  title: Option<String>,
+  directory: Option<PathBuf>,
+  filters: Option<Vec<(String, Vec<String>)>>,
+) -> Option<PathBuf> {
+  let mut rfd = file_dialog::create()
+    .set_title(title.unwrap_or_default())
+    .set_directory(directory.as_ref().unwrap_or(&PathBuf::default()));
+
+  if let Some(filters) = filters {
+    for (name, extensions) in filters {
+      rfd = rfd.add_filter(name, &extensions);
+    }
+  }
+
+  rfd.pick_file().await.map(Into::into)
+}
+
+#[tauri::command]
+async fn core_pick_folder(title: Option<String>, directory: Option<PathBuf>) -> Option<PathBuf> {
+  file_dialog::create()
+    .set_title(title.unwrap_or_default())
+    .set_directory(directory.as_ref().unwrap_or(&PathBuf::default()))
+    .pick_folder()
+    .await
+    .map(Into::into)
 }

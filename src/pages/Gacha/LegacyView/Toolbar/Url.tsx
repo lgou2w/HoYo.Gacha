@@ -1,4 +1,4 @@
-import React, { MouseEventHandler, useCallback, useState } from 'react'
+import React, { useCallback, useState } from 'react'
 import { Caption1, Caption2, inputClassNames, makeStyles, mergeClasses, tokens } from '@fluentui/react-components'
 import { ArrowClockwiseRegular, CopyRegular, LinkRegular } from '@fluentui/react-icons'
 import * as clipboard from '@tauri-apps/plugin-clipboard-manager'
@@ -149,9 +149,7 @@ function GachaLegacyViewToolbarUrlInput () {
   const hasExpired = !!deadline && deadline.isBefore()
 
   const [copyVisible, setCopyVisible] = useState(false)
-  const copyUrl = useCallback<MouseEventHandler>(async (evt) => {
-    evt.preventDefault()
-
+  const copyUrl = useCallback(async () => {
     if (gachaUrl) {
       await clipboard.writeText(gachaUrl)
       console.debug('Copying URL to clipboard:', gachaUrl)
@@ -214,9 +212,7 @@ function GachaLegacyViewToolbarUrlButton () {
   const notifier = useNotifier()
 
   const disabled = !selectedAccount || !prettized || isBusy || gachaRecordsFetcher.state.isFetching
-  const handleUpdate = useCallback<MouseEventHandler>(async (evt) => {
-    evt.preventDefault()
-
+  const handleUpdate = useCallback(async () => {
     if (!selectedAccount || !prettized) {
       return
     }

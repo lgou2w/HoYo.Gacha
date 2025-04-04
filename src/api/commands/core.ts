@@ -12,3 +12,13 @@ export const tauriVersion = declareCommand<undefined, string>('core_tauri_versio
 
 export type ChangeThemeArgs = { colorScheme: ColorScheme }
 export const changeTheme = declareCommand<ChangeThemeArgs>('core_change_theme')
+
+export type PickFileArgs = {
+  title?: string | null
+  directory?: string | null
+  filters?: Array<[string, string[]]> | null // [name, extension[]]
+}
+export const pickFile = declareCommand<PickFileArgs, string | null>('core_pick_file')
+
+export type PickFolderArgs = Omit<PickFileArgs, 'filters'>
+export const pickFolder = declareCommand<PickFolderArgs, string | null>('core_pick_folder')

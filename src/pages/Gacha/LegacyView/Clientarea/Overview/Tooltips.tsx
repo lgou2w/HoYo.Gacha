@@ -38,6 +38,7 @@ export default function GachaLegacyViewClientareaOverviewTooltips (props: Parent
     },
   } = props
 
+  const now = new Date()
   const i18n = useI18n()
 
   return (
@@ -61,9 +62,9 @@ export default function GachaLegacyViewClientareaOverviewTooltips (props: Parent
       <Caption1>
         &#x2756;&nbsp;
         <Locale mapping={['Pages.Gacha.LegacyView.Clientarea.Overview.Tooltips.Fragment2', { keyofBusinesses }]} />
-        <span className={styles.secondary}>{i18n.dayjs(startTime).format('LLLL')}</span>
+        <span className={styles.secondary}>{i18n.dayjs(startTime || now).format('LLLL')}</span>
         &nbsp;&#x7E;&nbsp;
-        <span className={styles.secondary}>{i18n.dayjs(endTime).format('LLLL')}</span>
+        <span className={styles.secondary}>{i18n.dayjs(endTime || now).format('LLLL')}</span>
       </Caption1>
       <Caption1>
         &#x2756;&nbsp;

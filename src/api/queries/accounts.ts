@@ -102,7 +102,9 @@ export function useCreateAccountMutation () {
         }),
       )
 
-      // Invalidate the query cache for selected account
+      // After the creation is complete, select the account
+      // and invalidate the query cache for selected account
+      SelectedAccountUidStorage.save(keyofBusinesses, data.uid)
       await invalidateSelectedAccountUidQuery(keyofBusinesses)
     },
   })

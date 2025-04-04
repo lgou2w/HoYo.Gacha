@@ -40,3 +40,5 @@ export type Overwrite<
   U extends object,
   I = Diff<T, U> & Intersection<U, T>
 > = Pick<I, keyof I>
+
+export type KeyofUnion<T> = T extends object ? keyof T : never

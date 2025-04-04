@@ -177,6 +177,45 @@ export default {
             EditTitle: '编辑账号："$t(Business.{{keyofBusinesses}}.Name)"',
             EditSuccess: '成功编辑账号：{{uid}}',
           },
+          DataConvert: {
+            Dialog: {
+              ImportTitle: '导入$t(Business.{{keyofBusinesses}}.Gacha.Name)记录',
+              ExportTitle: '导出$t(Business.{{keyofBusinesses}}.Gacha.Name)记录',
+            },
+            Format: {
+              Uigf: {
+                Text: 'UIGF',
+                Info: '统一可交换抽卡记录标准 (UIGF) v4.0',
+              },
+              LegacyUigf: {
+                Text: 'UIGF (Legacy)',
+                Info: '统一可交换抽卡记录标准 (UIGF) v2.2, v2.3, v2.4, v3.0',
+              },
+              Srgf: {
+                Text: 'SRGF',
+                Info: '星穹铁道抽卡记录标准 (SRGF) v1.0',
+              },
+            },
+            ImportForm: {
+              File: {
+                Label: '文件',
+                Placeholder: '待导入文件',
+                SelectBtn: '选择...',
+              },
+              Format: {
+                Label: '格式',
+              },
+              SaveOnConflict: {
+                Label: '保存冲突时',
+                Values: {
+                  Nothing: '忽略',
+                  Update: '更新',
+                },
+              },
+              CancelBtn: '取消',
+              SubmitBtn: '导入',
+            },
+          },
           Clientarea: {
             Overview: {
               GridCard: {

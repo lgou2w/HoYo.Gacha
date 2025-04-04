@@ -1,5 +1,4 @@
 use std::fmt::Debug;
-use std::num::NonZeroIsize;
 use std::path::PathBuf;
 
 use async_trait::async_trait;
@@ -9,10 +8,10 @@ use tokio::fs::File as TokioFile;
 use tokio::io::{AsyncBufReadExt, BufReader as TokioBufReader};
 use tracing::{Span, info, warn};
 
-use crate::bootstrap::internals;
 use crate::consts;
 use crate::error::declare_error_kinds;
 use crate::models::{BizInternals, Business, BusinessRegion};
+use crate::utilities::file_dialog;
 
 declare_error_kinds! {
   #[derive(Debug, thiserror::Error)]
@@ -166,39 +165,9 @@ impl DataFolderLocator for ManualDataFolderLocator {
     info!("Manually locate the data folder...");
 
     let biz = BizInternals::mapped(business, region);
-    let mut rfd = rfd::AsyncFileDialog::new()
+    let rfd = file_dialog::create()
       .set_directory(&consts::PLATFORM.user_home)
       .set_title(format!("{}: {}", &self.title, biz.data_folder_name));
-
-    #[cfg(windows)]
-    {
-      use raw_window_handle::{
-        DisplayHandle, HandleError, HasDisplayHandle, HasWindowHandle, RawWindowHandle,
-        Win32WindowHandle, WindowHandle,
-      };
-
-      struct DataFolderWindowHandle(isize);
-
-      impl HasWindowHandle for DataFolderWindowHandle {
-        fn window_handle(&self) -> Result<WindowHandle<'_>, HandleError> {
-          let hwnd = NonZeroIsize::new(self.0).unwrap();
-          let raw_window_handle = RawWindowHandle::Win32(Win32WindowHandle::new(hwnd));
-          let window_handle = unsafe { WindowHandle::borrow_raw(raw_window_handle) };
-          Ok(window_handle)
-        }
-      }
-
-      impl HasDisplayHandle for DataFolderWindowHandle {
-        fn display_handle(&self) -> Result<DisplayHandle<'_>, HandleError> {
-          Ok(DisplayHandle::windows())
-        }
-      }
-
-      let hwnd = internals::get_tauri_main_window_hwnd();
-      if hwnd != 0 {
-        rfd = rfd.set_parent(&DataFolderWindowHandle(hwnd));
-      }
-    }
 
     let maybe_data_folder: PathBuf = match rfd.pick_folder().await {
       Some(folder) => folder.into(),

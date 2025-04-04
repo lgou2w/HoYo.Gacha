@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next'
 import { KnownLanguages, Language } from '@/i18n/locales'
 import dayjs from '@/utilities/dayjs'
 
-export * from '@/i18n/locales'
 export default function useI18n () {
   const { i18n, t } = useTranslation()
   const extended = useMemo(() => {
