@@ -62,7 +62,7 @@ async function loadAndEvaluateThemeData (engine: {
   const invalid = !namespace || !colorScheme || !Themes[namespace]?.[colorScheme]
   if (invalid) {
     console.error(
-      'Invalid database theme namespace or color scheme: namespace=%s, colorScheme=%s',
+      `Invalid ${engine.name} theme namespace or color scheme: namespace=%s, colorScheme=%s`,
       namespace,
       colorScheme,
     )
