@@ -49,7 +49,7 @@ export const DefaultThemeData = {
 
 export interface ThemeStore {
   load (): ThemeData | Promise<ThemeData>
-  save (data: ThemeData): void | Promise<void>
+  save (data: Partial<ThemeData>): void | Promise<void>
 }
 
 // CSS Properties

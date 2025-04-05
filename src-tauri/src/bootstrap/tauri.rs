@@ -33,8 +33,8 @@ pub async fn start(singleton: Singleton, tracing: Tracing, database: Database) {
     .await
     .expect("Error reading theme data from database")
     .transpose()
-    .unwrap() // FIXME: serde_json::Error - Unless it's been tampered with.
-    .map(|theme_data| theme_data.color_scheme)
+    .expect("Error deserializing theme data from database") // FIXME: Remove invalid data
+    .and_then(|theme_data| theme_data.color_scheme)
     .unwrap_or_else(|| {
       if cfg!(windows) {
         ffi::apps_use_theme()
