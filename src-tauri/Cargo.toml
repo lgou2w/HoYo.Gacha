@@ -45,7 +45,7 @@ tauri-plugin-shell = "2.2.1"
 tauri-plugin-clipboard-manager = "2.2.2"
 thiserror = "2.0.12"
 time = { version = "0.3.41", features = ["formatting", "local-offset", "macros", "serde", "serde-human-readable"] }
-tokio = { version = "1.44.1", features = ["macros", "rt", "rt-multi-thread"] }
+tokio = { version = "1.44.2", features = ["macros", "rt", "rt-multi-thread"] }
 tracing = "0.1.41"
 tracing-appender = "0.2.3"
 tracing-subscriber = { version = "0.3.19", features = ["env-filter", "local-time"] }
