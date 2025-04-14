@@ -122,7 +122,7 @@ pub async fn start(singleton: Singleton, tracing: Tracing, database: Database) {
       business::business_locate_data_folder,
       business::business_from_webcaches_gacha_url,
       business::business_from_dirty_gacha_url,
-      business::business_create_gacha_records_fetcher_channel,
+      business::business_create_gacha_records_fetcher,
       business::business_import_gacha_records,
       business::business_export_gacha_records,
       business::business_find_and_pretty_gacha_records,

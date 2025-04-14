@@ -70,7 +70,7 @@ pub enum GachaRecordSaveToDatabase {
 #[allow(clippy::too_many_arguments)]
 #[tauri::command]
 #[tracing::instrument(skip_all)]
-pub async fn business_create_gacha_records_fetcher_channel(
+pub async fn business_create_gacha_records_fetcher(
   window: WebviewWindow,
   database: DatabaseState<'_>,
   business: Business,
@@ -92,7 +92,7 @@ pub async fn business_create_gacha_records_fetcher_channel(
     }
   }
 
-  let records = create_gacha_records_fetcher_channel(
+  let records = create_gacha_records_fetcher(
     business,
     region,
     uid,

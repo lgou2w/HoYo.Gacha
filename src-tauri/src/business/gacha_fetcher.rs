@@ -12,7 +12,7 @@ use super::GachaUrlError;
 
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "PascalCase")] // Enum name
-pub enum GachaRecordsFetcherChannelFragment {
+pub enum GachaRecordsFetcherFragment {
   Sleeping,
   Ready(u32),
   Pagination(usize),
@@ -24,7 +24,7 @@ pub enum GachaRecordsFetcherChannelFragment {
 
 #[allow(clippy::too_many_arguments)]
 #[tracing::instrument(skip(window))]
-pub async fn create_gacha_records_fetcher_channel(
+pub async fn create_gacha_records_fetcher(
   business: Business,
   region: BusinessRegion,
   uid: u32,
@@ -33,7 +33,7 @@ pub async fn create_gacha_records_fetcher_channel(
   window: WebviewWindow,
   event_channel: Option<String>,
 ) -> Result<Option<Vec<GachaRecord>>, Box<dyn ErrorDetails + Send + 'static>> {
-  info!("Creating a Gacha Records Fetcher Channel");
+  info!("Creating a Gacha Records Fetcher");
 
   if gacha_type_and_last_end_id_mappings.is_empty() {
     warn!("Empty Gacha type and last end id mappings");
@@ -41,7 +41,7 @@ pub async fn create_gacha_records_fetcher_channel(
   }
 
   // Internal Abbreviations
-  type Fragment = GachaRecordsFetcherChannelFragment;
+  type Fragment = GachaRecordsFetcherFragment;
 
   let (sender, mut receiver) = mpsc::channel(1);
   let task = tokio::spawn(async move {
@@ -79,14 +79,14 @@ pub async fn create_gacha_records_fetcher_channel(
       }
     }
 
-    if let GachaRecordsFetcherChannelFragment::Data(data) = fragment {
+    if let GachaRecordsFetcherFragment::Data(data) = fragment {
       records.extend(data);
     }
   }
 
   match task.await {
     Ok(Ok(_)) => {
-      info!("Fetcher channel execution is finished");
+      info!("Gacha Records fetcher execution is finished");
       Ok(Some(records))
     }
     Ok(Err(err)) => {
@@ -94,7 +94,7 @@ pub async fn create_gacha_records_fetcher_channel(
       Err(err)
     }
     Err(err) => {
-      panic!("Error while fetcher channel join: {err}"); // FIXME: wrapper
+      panic!("Error while task join: {err}"); // FIXME: wrapper
     }
   }
 }
@@ -103,13 +103,13 @@ pub async fn create_gacha_records_fetcher_channel(
 async fn pull_gacha_records(
   business: Business,
   region: BusinessRegion,
-  sender: &mpsc::Sender<GachaRecordsFetcherChannelFragment>,
+  sender: &mpsc::Sender<GachaRecordsFetcherFragment>,
   gacha_url: &str,
   gacha_type: &u32,
   last_end_id: Option<&str>,
 ) -> Result<(), GachaUrlError> {
   // Internal Abbreviations
-  type Fragment = GachaRecordsFetcherChannelFragment;
+  type Fragment = GachaRecordsFetcherFragment;
 
   info!(message = "Start pulling gacha records...");
   sender.send(Fragment::Ready(*gacha_type)).await.unwrap();

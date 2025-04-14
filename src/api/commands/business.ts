@@ -311,7 +311,7 @@ export type ExportGachaRecordsError =
 
 // Business Advanced
 
-export type CreateGachaRecordsFetcherChannelArgs<T extends Business> = NonNullable<{
+export type CreateGachaRecordsFetcherArgs<T extends Business> = NonNullable<{
   business: T
   region: BusinessRegion
   uid: Account['uid']
@@ -322,10 +322,10 @@ export type CreateGachaRecordsFetcherChannelArgs<T extends Business> = NonNullab
   saveOnConflict?: 'Nothing' | 'Update'
 }>
 
-export type CreateGachaRecordsFetcherChannel = <T extends Business>(args: CreateGachaRecordsFetcherChannelArgs<T>, options?: InvokeOptions) => Promise<number>
-export const createGachaRecordsFetcherChannel: CreateGachaRecordsFetcherChannel = declareCommand('business_create_gacha_records_fetcher_channel')
+export type CreateGachaRecordsFetcher = <T extends Business>(args: CreateGachaRecordsFetcherArgs<T>, options?: InvokeOptions) => Promise<number>
+export const createGachaRecordsFetcher: CreateGachaRecordsFetcher = declareCommand('business_create_gacha_records_fetcher')
 
-export type GachaRecordsFetcherChannelFragment<T extends Business> =
+export type GachaRecordsFetcherFragment<T extends Business> =
   | 'Sleeping'
   | { Ready: GachaRecord<T>['gachaType'] }
   | { Pagination: number }
