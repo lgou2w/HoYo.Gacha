@@ -3,7 +3,7 @@ import { Caption1, Caption2, inputClassNames, makeStyles, mergeClasses, tokens }
 import { ArrowClockwiseRegular, CopyRegular, LinkRegular } from '@fluentui/react-icons'
 import * as clipboard from '@tauri-apps/plugin-clipboard-manager'
 import { produce } from 'immer'
-import { fromWebCachesGachaUrl, isGachaUrlError } from '@/api/commands/business'
+import { fromWebCachesGachaUrl, GachaUrlErrorKind, isGachaUrlError } from '@/api/commands/business'
 import { extractErrorMessage } from '@/api/error'
 import { useSelectedAccountSuspenseQueryData, useUpdateAccountPropertiesMutation } from '@/api/queries/accounts'
 import { invalidatePrettizedGachaRecordsQuery, usePrettizedGachaRecordsSuspenseQueryData } from '@/api/queries/business'
@@ -244,7 +244,7 @@ function GachaLegacyViewToolbarUrlButton () {
         properties.gachaUrl = data.value
         properties.gachaUrlCreationTime = data.creationTime
       } catch (error) {
-        if (isGachaUrlError(error) && error.details.kind === 'AuthkeyTimeout') {
+        if (isGachaUrlError(error) && error.details.kind === GachaUrlErrorKind.AuthkeyTimeout) {
           // Expired, remove fields
           properties.gachaUrl = null
           properties.gachaUrlCreationTime = null

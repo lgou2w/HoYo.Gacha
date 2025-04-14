@@ -12,15 +12,18 @@ const NamedSqlxError = 'SqlxError' as const
 const NamedSqlxDatabaseError = 'SqlxDatabaseError' as const
 
 export type SqlxError = DetailedError<typeof NamedSqlxError>
+
+export enum SqlxDatabaseErrorKind {
+  UniqueViolation = 'UniqueViolation',
+  ForeignKeyViolation = 'ForeignKeyViolation',
+  NotNullViolation = 'NotNullViolation',
+  CheckViolation = 'CheckViolation',
+  Other = 'Other',
+}
+
 export type SqlxDatabaseError = DetailedError<typeof NamedSqlxDatabaseError, {
   code: string
-  kind:
-    // See: sqlx-core-0.8.0/src/error.rs -> ErrorKind
-    | 'UniqueViolation'
-    | 'ForeignKeyViolation'
-    | 'NotNullViolation'
-    | 'CheckViolation'
-    | 'Other'
+  kind: SqlxDatabaseErrorKind
 }>
 
 export function isSqlxError (error: unknown): error is SqlxError | SqlxDatabaseError {

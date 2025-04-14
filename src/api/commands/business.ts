@@ -17,7 +17,7 @@ import { declareCommand } from '.'
 
 // See: https://doc.rust-lang.org/std/io/struct.Error.html
 export interface NativeIOError {
-  kind: string
+  kind: string // too many
   message: string
 }
 
@@ -25,11 +25,18 @@ export interface NativeIOError {
 
 const NamedDataFolderError = 'DataFolderError' as const
 
+export enum DataFolderErrorKind {
+  Invalid = 'Invalid',
+  UnityLogFileNotFound = 'UnityLogFileNotFound',
+  OpenUnityLogFile = 'OpenUnityLogFile',
+  Vacant = 'Vacant',
+}
+
 export type DataFolderError = DetailedError<typeof NamedDataFolderError,
-  | { kind: 'Invalid' }
-  | { kind: 'UnityLogFileNotFound', path: string }
-  | { kind: 'OpenUnityLogFile', path: string, cause: NativeIOError }
-  | { kind: 'Vacant' }
+  | { kind: DataFolderErrorKind.Invalid }
+  | { kind: DataFolderErrorKind.UnityLogFileNotFound, path: string }
+  | { kind: DataFolderErrorKind.OpenUnityLogFile, path: string, cause: NativeIOError }
+  | { kind: DataFolderErrorKind.Vacant }
 >
 
 export function isDataFolderError (error: unknown): error is DataFolderError {
@@ -61,21 +68,38 @@ export const locateDataFolder: LocateDataFolder = declareCommand('business_locat
 
 const NamedGachaUrlError = 'GachaUrlError' as const
 
+export enum GachaUrlErrorKind {
+  WebCachesNotFound = 'WebCachesNotFound',
+  OpenWebCaches = 'OpenWebCaches',
+  ReadDiskCache = 'ReadDiskCache',
+  EmptyData = 'EmptyData',
+  NotFound = 'NotFound',
+  Illegal = 'Illegal',
+  IllegalBiz = 'IllegalBiz',
+  InvalidParams = 'InvalidParams',
+  Parse = 'Parse',
+  Reqwest = 'Reqwest',
+  AuthkeyTimeout = 'AuthkeyTimeout',
+  VisitTooFrequently = 'VisitTooFrequently',
+  UnexpectedResponse = 'UnexpectedResponse',
+  InconsistentUid = 'InconsistentUid'
+}
+
 export type GachaUrlError = DetailedError<typeof NamedGachaUrlError,
-  | { kind: 'WebCachesNotFound', path: string }
-  | { kind: 'OpenWebCaches', cause: NativeIOError }
-  | { kind: 'ReadDiskCache', cause: NativeIOError }
-  | { kind: 'EmptyData' }
-  | { kind: 'NotFound' }
-  | { kind: 'Illegal', url: string }
-  | { kind: 'IllegalBiz', url: string, expected: string, actual: string }
-  | { kind: 'InvalidParams', params: string[] }
-  | { kind: 'Parse', cause: string }
-  | { kind: 'Reqwest', cause: string }
-  | { kind: 'AuthkeyTimeout' }
-  | { kind: 'VisitTooFrequently' }
-  | { kind: 'UnexpectedResponse', retcode: number, message: string }
-  | { kind: 'InconsistentUid', expected: Account['uid'], actual: Array<Account['uid']> }
+  | { kind: GachaUrlErrorKind.WebCachesNotFound, path: string }
+  | { kind: GachaUrlErrorKind.OpenWebCaches, cause: NativeIOError }
+  | { kind: GachaUrlErrorKind.ReadDiskCache, cause: NativeIOError }
+  | { kind: GachaUrlErrorKind.EmptyData }
+  | { kind: GachaUrlErrorKind.NotFound }
+  | { kind: GachaUrlErrorKind.Illegal, url: string }
+  | { kind: GachaUrlErrorKind.IllegalBiz, url: string, expected: string, actual: string }
+  | { kind: GachaUrlErrorKind.InvalidParams, params: string[] }
+  | { kind: GachaUrlErrorKind.Parse, cause: string }
+  | { kind: GachaUrlErrorKind.Reqwest, cause: string }
+  | { kind: GachaUrlErrorKind.AuthkeyTimeout }
+  | { kind: GachaUrlErrorKind.VisitTooFrequently }
+  | { kind: GachaUrlErrorKind.UnexpectedResponse, retcode: number, message: string }
+  | { kind: GachaUrlErrorKind.InconsistentUid, expected: Account['uid'], actual: Array<Account['uid']> }
 >
 
 export function isGachaUrlError (error: unknown): error is GachaUrlError {
@@ -119,13 +143,22 @@ export const fromDirtyGachaUrl: FromDirtyGachaUrl = declareCommand('business_fro
 
 const NamedLegacyUigfGachaRecordsWriteError = 'LegacyUigfGachaRecordsWriteError' as const
 
+export enum LegacyUigfGachaRecordsWriteErrorKind {
+  IncompatibleRecordBusiness = 'IncompatibleRecordBusiness',
+  IncompatibleRecordOwner = 'IncompatibleRecordOwner',
+  IncompatibleRecordLocale = 'IncompatibleRecordLocale',
+  FailedMappingGachaType = 'FailedMappingGachaType',
+  CreateOutput = 'CreateOutput',
+  Serialize = 'Serialize'
+}
+
 export type LegacyUigfGachaRecordsWriteError = DetailedError<typeof NamedLegacyUigfGachaRecordsWriteError,
-  | { kind: 'IncompatibleRecordBusiness', business: Business, id: string, name: string }
-  | { kind: 'IncompatibleRecordOwner', expected: Account['uid'], actual: Account['uid'] }
-  | { kind: 'IncompatibleRecordLocale', expected: string, actual: string }
-  | { kind: 'FailedMappingGachaType', value: GachaRecord<GenshinImpact>['gachaType'] }
-  | { kind: 'CreateOutput', path: string, cause: NativeIOError }
-  | { kind: 'Serialize', cause: string }
+  | { kind: LegacyUigfGachaRecordsWriteErrorKind.IncompatibleRecordBusiness, business: Business, id: string, name: string }
+  | { kind: LegacyUigfGachaRecordsWriteErrorKind.IncompatibleRecordOwner, expected: Account['uid'], actual: Account['uid'] }
+  | { kind: LegacyUigfGachaRecordsWriteErrorKind.IncompatibleRecordLocale, expected: string, actual: string }
+  | { kind: LegacyUigfGachaRecordsWriteErrorKind.FailedMappingGachaType, value: GachaRecord<GenshinImpact>['gachaType'] }
+  | { kind: LegacyUigfGachaRecordsWriteErrorKind.CreateOutput, path: string, cause: NativeIOError }
+  | { kind: LegacyUigfGachaRecordsWriteErrorKind.Serialize, cause: string }
 >
 
 export function isLegacyUigfGachaRecordsWriteError (error: unknown): error is LegacyUigfGachaRecordsWriteError {
@@ -135,15 +168,26 @@ export function isLegacyUigfGachaRecordsWriteError (error: unknown): error is Le
 
 const NamedLegacyUigfGachaRecordsReadError = 'LegacyUigfGachaRecordsReadError' as const
 
+export enum LegacyUigfGachaRecordsReadErrorKind {
+  OpenInput = 'OpenInput',
+  InvalidInput = 'InvalidInput',
+  InvalidVersion = 'InvalidVersion',
+  UnsupportedVersion = 'UnsupportedVersion',
+  InconsistentUid = 'InconsistentUid',
+  RequiredField = 'RequiredField',
+  MissingMetadataLocale = 'MissingMetadataLocale',
+  MissingMetadataEntry = 'MissingMetadataEntry'
+}
+
 export type LegacyUigfGachaRecordsReadError = DetailedError<typeof NamedLegacyUigfGachaRecordsReadError,
-  | { kind: 'OpenInput', path: string, cause: NativeIOError }
-  | { kind: 'InvalidInput', cause: string }
-  | { kind: 'InvalidVersion', version: string }
-  | { kind: 'UnsupportedVersion', version: string, allowed: string[] }
-  | { kind: 'InconsistentUid', expected: Account['uid'], actual: Account['uid'] }
-  | { kind: 'RequiredField', field: string }
-  | { kind: 'MissingMetadataLocale', business: Business, locale: string }
-  | { kind: 'MissingMetadataEntry', business: Business, locale: string, key: string, val: string }
+  | { kind: LegacyUigfGachaRecordsReadErrorKind.OpenInput, path: string, cause: NativeIOError }
+  | { kind: LegacyUigfGachaRecordsReadErrorKind.InvalidInput, cause: string }
+  | { kind: LegacyUigfGachaRecordsReadErrorKind.InvalidVersion, version: string }
+  | { kind: LegacyUigfGachaRecordsReadErrorKind.UnsupportedVersion, version: string, allowed: string[] }
+  | { kind: LegacyUigfGachaRecordsReadErrorKind.InconsistentUid, expected: Account['uid'], actual: Account['uid'] }
+  | { kind: LegacyUigfGachaRecordsReadErrorKind.RequiredField, field: string }
+  | { kind: LegacyUigfGachaRecordsReadErrorKind.MissingMetadataLocale, business: Business, locale: string }
+  | { kind: LegacyUigfGachaRecordsReadErrorKind.MissingMetadataEntry, business: Business, locale: string, key: string, val: string }
 >
 
 export function isLegacyUigfGachaRecordsReadError (error: unknown): error is LegacyUigfGachaRecordsReadError {
@@ -153,12 +197,20 @@ export function isLegacyUigfGachaRecordsReadError (error: unknown): error is Leg
 
 const NamedUigfGachaRecordsWriteError = 'UigfGachaRecordsWriteError' as const
 
+export enum UigfGachaRecordsWriteErrorKind {
+  MissingAccountInfo = 'MissingAccountInfo',
+  MissingMetadataEntry = 'MissingMetadataEntry',
+  FailedMappingGachaType = 'FailedMappingGachaType',
+  CreateOutput = 'CreateOutput',
+  Serialize = 'Serialize'
+}
+
 export type UigfGachaRecordsWriteError = DetailedError<typeof NamedUigfGachaRecordsWriteError,
-  | { kind: 'MissingAccountInfo', uid: Account['uid'] }
-  | { kind: 'MissingMetadataEntry', business: Business, locale: string, key: string, val: string }
-  | { kind: 'FailedMappingGachaType', value: GachaRecord<GenshinImpact>['gachaType'] }
-  | { kind: 'CreateOutput', path: string, cause: NativeIOError }
-  | { kind: 'Serialize', cause: string }
+  | { kind: UigfGachaRecordsWriteErrorKind.MissingAccountInfo, uid: Account['uid'] }
+  | { kind: UigfGachaRecordsWriteErrorKind.MissingMetadataEntry, business: Business, locale: string, key: string, val: string }
+  | { kind: UigfGachaRecordsWriteErrorKind.FailedMappingGachaType, value: GachaRecord<GenshinImpact>['gachaType'] }
+  | { kind: UigfGachaRecordsWriteErrorKind.CreateOutput, path: string, cause: NativeIOError }
+  | { kind: UigfGachaRecordsWriteErrorKind.Serialize, cause: string }
 >
 
 export function isUigfGachaRecordsWriteError (error: unknown): error is UigfGachaRecordsWriteError {
@@ -168,12 +220,20 @@ export function isUigfGachaRecordsWriteError (error: unknown): error is UigfGach
 
 const NamedUigfGachaRecordsReadError = 'UigfGachaRecordsReadError' as const
 
+export enum UigfGachaRecordsReadErrorKind {
+  OpenInput = 'OpenInput',
+  InvalidInput = 'InvalidInput',
+  InvalidVersion = 'InvalidVersion',
+  UnsupportedVersion = 'UnsupportedVersion',
+  MissingMetadataEntry = 'MissingMetadataEntry'
+}
+
 export type UigfGachaRecordsReadError = DetailedError<typeof NamedUigfGachaRecordsReadError,
-  | { kind: 'OpenInput', path: string, cause: NativeIOError }
-  | { kind: 'InvalidInput', cause: string }
-  | { kind: 'InvalidVersion', version: string }
-  | { kind: 'UnsupportedVersion', version: string, allowed: string[] }
-  | { kind: 'MissingMetadataEntry', business: Business, locale: string, key: string, val: string }
+  | { kind: UigfGachaRecordsReadErrorKind.OpenInput, path: string, cause: NativeIOError }
+  | { kind: UigfGachaRecordsReadErrorKind.InvalidInput, cause: string }
+  | { kind: UigfGachaRecordsReadErrorKind.InvalidVersion, version: string }
+  | { kind: UigfGachaRecordsReadErrorKind.UnsupportedVersion, version: string, allowed: string[] }
+  | { kind: UigfGachaRecordsReadErrorKind.MissingMetadataEntry, business: Business, locale: string, key: string, val: string }
 >
 
 export function isUigfGachaRecordsReadError (error: unknown): error is UigfGachaRecordsReadError {
@@ -183,12 +243,20 @@ export function isUigfGachaRecordsReadError (error: unknown): error is UigfGacha
 
 const NamedSrgfGachaRecordsWriteError = 'SrgfGachaRecordsWriteError' as const
 
+export enum SrgfGachaRecordsWriteErrorKind {
+  IncompatibleRecordBusiness = 'IncompatibleRecordBusiness',
+  IncompatibleRecordOwner = 'IncompatibleRecordOwner',
+  IncompatibleRecordLocale = 'IncompatibleRecordLocale',
+  CreateOutput = 'CreateOutput',
+  Serialize = 'Serialize'
+}
+
 export type SrgfGachaRecordsWriteError = DetailedError<typeof NamedSrgfGachaRecordsWriteError,
-  | { kind: 'IncompatibleRecordBusiness', business: Business, id: string, name: string }
-  | { kind: 'IncompatibleRecordOwner', expected: Account['uid'], actual: Account['uid'] }
-  | { kind: 'IncompatibleRecordLocale', expected: string, actual: string }
-  | { kind: 'CreateOutput', path: string, cause: NativeIOError }
-  | { kind: 'Serialize', cause: string }
+  | { kind: SrgfGachaRecordsWriteErrorKind.IncompatibleRecordBusiness, business: Business, id: string, name: string }
+  | { kind: SrgfGachaRecordsWriteErrorKind.IncompatibleRecordOwner, expected: Account['uid'], actual: Account['uid'] }
+  | { kind: SrgfGachaRecordsWriteErrorKind.IncompatibleRecordLocale, expected: string, actual: string }
+  | { kind: SrgfGachaRecordsWriteErrorKind.CreateOutput, path: string, cause: NativeIOError }
+  | { kind: SrgfGachaRecordsWriteErrorKind.Serialize, cause: string }
 >
 
 export function isSrgfGachaRecordsWriteError (error: unknown): error is SrgfGachaRecordsWriteError {
@@ -198,14 +266,24 @@ export function isSrgfGachaRecordsWriteError (error: unknown): error is SrgfGach
 
 const NamedSrgfGachaRecordsReadError = 'SrgfGachaRecordsReadError' as const
 
+export enum SrgfGachaRecordsReadErrorKind {
+  OpenInput = 'OpenInput',
+  InvalidInput = 'InvalidInput',
+  InvalidVersion = 'InvalidVersion',
+  UnsupportedVersion = 'UnsupportedVersion',
+  InconsistentUid = 'InconsistentUid',
+  MissingMetadataLocale = 'MissingMetadataLocale',
+  MissingMetadataEntry = 'MissingMetadataEntry'
+}
+
 export type SrgfGachaRecordsReadError = DetailedError<typeof NamedSrgfGachaRecordsReadError,
-  | { kind: 'OpenInput', path: string, cause: NativeIOError }
-  | { kind: 'InvalidInput', cause: string }
-  | { kind: 'InvalidVersion', version: string }
-  | { kind: 'UnsupportedVersion', version: string, allowed: string[] }
-  | { kind: 'InconsistentUid', expected: Account['uid'], actual: Account['uid'] }
-  | { kind: 'MissingMetadataLocale', business: Business, locale: string }
-  | { kind: 'MissingMetadataEntry', business: Business, locale: string, key: string, val: string }
+  | { kind: SrgfGachaRecordsReadErrorKind.OpenInput, path: string, cause: NativeIOError }
+  | { kind: SrgfGachaRecordsReadErrorKind.InvalidInput, cause: string }
+  | { kind: SrgfGachaRecordsReadErrorKind.InvalidVersion, version: string }
+  | { kind: SrgfGachaRecordsReadErrorKind.UnsupportedVersion, version: string, allowed: string[] }
+  | { kind: SrgfGachaRecordsReadErrorKind.InconsistentUid, expected: Account['uid'], actual: Account['uid'] }
+  | { kind: SrgfGachaRecordsReadErrorKind.MissingMetadataLocale, business: Business, locale: string }
+  | { kind: SrgfGachaRecordsReadErrorKind.MissingMetadataEntry, business: Business, locale: string, key: string, val: string }
 >
 
 export function isSrgfGachaRecordsReadError (error: unknown): error is SrgfGachaRecordsReadError {
@@ -304,8 +382,12 @@ export const exportGachaRecords = declareCommand<ExportGachaRecordsArgs, void>('
 
 const NamedPrettyGachaRecordsError = 'PrettyGachaRecordsError' as const
 
+export enum PrettyGachaRecordsErrorKind {
+  MissingMetadataEntry = 'MissingMetadataEntry'
+}
+
 export type PrettyGachaRecordsError = DetailedError<typeof NamedPrettyGachaRecordsError,
-  | { kind: 'MissingMetadataEntry', business: Business, locale: string, name: string, itemId: string }
+  | { kind: PrettyGachaRecordsErrorKind.MissingMetadataEntry, business: Business, locale: string, name: string, itemId: string }
 >
 
 export function isPrettyGachaRecordsError (error: unknown): error is PrettyGachaRecordsError {
