@@ -57,11 +57,16 @@ export default function useNotifier () {
           )
         }
 
+    const handlerDefaultOptions: NotifyOptions = {
+      pauseOnHover: true,
+      pauseOnWindowBlur: true,
+    }
+
     return {
-      info: createHandler({ intent: 'info', timeout: 3000 }),
-      success: createHandler({ intent: 'success', timeout: 3000 }),
-      error: createHandler({ intent: 'error', timeout: 5000 }),
-      warning: createHandler({ intent: 'warning', timeout: 5000 }),
+      info: createHandler({ intent: 'info', timeout: 3000, ...handlerDefaultOptions }),
+      success: createHandler({ intent: 'success', timeout: 3000, ...handlerDefaultOptions }),
+      error: createHandler({ intent: 'error', timeout: 5000, ...handlerDefaultOptions }),
+      warning: createHandler({ intent: 'warning', timeout: 5000, ...handlerDefaultOptions }),
     }
   }, [notify])
 
@@ -79,42 +84,49 @@ export default function useNotifier () {
     )
   }, [notify])
 
+  type NotifierPromiseContentOptions =
+    & { title: ReactNode }
+    & Omit<NotifyOptions, 'intent' | 'toastId'>
+    & { body?: ReactNode }
+    | null
+    | undefined
+
   const promise: <T>(
     promise: Promise<T> | (() => Promise<T>),
     contents: {
-      loading: [ReactNode, ReactNode?],
-      success?: [ReactNode, ReactNode?] | ((value: T) => [ReactNode, ReactNode?])
-      error?: [ReactNode, ReactNode?] | ((error: unknown) => [ReactNode, ReactNode?])
+      loading: Omit<NonNullable<NotifierPromiseContentOptions>, 'timeout'>,
+      success?: NotifierPromiseContentOptions | ((value: T) => NotifierPromiseContentOptions)
+      error?: NotifierPromiseContentOptions | ((error: unknown) => NotifierPromiseContentOptions)
     },
   ) => Promise<T> = useCallback((promise, contents) => {
-    const [loadingTitle, loadingBody] = contents.loading
-    const toastId = loading(loadingTitle, { timeout: -1, body: loadingBody })
+    const { title, body, ...rest } = contents.loading
+    const toastId = loading(title, { timeout: -1, body, ...rest })
 
     if (typeof promise === 'function') {
       promise = promise()
     }
 
     promise.then((value) => {
-      const successArgs = typeof contents.success === 'function'
+      const successOptions = typeof contents.success === 'function'
         ? contents.success(value)
         : contents.success
 
-      if (successArgs) {
-        const [title, body] = successArgs
-        success(title, { toastId, body })
+      if (successOptions) {
+        const { title, body, ...rest } = successOptions
+        success(title, { toastId, body, ...rest })
       } else {
         dismissToast(toastId)
       }
 
       return value
     }).catch((err) => {
-      const errorArgs = typeof contents.error === 'function'
+      const errorOptions = typeof contents.error === 'function'
         ? contents.error(err)
         : contents.error
 
-      if (errorArgs) {
-        const [title, body] = errorArgs
-        error(title, { toastId, body })
+      if (errorOptions) {
+        const { title, body, ...rest } = errorOptions
+        error(title, { toastId, body, ...rest })
       } else {
         dismissToast(toastId)
       }
