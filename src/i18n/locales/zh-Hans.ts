@@ -129,6 +129,25 @@ export default {
               },
               CopyBtn: '复制',
               UpdateBtn: '更新',
+              Obtain: {
+                Loading: '获取$t(Business.{{keyofBusinesses}}.Gacha.Name)链接...',
+                Error: {
+                  Title: '获取$t(Business.{{keyofBusinesses}}.Gacha.Name)链接失败：',
+                  Body: '{{message}}',
+                },
+              },
+              Fetch: {
+                Loading: '拉取$t(Business.{{keyofBusinesses}}.Gacha.Name)记录...',
+                Success: {
+                  Title: '拉取$t(Business.{{keyofBusinesses}}.Gacha.Name)记录成功:',
+                  AddedBody: '新增 {{changes}} 条新记录。',
+                  RemovedBody: '移除 {{changes}} 条不正确记录。',
+                },
+                Error: {
+                  Title: '拉取$t(Business.{{keyofBusinesses}}.Gacha.Name)记录失败:',
+                  Body: '{{message}}',
+                },
+              },
             },
             Tabs: {
               Title: '标签页',

@@ -3,7 +3,7 @@ import { Caption1, Caption2, inputClassNames, makeStyles, mergeClasses, tokens }
 import { ArrowClockwiseRegular, CopyRegular, LinkRegular } from '@fluentui/react-icons'
 import * as clipboard from '@tauri-apps/plugin-clipboard-manager'
 import { produce } from 'immer'
-import { fromWebCachesGachaUrl, GachaUrlErrorKind, isGachaUrlError } from '@/api/commands/business'
+import { GachaUrlErrorKind, fromWebCachesGachaUrl, isGachaUrlError } from '@/api/commands/business'
 import { extractErrorMessage } from '@/api/error'
 import { useSelectedAccountSuspenseQueryData, useUpdateAccountPropertiesMutation } from '@/api/queries/accounts'
 import { invalidatePrettizedGachaRecordsQuery, usePrettizedGachaRecordsSuspenseQueryData } from '@/api/queries/business'
@@ -17,6 +17,7 @@ import useBusinessContext from '@/hooks/useBusinessContext'
 import useGachaRecordsFetcher from '@/hooks/useGachaRecordsFetcher'
 import useI18n from '@/hooks/useI18n'
 import useNotifier from '@/hooks/useNotifier'
+import i18n from '@/i18n'
 import { KnownAccountProperties, detectAccountUidRegion } from '@/interfaces/Account'
 import { computeGachaTypeAndLastEndIdMappings } from '@/interfaces/GachaRecord'
 import dayjs from '@/utilities/dayjs'
@@ -238,8 +239,18 @@ function GachaLegacyViewToolbarUrlButton () {
           dataFolder: selectedAccount.dataFolder,
           expectedUid: uid,
         }), {
-          loading: ['Obtain gacha url...'],
-          error: (error) => ['Obtain error:', extractErrorMessage(error)],
+          loading: {
+            title: i18n.t('Pages.Gacha.LegacyView.Toolbar.Url.Obtain.Loading', { keyofBusinesses }),
+          },
+          error: (error) => {
+            const message = extractErrorMessage(error)
+            return {
+              title: i18n.t('Pages.Gacha.LegacyView.Toolbar.Url.Obtain.Error.Title', { keyofBusinesses }),
+              body: i18n.t('Pages.Gacha.LegacyView.Toolbar.Url.Obtain.Error.Body', {
+                message,
+              }),
+            }
+          },
         })
         properties.gachaUrl = data.value
         properties.gachaUrlCreationTime = data.creationTime
@@ -275,9 +286,34 @@ function GachaLegacyViewToolbarUrlButton () {
         eventChannel,
         saveToDatabase: 'Yes',
       }), {
-        loading: ['Fetching gacha records...'],
-        success: (changes) => [`Fetcher result: ${changes}`],
-        error: (error) => ['Fetcher error:', extractErrorMessage(error)],
+        loading: {
+          title: i18n.t('Pages.Gacha.LegacyView.Toolbar.Url.Fetch.Loading', { keyofBusinesses }),
+        },
+        success: (changes) => {
+          if (changes === null) {
+            // It should be unreachable
+            // changes must not be null
+            return
+          }
+
+          // Positive numbers are added, negative numbers are removed
+          const body = changes >= 0 ? 'AddedBody' : 'RemovedBody'
+          return {
+            title: i18n.t('Pages.Gacha.LegacyView.Toolbar.Url.Fetch.Success.Title', { keyofBusinesses }),
+            body: i18n.t(`Pages.Gacha.LegacyView.Toolbar.Url.Fetch.Success.${body}`, {
+              changes: Math.abs(changes),
+            }),
+          }
+        },
+        error: (error) => {
+          const message = extractErrorMessage(error)
+          return {
+            title: i18n.t('Pages.Gacha.LegacyView.Toolbar.Url.Fetch.Error.Title', { keyofBusinesses }),
+            body: i18n.t('Pages.Gacha.LegacyView.Toolbar.Url.Fetch.Error.Body', {
+              message,
+            }),
+          }
+        },
       }) ?? 0
     } catch (error) {
       setBusy(false)
@@ -300,7 +336,7 @@ function GachaLegacyViewToolbarUrlButton () {
     }
 
     setBusy(false)
-  }, [gachaRecordsFetcher, notifier, prettized, selectedAccount, updateAccountPropertiesMutation])
+  }, [gachaRecordsFetcher, keyofBusinesses, notifier, prettized, selectedAccount, updateAccountPropertiesMutation])
 
   return (
     <Locale

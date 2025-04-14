@@ -140,6 +140,25 @@ export default {
               },
               CopyBtn: 'Copy',
               UpdateBtn: 'Update',
+              Obtain: {
+                Loading: 'Obtaining $t(Business.{{keyofBusinesses}}.Gacha.Name) URL...',
+                Error: {
+                  Title: 'Failed to obtain $t(Business.{{keyofBusinesses}}.Gacha.Name) URL:',
+                  Body: '{{message}}',
+                },
+              },
+              Fetch: {
+                Loading: 'Fetching $t(Business.{{keyofBusinesses}}.Gacha.Name) Records...',
+                Success: {
+                  Title: 'Successfully fetched $t(Business.{{keyofBusinesses}}.Gacha.Name) Records:',
+                  AddedBody: 'Added {{changes}} new records.',
+                  RemovedBody: 'Remove {{changes}} incorrect records.',
+                },
+                Error: {
+                  Title: 'Failed to fetch $t(Business.{{keyofBusinesses}}.Gacha.Name) Records:',
+                  Body: '{{message}}',
+                },
+              },
             },
             Tabs: {
               Title: 'Tabs',
