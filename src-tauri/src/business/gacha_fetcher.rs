@@ -84,17 +84,15 @@ pub async fn create_gacha_records_fetcher(
     }
   }
 
-  match task.await {
-    Ok(Ok(_)) => {
+  match task.await.expect("Task join error") {
+    // FIXME: The task should not panic
+    Ok(_) => {
       info!("Gacha Records fetcher execution is finished");
       Ok(Some(records))
     }
-    Ok(Err(err)) => {
+    Err(err) => {
       error!("Error while pull gacha records: {err}");
       Err(err)
-    }
-    Err(err) => {
-      panic!("Error while task join: {err}"); // FIXME: wrapper
     }
   }
 }
