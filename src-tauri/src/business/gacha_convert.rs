@@ -148,24 +148,33 @@ const FIELD_REGION_TIME_ZONE: &str = "region_time_zone";
 declare_error_kinds! {
   #[derive(Debug, thiserror::Error)]
   LegacyUigfGachaRecordsWriteError {
-    #[error("Incompatible record business: {business}, id: {id}, name: {name}")]
+    #[error("Incompatible record business: {business}, id: {id}, name: {name}, cursor: {cursor}")]
     IncompatibleRecordBusiness {
       business: Business,
       id: String,
-      name: String
+      name: String,
+      cursor: usize
     },
 
-    #[error("Incompatible record owner uid: expected: {expected}, actual: {actual}")]
-    IncompatibleRecordOwner { expected: u32, actual: u32 },
+    #[error("Incompatible record owner uid: expected: {expected}, actual: {actual}, cursor: {cursor}")]
+    IncompatibleRecordOwner {
+      expected: u32,
+      actual: u32,
+      cursor: usize
+    },
 
-    #[error("Incompatible record locale: expected: {expected}, actual: {actual}")]
+    #[error("Incompatible record locale: expected: {expected}, actual: {actual}, cursor: {cursor}")]
     IncompatibleRecordLocale {
       expected: String,
-      actual: String
+      actual: String,
+      cursor: usize
     },
 
-    #[error("Failed to mapping uigf gacha type: {value}")]
-    FailedMappingGachaType { value: u32 },
+    #[error("Failed to mapping uigf gacha type: {value}, cursor: {cursor}")]
+    FailedMappingGachaType {
+      value: u32,
+      cursor: usize
+    },
 
     #[error("Failed to create output '{path}': {cause}")]
     CreateOutput {
@@ -177,7 +186,9 @@ declare_error_kinds! {
     },
 
     #[error("Serialization json error: {cause}")]
-    Serialize { cause: serde_json::Error => cause.to_string() },
+    Serialize {
+      cause: serde_json::Error => cause.to_string()
+    },
   }
 }
 
@@ -194,32 +205,48 @@ declare_error_kinds! {
     },
 
     #[error("Invalid json input: {cause}")]
-    InvalidInput { cause: serde_json::Error => cause.to_string() },
-
-    #[error("Invalid uigf version string: {version}")]
-    InvalidVersion { version: String },
-
-    #[error("Unsupported uigf version: {version} (Allowed: {allowed:?})")]
-    UnsupportedVersion { version: UigfVersion, allowed: &'static [UigfVersion] },
-
-    #[error("Inconsistent with expected uid: expected: {expected}, actual: {actual}")]
-    InconsistentUid { expected: u32, actual: u32 },
-
-    #[error("Required field missing: {field}")]
-    RequiredField { field: &'static str },
-
-    #[error("Missing metadata locale: {business}, locale: {locale}")]
-    MissingMetadataLocale {
-      business: Business,
-      locale: String
+    InvalidInput {
+      cause: serde_json::Error => cause.to_string()
     },
 
-    #[error("Missing metadata entry: {business}, locale: {locale}, {key}: {val}")]
+    #[error("Invalid uigf version string: {version}")]
+    InvalidVersion {
+      version: String
+    },
+
+    #[error("Unsupported uigf version: {version} (Allowed: {allowed:?})")]
+    UnsupportedVersion {
+      version: UigfVersion,
+      allowed: &'static [UigfVersion]
+    },
+
+    #[error("Inconsistent with expected uid: expected: {expected}, actual: {actual}, cursor: {cursor}")]
+    InconsistentUid {
+      expected: u32,
+      actual: u32,
+      cursor: usize
+    },
+
+    #[error("Required field missing: {field}, cursor: {cursor}")]
+    RequiredField {
+      field: &'static str,
+      cursor: usize
+    },
+
+    #[error("Missing metadata locale: {business}, locale: {locale}, cursor: {cursor}")]
+    MissingMetadataLocale {
+      business: Business,
+      locale: String,
+      cursor: usize
+    },
+
+    #[error("Missing metadata entry: {business}, locale: {locale}, {key}: {val}, cursor: {cursor}")]
     MissingMetadataEntry {
       business: Business,
       locale: String,
       key: &'static str,
-      val: String
+      val: String,
+      cursor: usize
     },
   }
 }
@@ -351,7 +378,10 @@ impl GachaRecordsWriter for LegacyUigfGachaRecordsWriter {
       list: Vec::with_capacity(records.len()),
     };
 
-    for record in records {
+    for (cursor, record) in records.into_iter().enumerate() {
+      // The cursor of the user's record, so it starts at 1
+      let cursor = cursor + 1;
+
       // Avoid writing records that are not compatible with the account.
       if record.business != BUSINESS {
         return Err(
@@ -359,6 +389,7 @@ impl GachaRecordsWriter for LegacyUigfGachaRecordsWriter {
             business: record.business,
             id: record.id,
             name: record.name,
+            cursor,
           },
         )?;
       } else if record.uid != *account_uid {
@@ -366,6 +397,7 @@ impl GachaRecordsWriter for LegacyUigfGachaRecordsWriter {
           LegacyUigfGachaRecordsWriteErrorKind::IncompatibleRecordOwner {
             expected: *account_uid,
             actual: record.uid,
+            cursor,
           },
         )?;
       } else if record.lang != *account_locale {
@@ -373,6 +405,7 @@ impl GachaRecordsWriter for LegacyUigfGachaRecordsWriter {
           LegacyUigfGachaRecordsWriteErrorKind::IncompatibleRecordLocale {
             expected: account_locale.to_owned(),
             actual: record.lang,
+            cursor,
           },
         )?;
       }
@@ -380,6 +413,7 @@ impl GachaRecordsWriter for LegacyUigfGachaRecordsWriter {
       let uigf_gacha_type = *UIGF_GACHA_TYPE_MAPPINGS.get(&record.gacha_type).ok_or(
         LegacyUigfGachaRecordsWriteErrorKind::FailedMappingGachaType {
           value: record.gacha_type,
+          cursor,
         },
       )?;
 
@@ -471,6 +505,7 @@ impl GachaRecordsReader for LegacyUigfGachaRecordsReader {
       return Err(LegacyUigfGachaRecordsReadErrorKind::InconsistentUid {
         expected: *expected_uid,
         actual: uigf.info.uid,
+        cursor: 0, // When it is 0, the info data is incorrect
       })?;
     }
 
@@ -481,22 +516,41 @@ impl GachaRecordsReader for LegacyUigfGachaRecordsReader {
     if is_v2_4 && uigf.info.region_time_zone.is_none() {
       return Err(LegacyUigfGachaRecordsReadErrorKind::RequiredField {
         field: FIELD_REGION_TIME_ZONE,
+        cursor: 0, // When it is 0, the info data is incorrect
       })?;
     }
 
     let mut records = Vec::with_capacity(uigf.list.len());
-    for item in uigf.list {
+    for (cursor, item) in uigf.list.into_iter().enumerate() {
+      // The cursor of the user's record, so it starts at 1
+      let cursor = cursor + 1;
+
+      if let Some(uid) = item.uid {
+        if uid != *expected_uid {
+          return Err(LegacyUigfGachaRecordsReadErrorKind::InconsistentUid {
+            expected: *expected_uid,
+            actual: uid,
+            cursor,
+          })?;
+        }
+      }
+
       if is_v2_2 {
         if item.name.is_none() {
-          return Err(LegacyUigfGachaRecordsReadErrorKind::RequiredField { field: FIELD_NAME })?;
+          return Err(LegacyUigfGachaRecordsReadErrorKind::RequiredField {
+            field: FIELD_NAME,
+            cursor,
+          })?;
         } else if item.item_type.is_none() {
           return Err(LegacyUigfGachaRecordsReadErrorKind::RequiredField {
             field: FIELD_ITEM_TYPE,
+            cursor,
           })?;
         }
       } else if is_v2_3 && item.item_id.is_none() {
         return Err(LegacyUigfGachaRecordsReadErrorKind::RequiredField {
           field: FIELD_ITEM_ID,
+          cursor,
         })?;
       }
 
@@ -512,6 +566,7 @@ impl GachaRecordsReader for LegacyUigfGachaRecordsReader {
         LegacyUigfGachaRecordsReadErrorKind::MissingMetadataLocale {
           business: BUSINESS,
           locale: locale.clone(),
+          cursor,
         }
       })?;
 
@@ -530,6 +585,7 @@ impl GachaRecordsReader for LegacyUigfGachaRecordsReader {
           } else {
             item_id.clone().unwrap()
           },
+          cursor,
         },
       )?;
 
@@ -565,18 +621,24 @@ declare_error_kinds! {
   #[derive(Debug, thiserror::Error)]
   UigfGachaRecordsWriteError {
     #[error("Missing account information provided: {uid}")]
-    MissingAccountInfo { uid: u32 },
+    MissingAccountInfo {
+      uid: u32
+    },
 
-    #[error("Missing metadata entry: {business}, locale: {locale}, {key}: {val}")]
+    #[error("Missing metadata entry: {business}, locale: {locale}, {key}: {val}, cursor: {cursor}")]
     MissingMetadataEntry {
       business: Business,
       locale: String,
       key: &'static str,
-      val: String
+      val: String,
+      cursor: usize
     },
 
-    #[error("Failed to mapping uigf gacha type: {value}")]
-    FailedMappingGachaType { value: u32 },
+    #[error("Failed to mapping uigf gacha type: {value}, cursor: {cursor}")]
+    FailedMappingGachaType {
+      value: u32,
+      cursor: usize
+    },
 
     #[error("Failed to create output '{path}': {cause}")]
     CreateOutput {
@@ -588,7 +650,9 @@ declare_error_kinds! {
     },
 
     #[error("Serialization json error: {cause}")]
-    Serialize { cause: serde_json::Error => cause.to_string() },
+    Serialize {
+      cause: serde_json::Error => cause.to_string()
+    },
   }
 }
 
@@ -605,20 +669,28 @@ declare_error_kinds! {
     },
 
     #[error("Invalid json input: {cause}")]
-    InvalidInput { cause: serde_json::Error => cause.to_string() },
+    InvalidInput {
+      cause: serde_json::Error => cause.to_string()
+    },
 
     #[error("Invalid uigf version string: {version}")]
-    InvalidVersion { version: String },
+    InvalidVersion {
+      version: String
+    },
 
     #[error("Unsupported uigf version: {version} (Allowed: {allowed:?})")]
-    UnsupportedVersion { version: UigfVersion, allowed: &'static [UigfVersion] },
+    UnsupportedVersion {
+      version: UigfVersion,
+      allowed: &'static [UigfVersion]
+    },
 
-    #[error("Missing metadata entry: {business}, locale: {locale}, {key}: {val}")]
+    #[error("Missing metadata entry: {business}, locale: {locale}, {key}: {val}, cursor: {cursor}")]
     MissingMetadataEntry {
       business: Business,
       locale: String,
       key: &'static str,
-      val: String
+      val: String,
+      cursor: usize
     },
   }
 }
@@ -842,7 +914,7 @@ impl GachaRecordsWriter for UigfGachaRecordsWriter {
     };
 
     macro_rules! convert {
-      ($business:ident, $project:ident, $item:ident, $item_convert:expr) => {
+      ($business:ident, $project:ident, $item_convert:expr) => {
         let mut projects = Vec::with_capacity($project.len());
         for (uid, records) in $project {
           // Ensure that the account information is provided
@@ -852,7 +924,10 @@ impl GachaRecordsWriter for UigfGachaRecordsWriter {
             .ok_or(UigfGachaRecordsWriteErrorKind::MissingAccountInfo { uid })?;
 
           let mut list = Vec::with_capacity(records.len());
-          for record in records {
+          for (cursor, record) in records.into_iter().enumerate() {
+            // The cursor of the user's record, so it starts at 1
+            let cursor = cursor + 1;
+
             // Find the metadata entry
             let name = record.name.clone();
             let item_id = record.item_id.clone();
@@ -880,9 +955,10 @@ impl GachaRecordsWriter for UigfGachaRecordsWriter {
                 } else {
                   name.clone()
                 },
+                cursor,
               })?;
 
-            let item = $item_convert(record, metadata_entry)?;
+            let item = $item_convert(cursor, record, metadata_entry)?;
             list.push(item);
           }
 
@@ -902,12 +978,12 @@ impl GachaRecordsWriter for UigfGachaRecordsWriter {
       convert!(
         GenshinImpact,
         hk4e,
-        UigfHk4eItem,
-        |record: GachaRecord, metadata_entry: GachaMetadataEntryRef<'_>| {
+        |cursor: usize, record: GachaRecord, metadata_entry: GachaMetadataEntryRef<'_>| {
           Result::<_, Self::Error>::Ok(UigfHk4eItem {
             uigf_gacha_type: *UIGF_GACHA_TYPE_MAPPINGS.get(&record.gacha_type).ok_or(
               UigfGachaRecordsWriteErrorKind::FailedMappingGachaType {
                 value: record.gacha_type,
+                cursor,
               },
             )?,
             gacha_type: record.gacha_type,
@@ -926,12 +1002,13 @@ impl GachaRecordsWriter for UigfGachaRecordsWriter {
       convert!(
         HonkaiStarRail,
         hkrpg,
-        UigfHkrpgItem,
-        |record: GachaRecord, metadata_entry: GachaMetadataEntryRef<'_>| {
-          // HACK: In Honkai Star Rail business,
+        |cursor: usize, record: GachaRecord, metadata_entry: GachaMetadataEntryRef<'_>| {
+          // HACK: In 'Honkai: Star Rail' business,
           //   the gacha_id value of the Record must exist.
           //   Unless the user manually modifies the database record
-          let gacha_id = record.gacha_id.unwrap();
+          let gacha_id = record.gacha_id.unwrap_or_else(|| {
+            panic!("Missing gacha_id in the record: {record:?}, cursor: {cursor}")
+          });
 
           Result::<_, Self::Error>::Ok(UigfHkrpgItem {
             gacha_id,
@@ -951,8 +1028,7 @@ impl GachaRecordsWriter for UigfGachaRecordsWriter {
       convert!(
         ZenlessZoneZero,
         nap,
-        UigfNapItem,
-        |record: GachaRecord, metadata_entry: GachaMetadataEntryRef<'_>| {
+        |_: usize, record: GachaRecord, metadata_entry: GachaMetadataEntryRef<'_>| {
           Result::<_, Self::Error>::Ok(UigfNapItem {
             gacha_id: record.gacha_id,
             gacha_type: record.gacha_type,
@@ -1066,7 +1142,7 @@ impl GachaRecordsReader for UigfGachaRecordsReader {
     );
 
     macro_rules! convert {
-      ($business:ident, $project:ident, $item:ident, $gacha_id:expr) => {
+      ($business:ident, $project:ident, $gacha_id:expr) => {
         for project in $project {
           // Skip the project if the account is not expected
           if let Some(accounts) = accounts {
@@ -1075,7 +1151,10 @@ impl GachaRecordsReader for UigfGachaRecordsReader {
             }
           }
 
-          for item in project.list {
+          for (cursor, item) in project.list.into_iter().enumerate() {
+            // Because the cursor of the user's record starts at 1
+            let cursor = cursor + 1;
+
             let metadata_entry = metadata
               .obtain(Business::$business, &project.lang)
               .and_then(|map| map.entry_from_id(&item.item_id))
@@ -1084,6 +1163,7 @@ impl GachaRecordsReader for UigfGachaRecordsReader {
                 locale: project.lang.clone(),
                 key: FIELD_ITEM_ID,
                 val: item.item_id.clone(),
+                cursor,
               })?;
 
             let gacha_id = $gacha_id(&item);
@@ -1109,21 +1189,17 @@ impl GachaRecordsReader for UigfGachaRecordsReader {
     }
 
     if let Some(hk4e) = hk4e {
-      convert!(GenshinImpact, hk4e, UigfHk4eItem, |_| None);
+      convert!(GenshinImpact, hk4e, |_| None);
     }
 
     if let Some(hkrpg) = hkrpg {
-      convert!(
-        HonkaiStarRail,
-        hkrpg,
-        UigfHkrpgItem,
-        |item: &UigfHkrpgItem| Some(item.gacha_id)
-      );
+      convert!(HonkaiStarRail, hkrpg, |item: &UigfHkrpgItem| Some(
+        item.gacha_id
+      ));
     }
 
     if let Some(nap) = nap {
-      convert!(ZenlessZoneZero, nap, UigfNapItem, |item: &UigfNapItem| item
-        .gacha_id);
+      convert!(ZenlessZoneZero, nap, |item: &UigfNapItem| item.gacha_id);
     }
 
     Ok(records)
@@ -1141,18 +1217,27 @@ impl GachaRecordsReader for UigfGachaRecordsReader {
 declare_error_kinds! {
   #[derive(Debug, thiserror::Error)]
   SrgfGachaRecordsWriteError {
-    #[error("Incompatible record business: {business}, id: {id}, name: {name}")]
+    #[error("Incompatible record business: {business}, id: {id}, name: {name}, cursor: {cursor}")]
     IncompatibleRecordBusiness {
       business: Business,
       id: String,
-      name: String
+      name: String,
+      cursor: usize
     },
 
-    #[error("Incompatible record owner uid: expected: {expected}, actual: {actual}")]
-    IncompatibleRecordOwner { expected: u32, actual: u32 },
+    #[error("Incompatible record owner uid: expected: {expected}, actual: {actual}, cursor: {cursor}")]
+    IncompatibleRecordOwner {
+      expected: u32,
+      actual: u32,
+      cursor: usize
+    },
 
-    #[error("Incompatible record locale: expected: {expected}, actual: {actual}")]
-    IncompatibleRecordLocale { expected: String, actual: String },
+    #[error("Incompatible record locale: expected: {expected}, actual: {actual}, cursor: {cursor}")]
+    IncompatibleRecordLocale {
+      expected: String,
+      actual: String,
+      cursor: usize
+    },
 
     #[error("Failed to create output '{path}': {cause}")]
     CreateOutput {
@@ -1164,7 +1249,9 @@ declare_error_kinds! {
     },
 
     #[error("Serialization json error: {cause}")]
-    Serialize { cause: serde_json::Error => cause.to_string() },
+    Serialize {
+      cause: serde_json::Error => cause.to_string()
+    },
   }
 }
 
@@ -1181,29 +1268,42 @@ declare_error_kinds! {
     },
 
     #[error("Invalid json input: {cause}")]
-    InvalidInput { cause: serde_json::Error => cause.to_string() },
-
-    #[error("Invalid uigf version string: {version}")]
-    InvalidVersion { version: String },
-
-    #[error("Unsupported uigf version: {version} (Allowed: {allowed:?})")]
-    UnsupportedVersion { version: UigfVersion, allowed: &'static [UigfVersion] },
-
-    #[error("Inconsistent with expected uid: expected: {expected}, actual: {actual}")]
-    InconsistentUid { expected: u32, actual: u32 },
-
-    #[error("Missing metadata locale: {business}, locale: {locale}")]
-    MissingMetadataLocale {
-      business: Business,
-      locale: String
+    InvalidInput {
+      cause: serde_json::Error => cause.to_string()
     },
 
-    #[error("Missing metadata entry: {business}, locale: {locale}, {key}: {val}")]
+    #[error("Invalid uigf version string: {version}")]
+    InvalidVersion {
+      version: String
+    },
+
+    #[error("Unsupported uigf version: {version} (Allowed: {allowed:?})")]
+    UnsupportedVersion {
+      version: UigfVersion,
+      allowed: &'static [UigfVersion]
+    },
+
+    #[error("Inconsistent with expected uid: expected: {expected}, actual: {actual}, cursor: {cursor}")]
+    InconsistentUid {
+      expected: u32,
+      actual: u32,
+      cursor: usize
+    },
+
+    #[error("Missing metadata locale: {business}, locale: {locale}, cursor: {cursor}")]
+    MissingMetadataLocale {
+      business: Business,
+      locale: String,
+      cursor: usize
+    },
+
+    #[error("Missing metadata entry: {business}, locale: {locale}, {key}: {val}, cursor: {cursor}")]
     MissingMetadataEntry {
       business: Business,
       locale: String,
       key: &'static str,
-      val: String
+      val: String,
+      cursor: usize
     },
   }
 }
@@ -1319,29 +1419,39 @@ impl GachaRecordsWriter for SrgfGachaRecordsWriter {
       list: Vec::with_capacity(records.len()),
     };
 
-    for record in records {
+    for (cursor, record) in records.into_iter().enumerate() {
+      // Because the cursor of the user's record starts at 1
+      let cursor = cursor + 1;
+
       // Avoid writing records that are not compatible with the account.
       if record.business != BUSINESS {
         return Err(SrgfGachaRecordsWriteErrorKind::IncompatibleRecordBusiness {
           business: record.business,
           id: record.id,
           name: record.name,
+          cursor,
         })?;
       } else if record.uid != *account_uid {
         return Err(SrgfGachaRecordsWriteErrorKind::IncompatibleRecordOwner {
           expected: *account_uid,
           actual: record.uid,
+          cursor,
         })?;
       } else if record.lang != *account_locale {
         return Err(SrgfGachaRecordsWriteErrorKind::IncompatibleRecordLocale {
           expected: account_locale.to_owned(),
           actual: record.lang,
+          cursor,
         })?;
       }
 
-      // HACK: In Honkai Star Rail business,
+      // HACK: In 'Honkai: Star Rail' business,
       //   the gacha_id and item_id value of the Record must exist.
       //   Unless the user manually modifies the database record
+      if record.gacha_id.is_none() || record.item_id.is_none() {
+        panic!("Missing gacha_id or item_id in the record: {record:?}, cursor: {cursor}")
+      }
+
       let gacha_id = record.gacha_id.unwrap();
       let item_id = record.item_id.unwrap();
 
@@ -1426,17 +1536,32 @@ impl GachaRecordsReader for SrgfGachaRecordsReader {
       return Err(SrgfGachaRecordsReadErrorKind::InconsistentUid {
         expected: *expected_uid,
         actual: srgf.info.uid,
+        cursor: 0, // When it is 0, the info data is incorrect
       })?;
     }
 
     let mut records = Vec::with_capacity(srgf.list.len());
-    for item in srgf.list {
+    for (cursor, item) in srgf.list.into_iter().enumerate() {
+      // Because the cursor of the user's record starts at 1
+      let cursor = cursor + 1;
+
+      if let Some(uid) = item.uid {
+        if uid != *expected_uid {
+          return Err(SrgfGachaRecordsReadErrorKind::InconsistentUid {
+            expected: *expected_uid,
+            actual: uid,
+            cursor,
+          })?;
+        }
+      }
+
       let locale = item.lang.unwrap_or(srgf.info.lang.clone());
 
       let metadata_locale = metadata.obtain(BUSINESS, &locale).ok_or_else(|| {
         SrgfGachaRecordsReadErrorKind::MissingMetadataLocale {
           business: BUSINESS,
           locale: locale.clone(),
+          cursor,
         }
       })?;
 
@@ -1447,6 +1572,7 @@ impl GachaRecordsReader for SrgfGachaRecordsReader {
           locale: locale.clone(),
           key: FIELD_ITEM_ID,
           val: item.item_id.clone(),
+          cursor,
         })?;
 
       records.push(GachaRecord {
@@ -1616,6 +1742,44 @@ mod tests {
   }
 
   #[test]
+  fn test_uigf_v2_2_reader_error_record_cursor() {
+    let input = br#"{
+      "info": {
+        "uid": "100000000",
+        "uigf_version": "v2.2"
+      },
+      "list": [
+        {
+          "uid": "100000001",
+          "id": "1000000000000000000",
+          "gacha_type": "301",
+          "time": "2023-01-01 00:00:00",
+          "name": "Kamisato Ayaka",
+          "item_type": "Character",
+          "uigf_gacha_type": "301"
+        }
+      ]
+    }"#;
+
+    // The info uid is 100_000_000
+    // but the uid in the list entry is different
+
+    let err = LegacyUigfGachaRecordsReader {
+      expected_locale: "en-us".to_owned(),
+      expected_uid: 100_000_000,
+    }
+    .read(GachaMetadata::embedded(), Cursor::new(input))
+    .unwrap_err();
+
+    assert!(matches!(
+      err.into_inner(),
+      LegacyUigfGachaRecordsReadErrorKind::InconsistentUid { expected, actual, cursor }
+        if expected == 100_000_000 && actual == 100_000_001 && cursor == 1
+        // Because the cursor is the user's record, starts from 1
+    ));
+  }
+
+  #[test]
   fn test_uigf_v2_3_reader() {
     // v2.3: The item_id field must be provided.
     let input = br#"{
@@ -1690,7 +1854,7 @@ mod tests {
 
     assert!(matches!(
       err.into_inner(),
-      LegacyUigfGachaRecordsReadErrorKind::RequiredField { field }
+      LegacyUigfGachaRecordsReadErrorKind::RequiredField { field, .. }
         if field == "region_time_zone"
     ));
   }
@@ -1736,6 +1900,51 @@ mod tests {
     assert_eq!(records, read_records);
 
     temp_dir.close().unwrap();
+  }
+
+  #[test]
+  fn test_uigf_v2_2_write_error_record_cursor() {
+    let correct_uid = 100_000_000;
+    let incorrect_uid = correct_uid + 0xE; // different uid
+
+    let correct = GachaRecord {
+      business: Business::GenshinImpact,
+      uid: correct_uid,
+      id: "1000000000000000000".to_owned(),
+      gacha_type: 301,
+      gacha_id: None,
+      rank_type: 5,
+      count: 1,
+      lang: "en-us".to_owned(),
+      time: "2023-01-01 00:00:00".to_owned(),
+      name: "Kamisato Ayaka".to_owned(),
+      item_type: "Character".to_owned(),
+      item_id: Some("10000002".to_owned()),
+    };
+
+    let mut incorrect = correct.clone();
+    incorrect.uid = incorrect_uid;
+
+    let err = LegacyUigfGachaRecordsWriter {
+      uigf_version: UigfVersion::V2_2,
+      account_locale: "en-us".to_owned(),
+      account_uid: correct_uid,
+      export_time: OffsetDateTime::now_utc().to_offset(*consts::LOCAL_OFFSET),
+      region_time_zone: 8,
+    }
+    .write(
+      GachaMetadata::embedded(),
+      vec![correct, incorrect],
+      "It will not be written",
+    )
+    .unwrap_err();
+
+    assert!(matches!(
+      err.into_inner(),
+      LegacyUigfGachaRecordsWriteErrorKind::IncompatibleRecordOwner { expected, actual, cursor }
+        if expected == correct_uid && actual == incorrect_uid && cursor == 2
+        // The second record, because the cursor is the user's record, starts from 1
+    ));
   }
 
   #[test]
