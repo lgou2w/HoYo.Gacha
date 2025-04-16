@@ -73,7 +73,7 @@ pub enum GachaMetadataEntryNameId {
 
 #[derive(Debug)]
 pub struct GachaMetadataLocale {
-  pub language: String,                         // Language: en-us, zh-cn, etc...
+  pub locale: String,                           // Locale: en-us, zh-cn, etc...
   categories: HashMap<&'static str, String>,    // Category: Category Name
   entries: HashMap<String, GachaMetadataEntry>, // Id: Entry
   reverses: OnceLock<HashMap<String, GachaMetadataEntryNameId>>, // Name: Id (Lazy init)
@@ -81,7 +81,7 @@ pub struct GachaMetadataLocale {
 
 #[derive(Debug, PartialEq, Eq, Hash)]
 pub struct GachaMetadataEntryRef<'a> {
-  pub language: &'a str,
+  pub locale: &'a str,
   pub category: &'static str, // Category type name
   pub category_name: &'a str, // Category locale name
   pub id: &'a str,
@@ -163,7 +163,7 @@ impl GachaMetadataLocale {
     entry: &'a GachaMetadataEntry,
   ) -> GachaMetadataEntryRef<'a> {
     GachaMetadataEntryRef {
-      language: &self.language,
+      locale: &self.locale,
       category: entry.category,
       category_name: self.categories.get(entry.category).unwrap(), // SAFETY
       id,
@@ -240,7 +240,7 @@ impl Debug for GachaMetadata {
 
 // From Raw Json
 
-// Convert multiple categorizations into (Language: GachaMetadataLocale) hashmap
+// Convert multiple categorizations into (Locale: GachaMetadataLocale) hashmap
 fn raw_categorizations_into_locales(
   categorizations: Vec<RawGachaMetadataCategorization>,
 ) -> HashMap<String, GachaMetadataLocale> {
@@ -268,7 +268,7 @@ fn raw_categorizations_into_locales(
     };
 
     for (
-      language,
+      locale,
       RawGachaMetadataI18n {
         category: category_name,
         entries: names,
@@ -309,7 +309,7 @@ fn raw_categorizations_into_locales(
         },
       );
 
-      match locales.entry(language.clone()) {
+      match locales.entry(locale.clone()) {
         MapEntry::Occupied(mut o) => {
           let locale = o.get_mut();
           locale.entries.extend(new_entries);
@@ -317,7 +317,7 @@ fn raw_categorizations_into_locales(
         }
         MapEntry::Vacant(o) => {
           o.insert(GachaMetadataLocale {
-            language,
+            locale,
             categories: HashMap::from_iter([(category, category_name.clone())]),
             entries: new_entries,
             reverses: OnceLock::new(),
@@ -496,7 +496,7 @@ mod tests {
     assert_eq!(
       s.entry_from_id("10000002"),
       Some(GachaMetadataEntryRef {
-        language: "en-us",
+        locale: "en-us",
         category: GachaMetadata::CATEGORY_CHARACTER,
         category_name: "Character",
         id: "10000002",
@@ -509,7 +509,7 @@ mod tests {
     assert_eq!(
       s.entry_from_name_first("Jean"),
       Some(GachaMetadataEntryRef {
-        language: "en-us",
+        locale: "en-us",
         category: GachaMetadata::CATEGORY_CHARACTER,
         category_name: "Character",
         id: "10000003",
@@ -523,7 +523,7 @@ mod tests {
       s.entry_from_name("Traveler"),
       Some(HashSet::from_iter([
         GachaMetadataEntryRef {
-          language: "en-us",
+          locale: "en-us",
           category: GachaMetadata::CATEGORY_CHARACTER,
           category_name: "Character",
           id: "10000005",
@@ -532,7 +532,7 @@ mod tests {
           limited: &GachaMetadataEntryLimited::No,
         },
         GachaMetadataEntryRef {
-          language: "en-us",
+          locale: "en-us",
           category: GachaMetadata::CATEGORY_CHARACTER,
           category_name: "Character",
           id: "10000007",
@@ -546,7 +546,7 @@ mod tests {
     assert_eq!(
       s.entry_from_name_first("Mistsplitter Reforged"),
       Some(GachaMetadataEntryRef {
-        language: "en-us",
+        locale: "en-us",
         category: GachaMetadata::CATEGORY_WEAPON,
         category_name: "Weapon",
         id: "11509",
@@ -589,7 +589,7 @@ mod tests {
     assert_eq!(
       s.entry_from_name_first("神里绫华"),
       Some(GachaMetadataEntryRef {
-        language: "zh-cn",
+        locale: "zh-cn",
         category: GachaMetadata::CATEGORY_CHARACTER,
         category_name: "角色",
         id: "10000002",
@@ -602,7 +602,7 @@ mod tests {
     assert_eq!(
       s.entry_from_id("10000003"),
       Some(GachaMetadataEntryRef {
-        language: "zh-cn",
+        locale: "zh-cn",
         category: GachaMetadata::CATEGORY_CHARACTER,
         category_name: "角色",
         id: "10000003",
@@ -616,7 +616,7 @@ mod tests {
       s.entry_from_name("旅行者"),
       Some(HashSet::from_iter([
         GachaMetadataEntryRef {
-          language: "zh-cn",
+          locale: "zh-cn",
           category: GachaMetadata::CATEGORY_CHARACTER,
           category_name: "角色",
           id: "10000005",
@@ -625,7 +625,7 @@ mod tests {
           limited: &GachaMetadataEntryLimited::No,
         },
         GachaMetadataEntryRef {
-          language: "zh-cn",
+          locale: "zh-cn",
           category: GachaMetadata::CATEGORY_CHARACTER,
           category_name: "角色",
           id: "10000007",
@@ -639,7 +639,7 @@ mod tests {
     assert_eq!(
       s.entry_from_id("11509"),
       Some(GachaMetadataEntryRef {
-        language: "zh-cn",
+        locale: "zh-cn",
         category: GachaMetadata::CATEGORY_WEAPON,
         category_name: "武器",
         id: "11509",
