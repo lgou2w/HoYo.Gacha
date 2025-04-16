@@ -100,7 +100,7 @@ impl GachaMetadataLocale {
   }
 
   pub fn entry_from_id<'a, 'id: 'a>(&'a self, id: &'id str) -> Option<GachaMetadataEntryRef<'a>> {
-    self.entries.get(id).map(|entry| self.entry_ref(id, entry))
+    self.entries.get(id).map(|entry| self.entry_ref(entry, id))
   }
 
   pub fn entry_from_name<'a, 'name: 'a>(
@@ -109,12 +109,12 @@ impl GachaMetadataLocale {
   ) -> Option<HashSet<GachaMetadataEntryRef<'a>>> {
     match self.reverses().get(name)? {
       GachaMetadataEntryNameId::Unique(id) => Some(HashSet::from_iter([
-        self.entry_ref(id, self.entries.get(id)?)
+        self.entry_ref(self.entries.get(id)?, id)
       ])),
       GachaMetadataEntryNameId::Multiple(ids) => Some(
         ids
           .iter()
-          .filter_map(|id| self.entries.get(id).map(|entry| self.entry_ref(id, entry)))
+          .filter_map(|id| self.entries.get(id).map(|entry| self.entry_ref(entry, id)))
           .collect(),
       ),
     }
@@ -125,11 +125,11 @@ impl GachaMetadataLocale {
     name: &'name str,
   ) -> Option<GachaMetadataEntryRef<'a>> {
     match self.reverses().get(name)? {
-      GachaMetadataEntryNameId::Unique(id) => Some(self.entry_ref(id, self.entries.get(id)?)),
+      GachaMetadataEntryNameId::Unique(id) => Some(self.entry_ref(self.entries.get(id)?, id)),
       GachaMetadataEntryNameId::Multiple(ids) => ids
         .iter()
         .next()
-        .and_then(|id| self.entries.get(id).map(|entry| self.entry_ref(id, entry))),
+        .and_then(|id| self.entries.get(id).map(|entry| self.entry_ref(entry, id))),
     }
   }
 
@@ -159,8 +159,8 @@ impl GachaMetadataLocale {
   #[inline]
   fn entry_ref<'a, 'id: 'a>(
     &'a self,
-    id: &'id str,
     entry: &'a GachaMetadataEntry,
+    id: &'id str,
   ) -> GachaMetadataEntryRef<'a> {
     GachaMetadataEntryRef {
       locale: &self.locale,
