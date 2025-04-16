@@ -12,17 +12,17 @@ use tracing_appender::rolling::Rotation;
 
 // App
 
-// Legacy ID
-// pub const ID: &str = "com.lgou2w.hoyo.gacha";
+// See: src-tauri/Tauri.toml - identifier
+// pub const ID: &str = "com.lgou2w.hoyo.gacha"; // Legacy
 pub const ID: &str = "com.lgou2w.hoyo.gacha.v1";
 
 cfg_if! {if #[cfg(any(debug_assertions, test))] {
   // for Development
-  pub const NAME: &str = "__DEV__HoYo.Gacha";
+  pub const APP_NAME: &str = "__DEV__HoYo.Gacha";
   pub const DATABASE: &str = "__DEV__HoYo.Gacha.v1.db";
 } else {
   // for Production
-  pub const NAME: &str = "HoYo.Gacha";
+  pub const APP_NAME: &str = "HoYo.Gacha";
   pub const DATABASE: &str = "HoYo.Gacha.v1.db"; // Legacy: HoYo.Gacha.db
 }}
 
@@ -48,7 +48,7 @@ pub const TRACING_TIME_FORMAT: &[FormatItem<'_>] =
 pub const TRACING_LOGS_DIRECTORY: &str = "logs";
 pub const TRACING_LOGS_ROTATION: Rotation = Rotation::DAILY;
 pub const TRACING_LOGS_MAX_FILES: usize = 30;
-pub const TRACING_LOGS_FILE_NAME_PREFIX: &str = NAME;
+pub const TRACING_LOGS_FILE_NAME_PREFIX: &str = APP_NAME;
 pub const TRACING_LOGS_FILE_NAME_SUFFIX: &str = "log";
 
 // Tauri app
@@ -56,7 +56,7 @@ pub const TRACING_LOGS_FILE_NAME_SUFFIX: &str = "log";
 pub const TAURI_MAIN_WINDOW_LABEL: &str = "main";
 pub const TAURI_MAIN_WINDOW_ENTRYPOINT: &str = "index.html";
 pub const TAURI_MAIN_WINDOW_CLASSNAME: &str = ID;
-pub const TAURI_MAIN_WINDOW_TITLE: &str = NAME;
+pub const TAURI_MAIN_WINDOW_TITLE: &str = APP_NAME;
 pub const TAURI_MAIN_WINDOW_WIDTH: f64 = 1280.;
 pub const TAURI_MAIN_WINDOW_HEIGHT: f64 = 720.;
 pub const TAURI_MAIN_WINDOW_FULLSCREEN: bool = false;
@@ -80,7 +80,7 @@ pub static LOCAL_OFFSET: LazyLock<UtcOffset> =
 
 pub static REQWEST: LazyLock<Reqwest> = LazyLock::new(|| {
   Reqwest::builder()
-    .user_agent(format!("{}/{}", NAME, VERSION))
+    .user_agent(format!("{}/{}", APP_NAME, VERSION))
     .build()
     .unwrap()
 });

@@ -100,7 +100,7 @@ impl<'a> Crash<'a> {
     }
 
     Self {
-      name: consts::NAME,
+      name: consts::APP_NAME,
       version: consts::VERSION,
       cause,
       explanation,
