@@ -22,6 +22,7 @@ const useMediaStyles = makeStyles({
 const useActionStyles = makeStyles({
   root: {
     paddingLeft: tokens.spacingHorizontalM,
+    alignItems: 'center',
   },
 })
 

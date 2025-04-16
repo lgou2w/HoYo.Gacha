@@ -1,5 +1,6 @@
 import React, { ReactNode, useCallback, useMemo } from 'react'
-import { useToastController } from '@fluentui/react-components'
+import { Link, ToastTrigger, useToastController } from '@fluentui/react-components'
+import { DismissRegular } from '@fluentui/react-icons'
 import { NotifierId } from '@/components/Layout/declares'
 import Spinner from '@/components/UI/Spinner'
 import Toast from '@/components/UI/Toast'
@@ -13,6 +14,7 @@ export default function useNotifier () {
     dispatchToast,
     updateToast,
     dismissToast,
+    dismissAllToasts,
   } = useToastController(NotifierId)
 
   const notify = useCallback((
@@ -43,11 +45,26 @@ export default function useNotifier () {
   const { info, success, error, warning } = useMemo(() => {
     const createHandler =
       (defaultOptions: NotifyOptions) =>
-        (title: ReactNode, options?: Omit<NotifyOptions, 'intent'> & { body?: ReactNode }) => {
-          const { body, ...rest } = options || {}
+        (
+          title: ReactNode,
+          options?: Omit<NotifyOptions, 'intent'> & {
+            dismissible?: boolean
+            body?: ReactNode
+          },
+        ) => {
+          const { dismissible, body, ...rest } = options || {}
           notify(
             <Toast>
-              <ToastTitle>{title}</ToastTitle>
+              <ToastTitle
+                action={dismissible
+                  ? <ToastTrigger>
+                      <Link><DismissRegular /></Link>
+                    </ToastTrigger>
+                  : undefined
+                }
+              >
+                {title}
+              </ToastTitle>
               {body && <ToastBody>{body}</ToastBody>}
             </Toast>,
             {
@@ -87,7 +104,7 @@ export default function useNotifier () {
   type NotifierPromiseContentOptions =
     & { title: ReactNode }
     & Omit<NotifyOptions, 'intent' | 'toastId'>
-    & { body?: ReactNode }
+    & { dismissible?: boolean, body?: ReactNode }
     | null
     | undefined
 
@@ -145,6 +162,8 @@ export default function useNotifier () {
     warning,
     loading,
     promise,
+    dismiss: dismissToast,
+    dismissAll: dismissAllToasts,
   }
 }
 

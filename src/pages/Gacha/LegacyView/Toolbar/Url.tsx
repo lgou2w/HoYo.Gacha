@@ -218,6 +218,7 @@ function GachaLegacyViewToolbarUrlButton () {
       return
     }
 
+    notifier.dismissAll()
     setBusy(true)
 
     const { business, uid } = selectedAccount
@@ -249,6 +250,8 @@ function GachaLegacyViewToolbarUrlButton () {
               body: i18n.t('Pages.Gacha.LegacyView.Toolbar.Url.Obtain.Error.Body', {
                 message,
               }),
+              timeout: -1,
+              dismissible: true,
             }
           },
         })
@@ -303,6 +306,8 @@ function GachaLegacyViewToolbarUrlButton () {
             body: i18n.t(`Pages.Gacha.LegacyView.Toolbar.Url.Fetch.Success.${body}`, {
               changes: Math.abs(changes),
             }),
+            timeout: -1,
+            dismissible: true,
           }
         },
         error: (error) => {
@@ -312,6 +317,8 @@ function GachaLegacyViewToolbarUrlButton () {
             body: i18n.t('Pages.Gacha.LegacyView.Toolbar.Url.Fetch.Error.Body', {
               message,
             }),
+            timeout: -1,
+            dismissible: true,
           }
         },
       }) ?? 0
