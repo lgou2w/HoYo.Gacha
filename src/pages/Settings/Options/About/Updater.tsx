@@ -1,4 +1,4 @@
-import React, { Fragment } from 'react'
+import React from 'react'
 import { MenuTrigger } from '@fluentui/react-components'
 import { ArrowClockwiseRegular, SparkleRegular, WarningRegular } from '@fluentui/react-icons'
 import Locale from '@/components/Locale'
@@ -18,34 +18,32 @@ export default function SettingsOptionsAboutUpdater () {
       title={<Locale mapping={['Pages.Settings.Options.About.Updater.Title']} />}
       subtitle={<Locale mapping={['Pages.Settings.Options.About.Updater.Subtitle']} />}
       action={(
-        <Fragment>
-          <Menu positioning="below-end">
-            <MenuTrigger disableButtonEnhancement>
-              {(triggerProps) => (
-                <Locale
-                  component={SplitButton}
-                  menuButton={triggerProps}
-                  appearance="primary"
-                  mapping={['Pages.Settings.Options.About.Updater.CheckBtn']}
+        <Menu positioning="below-end">
+          <MenuTrigger disableButtonEnhancement>
+            {(triggerProps) => (
+              <Locale
+                component={SplitButton}
+                menuButton={triggerProps}
+                appearance="primary"
+                mapping={['Pages.Settings.Options.About.Updater.CheckBtn']}
+              />
+            )}
+          </MenuTrigger>
+          <MenuPopover>
+            <MenuList>
+              <Locale
+                component={MenuItem}
+                icon={<SparkleRegular />}
+                mapping={['Pages.Settings.Options.About.Updater.Channel.Stable']}
                 />
-              )}
-            </MenuTrigger>
-            <MenuPopover>
-              <MenuList>
-                <Locale
-                  component={MenuItem}
-                  icon={<SparkleRegular />}
-                  mapping={['Pages.Settings.Options.About.Updater.Channel.Stable']}
-                  />
-                <Locale
-                  component={MenuItem}
-                  icon={<WarningRegular />}
-                  mapping={['Pages.Settings.Options.About.Updater.Channel.Insider']}
-                />
-              </MenuList>
-            </MenuPopover>
-          </Menu>
-        </Fragment>
+              <Locale
+                component={MenuItem}
+                icon={<WarningRegular />}
+                mapping={['Pages.Settings.Options.About.Updater.Channel.Insider']}
+              />
+            </MenuList>
+          </MenuPopover>
+        </Menu>
       )}
     />
   )
