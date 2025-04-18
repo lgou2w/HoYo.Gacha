@@ -21,19 +21,19 @@ const useStyles = makeStyles({
     lineHeight: '0.375rem',
   },
   small: {
-    width: '1rem',
+    minWidth: '1rem',
     height: '1rem',
   },
   medium: {
-    width: '1.25rem',
+    minWidth: '1.25rem',
     height: '1.25rem',
   },
   large: {
-    width: '1.5rem',
+    minWidth: '1.5rem',
     height: '1.5rem',
   },
   'extra-large': {
-    width: '2rem',
+    minWidth: '2rem',
     height: '2rem',
   },
 })
