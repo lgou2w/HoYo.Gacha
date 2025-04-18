@@ -10,20 +10,22 @@ import { Business } from '@/interfaces/Business'
 import { Overwrite } from '@/interfaces/declares'
 
 // eventChannel must be provided
-type FetchArgs<T extends Business> = Overwrite<CreateGachaRecordsFetcherArgs<T>, { eventChannel: string }>
+export type GachaRecordsFetcherFetchArgs<T extends Business> =
+  Overwrite<CreateGachaRecordsFetcherArgs<T>, { eventChannel: string }>
 
-type FetchFragment<T extends Business> = 'Idle' | GachaRecordsFetcherFragment<T>
+export type GachaRecordsFetcherFetchFragment<T extends Business> =
+  'Idle' | GachaRecordsFetcherFragment<T>
 
 export default function useGachaRecordsFetcher<T extends Business> () {
   const [state, produce] = useImmer<{
     isFetching: boolean
-    fragment: FetchFragment<T>,
+    fragment: GachaRecordsFetcherFetchFragment<T>,
   }>({
     isFetching: false,
     fragment: 'Idle',
   })
 
-  const fetch: (args: FetchArgs<T>) => Promise<Awaited<ReturnType<typeof createGachaRecordsFetcher<T>>> | null> = useCallback(async (args) => {
+  const fetch: (args: GachaRecordsFetcherFetchArgs<T>) => Promise<Awaited<ReturnType<typeof createGachaRecordsFetcher<T>>> | null> = useCallback(async (args) => {
     if (state.isFetching) {
       return null
     }
@@ -36,7 +38,7 @@ export default function useGachaRecordsFetcher<T extends Business> () {
     try {
       const unlisten = await listen<GachaRecordsFetcherFragment<T>>(args.eventChannel, (event) => {
         produce((draft) => {
-          (draft.fragment as FetchFragment<T>) = event.payload
+          (draft.fragment as GachaRecordsFetcherFetchFragment<T>) = event.payload
         })
       })
 
