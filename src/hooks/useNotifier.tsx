@@ -156,6 +156,7 @@ export default function useNotifier () {
   }, [dismissToast, error, loading, success])
 
   return {
+    NotifierId,
     info,
     success,
     error,

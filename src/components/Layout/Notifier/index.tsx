@@ -1,7 +1,9 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { ToasterProps, tokens } from '@fluentui/react-components'
-import { NavbarWidth, NotifierId, ScrollbarWidth, TitleBarHeight } from '@/components/Layout/declares'
+import { useRouter } from '@tanstack/react-router'
+import { NavbarWidth, ScrollbarWidth, TitleBarHeight } from '@/components/Layout/declares'
 import Toaster from '@/components/UI/Toaster'
+import useNotifier from '@/hooks/useNotifier'
 
 // FIXME: String is working, should it be an inline css property
 const ToasterOffsets: ToasterProps['offset'] = {
@@ -19,9 +21,21 @@ const ToasterOffsets: ToasterProps['offset'] = {
 }
 
 export default function Notifier () {
+  const notifier = useNotifier()
+  const router = useRouter()
+
+  // HACK: Dismiss all toasts when the path changes
+  useEffect(() => {
+    return router.subscribe('onBeforeNavigate', (event) => {
+      if (event.pathChanged) {
+        notifier.dismissAll()
+      }
+    })
+  }, [notifier, router])
+
   return (
     <Toaster
-      toasterId={NotifierId}
+      toasterId={notifier.NotifierId}
       offset={ToasterOffsets}
       position="top-end"
     />
