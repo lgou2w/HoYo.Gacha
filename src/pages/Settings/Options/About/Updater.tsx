@@ -1,12 +1,7 @@
 import React from 'react'
-import { MenuTrigger } from '@fluentui/react-components'
+import { Menu, MenuItem, MenuList, MenuPopover, MenuTrigger, SplitButton } from '@fluentui/react-components'
 import { ArrowClockwiseRegular, SparkleRegular, WarningRegular } from '@fluentui/react-icons'
 import Locale from '@/components/Locale'
-import Menu from '@/components/UI/Menu'
-import MenuItem from '@/components/UI/MenuItem'
-import MenuList from '@/components/UI/MenuList'
-import MenuPopover from '@/components/UI/MenuPopover'
-import SplitButton from '@/components/UI/SplitButton'
 import SettingsOptionsItem from '@/pages/Settings/Options/OptionsItem'
 
 // TODO: Check Application Version Updates

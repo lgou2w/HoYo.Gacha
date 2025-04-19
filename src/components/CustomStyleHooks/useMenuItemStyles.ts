@@ -1,6 +1,4 @@
-import { ComponentRef, forwardRef } from 'react'
-import { MenuItem, MenuItemProps, MenuItemState, makeStyles, renderMenuItem_unstable, useMenuItemStyles_unstable, useMenuItem_unstable } from '@fluentui/react-components'
-import { mergeComponentClasses } from './utilities'
+import { MenuItemState, getSlotClassNameProp_unstable, makeStyles, mergeClasses } from '@fluentui/react-components'
 
 // This component reimplemented the Fluent UI rendering in order to override some of the default styles.
 // See:
@@ -43,28 +41,39 @@ const useCheckmarkStyles = makeStyles({
   },
 })
 
-// eslint-disable-next-line react-refresh/only-export-components
-export function useMenuItemStyles (state: MenuItemState, className?: string) {
+export default function useMenuItemStyles (state: MenuItemState) {
   const styles = useStyles()
   const iconStyles = useIconStyles()
   const contentStyles = useContentStyles()
   const checkmarkStyles = useCheckmarkStyles()
 
-  mergeComponentClasses(state.root, styles.root, className)
-  mergeComponentClasses(state.icon, iconStyles.root)
-  mergeComponentClasses(state.content, contentStyles.root)
-  mergeComponentClasses(state.checkmark, checkmarkStyles.root)
+  state.root.className = mergeClasses(
+    state.root.className,
+    styles.root,
+    getSlotClassNameProp_unstable(state.root),
+  )
 
-  return state
+  if (state.icon) {
+    state.icon.className = mergeClasses(
+      state.icon.className,
+      iconStyles.root,
+      getSlotClassNameProp_unstable(state.icon),
+    )
+  }
+
+  if (state.content) {
+    state.content.className = mergeClasses(
+      state.content.className,
+      contentStyles.root,
+      getSlotClassNameProp_unstable(state.content),
+    )
+  }
+
+  if (state.checkmark) {
+    state.checkmark.className = mergeClasses(
+      state.checkmark.className,
+      checkmarkStyles.root,
+      getSlotClassNameProp_unstable(state.checkmark),
+    )
+  }
 }
-
-export default forwardRef<ComponentRef<typeof MenuItem>, MenuItemProps>(function MenuItem (props, ref) {
-  const { className, ...rest } = props
-  const state = useMenuItem_unstable(rest, ref)
-
-  useMenuItemStyles_unstable(state)
-
-  useMenuItemStyles(state, className)
-
-  return renderMenuItem_unstable(state)
-})

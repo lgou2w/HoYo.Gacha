@@ -1,5 +1,5 @@
 import React from 'react'
-import Button from '@/components/UI/Button'
+import { Button } from '@fluentui/react-components'
 
 interface Props {
   onCancel?: () => void

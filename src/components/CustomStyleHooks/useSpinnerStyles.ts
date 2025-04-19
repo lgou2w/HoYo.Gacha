@@ -1,6 +1,4 @@
-import { ComponentRef, forwardRef } from 'react'
-import { Spinner, SpinnerProps, makeStyles, renderSpinner_unstable, useSpinnerStyles_unstable, useSpinner_unstable } from '@fluentui/react-components'
-import { mergeComponentClasses } from './utilities'
+import { SpinnerState, getSlotClassNameProp_unstable, makeStyles, mergeClasses } from '@fluentui/react-components'
 
 // This component reimplemented the Fluent UI rendering in order to override some of the default styles.
 // See:
@@ -13,7 +11,7 @@ const useStyles = makeStyles({
   },
 })
 
-const useSpinnerStyles = makeStyles({
+const useInnerStyles = makeStyles({
   'extra-tiny': {
     height: '1rem',
     width: '1rem',
@@ -48,17 +46,21 @@ const useSpinnerStyles = makeStyles({
   },
 })
 
-export default forwardRef<ComponentRef<typeof Spinner>, SpinnerProps>(function Spinner (props, ref) {
-  const { className, ...rest } = props
-  const state = useSpinner_unstable(rest, ref)
-
-  useSpinnerStyles_unstable(state)
-
+export default function useSpinnerStyles (state: SpinnerState) {
   const styles = useStyles()
-  const spinnerStyles = useSpinnerStyles()
+  const innerStyles = useInnerStyles()
 
-  mergeComponentClasses(state.root, styles.root, className)
-  mergeComponentClasses(state.spinner, spinnerStyles[state.size])
+  state.root.className = mergeClasses(
+    state.root.className,
+    styles.root,
+    getSlotClassNameProp_unstable(state.root),
+  )
 
-  return renderSpinner_unstable(state)
-})
+  if (state.spinner) {
+    state.spinner.className = mergeClasses(
+      state.spinner.className,
+      innerStyles[state.size],
+      getSlotClassNameProp_unstable(state.spinner),
+    )
+  }
+}

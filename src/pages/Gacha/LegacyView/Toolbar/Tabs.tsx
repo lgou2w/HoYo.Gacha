@@ -1,9 +1,7 @@
 import React from 'react'
-import { Caption1, makeStyles, tokens } from '@fluentui/react-components'
+import { Caption1, Tab, TabList, makeStyles, tokens } from '@fluentui/react-components'
 import { TabsRegular } from '@fluentui/react-icons'
 import Locale from '@/components/Locale'
-import Tab from '@/components/UI/Tab'
-import TabList from '@/components/UI/TabList'
 import { Tabs } from '@/pages/Gacha/LegacyView/declares'
 
 const useStyles = makeStyles({

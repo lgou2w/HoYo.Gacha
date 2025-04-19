@@ -1,8 +1,7 @@
 import React from 'react'
-import { Caption1, Caption1Strong, Caption2, Image, makeStyles, mergeClasses, tokens } from '@fluentui/react-components'
+import { Button, Caption1, Caption1Strong, Caption2, Image, makeStyles, mergeClasses, tokens } from '@fluentui/react-components'
 import { ChatBubblesQuestionFilled, HomeFilled } from '@fluentui/react-icons'
 import Locale from '@/components/Locale'
-import Button from '@/components/UI/Button'
 
 const useStyles = makeStyles({
   root: { alignSelf: 'flex-start' },

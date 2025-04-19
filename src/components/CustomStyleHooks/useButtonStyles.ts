@@ -1,6 +1,4 @@
-import { ComponentRef, forwardRef } from 'react'
-import { Button, ButtonProps, ButtonState, makeStyles, renderButton_unstable, tokens, useButtonStyles_unstable, useButton_unstable } from '@fluentui/react-components'
-import { mergeComponentClasses } from './utilities'
+import { ButtonState, getSlotClassNameProp_unstable, makeStyles, mergeClasses, tokens } from '@fluentui/react-components'
 
 // This component reimplemented the Fluent UI rendering in order to override some of the default styles.
 // See:
@@ -58,30 +56,23 @@ const useIconStyles = makeStyles({
   },
 })
 
-// eslint-disable-next-line react-refresh/only-export-components
-export function useButtonStyles (state: ButtonState, className?: string) {
+export default function useButtonStyles (state: ButtonState) {
   const styles = useStyles()
   const iconOnlyStyles = useIconOnlyStyles()
   const iconStyles = useIconStyles()
 
-  mergeComponentClasses(state.root,
+  state.root.className = mergeClasses(
+    state.root.className,
     styles[state.size],
     state.iconOnly && iconOnlyStyles[state.size],
-    className,
+    getSlotClassNameProp_unstable(state.root),
   )
 
-  mergeComponentClasses(state.icon, iconStyles[state.size])
-
-  return state
+  if (state.icon) {
+    state.icon.className = mergeClasses(
+      state.icon.className,
+      iconStyles[state.size],
+      getSlotClassNameProp_unstable(state.icon),
+    )
+  }
 }
-
-export default forwardRef<ComponentRef<typeof Button>, ButtonProps>(function Button (props, ref) {
-  const { className, ...rest } = props
-  const state = useButton_unstable(rest, ref)
-
-  useButtonStyles_unstable(state)
-
-  useButtonStyles(state, className)
-
-  return renderButton_unstable(state)
-})

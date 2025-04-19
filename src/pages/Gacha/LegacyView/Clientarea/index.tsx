@@ -1,6 +1,5 @@
 import React, { ComponentType, LazyExoticComponent, Suspense, lazy, useMemo } from 'react'
-import { makeStyles, mergeClasses } from '@fluentui/react-components'
-import Spinner from '@/components/UI/Spinner'
+import { Spinner, makeStyles, mergeClasses } from '@fluentui/react-components'
 import { Tabs } from '@/pages/Gacha/LegacyView/declares'
 
 const useStyles = makeStyles({

@@ -2,6 +2,7 @@ import React, { PropsWithChildren, useEffect, useMemo } from 'react'
 import { FluentProvider, Theme as FluentTheme } from '@fluentui/react-components'
 import { produce } from 'immer'
 import { useImmer } from 'use-immer'
+import CustomStylesHooks from '@/components/CustomStyleHooks'
 import ThemeContext, { ThemeState } from '@/contexts/ThemeContext'
 import { ScaleLevel, ThemeData, ThemeStore, Themes, VAR_BASE_FONT_SIZE } from '@/interfaces/Theme'
 
@@ -40,7 +41,11 @@ export default function ThemeProvider (props: PropsWithChildren<Props>) {
 
   return (
     <ThemeContext.Provider value={state}>
-      <FluentProvider theme={theme} style={{ background: 'transparent' }}>
+      <FluentProvider
+        theme={theme}
+        style={{ background: 'transparent' }}
+        customStyleHooks_unstable={CustomStylesHooks}
+      >
         {children}
       </FluentProvider>
     </ThemeContext.Provider>

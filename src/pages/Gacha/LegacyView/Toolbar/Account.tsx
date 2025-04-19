@@ -1,17 +1,9 @@
 import React, { ElementRef, Fragment, MouseEventHandler, useCallback, useRef } from 'react'
-import { Body1Strong, Caption1, MenuDivider, MenuTrigger, makeStyles, menuButtonClassNames, menuItemClassNames, tokens } from '@fluentui/react-components'
+import { Body1Strong, Caption1, Menu, MenuButton, MenuDivider, MenuGroup, MenuGroupHeader, MenuItem, MenuItemRadio, MenuList, MenuListProps, MenuPopover, MenuTrigger, makeStyles, menuItemClassNames, tokens } from '@fluentui/react-components'
 import { PeopleListRegular, PersonAddRegular } from '@fluentui/react-icons'
 import { useAccountsSuspenseQueryData, useSelectedAccountSuspenseQueryData, useUpdateSelectedAccountUidMutation } from '@/api/queries/accounts'
 import BizImages from '@/components/BizImages'
 import Locale from '@/components/Locale'
-import Menu from '@/components/UI/Menu'
-import MenuButton from '@/components/UI/MenuButton'
-import MenuGroup from '@/components/UI/MenuGroup'
-import MenuGroupHeader from '@/components/UI/MenuGroupHeader'
-import MenuItem from '@/components/UI/MenuItem'
-import MenuItemRadio from '@/components/UI/MenuItemRadio'
-import MenuList, { MenuListProps } from '@/components/UI/MenuList'
-import MenuPopover from '@/components/UI/MenuPopover'
 import useBusinessContext from '@/hooks/useBusinessContext'
 import type { Account } from '@/interfaces/Account'
 import { Business, KeyofBusinesses, ReversedBusinesses } from '@/interfaces/Business'
@@ -80,10 +72,7 @@ const useAccountListStyle = makeStyles({
     padding: 0,
     margin: 0,
     border: 'none',
-    justifyContent: 'flex-start',
-    [`& .${menuButtonClassNames.menuIcon}`]: {
-      marginLeft: 'auto',
-    },
+    justifyContent: 'space-between',
   },
   menuList: {
     [`& .${menuItemClassNames.root}`]: {

@@ -1,6 +1,4 @@
-import { ComponentRef, forwardRef } from 'react'
-import { Switch, SwitchProps, makeStyles, renderSwitch_unstable, switchClassNames, tokens, useSwitchStyles_unstable, useSwitch_unstable } from '@fluentui/react-components'
-import { mergeComponentClasses } from './utilities'
+import { SwitchState, getSlotClassNameProp_unstable, makeStyles, mergeClasses, switchClassNames, tokens } from '@fluentui/react-components'
 
 // This component reimplemented the Fluent UI rendering in order to override some of the default styles.
 // See:
@@ -10,10 +8,6 @@ import { mergeComponentClasses } from './utilities'
 const TrackHeight = '1.25rem'
 const TrackWidth = '2.5rem'
 const ThumbSize = '1.125rem'
-
-const useStyles = makeStyles({
-  root: {},
-})
 
 const useInputStyles = makeStyles({
   root: {
@@ -43,21 +37,27 @@ const useIndicatorStyles = makeStyles({
   },
 })
 
-export default forwardRef<ComponentRef<typeof Switch>, SwitchProps>(function Switch (props, ref) {
-  const { className, ...rest } = props
-  const state = useSwitch_unstable(rest, ref)
-
-  useSwitchStyles_unstable(state)
-
-  const styles = useStyles()
+export default function useSwitchStyles (state: SwitchState) {
   const inputStyles = useInputStyles()
   const labelStyles = useLabelStyles()
   const indicatorStyles = useIndicatorStyles()
 
-  mergeComponentClasses(state.root, styles.root, className)
-  mergeComponentClasses(state.input, inputStyles.root)
-  mergeComponentClasses(state.label, labelStyles.root)
-  mergeComponentClasses(state.indicator, indicatorStyles.root)
+  state.input.className = mergeClasses(
+    state.input.className,
+    inputStyles.root,
+  )
 
-  return renderSwitch_unstable(state)
-})
+  if (state.label) {
+    state.label.className = mergeClasses(
+      state.label.className,
+      labelStyles.root,
+      getSlotClassNameProp_unstable(state.label),
+    )
+  }
+
+  state.indicator.className = mergeClasses(
+    state.indicator.className,
+    indicatorStyles.root,
+    getSlotClassNameProp_unstable(state.indicator),
+  )
+}

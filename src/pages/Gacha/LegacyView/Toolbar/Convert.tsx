@@ -1,9 +1,8 @@
 import React, { ComponentProps, ElementRef, Fragment, MouseEventHandler, PropsWithoutRef, useCallback, useRef } from 'react'
-import { Caption1, makeStyles, tokens } from '@fluentui/react-components'
+import { Button, Caption1, makeStyles, tokens } from '@fluentui/react-components'
 import { ArrowDownloadRegular, ArrowUploadRegular } from '@fluentui/react-icons'
 import { useSelectedAccountSuspenseQueryData } from '@/api/queries/accounts'
 import Locale from '@/components/Locale'
-import Button from '@/components/UI/Button'
 import useBusinessContext from '@/hooks/useBusinessContext'
 import DataConvertDialog from '@/pages/Gacha/LegacyView/DataConvert/Dialog'
 

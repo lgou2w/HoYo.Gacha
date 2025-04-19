@@ -1,12 +1,9 @@
 import React, { ReactNode, createRef, useEffect } from 'react'
-import { Divider, Image, imageClassNames, makeStyles, tabClassNames, tokens } from '@fluentui/react-components'
+import { Divider, Image, Tab, TabList, Tooltip, imageClassNames, makeStyles, tabClassNames, tokens } from '@fluentui/react-components'
 import { SettingsFilled, SettingsRegular } from '@fluentui/react-icons'
 import { useLocation, useNavigate } from '@tanstack/react-router'
 import BizImages from '@/components/BizImages'
 import Locale from '@/components/Locale'
-import Tab from '@/components/UI/Tab'
-import TabList from '@/components/UI/TabList'
-import Tooltip from '@/components/UI/Tooltip'
 import { Businesses, KeyofBusinesses } from '@/interfaces/Business'
 import Routes, { mergeRouteParams } from '@/routes'
 

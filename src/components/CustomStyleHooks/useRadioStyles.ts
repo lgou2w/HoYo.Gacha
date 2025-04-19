@@ -1,6 +1,4 @@
-import { ComponentRef, forwardRef } from 'react'
-import { Radio, RadioProps, makeStyles, renderRadio_unstable, tokens, useRadioStyles_unstable, useRadio_unstable } from '@fluentui/react-components'
-import { mergeComponentClasses } from './utilities'
+import { RadioState, getSlotClassNameProp_unstable, makeStyles, mergeClasses, tokens } from '@fluentui/react-components'
 
 // This component reimplemented the Fluent UI rendering in order to override some of the default styles.
 // See:
@@ -8,10 +6,6 @@ import { mergeComponentClasses } from './utilities'
 //  https://react.fluentui.dev/?path=/docs/components-radiogroup--docs
 
 const IndicatorSize = '1rem'
-
-const useStyles = makeStyles({
-  root: {},
-})
 
 const useInputStyles = makeStyles({
   root: {
@@ -42,25 +36,28 @@ const useLabelStyles = makeStyles({
   below: {},
 })
 
-export default forwardRef<ComponentRef<typeof Radio>, RadioProps>(function Radio (props, ref) {
-  const { className, ...rest } = props
-  const state = useRadio_unstable(rest, ref)
-
-  useRadioStyles_unstable(state)
-
-  const styles = useStyles()
+export default function useRadioStyles (state: RadioState) {
   const inputStyles = useInputStyles()
   const indicatorStyles = useIndicatorStyles()
   const labelStyles = useLabelStyles()
 
-  mergeComponentClasses(state.input, styles.root, className)
-  mergeComponentClasses(
-    state.input,
+  state.input.className = mergeClasses(
+    state.input.className,
     inputStyles.root,
     state.labelPosition === 'below' && inputStyles.below,
   )
-  mergeComponentClasses(state.indicator, indicatorStyles.root)
-  mergeComponentClasses(state.label, labelStyles[state.labelPosition])
 
-  return renderRadio_unstable(state)
-})
+  state.indicator.className = mergeClasses(
+    state.indicator.className,
+    indicatorStyles.root,
+    getSlotClassNameProp_unstable(state.indicator),
+  )
+
+  if (state.label) {
+    state.label.className = mergeClasses(
+      state.label.className,
+      labelStyles[state.labelPosition],
+      getSlotClassNameProp_unstable(state.label),
+    )
+  }
+}

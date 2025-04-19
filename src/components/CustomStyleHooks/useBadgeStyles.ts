@@ -1,6 +1,4 @@
-import { ComponentRef, forwardRef } from 'react'
-import { Badge, BadgeProps, makeStyles, renderBadge_unstable, useBadgeStyles_unstable, useBadge_unstable } from '@fluentui/react-components'
-import { mergeComponentClasses } from './utilities'
+import { BadgeState, getSlotClassNameProp_unstable, makeStyles, mergeClasses } from '@fluentui/react-components'
 
 // This component reimplemented the Fluent UI rendering in order to override some of the default styles.
 // See:
@@ -59,17 +57,21 @@ const useIconStyles = makeStyles({
   },
 })
 
-export default forwardRef<ComponentRef<typeof Badge>, BadgeProps>(function Badge (props, ref) {
-  const { className, ...rest } = props
-  const state = useBadge_unstable(rest, ref)
-
-  useBadgeStyles_unstable(state)
-
+export default function useBadgeStyles (state: BadgeState) {
   const styles = useStyles()
   const iconStyles = useIconStyles()
 
-  mergeComponentClasses(state.root, styles[state.size], className)
-  mergeComponentClasses(state.icon, iconStyles[state.size])
+  state.root.className = mergeClasses(
+    state.root.className,
+    styles[state.size],
+    getSlotClassNameProp_unstable(state.root),
+  )
 
-  return renderBadge_unstable(state)
-})
+  if (state.icon) {
+    state.icon.className = mergeClasses(
+      state.icon.className,
+      iconStyles[state.size],
+      getSlotClassNameProp_unstable(state.icon),
+    )
+  }
+}

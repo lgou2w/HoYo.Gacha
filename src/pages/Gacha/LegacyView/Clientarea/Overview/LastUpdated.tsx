@@ -1,8 +1,7 @@
 import React from 'react'
-import { Caption1, makeStyles, tokens } from '@fluentui/react-components'
+import { Caption1, Tooltip, makeStyles, tokens } from '@fluentui/react-components'
 import { CalendarSyncRegular } from '@fluentui/react-icons'
 import Locale from '@/components/Locale'
-import Tooltip from '@/components/UI/Tooltip'
 import useI18n from '@/hooks/useI18n'
 import { ParentCompositeState } from './declares'
 

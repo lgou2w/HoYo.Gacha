@@ -1,8 +1,7 @@
 import React, { Fragment, ReactElement, ReactNode, useState } from 'react'
-import { makeStyles, mergeClasses, tokens } from '@fluentui/react-components'
+import { Button, makeStyles, mergeClasses, tokens } from '@fluentui/react-components'
 import { ChevronDownRegular, ChevronUpRegular } from '@fluentui/react-icons'
 import { Collapse } from '@fluentui/react-motion-components-preview'
-import Button from '@/components/UI/Button'
 import SettingsOptionsItem from './OptionsItem'
 
 const useStyles = makeStyles({

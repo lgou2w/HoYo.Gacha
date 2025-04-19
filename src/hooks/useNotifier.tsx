@@ -1,11 +1,7 @@
 import React, { ReactNode, useCallback, useMemo } from 'react'
-import { Link, ToastTrigger, useToastController } from '@fluentui/react-components'
+import { Link, Spinner, Toast, ToastBody, ToastTitle, ToastTrigger, useToastController } from '@fluentui/react-components'
 import { DismissRegular } from '@fluentui/react-icons'
 import { NotifierId } from '@/components/Layout/declares'
-import Spinner from '@/components/UI/Spinner'
-import Toast from '@/components/UI/Toast'
-import ToastBody from '@/components/UI/ToastBody'
-import ToastTitle from '@/components/UI/ToastTitle'
 
 export type NotifyOptions = Omit<NonNullable<Parameters<ReturnType<typeof useToastController>['dispatchToast']>['1']>, 'content'>
 

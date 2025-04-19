@@ -1,9 +1,7 @@
 import React, { ReactNode } from 'react'
 import { UseControllerProps, UseControllerReturn, useController } from 'react-hook-form'
+import { Field, Input, Textarea } from '@fluentui/react-components'
 import Locale, { LocaleProps, UseI18nResponse } from '@/components/Locale'
-import Field from '@/components/UI/Field'
-import Input from '@/components/UI/Input'
-import Textarea from '@/components/UI/Textarea'
 import useI18n from '@/hooks/useI18n'
 import { UpsertAccountFormData } from './declares'
 

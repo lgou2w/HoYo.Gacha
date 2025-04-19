@@ -1,9 +1,8 @@
 import React, { useCallback, useEffect, useState } from 'react'
-import { makeStyles, mergeClasses, tokens } from '@fluentui/react-components'
+import { Button, makeStyles, mergeClasses, tokens } from '@fluentui/react-components'
 import { DismissFilled, MaximizeFilled, SquareMultipleRegular, SubtractFilled } from '@fluentui/react-icons'
 import { WebviewWindow, getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow'
 import debounce from 'debounce'
-import Button from '@/components/UI/Button'
 
 const useStyles = makeStyles({
   root: {

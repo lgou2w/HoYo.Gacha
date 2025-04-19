@@ -1,8 +1,7 @@
 import React, { useEffect } from 'react'
-import { ToasterProps, tokens } from '@fluentui/react-components'
+import { Toaster, ToasterProps, tokens } from '@fluentui/react-components'
 import { useRouter } from '@tanstack/react-router'
 import { NavbarWidth, ScrollbarWidth, TitleBarHeight } from '@/components/Layout/declares'
-import Toaster from '@/components/UI/Toaster'
 import useNotifier from '@/hooks/useNotifier'
 
 // FIXME: String is working, should it be an inline css property

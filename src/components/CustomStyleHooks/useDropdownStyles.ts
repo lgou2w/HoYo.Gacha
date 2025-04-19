@@ -1,6 +1,4 @@
-import { ComponentRef, forwardRef } from 'react'
-import { Dropdown, DropdownProps, makeStyles, renderDropdown_unstable, tokens, useComboboxContextValues, useDropdownStyles_unstable, useDropdown_unstable } from '@fluentui/react-components'
-import { mergeComponentClasses } from './utilities'
+import { DropdownState, getSlotClassNameProp_unstable, makeStyles, mergeClasses, tokens } from '@fluentui/react-components'
 
 // This component reimplemented the Fluent UI rendering in order to override some of the default styles.
 // See:
@@ -43,22 +41,37 @@ const useListboxStyles = makeStyles({
   },
 })
 
-export default forwardRef<ComponentRef<typeof Dropdown>, DropdownProps>(function Dropdown (props, ref) {
-  const { className, ...rest } = props
-  const state = useDropdown_unstable(rest, ref)
-  const contextValues = useComboboxContextValues(state)
-
-  useDropdownStyles_unstable(state)
-
+export default function useDropdownStyles (state: DropdownState) {
   const styles = useStyles()
   const buttonStyles = useButtonStyles()
   const expandIconStyles = useExpandIconStyles()
   const listboxStyles = useListboxStyles()
 
-  mergeComponentClasses(state.root, styles.root, className)
-  mergeComponentClasses(state.button, buttonStyles[state.size])
-  mergeComponentClasses(state.expandIcon, expandIconStyles[state.size])
-  mergeComponentClasses(state.listbox, listboxStyles.root)
+  state.root.className = mergeClasses(
+    state.root.className,
+    styles.root,
+    getSlotClassNameProp_unstable(state.root),
+  )
 
-  return renderDropdown_unstable(state, contextValues)
-})
+  state.button.className = mergeClasses(
+    state.button.className,
+    buttonStyles[state.size],
+    getSlotClassNameProp_unstable(state.button),
+  )
+
+  if (state.expandIcon) {
+    state.expandIcon.className = mergeClasses(
+      state.expandIcon.className,
+      expandIconStyles[state.size],
+      getSlotClassNameProp_unstable(state.expandIcon),
+    )
+  }
+
+  if (state.listbox) {
+    state.listbox.className = mergeClasses(
+      state.listbox.className,
+      listboxStyles.root,
+      getSlotClassNameProp_unstable(state.listbox),
+    )
+  }
+}

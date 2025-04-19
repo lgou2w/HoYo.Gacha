@@ -1,6 +1,4 @@
-import { ComponentRef, forwardRef } from 'react'
-import { Select, SelectProps, makeStyles, renderSelect_unstable, tokens, useSelectStyles_unstable, useSelect_unstable } from '@fluentui/react-components'
-import { mergeComponentClasses } from './utilities'
+import { SelectState, getSlotClassNameProp_unstable, makeStyles, mergeClasses, tokens } from '@fluentui/react-components'
 
 // This component reimplemented the Fluent UI rendering in order to override some of the default styles.
 // See:
@@ -13,11 +11,7 @@ const IconSizes = {
   large: '1.5rem',
 }
 
-const useStyles = makeStyles({
-  root: {},
-})
-
-const useSelectStyles = makeStyles({
+const useInnerStyles = makeStyles({
   small: {
     height: '1.5rem',
     paddingRight: `calc(${tokens.spacingHorizontalSNudge}
@@ -59,19 +53,21 @@ const useIconStyles = makeStyles({
   },
 })
 
-export default forwardRef<ComponentRef<typeof Select>, SelectProps>(function Select (props, ref) {
-  const { className, ...rest } = props
-  const state = useSelect_unstable(rest, ref)
-
-  useSelectStyles_unstable(state)
-
-  const styles = useStyles()
-  const selectStyles = useSelectStyles()
+export default function useSelectStyles (state: SelectState) {
+  const innerStyles = useInnerStyles()
   const iconStyles = useIconStyles()
 
-  mergeComponentClasses(state.root, styles.root, className)
-  mergeComponentClasses(state.select, selectStyles[state.size])
-  mergeComponentClasses(state.icon, iconStyles[state.size])
+  state.select.className = mergeClasses(
+    state.select.className,
+    innerStyles[state.size],
+    getSlotClassNameProp_unstable(state.select),
+  )
 
-  return renderSelect_unstable(state)
-})
+  if (state.icon) {
+    state.icon.className = mergeClasses(
+      state.icon.className,
+      iconStyles[state.size],
+      getSlotClassNameProp_unstable(state.icon),
+    )
+  }
+}
