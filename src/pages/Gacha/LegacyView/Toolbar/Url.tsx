@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from 'react'
-import { Button, Caption1, Caption2, Field, Input, SplitButton, Tooltip, inputClassNames, makeStyles, mergeClasses, tokens } from '@fluentui/react-components'
-import { ArrowClockwiseRegular, CopyRegular, LinkRegular } from '@fluentui/react-icons'
+import { Button, Caption1, Caption2, Field, Input, Menu, MenuDivider, MenuGroup, MenuGroupHeader, MenuItem, MenuList, MenuPopover, MenuTrigger, SplitButton, Tooltip, inputClassNames, makeStyles, mergeClasses, tokens } from '@fluentui/react-components'
+import { ArrowClockwiseRegular, ArrowSyncRegular, CopyRegular, LinkEditRegular, LinkRegular } from '@fluentui/react-icons'
 import * as clipboard from '@tauri-apps/plugin-clipboard-manager'
 import { produce } from 'immer'
 import { GachaUrlErrorKind, fromWebCachesGachaUrl, isGachaUrlError } from '@/api/commands/business'
@@ -9,11 +9,12 @@ import { useSelectedAccountSuspenseQueryData, useUpdateAccountPropertiesMutation
 import { invalidatePrettizedGachaRecordsQuery, usePrettizedGachaRecordsSuspenseQueryData } from '@/api/queries/business'
 import Locale from '@/components/Locale'
 import useBusinessContext from '@/hooks/useBusinessContext'
-import useGachaRecordsFetcher from '@/hooks/useGachaRecordsFetcher'
+import useGachaRecordsFetcher, { GachaRecordsFetcherFetchArgs } from '@/hooks/useGachaRecordsFetcher'
 import useI18n from '@/hooks/useI18n'
 import useNotifier from '@/hooks/useNotifier'
 import i18n from '@/i18n'
 import { KnownAccountProperties, detectAccountUidRegion } from '@/interfaces/Account'
+import { Business } from '@/interfaces/Business'
 import { computeGachaTypeAndLastEndIdMappings } from '@/interfaces/GachaRecord'
 import dayjs from '@/utilities/dayjs'
 
@@ -204,11 +205,14 @@ function GachaLegacyViewToolbarUrlButton () {
   const [isBusy, setBusy] = useState(false)
   const updateAccountPropertiesMutation = useUpdateAccountPropertiesMutation()
   const gachaRecordsFetcher = useGachaRecordsFetcher()
-
   const notifier = useNotifier()
 
+  // TODO: !!! The backdrop or dialog mask prohibits user operation and waits for the result
+
   const disabled = !selectedAccount || !prettized || isBusy || gachaRecordsFetcher.state.isFetching
-  const handleUpdate = useCallback(async () => {
+  const handleUpdate = useCallback(async (
+    saveToDatabase: GachaRecordsFetcherFetchArgs<Business>['saveToDatabase'],
+  ) => {
     if (!selectedAccount || !prettized) {
       return
     }
@@ -282,7 +286,7 @@ function GachaLegacyViewToolbarUrlButton () {
         gachaUrl: properties.gachaUrl,
         gachaTypeAndLastEndIdMappings,
         eventChannel,
-        saveToDatabase: 'Yes',
+        saveToDatabase,
       }), {
         loading: {
           title: i18n.t('Pages.Gacha.LegacyView.Toolbar.Url.Fetch.Loading', { keyofBusinesses }),
@@ -341,15 +345,47 @@ function GachaLegacyViewToolbarUrlButton () {
   }, [gachaRecordsFetcher, keyofBusinesses, notifier, prettized, selectedAccount, updateAccountPropertiesMutation])
 
   return (
-    <Locale
-      component={SplitButton}
-      className={styles.root}
-      appearance="primary"
-      size="large"
-      icon={<ArrowClockwiseRegular />}
-      primaryActionButton={{ onClick: handleUpdate }}
-      disabled={disabled}
-      mapping={['Pages.Gacha.LegacyView.Toolbar.Url.UpdateBtn']}
-    />
+    <Menu positioning="below-end">
+      <MenuTrigger disableButtonEnhancement>
+        {(triggerProps) => (
+          <Locale
+            component={SplitButton}
+            className={styles.root}
+            appearance="primary"
+            size="large"
+            icon={<ArrowClockwiseRegular />}
+            primaryActionButton={{ onClick: () => handleUpdate('Yes') }}
+            menuButton={triggerProps}
+            disabled={disabled}
+            mapping={['Pages.Gacha.LegacyView.Toolbar.Url.UpdateBtn']}
+          />
+        )}
+      </MenuTrigger>
+      <MenuPopover>
+        <MenuList>
+          <Locale
+            component={MenuGroupHeader}
+            mapping={['Pages.Gacha.LegacyView.Toolbar.Url.More']}
+          />
+          <MenuGroup>
+            <Locale
+              component={MenuItem}
+              icon={<ArrowSyncRegular />}
+              onClick={() => handleUpdate('FullUpdate')}
+              mapping={['Pages.Gacha.LegacyView.Toolbar.Url.FullUpdateBtn']}
+            />
+          </MenuGroup>
+          <MenuDivider />
+          <MenuGroup>
+            <Locale
+              component={MenuItem}
+              icon={<LinkEditRegular />}
+              mapping={['Pages.Gacha.LegacyView.Toolbar.Url.ManualInputBtn']}
+              // TODO: Manual input url
+            />
+          </MenuGroup>
+        </MenuList>
+      </MenuPopover>
+    </Menu>
   )
 }

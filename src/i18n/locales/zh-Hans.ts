@@ -129,6 +129,9 @@ export default {
               },
               CopyBtn: '复制',
               UpdateBtn: '更新',
+              More: '更多操作',
+              FullUpdateBtn: '全量更新',
+              ManualInputBtn: '手动输入链接',
               Obtain: {
                 Loading: '获取$t(Business.{{keyofBusinesses}}.Gacha.Name)链接...',
                 Error: {

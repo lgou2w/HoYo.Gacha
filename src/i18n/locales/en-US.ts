@@ -140,6 +140,9 @@ export default {
               },
               CopyBtn: 'Copy',
               UpdateBtn: 'Update',
+              More: 'More options',
+              FullUpdateBtn: 'Full update',
+              ManualInputBtn: 'Manual input URL',
               Obtain: {
                 Loading: 'Obtaining $t(Business.{{keyofBusinesses}}.Gacha.Name) URL...',
                 Error: {
