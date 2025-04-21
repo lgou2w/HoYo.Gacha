@@ -8,17 +8,17 @@ use tracing::{error, info, warn};
 use crate::error::{Error, ErrorDetails};
 use crate::models::{Business, BusinessRegion, GachaRecord};
 
-use super::GachaUrlError;
+use super::{GachaUrlError, PrettyCategory};
 
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "PascalCase")] // Enum name
 pub enum GachaRecordsFetcherFragment {
   Sleeping,
-  Ready(u32),
+  Ready(PrettyCategory),
   Pagination(usize),
   DataRef(usize),
   Data(Vec<GachaRecord>),
-  Completed(u32),
+  Completed(PrettyCategory),
   Finished,
 }
 
@@ -109,8 +109,18 @@ async fn pull_gacha_records(
   // Internal Abbreviations
   type Fragment = GachaRecordsFetcherFragment;
 
-  info!(message = "Start pulling gacha records...");
-  sender.send(Fragment::Ready(*gacha_type)).await.unwrap();
+  let category = PrettyCategory::from_gacha_type(&business, *gacha_type);
+  if category.is_none() {
+    // HACK: Normally it must be Some,
+    //   unless an unofficial enumeration value is manually added by the user.
+    //   A better solution is to return an Err.
+    return Ok(());
+  }
+
+  let category = category.unwrap(); // SAFETY
+
+  info!(message = "Start pulling gacha records...", ?category);
+  sender.send(Fragment::Ready(category)).await.unwrap();
 
   const THRESHOLD: usize = 5;
   const WAIT_MOMENT_MILLIS: u64 = 500;
@@ -174,8 +184,8 @@ async fn pull_gacha_records(
   }
 
   // Completed gacha type
-  info!("Gacha type {gacha_type} completed");
-  sender.send(Fragment::Completed(*gacha_type)).await.unwrap();
+  info!(message = "Gacha type completed", ?category);
+  sender.send(Fragment::Completed(category)).await.unwrap();
 
   Ok(())
 }

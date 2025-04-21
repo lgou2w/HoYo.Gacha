@@ -2,7 +2,7 @@ import { DetailedError, isDetailedError } from '@/api/error'
 import { InvokeOptions } from '@/api/invoke'
 import { Account } from '@/interfaces/Account'
 import { Business, BusinessRegion, GenshinImpact } from '@/interfaces/Business'
-import { GachaRecord, GachaTypeAndLastEndIdMappings, PrettizedGachaRecords } from '@/interfaces/GachaRecord'
+import { GachaRecord, GachaTypeAndLastEndIdMappings, PrettizedGachaRecords, PrettyCategory } from '@/interfaces/GachaRecord'
 import { FindGachaRecordsByBusinessAndUidArgs, SqlxDatabaseError, SqlxError } from './database'
 import { declareCommand } from '.'
 
@@ -483,14 +483,24 @@ export type CreateGachaRecordsFetcherArgs<T extends Business> = NonNullable<{
 export type CreateGachaRecordsFetcher = <T extends Business>(args: CreateGachaRecordsFetcherArgs<T>, options?: InvokeOptions) => Promise<number>
 export const createGachaRecordsFetcher: CreateGachaRecordsFetcher = declareCommand('business_create_gacha_records_fetcher')
 
+export enum GachaRecordsFetcherFragmentKind {
+  Sleeping = 'Sleeping',
+  Ready = 'Ready',
+  Pagination = 'Pagination',
+  DataRef = 'DataRef',
+  Data = 'Data',
+  Completed = 'Completed',
+  Finished = 'Finished'
+}
+
 export type GachaRecordsFetcherFragment<T extends Business> =
-  | 'Sleeping'
-  | { Ready: GachaRecord<T>['gachaType'] }
-  | { Pagination: number }
-  | { DataRef: number }
-  | { Data: GachaRecord<T>[] }
-  | { Completed: GachaRecord<T>['gachaType'] }
-  | 'Finished'
+  | GachaRecordsFetcherFragmentKind.Sleeping
+  | { [GachaRecordsFetcherFragmentKind.Ready]: PrettyCategory }
+  | { [GachaRecordsFetcherFragmentKind.Pagination]: number }
+  | { [GachaRecordsFetcherFragmentKind.DataRef]: number }
+  | { [GachaRecordsFetcherFragmentKind.Data]: GachaRecord<T>[] }
+  | { [GachaRecordsFetcherFragmentKind.Completed]: PrettyCategory }
+  | GachaRecordsFetcherFragmentKind.Finished
 
 export type ImportGachaRecordsArgs = NonNullable<{
   input: string

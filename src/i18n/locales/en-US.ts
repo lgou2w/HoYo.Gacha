@@ -25,14 +25,10 @@ export default {
           Ticket01: 'Acquaint Fate',
           Ticket02: 'Intertwined Fate',
           Category: {
-            Beginner: {
-              Badge: 'Novice Wish',
-              Title: 'Beginners\' Wish',
-            },
-            Permanent: {
-              Badge: 'Standard Wish',
-              Title: 'Wanderlust Invocation',
-            },
+            Beginner: 'Novice Wish',
+            Beginner_Title: 'Beginners\' Wish',
+            Permanent: 'Standard Wish',
+            Permanent_Title: 'Wanderlust Invocation',
             Character: 'Character Event Wish',
             Weapon: 'Weapon Event Wish',
             Chronicled: 'Chronicled Wish',
@@ -59,14 +55,10 @@ export default {
           Ticket01: 'Star Rail Pass',
           Ticket02: 'Star Rail Special Pass',
           Category: {
-            Beginner: {
-              Badge: 'Starter Warp',
-              Title: 'Departure Warp',
-            },
-            Permanent: {
-              Badge: 'Regular Warp',
-              Title: 'Stellar Warp',
-            },
+            Beginner: 'Starter Warp',
+            Beginner_Title: 'Departure Warp',
+            Permanent: 'Regular Warp',
+            Permanent_Title: 'Stellar Warp',
             Character: 'Character Event Wrap',
             Weapon: 'Light Cone Event Warp',
             Aggregated: 'Aggregated',
@@ -93,16 +85,12 @@ export default {
           Ticket02: 'Encrypted Master Tape',
           Ticket03: 'Boopon',
           Category: {
-            Permanent: {
-              Badge: 'Stable Channel',
-              Title: 'Star-Studded Cast',
-            },
+            Permanent: 'Stable Channel',
+            Permanent_Title: 'Star-Studded Cast',
             Character: 'Exclusive Channel',
             Weapon: 'W-Engine Channel',
-            Bangboo: {
-              Badge: 'Bangboo Channel',
-              Title: 'An Outstanding Partner',
-            },
+            Bangboo: 'Bangboo Channel',
+            Bangboo_Title: 'An Outstanding Partner',
             Aggregated: 'Aggregated',
           },
         },
@@ -160,6 +148,15 @@ export default {
                 Error: {
                   Title: 'Failed to fetch $t(Business.{{keyofBusinesses}}.Gacha.Name) Records:',
                   Body: '{{message}}',
+                },
+                Fragment: {
+                  Idle: 'Idle...',
+                  Sleeping: 'Sleeping...',
+                  Ready: 'Ready to fetch records: $t(Business.{{keyofBusinesses}}.Gacha.Category.{{value}})',
+                  Pagination: 'Fetching records for page {{value}}...',
+                  Data: 'Fetched {{value}} new records.',
+                  Completed: 'Completed fetching records: $t(Business.{{keyofBusinesses}}.Gacha.Category.{{value}})',
+                  Finished: 'All done.',
                 },
               },
             },

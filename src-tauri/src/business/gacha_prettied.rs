@@ -66,6 +66,16 @@ static KNOWN_CATEGORIZEDS: LazyLock<HashMap<Business, HashMap<u32, PrettyCategor
     ])
   });
 
+impl PrettyCategory {
+  pub fn from_gacha_type(business: &Business, value: u32) -> Option<Self> {
+    KNOWN_CATEGORIZEDS
+      .get(business)
+      .unwrap() // SAFETY
+      .get(&value)
+      .cloned()
+  }
+}
+
 time::serde::format_description!(
   pretty_gacha_record_time_format,
   PrimitiveDateTime,

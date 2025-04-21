@@ -199,18 +199,16 @@ function GridCard (props: GridCardProps) {
     return null
   }
 
-  const categoryKeyNamespace = `Business.${keyofBusinesses}.Gacha.Category.${state.category}`
-
   return (
     <div className={styles.root} data-category={state.category}>
       <div className={mergeClasses(styles.badge, state.isAggregated && styles.badgeAggregated)}>
-        <Locale mapping={[[`${categoryKeyNamespace}.Badge`, categoryKeyNamespace]]} />
+        <Locale mapping={[`Business.${keyofBusinesses}.Gacha.Category.${state.category}`]} />
       </div>
       <div className={styles.header}>
         <div className={styles.headerTitle}>
           <Locale
             component={Title3}
-            mapping={[[`${categoryKeyNamespace}.Title`, categoryKeyNamespace]]}
+            mapping={[`Business.${keyofBusinesses}.Gacha.Category.${state.category}`, { context: 'Title' }]}
           />
         </div>
         <div className={styles.headerSubtitle}>

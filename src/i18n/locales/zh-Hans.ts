@@ -1,3 +1,5 @@
+/* eslint-disable camelcase */
+
 export default {
   language: 'zh-Hans',
   matches: ['zh-CN', 'zh-SG'],
@@ -23,14 +25,10 @@ export default {
           Ticket01: '相遇之缘',
           Ticket02: '纠缠之缘',
           Category: {
-            Beginner: {
-              Badge: '新手祈愿',
-              Title: '初行者推荐祈愿',
-            },
-            Permanent: {
-              Badge: '常驻祈愿',
-              Title: '奔行世间',
-            },
+            Beginner: '新手祈愿',
+            Beginner_Title: '初行者推荐祈愿',
+            Permanent: '常驻祈愿',
+            Permanent_Title: '奔行世间',
             Character: '角色活动祈愿',
             Weapon: '武器活动祈愿',
             Chronicled: '集录祈愿',
@@ -57,14 +55,10 @@ export default {
           Ticket01: '星轨通票',
           Ticket02: '星轨专票',
           Category: {
-            Beginner: {
-              Badge: '新手跃迁',
-              Title: '始发跃迁',
-            },
-            Permanent: {
-              Badge: '常驻跃迁',
-              Title: '群星跃迁',
-            },
+            Beginner: '新手跃迁',
+            Beginner_Title: '始发跃迁',
+            Permanent: '常驻跃迁',
+            Permanent_Title: '群星跃迁',
             Character: '角色活动跃迁',
             Weapon: '光锥活动跃迁',
             Aggregated: '总计',
@@ -91,16 +85,12 @@ export default {
           Ticket02: '加密母带',
           Ticket03: '邦布券',
           Category: {
-            Permanent: {
-              Badge: '常驻频段',
-              Title: '热门卡司',
-            },
+            Permanent: '常驻频段',
+            Permanent_Title: '热门卡司',
             Character: '独家频段',
             Weapon: '音擎频段',
-            Bangboo: {
-              Badge: '邦布频段',
-              Title: '卓越搭档',
-            },
+            Bangboo: '邦布频段',
+            Bangboo_Title: '卓越搭档',
             Aggregated: '总计',
           },
         },
@@ -158,6 +148,15 @@ export default {
                 Error: {
                   Title: '拉取$t(Business.{{keyofBusinesses}}.Gacha.Name)记录失败：',
                   Body: '{{message}}',
+                },
+                Fragment: {
+                  Idle: '空闲中...',
+                  Sleeping: '等待中...',
+                  Ready: '准备拉取记录：$t(Business.{{keyofBusinesses}}.Gacha.Category.{{value}})',
+                  Pagination: '拉取第 {{value}} 页记录...',
+                  Data: '拉取到 {{value}} 条新记录。',
+                  Completed: '完成拉取记录：$t(Business.{{keyofBusinesses}}.Gacha.Category.{{value}})',
+                  Finished: '全部完成。',
                 },
               },
             },

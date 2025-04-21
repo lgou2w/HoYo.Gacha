@@ -1,19 +1,19 @@
-import React, { useCallback, useState } from 'react'
-import { Button, Caption1, Caption2, Field, Input, Menu, MenuDivider, MenuGroup, MenuGroupHeader, MenuItem, MenuList, MenuPopover, MenuTrigger, SplitButton, Tooltip, inputClassNames, makeStyles, mergeClasses, tokens } from '@fluentui/react-components'
+import React, { Fragment, useCallback, useState } from 'react'
+import { Body1, Button, Caption1, Caption2, Dialog, DialogSurface, Field, Input, Menu, MenuDivider, MenuGroup, MenuGroupHeader, MenuItem, MenuList, MenuPopover, MenuTrigger, Spinner, SplitButton, Tooltip, inputClassNames, makeStyles, mergeClasses, tokens } from '@fluentui/react-components'
 import { ArrowClockwiseRegular, ArrowSyncRegular, CopyRegular, LinkEditRegular, LinkRegular } from '@fluentui/react-icons'
 import * as clipboard from '@tauri-apps/plugin-clipboard-manager'
 import { produce } from 'immer'
-import { GachaUrlErrorKind, fromWebCachesGachaUrl, isGachaUrlError } from '@/api/commands/business'
+import { GachaRecordsFetcherFragmentKind, GachaUrlErrorKind, fromWebCachesGachaUrl, isGachaUrlError } from '@/api/commands/business'
 import { extractErrorMessage } from '@/api/error'
 import { useSelectedAccountSuspenseQueryData, useUpdateAccountPropertiesMutation } from '@/api/queries/accounts'
 import { invalidatePrettizedGachaRecordsQuery, usePrettizedGachaRecordsSuspenseQueryData } from '@/api/queries/business'
-import Locale from '@/components/Locale'
+import Locale, { LocaleMapping } from '@/components/Locale'
 import useBusinessContext from '@/hooks/useBusinessContext'
-import useGachaRecordsFetcher, { GachaRecordsFetcherFetchArgs } from '@/hooks/useGachaRecordsFetcher'
+import useGachaRecordsFetcher, { GachaRecordsFetcherFetchArgs, GachaRecordsFetcherFetchFragment } from '@/hooks/useGachaRecordsFetcher'
 import useI18n from '@/hooks/useI18n'
 import useNotifier from '@/hooks/useNotifier'
 import { KnownAccountProperties, detectAccountUidRegion } from '@/interfaces/Account'
-import { Business } from '@/interfaces/Business'
+import { Business, KeyofBusinesses } from '@/interfaces/Business'
 import { computeGachaTypeAndLastEndIdMappings } from '@/interfaces/GachaRecord'
 import dayjs from '@/utilities/dayjs'
 
@@ -193,6 +193,15 @@ const useButtonStyles = makeStyles({
     alignSelf: 'stretch',
     minHeight: '2.5rem',
   },
+  fetchSurface: {
+    maxWidth: '20rem',
+  },
+  fetchContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    rowGap: tokens.spacingVerticalM,
+    alignItems: 'center',
+  },
 })
 
 function GachaLegacyViewToolbarUrlButton () {
@@ -345,47 +354,108 @@ function GachaLegacyViewToolbarUrlButton () {
   }, [gachaRecordsFetcher, i18n, keyofBusinesses, notifier, prettized, selectedAccount, updateAccountPropertiesMutation])
 
   return (
-    <Menu positioning="below-end">
-      <MenuTrigger disableButtonEnhancement>
-        {(triggerProps) => (
-          <Locale
-            component={SplitButton}
-            className={styles.root}
-            appearance="primary"
-            size="large"
-            icon={<ArrowClockwiseRegular />}
-            primaryActionButton={{ onClick: () => handleUpdate('Yes') }}
-            menuButton={triggerProps}
-            disabled={disabled}
-            mapping={['Pages.Gacha.LegacyView.Toolbar.Url.UpdateBtn']}
-          />
-        )}
-      </MenuTrigger>
-      <MenuPopover>
-        <MenuList>
-          <Locale
-            component={MenuGroupHeader}
-            mapping={['Pages.Gacha.LegacyView.Toolbar.Url.More']}
-          />
-          <MenuGroup>
+    <Fragment>
+      <Menu positioning="below-end">
+        <MenuTrigger disableButtonEnhancement>
+          {(triggerProps) => (
             <Locale
-              component={MenuItem}
-              icon={<ArrowSyncRegular />}
-              onClick={() => handleUpdate('FullUpdate')}
-              mapping={['Pages.Gacha.LegacyView.Toolbar.Url.FullUpdateBtn']}
+              component={SplitButton}
+              className={styles.root}
+              appearance="primary"
+              size="large"
+              icon={<ArrowClockwiseRegular />}
+              primaryActionButton={{ onClick: () => handleUpdate('Yes') }}
+              menuButton={triggerProps}
+              disabled={disabled}
+              mapping={['Pages.Gacha.LegacyView.Toolbar.Url.UpdateBtn']}
             />
-          </MenuGroup>
-          <MenuDivider />
-          <MenuGroup>
+          )}
+        </MenuTrigger>
+        <MenuPopover>
+          <MenuList>
             <Locale
-              component={MenuItem}
-              icon={<LinkEditRegular />}
-              mapping={['Pages.Gacha.LegacyView.Toolbar.Url.ManualInputBtn']}
-              // TODO: Manual input url
+              component={MenuGroupHeader}
+              mapping={['Pages.Gacha.LegacyView.Toolbar.Url.More']}
             />
-          </MenuGroup>
-        </MenuList>
-      </MenuPopover>
-    </Menu>
+            <MenuGroup>
+              <Locale
+                component={MenuItem}
+                icon={<ArrowSyncRegular />}
+                onClick={() => handleUpdate('FullUpdate')}
+                mapping={['Pages.Gacha.LegacyView.Toolbar.Url.FullUpdateBtn']}
+              />
+            </MenuGroup>
+            <MenuDivider />
+            <MenuGroup>
+              <Locale
+                component={MenuItem}
+                icon={<LinkEditRegular />}
+                mapping={['Pages.Gacha.LegacyView.Toolbar.Url.ManualInputBtn']}
+                // TODO: Manual input url
+              />
+            </MenuGroup>
+          </MenuList>
+        </MenuPopover>
+      </Menu>
+      <Dialog
+        modalType="alert"
+        surfaceMotion={null}
+        open={gachaRecordsFetcher.state.isFetching}
+      >
+        <DialogSurface className={styles.fetchSurface}>
+          <div className={styles.fetchContainer}>
+            <Spinner />
+            <Locale
+              component={Body1}
+              mapping={stringifyFragment(keyofBusinesses, gachaRecordsFetcher.state.fragment)}
+            />
+          </div>
+        </DialogSurface>
+      </Dialog>
+    </Fragment>
   )
+}
+
+function stringifyFragment (
+  keyofBusinesses: KeyofBusinesses,
+  fragment: GachaRecordsFetcherFetchFragment<Business>,
+): LocaleMapping {
+  let subkey: string
+  let options: Record<string, unknown> | undefined
+
+  if (typeof fragment === 'string') {
+    subkey = fragment
+
+    if (subkey === GachaRecordsFetcherFragmentKind.Completed) {
+      options = { keyofBusinesses }
+    }
+  } else {
+    options = { }
+
+    if (GachaRecordsFetcherFragmentKind.Ready in fragment) {
+      subkey = GachaRecordsFetcherFragmentKind.Ready
+      options = { value: fragment.Ready, keyofBusinesses }
+    } else if (GachaRecordsFetcherFragmentKind.Pagination in fragment) {
+      subkey = GachaRecordsFetcherFragmentKind.Pagination
+      options.value = fragment.Pagination
+    } else if (GachaRecordsFetcherFragmentKind.DataRef in fragment) {
+      // Just reuse Data
+      subkey = GachaRecordsFetcherFragmentKind.Data
+      options.value = fragment.DataRef
+    } else if (GachaRecordsFetcherFragmentKind.Data in fragment) {
+      subkey = GachaRecordsFetcherFragmentKind.Data
+      options.value = fragment.Data.length
+    } else if (GachaRecordsFetcherFragmentKind.Completed in fragment) {
+      subkey = GachaRecordsFetcherFragmentKind.Completed
+      options.value = fragment.Completed
+    } else {
+      // HACK: should never reach here
+      throw new Error('unreachable')
+    }
+  }
+
+  return [
+    `Pages.Gacha.LegacyView.Toolbar.Url.Fetch.Fragment.${subkey}`,
+    options,
+  ]
 }
