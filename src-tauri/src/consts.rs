@@ -89,23 +89,23 @@ pub static REQWEST: LazyLock<Reqwest> = LazyLock::new(|| {
 
 pub struct Locale {
   pub value: Option<String>,
-  pub is_default: bool,
+  pub is_english: bool,
   pub is_chinese: bool,
 }
 
 impl Locale {
-  pub const DEFAULT: &'static str = "en";
+  pub const ENGLISH: &'static str = "en";
   pub const CHINESE: &'static str = "zh";
 
   fn new() -> Self {
     let value = sys_locale::get_locale();
-    let value_ref = value.as_deref().unwrap_or(Self::DEFAULT);
-    let is_default = value_ref.starts_with(Self::DEFAULT);
+    let value_ref = value.as_deref().unwrap_or(Self::ENGLISH);
+    let is_english = value_ref.starts_with(Self::ENGLISH);
     let is_chinese = value_ref.starts_with(Self::CHINESE);
 
     Self {
       value,
-      is_default,
+      is_english,
       is_chinese,
     }
   }
