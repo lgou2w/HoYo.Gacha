@@ -37,6 +37,9 @@ export default {
             Aggregated: '总计',
           },
         },
+        DataFolder: {
+          Example: 'X:/Genshin Impact/Genshin Impact Game/YuanShen_Data',
+        },
       },
       HonkaiStarRail: {
         Name: '崩坏：星穹铁道',
@@ -66,6 +69,9 @@ export default {
             Weapon: '光锥活动跃迁',
             Aggregated: '总计',
           },
+        },
+        DataFolder: {
+          Example: 'X:/Star Rail/Game/StarRail_Data',
         },
       },
       ZenlessZoneZero: {
@@ -97,6 +103,9 @@ export default {
             },
             Aggregated: '总计',
           },
+        },
+        DataFolder: {
+          Example: 'X:/ZenlessZoneZero Game/ZenlessZoneZero_Data',
         },
       },
     },
