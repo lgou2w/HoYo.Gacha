@@ -1,7 +1,7 @@
-import React, { ReactNode, useMemo } from 'react'
-import { Badge, Caption1, Title3, makeStyles, mergeClasses, tokens } from '@fluentui/react-components'
+import React, { PropsWithChildren, ReactNode, useMemo } from 'react'
+import { Badge, BadgeProps, Caption1, Title3, makeStyles, mergeClasses, tokens } from '@fluentui/react-components'
 import BizImages from '@/components/BizImages'
-import Locale from '@/components/Locale'
+import Locale, { LocaleMapping } from '@/components/Locale'
 import useI18n from '@/hooks/useI18n'
 import { Business, ReversedBusinesses } from '@/interfaces/Business'
 import { AggregatedMetadata, CategorizedMetadata, PrettyCategory, PrettyGachaRecord } from '@/interfaces/GachaRecord'
@@ -219,18 +219,14 @@ function GridCard (props: GridCardProps) {
       </div>
       <div className={styles.labels}>
         <div className={styles.labelsGroup}>
-          <Locale
-            component={Badge}
-            size="large"
+          <GridCardLabelBadge
             color="brand"
             mapping={[
               'Pages.Gacha.LegacyView.Clientarea.Overview.GridCard.Labels.Total',
               { count: state.total },
             ]}
           />
-          <Locale
-            component={Badge}
-            size="large"
+          <GridCardLabelBadge
             color="success"
             mapping={[
               'Pages.Gacha.LegacyView.Clientarea.Overview.GridCard.Labels.GoldenSum',
@@ -238,9 +234,7 @@ function GridCard (props: GridCardProps) {
             ]}
           />
           {!state.isAggregated
-            ? <Locale
-                component={Badge}
-                size="large"
+            ? <GridCardLabelBadge
                 color="severe"
                 mapping={[
                   'Pages.Gacha.LegacyView.Clientarea.Overview.GridCard.Labels.NextPity',
@@ -248,9 +242,7 @@ function GridCard (props: GridCardProps) {
                 ]}
               />
             : state.beginnerShowcase && (
-              <Locale
-                component={Badge}
-                size="large"
+              <GridCardLabelBadge
                 color="severe"
                 mapping={[
                   'Pages.Gacha.LegacyView.Clientarea.Overview.GridCard.Labels.Beginner',
@@ -261,10 +253,7 @@ function GridCard (props: GridCardProps) {
           }
         </div>
         <div className={styles.labelsGroup}>
-          <Locale
-            component={Badge}
-            size="large"
-            color="informative"
+          <GridCardLabelBadge
             mapping={[
               'Pages.Gacha.LegacyView.Clientarea.Overview.GridCard.Labels.Average',
               { count: state.goldenRanking.average },
@@ -272,11 +261,8 @@ function GridCard (props: GridCardProps) {
           >
             <i aria-label="placeholder">&nbsp;</i>
             <img src={state.gachaTicket} />
-          </Locale>
-          <Locale
-            component={Badge}
-            size="large"
-            color="informative"
+          </GridCardLabelBadge>
+          <GridCardLabelBadge
             mapping={[
               'Pages.Gacha.LegacyView.Clientarea.Overview.GridCard.Labels.Percentage',
               { count: state.goldenRanking.percentage },
@@ -285,10 +271,7 @@ function GridCard (props: GridCardProps) {
         </div>
         {!state.isPermanent && !state.isChronicled && !state.isBangboo && (
           <div className={styles.labelsGroup}>
-            <Locale
-              component={Badge}
-              size="large"
-              color="informative"
+            <GridCardLabelBadge
               mapping={[
                 'Pages.Gacha.LegacyView.Clientarea.Overview.GridCard.Labels.LimitedAverage',
                 { count: state.goldenRanking.limitedAverage },
@@ -296,11 +279,8 @@ function GridCard (props: GridCardProps) {
             >
               <i aria-label="placeholder">&nbsp;</i>
               <img src={state.gachaTicket} />
-            </Locale>
-            <Locale
-              component={Badge}
-              size="large"
-              color="informative"
+            </GridCardLabelBadge>
+            <GridCardLabelBadge
               mapping={[
                 'Pages.Gacha.LegacyView.Clientarea.Overview.GridCard.Labels.LimitedPercentage',
                 { count: state.goldenRanking.limitedPercentage },
@@ -309,10 +289,7 @@ function GridCard (props: GridCardProps) {
           </div>
         )}
         <div className={styles.labelsGroup}>
-          <Locale
-            component={Badge}
-            size="large"
-            color="informative"
+          <GridCardLabelBadge
             mapping={state.goldenRanking.showcase
               ? ['Pages.Gacha.LegacyView.Clientarea.Overview.GridCard.Labels.LastGolden', {
                   name: state.goldenRanking.showcase.name,
@@ -335,5 +312,33 @@ function GridCard (props: GridCardProps) {
         )}
       </div>
     </div>
+  )
+}
+
+const useGridCardLabelBadgeStyles = makeStyles({
+  root: {
+    boxShadow: tokens.shadow2,
+  },
+})
+
+type GridCardLabelBadgeProps = PropsWithChildren<{
+  color?: BadgeProps['color']
+  mapping: LocaleMapping
+}>
+
+function GridCardLabelBadge (props: GridCardLabelBadgeProps) {
+  const styles = useGridCardLabelBadgeStyles()
+  const { color = 'informative', mapping, children } = props
+
+  return (
+    <Locale
+      component={Badge}
+      className={styles.root}
+      size="large"
+      color={color}
+      mapping={mapping}
+    >
+      {children}
+    </Locale>
   )
 }
