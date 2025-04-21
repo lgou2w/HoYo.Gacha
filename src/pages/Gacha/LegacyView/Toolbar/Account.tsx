@@ -116,6 +116,8 @@ function AccountList (props: AccountListProps) {
     if (selectedAccountUidRef.current !== selectedAccount?.uid) {
       notifier.dismissAll()
     }
+
+    selectedAccountUidRef.current = selectedAccount?.uid
   }, [notifier, selectedAccount?.uid])
 
   return (
