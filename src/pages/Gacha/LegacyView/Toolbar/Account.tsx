@@ -1,10 +1,11 @@
-import React, { ElementRef, Fragment, MouseEventHandler, useCallback, useRef } from 'react'
+import React, { ElementRef, Fragment, MouseEventHandler, useCallback, useEffect, useRef } from 'react'
 import { Body1Strong, Caption1, Menu, MenuButton, MenuDivider, MenuGroup, MenuGroupHeader, MenuItem, MenuItemRadio, MenuList, MenuListProps, MenuPopover, MenuTrigger, makeStyles, menuItemClassNames, tokens } from '@fluentui/react-components'
 import { PeopleListRegular, PersonAddRegular } from '@fluentui/react-icons'
 import { useAccountsSuspenseQueryData, useSelectedAccountSuspenseQueryData, useUpdateSelectedAccountUidMutation } from '@/api/queries/accounts'
 import BizImages from '@/components/BizImages'
 import Locale from '@/components/Locale'
 import useBusinessContext from '@/hooks/useBusinessContext'
+import useNotifier from '@/hooks/useNotifier'
 import type { Account } from '@/interfaces/Account'
 import { Business, KeyofBusinesses, ReversedBusinesses } from '@/interfaces/Business'
 import UpsertAccountDialog from '@/pages/Gacha/LegacyView/UpsertAccount/Dialog'
@@ -107,6 +108,15 @@ function AccountList (props: AccountListProps) {
       })
     }
   }, [accounts, business, updateSelectedAccountUidMutation])
+
+  // HACK: Dismiss all toasts when the selected account changes
+  const notifier = useNotifier()
+  const selectedAccountUidRef = useRef(selectedAccount?.uid)
+  useEffect(() => {
+    if (selectedAccountUidRef.current !== selectedAccount?.uid) {
+      notifier.dismissAll()
+    }
+  }, [notifier, selectedAccount?.uid])
 
   return (
     <Menu
