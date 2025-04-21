@@ -12,7 +12,6 @@ import useBusinessContext from '@/hooks/useBusinessContext'
 import useGachaRecordsFetcher, { GachaRecordsFetcherFetchArgs } from '@/hooks/useGachaRecordsFetcher'
 import useI18n from '@/hooks/useI18n'
 import useNotifier from '@/hooks/useNotifier'
-import i18n from '@/i18n'
 import { KnownAccountProperties, detectAccountUidRegion } from '@/interfaces/Account'
 import { Business } from '@/interfaces/Business'
 import { computeGachaTypeAndLastEndIdMappings } from '@/interfaces/GachaRecord'
@@ -206,6 +205,7 @@ function GachaLegacyViewToolbarUrlButton () {
   const updateAccountPropertiesMutation = useUpdateAccountPropertiesMutation()
   const gachaRecordsFetcher = useGachaRecordsFetcher()
   const notifier = useNotifier()
+  const i18n = useI18n()
 
   // TODO: !!! The backdrop or dialog mask prohibits user operation and waits for the result
 
@@ -342,7 +342,7 @@ function GachaLegacyViewToolbarUrlButton () {
     }
 
     setBusy(false)
-  }, [gachaRecordsFetcher, keyofBusinesses, notifier, prettized, selectedAccount, updateAccountPropertiesMutation])
+  }, [gachaRecordsFetcher, i18n, keyofBusinesses, notifier, prettized, selectedAccount, updateAccountPropertiesMutation])
 
   return (
     <Menu positioning="below-end">
