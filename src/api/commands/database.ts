@@ -111,3 +111,45 @@ export type FindGachaRecordsByBusinessesOrUidArgs = NonNullable<{
 }>
 
 export const findGachaRecordsByBusinessesOrUid = declareCommand<FindGachaRecordsByBusinessesOrUidArgs, GachaRecord<Business>[]>('database_find_gacha_records_by_businesses_or_uid')
+
+// Export
+
+const DatabaseCommands = {
+  execute,
+  findKv,
+  createKv,
+  updateKv,
+  upsertKv,
+  deleteKv,
+  findAccountsByBusiness,
+  findAccountByBusinessAndUid,
+  createAccount,
+  updateAccountDataFolderByBusinessAndUid,
+  updateAccountPropertiesByBusinessAndUid,
+  deleteAccountByBusinessAndUid,
+  findGachaRecordsByUid,
+  findGachaRecordsByBusinessAndUid,
+  findGachaRecordsByBusinessAndUidWithGachaType,
+  createGachaRecords,
+  deleteGachaRecordsByBusinessAndUid,
+  findGachaRecordsByBusinessesAndUid,
+  findGachaRecordsByBusinessesOrUid,
+} as const
+
+Object.freeze(DatabaseCommands)
+
+export default DatabaseCommands
+
+declare global {
+  /**
+   * @deprecated For devtools only, do not use in code.
+   */
+  // eslint-disable-next-line no-var
+  var __APP_COMMANDS_DATABASE_: typeof DatabaseCommands
+}
+
+// eslint-disable-next-line deprecation/deprecation
+if (!globalThis.__APP_COMMANDS_DATABASE_) {
+  // eslint-disable-next-line deprecation/deprecation
+  globalThis.__APP_COMMANDS_DATABASE_ = DatabaseCommands
+}

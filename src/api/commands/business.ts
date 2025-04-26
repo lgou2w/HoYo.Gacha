@@ -567,3 +567,33 @@ export type FindAndPrettyGachaRecordsArgs<T extends Business> = FindGachaRecords
 
 export type FindAndPrettyGachaRecords = <T extends Business>(args: FindAndPrettyGachaRecordsArgs<T>, options?: InvokeOptions) => Promise<PrettizedGachaRecords<T>>
 export const findAndPrettyGachaRecords: FindAndPrettyGachaRecords = declareCommand('business_find_and_pretty_gacha_records')
+
+// Export
+
+const BusinessCommands = {
+  locateDataFolder,
+  fromWebCachesGachaUrl,
+  fromDirtyGachaUrl,
+  createGachaRecordsFetcher,
+  importGachaRecords,
+  exportGachaRecords,
+  findAndPrettyGachaRecords,
+} as const
+
+Object.freeze(BusinessCommands)
+
+export default BusinessCommands
+
+declare global {
+  /**
+   * @deprecated For devtools only, do not use in code.
+   */
+  // eslint-disable-next-line no-var
+  var __APP_COMMANDS_BUSINESS: typeof BusinessCommands
+}
+
+// eslint-disable-next-line deprecation/deprecation
+if (!globalThis.__APP_COMMANDS_BUSINESS) {
+  // eslint-disable-next-line deprecation/deprecation
+  globalThis.__APP_COMMANDS_BUSINESS = BusinessCommands
+}

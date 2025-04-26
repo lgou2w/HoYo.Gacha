@@ -22,3 +22,33 @@ export const pickFile = declareCommand<PickFileArgs, string | null>('core_pick_f
 
 export type PickFolderArgs = Omit<PickFileArgs, 'filters'>
 export const pickFolder = declareCommand<PickFolderArgs, string | null>('core_pick_folder')
+
+// Export
+
+const CoreCommands = {
+  osInfo,
+  locale,
+  webview2Version,
+  tauriVersion,
+  changeTheme,
+  pickFile,
+  pickFolder,
+} as const
+
+Object.freeze(CoreCommands)
+
+export default CoreCommands
+
+declare global {
+  /**
+   * @deprecated For devtools only, do not use in code.
+   */
+  // eslint-disable-next-line no-var
+  var __APP_COMMANDS_CORE_: typeof CoreCommands
+}
+
+// eslint-disable-next-line deprecation/deprecation
+if (!globalThis.__APP_COMMANDS_CORE_) {
+  // eslint-disable-next-line deprecation/deprecation
+  globalThis.__APP_COMMANDS_CORE_ = CoreCommands
+}
