@@ -39,6 +39,9 @@ export function isSqlxDatabaseError (error: unknown): error is SqlxDatabaseError
 
 // Commands
 
+export type ExecuteArgs = { query: string }
+export const execute = declareCommand<ExecuteArgs, number>('database_execute')
+
 // Kv
 
 export type FindKvArgs = Pick<Kv, 'key'>

@@ -101,6 +101,7 @@ pub async fn start(singleton: Singleton, tracing: Tracing, database: Database) {
       core_change_theme,
       core_pick_file,
       core_pick_folder,
+      database::database_execute,
       database::kv_questioner::database_find_kv,
       database::kv_questioner::database_create_kv,
       database::kv_questioner::database_update_kv,

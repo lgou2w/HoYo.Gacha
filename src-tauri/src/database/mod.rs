@@ -1,8 +1,8 @@
 use std::collections::HashSet;
-use std::env;
 use std::path::PathBuf;
 use std::sync::Arc;
 use std::time::Instant;
+use std::{env, fmt};
 
 use async_trait::async_trait;
 use serde::de::DeserializeOwned;
@@ -11,14 +11,14 @@ use sqlx::encode::IsNull;
 use sqlx::error::BoxDynError;
 use sqlx::query::{Query, QueryAs};
 use sqlx::sqlite::{
-  Sqlite, SqliteArguments, SqliteConnectOptions, SqlitePool, SqliteRow, SqliteTypeInfo,
-  SqliteValueRef,
+  Sqlite, SqliteArguments, SqliteConnectOptions, SqlitePool, SqliteQueryResult, SqliteRow,
+  SqliteTypeInfo, SqliteValueRef,
 };
 use sqlx::{Decode, Encode, Executor, FromRow, Row, Type};
 use tauri::State as TauriState;
 use time::OffsetDateTime;
 use tokio::sync::mpsc;
-use tracing::{Span, info};
+use tracing::{Span, debug, info};
 
 use crate::consts;
 use crate::error::{Error, ErrorDetails};
@@ -111,14 +111,43 @@ impl Database {
 
     info!("Current database version: {version}, expected: {expected_version}");
     for sql in SQLS.iter().skip(version as _) {
-      self.0.execute(*sql).await?;
+      self.execute(sql).await?;
     }
 
     Ok(())
   }
+
+  #[tracing::instrument(skip(self))]
+  pub async fn execute(
+    &self,
+    query: impl AsRef<str> + fmt::Debug,
+  ) -> Result<SqliteQueryResult, sqlx::Error> {
+    let start = Instant::now();
+
+    info!(message = "Executing database query");
+
+    let ret = self.0.execute(query.as_ref()).await;
+
+    debug!(
+      message = "Database query executed",
+      elapsed = ?start.elapsed(),
+      ?ret,
+    );
+
+    ret
+  }
 }
 
 pub type DatabaseState<'r> = TauriState<'r, Arc<Database>>;
+
+#[tauri::command]
+pub async fn database_execute(
+  database: DatabaseState<'_>,
+  query: String,
+) -> Result<u64, SqlxError> {
+  let ret = database.execute(query).await?;
+  Ok(ret.rows_affected())
+}
 
 // region: SQL
 
@@ -207,21 +236,36 @@ macro_rules! declare_questioner {
               $(.bind($arg_n))*
           }
 
-          #[tracing::instrument(skip(database))]
+          #[tracing::instrument(
+            skip(database),
+            fields(
+              name = stringify!($name),
+              operation = stringify!($operation),
+            )
+          )]
           pub async fn $name(
             database: &crate::database::Database,
             $($arg_n: $arg_t),*
           ) -> Result<$result, crate::database::SqlxError> {
+            let start = Instant::now();
+
             tracing::info!(
               message = "Executing database operation",
-              name = ?stringify!($name),
-              operation = ?stringify!($operation),
               $($arg_n = ?$arg_n),*
             );
-            Self::[<sql_ $name>]($($arg_n),*)
+
+            let ret = Self::[<sql_ $name>]($($arg_n),*)
               .$operation(database.as_ref())
               .await
-              .map_err(Into::into)
+              .map_err(Into::into);
+
+            tracing::debug!(
+              message = "Database operation executed",
+              elapsed = ?start.elapsed(),
+              ?ret,
+            );
+
+            ret
           }
         )*
       }
