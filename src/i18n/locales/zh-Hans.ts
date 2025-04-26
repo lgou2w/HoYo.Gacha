@@ -143,7 +143,7 @@ export default {
                 Success: {
                   Title: '拉取$t(Business.{{keyofBusinesses}}.Gacha.Name)记录成功：',
                   AddedBody: '新增 {{changes}} 条新记录。',
-                  RemovedBody: '移除 {{changes}} 条不正确记录。',
+                  DeletedBody: '移除 {{changes}} 条不正确记录。',
                 },
                 Error: {
                   Title: '拉取$t(Business.{{keyofBusinesses}}.Gacha.Name)记录失败：',

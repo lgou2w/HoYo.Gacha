@@ -143,7 +143,7 @@ export default {
                 Success: {
                   Title: 'Successfully fetched $t(Business.{{keyofBusinesses}}.Gacha.Name) Records:',
                   AddedBody: 'Added {{changes}} new records.',
-                  RemovedBody: 'Remove {{changes}} incorrect records.',
+                  DeletedBody: 'Delete {{changes}} incorrect records.',
                 },
                 Error: {
                   Title: 'Failed to fetch $t(Business.{{keyofBusinesses}}.Gacha.Name) Records:',

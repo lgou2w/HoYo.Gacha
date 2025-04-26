@@ -216,8 +216,6 @@ function GachaLegacyViewToolbarUrlButton () {
   const notifier = useNotifier()
   const i18n = useI18n()
 
-  // TODO: !!! The backdrop or dialog mask prohibits user operation and waits for the result
-
   const disabled = !selectedAccount || !prettized || isBusy || gachaRecordsFetcher.state.isFetching
   const handleUpdate = useCallback(async (
     saveToDatabase: GachaRecordsFetcherFetchArgs<Business>['saveToDatabase'],
@@ -307,8 +305,8 @@ function GachaLegacyViewToolbarUrlButton () {
             return
           }
 
-          // Positive numbers are added, negative numbers are removed
-          const body = changes >= 0 ? 'AddedBody' : 'RemovedBody'
+          // Positive numbers are added, negative numbers are deleted
+          const body = changes >= 0 ? 'AddedBody' : 'DeletedBody'
           return {
             title: i18n.t('Pages.Gacha.LegacyView.Toolbar.Url.Fetch.Success.Title', { keyofBusinesses }),
             body: i18n.t(`Pages.Gacha.LegacyView.Toolbar.Url.Fetch.Success.${body}`, {
