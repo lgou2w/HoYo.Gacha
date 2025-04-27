@@ -92,6 +92,7 @@ export default {
             Bangboo: '邦布频段',
             Bangboo_Title: '卓越搭档',
             Aggregated: '总计',
+            Aggregated_NoBangboo: '(不含邦布频段)',
           },
         },
         DataFolder: {

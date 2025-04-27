@@ -92,6 +92,7 @@ export default {
             Bangboo: 'Bangboo Channel',
             Bangboo_Title: 'An Outstanding Partner',
             Aggregated: 'Aggregated',
+            Aggregated_NoBangboo: '(Excluding Bangboo Channel)',
           },
         },
         DataFolder: {

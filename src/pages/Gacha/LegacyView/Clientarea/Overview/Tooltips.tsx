@@ -32,9 +32,11 @@ export default function GachaLegacyViewClientareaOverviewTooltips (props: Parent
   const {
     keyofBusinesses,
     prettized: {
-      total,
-      startTime,
-      endTime,
+      aggregated: {
+        total,
+        startTime,
+        endTime,
+      },
     },
   } = props
 

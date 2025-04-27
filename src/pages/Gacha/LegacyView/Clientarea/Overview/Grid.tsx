@@ -3,7 +3,7 @@ import { Badge, BadgeProps, Caption1, Title3, makeStyles, mergeClasses, tokens }
 import BizImages from '@/components/BizImages'
 import Locale, { LocaleMapping } from '@/components/Locale'
 import useI18n from '@/hooks/useI18n'
-import { Business, ReversedBusinesses } from '@/interfaces/Business'
+import { Business, Businesses, ReversedBusinesses } from '@/interfaces/Business'
 import { AggregatedMetadata, CategorizedMetadata, PrettyCategory, PrettyGachaRecord } from '@/interfaces/GachaRecord'
 import GachaItem from '@/pages/Gacha/LegacyView/GachaItem'
 import { ParentCompositeState } from './declares'
@@ -210,6 +210,15 @@ function GridCard (props: GridCardProps) {
             component={Title3}
             mapping={[`Business.${keyofBusinesses}.Gacha.Category.${state.category}`, { context: 'Title' }]}
           />
+          {business === Businesses.ZenlessZoneZero && state.isAggregated && (
+            <Locale
+              component={Caption1}
+              mapping={[`Business.${keyofBusinesses}.Gacha.Category.${state.category}`, { context: 'NoBangboo' }]}
+              childrenPosition="before"
+            >
+              <i aria-label="placeholder">&nbsp;</i>
+            </Locale>
+          )}
         </div>
         <div className={styles.headerSubtitle}>
           <Caption1>{state.timeRange}</Caption1>

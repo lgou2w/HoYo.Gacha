@@ -450,7 +450,7 @@ impl PrettiedGachaRecords {
     let records: Vec<&GachaRecord> = if business == Business::ZenlessZoneZero {
       records
         .iter()
-        .filter(|record| record.is_gacha_type_bangboo())
+        .filter(|record| !record.is_gacha_type_bangboo())
         .collect()
     } else {
       records.iter().collect()
