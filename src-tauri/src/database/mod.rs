@@ -262,7 +262,6 @@ macro_rules! declare_questioner {
             tracing::debug!(
               message = "Database operation executed",
               elapsed = ?start.elapsed(),
-              ?ret,
             );
 
             ret
