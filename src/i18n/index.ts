@@ -16,3 +16,19 @@ i18n
   })
 
 export default i18n
+
+declare global {
+  /**
+   * @deprecated For devtools only, do not use in code.
+   */
+  // eslint-disable-next-line no-var
+  var __APP_CHANGE_LANGUAGE__: (language: string) => void
+}
+
+// eslint-disable-next-line deprecation/deprecation
+if (!globalThis.__APP_CHANGE_LANGUAGE__) {
+  // eslint-disable-next-line deprecation/deprecation
+  globalThis.__APP_CHANGE_LANGUAGE__ = (language: string) => {
+    i18n.changeLanguage(language)
+  }
+}
