@@ -7,7 +7,7 @@ import { ImportGachaRecordsArgs, importGachaRecords } from '@/api/commands/busin
 import { pickFile } from '@/api/commands/core'
 import { extractErrorMessage } from '@/api/error'
 import { useSelectedAccountSuspenseQueryData } from '@/api/queries/accounts'
-import { invalidatePrettizedGachaRecordsQuery } from '@/api/queries/business'
+import { invalidatePrettizedGachaRecordsQuery, useFirstGachaRecordSuspenseQueryData } from '@/api/queries/business'
 import Locale from '@/components/Locale'
 import useBusinessContext from '@/hooks/useBusinessContext'
 import useI18n from '@/hooks/useI18n'
@@ -83,15 +83,16 @@ export default function GachaLegacyViewDataConvertImportForm (props: Props) {
 
   const { business, keyofBusinesses } = useBusinessContext()
   const selectedAccount = useSelectedAccountSuspenseQueryData(keyofBusinesses)
+  const firstGachaRecord = useFirstGachaRecordSuspenseQueryData(business, selectedAccount?.uid)
   const supportedFormats = useMemo(() => SupportedFormats[business], [business])
   const i18n = useI18n()
   const notifier = useNotifier()
 
-  const [{ file, fileError, format, formatLegacyUigfLocale, saveOnConflict, progress, busy }, produce] = useImmer({
+  const [{ file, fileError, format, formatUigfLocale, saveOnConflict, progress, busy }, produce] = useImmer({
     file: null as string | null,
     fileError: null as string | null,
     format: supportedFormats[0],
-    formatLegacyUigfLocale: preferredGachaLocale(i18n.language),
+    formatUigfLocale: firstGachaRecord?.lang || preferredGachaLocale(i18n.language),
     saveOnConflict: 'Nothing' as SaveOnConflict,
     progress: undefined as number | undefined,
     busy: false,
@@ -132,8 +133,8 @@ export default function GachaLegacyViewDataConvertImportForm (props: Props) {
       case 'Uigf':
         importer = {
           [format]: {
-            accounts: [selectedAccount.uid],
             businesses: [selectedAccount.business],
+            accounts: { [selectedAccount.uid]: formatUigfLocale },
           },
         }
         break
@@ -141,7 +142,7 @@ export default function GachaLegacyViewDataConvertImportForm (props: Props) {
         importer = {
           [format]: {
             expectedUid: selectedAccount.uid,
-            expectedLocale: formatLegacyUigfLocale,
+            expectedLocale: formatUigfLocale,
           },
         }
         break
@@ -204,7 +205,7 @@ export default function GachaLegacyViewDataConvertImportForm (props: Props) {
       // HACK: If the change is greater than 0, invalidate the gacha records
       invalidatePrettizedGachaRecordsQuery(selectedAccount.business, selectedAccount.uid)
     }
-  }, [file, format, formatLegacyUigfLocale, i18n, notifier, onSuccess, produce, saveOnConflict, selectedAccount])
+  }, [file, format, formatUigfLocale, i18n, notifier, onSuccess, produce, saveOnConflict, selectedAccount])
 
   return (
     <div className={styles.root}>
@@ -243,6 +244,7 @@ export default function GachaLegacyViewDataConvertImportForm (props: Props) {
         validationMessage={<Locale
           mapping={[`Pages.Gacha.LegacyView.DataConvert.Format.${format}.Info`]}
         />}
+        required
       >
         <div className={styles.formatContainer}>
           {supportedFormats.map((value) => (
@@ -260,21 +262,21 @@ export default function GachaLegacyViewDataConvertImportForm (props: Props) {
           ))}
         </div>
       </Field>
-      {format === 'LegacyUigf' && (
+      {!firstGachaRecord && (format === 'Uigf' || format === 'LegacyUigf') && (
         <Field
           size="large"
-          label={<Locale mapping={['Pages.Gacha.LegacyView.DataConvert.ImportForm.Locale.Label']} />}
+          label={<Locale mapping={['Pages.Gacha.LegacyView.DataConvert.ImportForm.UigfLocale.Label']} />}
           validationState="none"
           validationMessageIcon={<InfoFilled className={styles.localeIcon} />}
           validationMessage={<Locale
-            mapping={['Pages.Gacha.LegacyView.DataConvert.ImportForm.Locale.Info']}
+            mapping={['Pages.Gacha.LegacyView.DataConvert.ImportForm.UigfLocale.Info']}
           />}
         >
           <Select
             appearance="filled-darker"
-            value={formatLegacyUigfLocale}
+            value={formatUigfLocale}
             onChange={(_, data) => produce((draft) => {
-              draft.formatLegacyUigfLocale = data.value as SupportedGachaLocale
+              draft.formatUigfLocale = data.value as SupportedGachaLocale
             })}
             disabled={busy}
           >

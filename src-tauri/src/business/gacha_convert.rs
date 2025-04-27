@@ -29,7 +29,7 @@ pub trait GachaRecordsWriter {
     metadata: &GachaMetadata,
     records: Vec<GachaRecord>,
     output: impl AsRef<Path>, // Output file path without extension.
-  ) -> Result<(), Self::Error>;
+  ) -> Result<PathBuf, Self::Error>;
 }
 
 pub trait GachaRecordsReader {
@@ -350,7 +350,7 @@ impl GachaRecordsWriter for LegacyUigfGachaRecordsWriter {
     _metadata: &GachaMetadata,
     records: Vec<GachaRecord>,
     output: impl AsRef<Path>,
-  ) -> Result<(), Self::Error> {
+  ) -> Result<PathBuf, Self::Error> {
     // Legacy UIGF Gacha Records only support: Genshin Impact
     const BUSINESS: Business = Business::GenshinImpact;
     const TIME_FORMAT: &[FormatItem<'static>] =
@@ -433,10 +433,10 @@ impl GachaRecordsWriter for LegacyUigfGachaRecordsWriter {
       })
     }
 
-    let output = output.as_ref().with_extension("json");
+    let output = PathBuf::from(format!("{}.json", output.as_ref().display()));
     let output_file = File::create(&output).map_err(|cause| {
       LegacyUigfGachaRecordsWriteErrorKind::CreateOutput {
-        path: output,
+        path: output.clone(),
         cause,
       }
     })?;
@@ -444,7 +444,7 @@ impl GachaRecordsWriter for LegacyUigfGachaRecordsWriter {
     serde_json::to_writer(output_file, &uigf)
       .map_err(|cause| LegacyUigfGachaRecordsWriteErrorKind::Serialize { cause })?;
 
-    Ok(())
+    Ok(output)
   }
 }
 
@@ -726,7 +726,7 @@ pub struct UigfProject<Item> {
   )]
   pub uid: u32,
   pub timezone: i8,
-  pub lang: String,
+  pub lang: Option<String>,
   pub list: Vec<Item>,
 }
 
@@ -852,7 +852,7 @@ impl GachaRecordsWriter for UigfGachaRecordsWriter {
     metadata: &GachaMetadata,
     records: Vec<GachaRecord>,
     output: impl AsRef<Path>,
-  ) -> Result<(), Self::Error> {
+  ) -> Result<PathBuf, Self::Error> {
     let Self {
       businesses,
       accounts,
@@ -965,7 +965,7 @@ impl GachaRecordsWriter for UigfGachaRecordsWriter {
           projects.push(UigfProject {
             uid,
             timezone,
-            lang,
+            lang: Some(lang),
             list,
           });
         }
@@ -1043,17 +1043,17 @@ impl GachaRecordsWriter for UigfGachaRecordsWriter {
       );
     }
 
-    let output = output.as_ref().with_extension("json");
+    let output = PathBuf::from(format!("{}.json", output.as_ref().display()));
     let output_file =
       File::create(&output).map_err(|cause| UigfGachaRecordsWriteErrorKind::CreateOutput {
-        path: output,
+        path: output.clone(),
         cause,
       })?;
 
     serde_json::to_writer(output_file, &uigf)
       .map_err(|cause| UigfGachaRecordsWriteErrorKind::Serialize { cause })?;
 
-    Ok(())
+    Ok(output)
   }
 }
 
@@ -1061,7 +1061,7 @@ impl GachaRecordsWriter for UigfGachaRecordsWriter {
 #[serde(rename_all = "camelCase")]
 pub struct UigfGachaRecordsReader {
   pub businesses: Option<HashSet<Business>>, // None for all businesses
-  pub accounts: Option<HashSet<u32>>,        // None for all accounts
+  pub accounts: HashMap<u32, String>,        // uid: locale
 }
 
 impl GachaRecordsReader for UigfGachaRecordsReader {
@@ -1145,22 +1145,21 @@ impl GachaRecordsReader for UigfGachaRecordsReader {
       ($business:ident, $project:ident, $gacha_id:expr) => {
         for project in $project {
           // Skip the project if the account is not expected
-          if let Some(accounts) = accounts {
-            if !accounts.contains(&project.uid) {
-              continue;
-            }
-          }
+          let Some(locale) = accounts.get(&project.uid) else {
+            continue;
+          };
 
+          let locale = project.lang.unwrap_or(locale.to_owned());
           for (cursor, item) in project.list.into_iter().enumerate() {
             // Because the cursor of the user's record starts at 1
             let cursor = cursor + 1;
 
             let metadata_entry = metadata
-              .obtain(Business::$business, &project.lang)
+              .obtain(Business::$business, &locale)
               .and_then(|map| map.entry_from_id(&item.item_id))
               .ok_or_else(|| UigfGachaRecordsReadErrorKind::MissingMetadataEntry {
                 business: Business::$business,
-                locale: project.lang.clone(),
+                locale: locale.clone(),
                 key: FIELD_ITEM_ID,
                 val: item.item_id.clone(),
                 cursor,
@@ -1175,7 +1174,7 @@ impl GachaRecordsReader for UigfGachaRecordsReader {
               gacha_id,
               rank_type: item.rank_type.unwrap_or(metadata_entry.rank as _),
               count: item.count.unwrap_or(1),
-              lang: project.lang.clone(),
+              lang: locale.clone(),
               time: item.time, // TODO: project.timezone
               name: metadata_entry.name.to_owned(),
               item_type: item
@@ -1394,7 +1393,7 @@ impl GachaRecordsWriter for SrgfGachaRecordsWriter {
     _metadata: &GachaMetadata,
     records: Vec<GachaRecord>,
     output: impl AsRef<Path>,
-  ) -> Result<(), Self::Error> {
+  ) -> Result<PathBuf, Self::Error> {
     // SRGF Gacha Records only support: Honkai Star Rail
     const BUSINESS: Business = Business::HonkaiStarRail;
 
@@ -1470,17 +1469,17 @@ impl GachaRecordsWriter for SrgfGachaRecordsWriter {
       })
     }
 
-    let output = output.as_ref().with_extension("json");
+    let output = PathBuf::from(format!("{}.json", output.as_ref().display()));
     let output_file =
       File::create(&output).map_err(|cause| SrgfGachaRecordsWriteErrorKind::CreateOutput {
-        path: output,
+        path: output.clone(),
         cause,
       })?;
 
     serde_json::to_writer(output_file, &srgf)
       .map_err(|cause| SrgfGachaRecordsWriteErrorKind::Serialize { cause })?;
 
-    Ok(())
+    Ok(output)
   }
 }
 
@@ -1662,7 +1661,7 @@ impl GachaRecordsExporter {
     metadata: &GachaMetadata,
     records: Vec<GachaRecord>,
     output: impl AsRef<Path>,
-  ) -> Result<(), Box<dyn ErrorDetails + Send + 'static>> {
+  ) -> Result<PathBuf, Box<dyn ErrorDetails + Send + 'static>> {
     match self {
       Self::LegacyUigf(w) => w.write(metadata, records, output).map_err(Error::boxed),
       Self::Uigf(w) => w.write(metadata, records, output).map_err(Error::boxed),
@@ -1960,7 +1959,6 @@ mod tests {
         {
           "uid": "100000000",
           "timezone": 8,
-          "lang": "en-us",
           "list": [
             {
               "uigf_gacha_type": "301",
@@ -1976,7 +1974,6 @@ mod tests {
         {
           "uid": "100000001",
           "timezone": 8,
-          "lang": "en-us",
           "list": [
             {
               "gacha_id": "1",
@@ -1992,7 +1989,6 @@ mod tests {
         {
           "uid": "100000002",
           "timezone": 8,
-          "lang": "en-us",
           "list": [
             {
               "gacha_type": "1",
@@ -2007,7 +2003,11 @@ mod tests {
 
     let records = UigfGachaRecordsReader {
       businesses: None,
-      accounts: None,
+      accounts: HashMap::from_iter([
+        (100_000_000, "en-us".to_owned()),
+        (100_000_001, "en-us".to_owned()),
+        (100_000_002, "en-us".to_owned()),
+      ]),
     }
     .read(GachaMetadata::embedded(), Cursor::new(input))
     .unwrap();
@@ -2134,7 +2134,11 @@ mod tests {
     let input = File::open(output.with_extension("json")).unwrap();
     let read_records = UigfGachaRecordsReader {
       businesses: None,
-      accounts: None,
+      accounts: HashMap::from_iter([
+        (100_000_000, "en-us".to_owned()),
+        (100_000_001, "en-us".to_owned()),
+        (100_000_002, "en-us".to_owned()),
+      ]),
     }
     .read(GachaMetadata::embedded(), input)
     .unwrap();

@@ -478,6 +478,13 @@ declare_questioner_with_handlers! {
         uid: u32,
       }: fetch_all -> Vec<GachaRecord>,
 
+  "SELECT * FROM `HG_GACHA_RECORDS` WHERE `business` = ? AND `uid` = ? ORDER BY `id` ASC LIMIT ?;"
+    = find_gacha_records_by_business_and_uid_with_limit {
+        business: Business,
+        uid: u32,
+        limit: u32,
+      }: fetch_all -> Vec<GachaRecord>,
+
   "SELECT * FROM `HG_GACHA_RECORDS` WHERE `business` = ? AND `uid` = ? AND `gacha_type` = ? ORDER BY `id` ASC;"
     = find_gacha_records_by_business_and_uid_with_gacha_type {
         business: Business,

@@ -236,7 +236,7 @@ export default {
               Format: {
                 Label: 'Format',
               },
-              Locale: {
+              UigfLocale: {
                 Label: 'Locale',
                 Info: 'Expected locale of the import file format.',
               },
@@ -252,6 +252,25 @@ export default {
               Success: {
                 Title: 'Import Success',
                 Body: 'Added {{changes}} new records.',
+              },
+            },
+            ExportForm: {
+              Folder: {
+                Label: 'Folder',
+                Placeholder: 'Export folder',
+                SelectBtn: 'Select...',
+              },
+              Format: {
+                Label: 'Format',
+              },
+              LegacyUigfVersion: {
+                Label: 'Version',
+              },
+              CancelBtn: 'Cancel',
+              SubmitBtn: 'Export',
+              Success: {
+                Title: 'Export Success',
+                Body: 'File save to: {{output}}',
               },
             },
           },

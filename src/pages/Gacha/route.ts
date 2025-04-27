@@ -2,7 +2,7 @@ import { Spinner } from '@fluentui/react-components'
 import { createRoute } from '@tanstack/react-router'
 import { isDetailedError } from '@/api/error'
 import { ensureAccountsQueryData, ensureSelectedAccountUidQueryData } from '@/api/queries/accounts'
-import { prefetchPrettizedGachaRecordsQuery } from '@/api/queries/business'
+import { prefetchFirstGachaRecordQuery, prefetchPrettizedGachaRecordsQuery } from '@/api/queries/business'
 import { Business, Businesses, KeyofBusinesses } from '@/interfaces/Business'
 import RootRoute from '@/pages/Root/route'
 import Routes from '@/routes'
@@ -27,6 +27,7 @@ const GachaRoute = createRoute({
     await ensureAccountsQueryData(keyofBusinesses)
     const selectedAccountUid = await ensureSelectedAccountUidQueryData(keyofBusinesses)
     await prefetchPrettizedGachaRecordsQuery(business, selectedAccountUid)
+    await prefetchFirstGachaRecordQuery(business, selectedAccountUid)
 
     return {
       business,

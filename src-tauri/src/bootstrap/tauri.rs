@@ -115,6 +115,7 @@ pub async fn start(singleton: Singleton, tracing: Tracing, database: Database) {
       database::account_questioner::database_delete_account_by_business_and_uid,
       database::gacha_record_questioner::database_find_gacha_records_by_uid,
       database::gacha_record_questioner::database_find_gacha_records_by_business_and_uid,
+      database::gacha_record_questioner::database_find_gacha_records_by_business_and_uid_with_limit,
       database::gacha_record_questioner::database_find_gacha_records_by_business_and_uid_with_gacha_type,
       database::gacha_record_questioner_additions::database_create_gacha_records,
       database::gacha_record_questioner_additions::database_delete_gacha_records_by_business_and_uid,

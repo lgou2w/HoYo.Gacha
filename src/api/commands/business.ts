@@ -511,7 +511,7 @@ export type ImportGachaRecordsArgs = NonNullable<{
     } }
     | { Uigf: {
       businesses?: Business[],
-      accounts?: Account['uid'][]
+      accounts: Record<Account['uid'], string> // uid: locale
     } }
     | { Srgf: {
       expectedUid: Account['uid']
@@ -546,7 +546,7 @@ export type ExportGachaRecordsArgs = NonNullable<{
     } }
 }>
 
-export const exportGachaRecords = declareCommand<ExportGachaRecordsArgs, void>('business_export_gacha_records')
+export const exportGachaRecords = declareCommand<ExportGachaRecordsArgs, string>('business_export_gacha_records')
 
 const NamedPrettyGachaRecordsError = 'PrettyGachaRecordsError' as const
 

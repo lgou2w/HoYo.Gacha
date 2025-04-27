@@ -215,7 +215,7 @@ pub async fn business_export_gacha_records(
   database: DatabaseState<'_>,
   output: PathBuf,
   exporter: GachaRecordsExporter,
-) -> Result<(), Box<dyn ErrorDetails + Send + 'static>> {
+) -> Result<PathBuf, Box<dyn ErrorDetails + Send + 'static>> {
   // TODO: Progress reporting
 
   let records = match &exporter {

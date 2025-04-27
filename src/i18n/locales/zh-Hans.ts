@@ -236,7 +236,7 @@ export default {
               Format: {
                 Label: '格式',
               },
-              Locale: {
+              UigfLocale: {
                 Label: '语言',
                 Info: '导入文件格式的预期语言区域。',
               },
@@ -252,6 +252,25 @@ export default {
               Success: {
                 Title: '导入成功',
                 Body: '新增 {{changes}} 条新记录。',
+              },
+            },
+            ExportForm: {
+              Folder: {
+                Label: '目录',
+                Placeholder: '待导出目录',
+                SelectBtn: '选择...',
+              },
+              Format: {
+                Label: '格式',
+              },
+              LegacyUigfVersion: {
+                Label: '版本',
+              },
+              CancelBtn: '取消',
+              SubmitBtn: '导出',
+              Success: {
+                Title: '导出成功',
+                Body: '文件保存至：{{output}}',
               },
             },
           },

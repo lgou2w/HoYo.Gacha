@@ -1,9 +1,9 @@
 import { queryOptions, useQuery, useSuspenseQuery } from '@tanstack/react-query'
 import { PrettyGachaRecordsError, findAndPrettyGachaRecords } from '@/api/commands/business'
-import { SqlxDatabaseError, SqlxError } from '@/api/commands/database'
+import { SqlxDatabaseError, SqlxError, findGachaRecordsByBusinessAndUidWithLimit } from '@/api/commands/database'
 import { Account } from '@/interfaces/Account'
 import { Business, ReversedBusinesses } from '@/interfaces/Business'
-import { PrettizedGachaRecords } from '@/interfaces/GachaRecord'
+import { GachaRecord, PrettizedGachaRecords } from '@/interfaces/GachaRecord'
 import queryClient from '@/queryClient'
 
 // #region: Prettized Gacha Records
@@ -76,6 +76,79 @@ export function invalidatePrettizedGachaRecordsQuery (
   return queryClient.invalidateQueries({
     queryKey: prettizedGachaRecordsQueryKey(business, uid),
   })
+}
+
+// #endregion
+
+// #region: First Gacha Record
+
+const KeyFirstGacha = 'FirstGachaRecord'
+
+export function firstGachaRecordQueryKey (
+  business: Business,
+  uid: Account['uid'] | null | undefined,
+) {
+  return [ReversedBusinesses[business], KeyFirstGacha, uid ?? null] as const
+}
+
+export type FirstGachaRecordQueryKey = ReturnType<typeof firstGachaRecordQueryKey>
+
+export function firstGachaRecordQueryOptions<T extends Business> (
+  business: T,
+  uid: Account['uid'] | null | undefined,
+) {
+  return queryOptions<
+    GachaRecord<T> | null,
+    SqlxError | SqlxDatabaseError | Error,
+    GachaRecord<T> | null,
+    FirstGachaRecordQueryKey
+  >({
+    enabled: !!uid,
+    staleTime: Infinity,
+    queryKey: firstGachaRecordQueryKey(business, uid),
+    queryFn: async function firstGachaRecordQueryFn () {
+      if (!uid) {
+        return null
+      }
+
+      const records = await findGachaRecordsByBusinessAndUidWithLimit({
+        business,
+        uid,
+        limit: 1,
+      })
+
+      return records.length > 0 ? records[0] : null
+    },
+  })
+}
+
+export function useFirstGachaRecordQuery<T extends Business> (
+  business: T,
+  uid: Account['uid'] | null | undefined,
+) {
+  return useQuery(firstGachaRecordQueryOptions(business, uid))
+}
+
+export function useFirstGachaRecordSuspenseQuery<T extends Business> (
+  business: T,
+  uid: Account['uid'] | null | undefined,
+) {
+  return useSuspenseQuery(firstGachaRecordQueryOptions(business, uid))
+}
+
+export function useFirstGachaRecordSuspenseQueryData<T extends Business> (
+  business: T,
+  uid: Account['uid'] | null | undefined,
+) {
+  return useFirstGachaRecordSuspenseQuery(business, uid)
+    .data
+}
+
+export function prefetchFirstGachaRecordQuery<T extends Business> (
+  business: T,
+  uid: Account['uid'] | null | undefined,
+) {
+  return queryClient.prefetchQuery(firstGachaRecordQueryOptions(business, uid))
 }
 
 // #endregion
