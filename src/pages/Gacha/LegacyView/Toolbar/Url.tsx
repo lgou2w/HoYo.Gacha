@@ -423,29 +423,23 @@ function stringifyFragment (
 
   if (typeof fragment === 'string') {
     subkey = fragment
-
-    if (subkey === GachaRecordsFetcherFragmentKind.Completed) {
-      options = { keyofBusinesses }
-    }
   } else {
-    options = { }
-
     if (GachaRecordsFetcherFragmentKind.Ready in fragment) {
       subkey = GachaRecordsFetcherFragmentKind.Ready
       options = { value: fragment.Ready, keyofBusinesses }
     } else if (GachaRecordsFetcherFragmentKind.Pagination in fragment) {
       subkey = GachaRecordsFetcherFragmentKind.Pagination
-      options.value = fragment.Pagination
+      options = { value: fragment.Pagination }
     } else if (GachaRecordsFetcherFragmentKind.DataRef in fragment) {
       // Just reuse Data
       subkey = GachaRecordsFetcherFragmentKind.Data
-      options.value = fragment.DataRef
+      options = { value: fragment.DataRef }
     } else if (GachaRecordsFetcherFragmentKind.Data in fragment) {
       subkey = GachaRecordsFetcherFragmentKind.Data
-      options.value = fragment.Data.length
+      options = { value: fragment.Data.length }
     } else if (GachaRecordsFetcherFragmentKind.Completed in fragment) {
       subkey = GachaRecordsFetcherFragmentKind.Completed
-      options.value = fragment.Completed
+      options = { value: fragment.Completed, keyofBusinesses }
     } else {
       // HACK: should never reach here
       throw new Error('unreachable')
