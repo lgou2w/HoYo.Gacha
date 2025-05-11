@@ -1,11 +1,11 @@
-import invoke, { InvokeArgs, InvokeOptions } from '@/api/invoke'
+import invoke, { InvokeArgs } from '@/api/invoke'
 
 export interface ArgsCommand<Args extends InvokeArgs | undefined, Result = void> {
-  (args: Args, options?: InvokeOptions): Promise<Result>
+  (args: Args): Promise<Result>
 }
 
 export interface NonArgsCommand<Result = void> {
-  (options?: InvokeOptions): Promise<Result>
+  (): Promise<Result>
 }
 
 export type Command<Args extends InvokeArgs | undefined, Result = void> =
