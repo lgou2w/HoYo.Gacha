@@ -538,14 +538,15 @@ impl GachaRecordSaveOnConflict {
           ?, ?, ?, ?, ?, ?,
           ?, ?, ?, ?, ?, ?
         ) ON CONFLICT (`business`, `uid`, `id`) DO UPDATE SET
-          `gacha_type` = `excluded.gacha_type`,
-          `gacha_id`   = `excluded.gacha_id`,
-          `rank_type`  = `excluded.rank_type`,
-          `count`      = `excluded.count`,
-          `time`       = `excluded.time`,
-          `lang`       = `excluded.lang`,
-          `item_type`  = `excluded.item_type`,
-          `item_id`    = `excluded.item_id`;"
+          `gacha_type` = excluded.`gacha_type`,
+          `gacha_id`   = excluded.`gacha_id`,
+          `rank_type`  = excluded.`rank_type`,
+          `count`      = excluded.`count`,
+          `time`       = excluded.`time`,
+          `lang`       = excluded.`lang`,
+          `name`       = excluded.`name`,
+          `item_type`  = excluded.`item_type`,
+          `item_id`    = excluded.`item_id`;"
       }
     }
   }
