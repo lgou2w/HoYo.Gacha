@@ -59,11 +59,11 @@ export function detectUidServerRegion (business: Business, uid: number | string)
     typeof uid === 'string'
       ? uid = parseInt(uid)
       : uid,
-  )) {
+  ) || uid === 0) {
     return null
   }
 
-  const digits = Math.log(uid) * Math.LOG10E + 1 | 0
+  const digits = Math.floor(Math.log10(uid)) + 1
 
   if ((business === Businesses.GenshinImpact ||
     business === Businesses.HonkaiStarRail) &&
@@ -84,7 +84,10 @@ export function detectUidServerRegion (business: Business, uid: number | string)
     }
   } else if (business === Businesses.ZenlessZoneZero) {
     if (digits === 8) {
-      // There are no Channel servers, all are official server
+      // FIXME: Maybe the 9-digit uid is also official. Unable to determine at
+      //   this time, as the 8-digit limit has not yet been reached.
+
+      // There are no Channel servers, all are official server.
       return ServerRegion.Official
     } else if (digits === 10) {
       const serverDigit = Math.floor(uid / Math.pow(10, 9 - 1)) % 10

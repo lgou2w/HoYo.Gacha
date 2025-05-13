@@ -202,7 +202,13 @@ impl ServerRegion {
           _ => None,
         }
       }
-      (Business::ZenlessZoneZero, 8) => Some(Self::Official),
+      (Business::ZenlessZoneZero, 8) => {
+        // FIXME: Maybe the 9-digit uid is also official. Unable to determine at
+        //   this time, as the 8-digit limit has not yet been reached.
+
+        // There are no Channel servers, all are official server.
+        Some(Self::Official)
+      }
       (Business::ZenlessZoneZero, 10) => {
         let server_digit = (uid / 10_u32.pow(9 - 1)) % 10;
         match server_digit {
