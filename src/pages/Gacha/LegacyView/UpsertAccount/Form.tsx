@@ -8,8 +8,8 @@ import { extractErrorMessage } from '@/api/error'
 import { useCreateAccountMutation, useUpdateAccountDataFolderAndPropertiesMutation } from '@/api/queries/accounts'
 import Locale from '@/components/Locale'
 import useI18n from '@/hooks/useI18n'
-import { Account, detectAccountUidRegion } from '@/interfaces/Account'
-import { Business, KeyofBusinesses } from '@/interfaces/Business'
+import { Account } from '@/interfaces/Account'
+import { Business, KeyofBusinesses, detectUidBusinessRegion } from '@/interfaces/Business'
 import UpsertAccountFormField from './FormField'
 import { DisplayNameMaxLength, UpsertAccountFormData } from './declares'
 
@@ -97,7 +97,7 @@ export default function GachaLegacyViewUpsertAccountForm (props: Props) {
       return
     }
 
-    const region = detectAccountUidRegion(business, getValues('uid'))
+    const region = detectUidBusinessRegion(business, getValues('uid'))
     if (!region) {
       trigger('uid', { shouldFocus: true })
       return
@@ -191,7 +191,7 @@ export default function GachaLegacyViewUpsertAccountForm (props: Props) {
             if (isEditMode) return
 
             const uid = value && parseInt(value)
-            if (!uid || !detectAccountUidRegion(business, uid)) {
+            if (!uid || !detectUidBusinessRegion(business, uid)) {
               return i18n.t('Pages.Gacha.LegacyView.UpsertAccountForm.Uid.Pattern')
             }
 
@@ -209,7 +209,7 @@ export default function GachaLegacyViewUpsertAccountForm (props: Props) {
           </svg>
         )}
         after={({ field }) => {
-          return field.value && detectAccountUidRegion(business, field.value)
+          return field.value && detectUidBusinessRegion(business, field.value)
         }}
         disabled={isEditMode}
         required

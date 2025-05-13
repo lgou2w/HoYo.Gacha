@@ -161,3 +161,131 @@ impl BizInternals {
     executable
   }
 }
+
+#[derive(Copy, Clone, Debug, Deserialize, Serialize, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub enum ServerRegion {
+  /// Official: CN, PRODCN
+  Official,
+  ///
+  /// Official: CN, Channel \
+  /// Genshin Impact & Honkai: Star Rail only
+  ///
+  Channel,
+  /// Global: Asia
+  Asia,
+  /// Global: Europe
+  Europe,
+  /// Global: America
+  America,
+  /// Global: TW, HK, MO
+  Cht,
+}
+
+impl ServerRegion {
+  pub fn from_uid(business: Business, uid: u32) -> Option<Self> {
+    let digits = if uid == 0 {
+      return None;
+    } else {
+      (uid as f64).log10().floor() as u32 + 1
+    };
+
+    match (business, digits) {
+      (Business::GenshinImpact | Business::HonkaiStarRail, 9 | 10) => {
+        let server_digit = (uid / 10_u32.pow(9 - 1)) % 10;
+        match server_digit {
+          1..=4 => Some(Self::Official),
+          5 => Some(Self::Channel),
+          6 => Some(Self::America),
+          7 => Some(Self::Europe),
+          8 => Some(Self::Asia),
+          9 => Some(Self::Cht),
+          _ => None,
+        }
+      }
+      (Business::ZenlessZoneZero, 8) => Some(Self::Official),
+      (Business::ZenlessZoneZero, 10) => {
+        let server_digit = (uid / 10_u32.pow(9 - 1)) % 10;
+        match server_digit {
+          0 => Some(Self::America),
+          3 => Some(Self::Asia),
+          5 => Some(Self::Europe),
+          7 => Some(Self::Cht),
+          _ => None,
+        }
+      }
+      _ => None,
+    }
+  }
+}
+
+impl Business {
+  #[inline]
+  pub fn detect_uid_server_region(&self, uid: u32) -> Option<ServerRegion> {
+    ServerRegion::from_uid(*self, uid)
+  }
+
+  pub fn detect_uid_business_region(&self, uid: u32) -> Option<BusinessRegion> {
+    match self.detect_uid_server_region(uid)? {
+      ServerRegion::Official | ServerRegion::Channel => Some(BusinessRegion::Official),
+      ServerRegion::Asia | ServerRegion::Europe | ServerRegion::America | ServerRegion::Cht => {
+        Some(BusinessRegion::Global)
+      }
+    }
+  }
+}
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[test]
+  fn test_gi_hsr_uids() {
+    let cases = [
+      (
+        vec![1_0000_0000, 2_0000_0000, 3_0000_0000, 4_0000_0000],
+        ServerRegion::Official,
+      ),
+      (vec![5_0000_0000, 15_0000_0000], ServerRegion::Channel),
+      (vec![6_0000_0000, 16_0000_0000], ServerRegion::America),
+      (vec![7_0000_0000, 17_0000_0000], ServerRegion::Europe),
+      (vec![8_0000_0000, 18_0000_0000], ServerRegion::Asia),
+      (vec![9_0000_0000, 19_0000_0000], ServerRegion::Cht),
+    ];
+
+    for (uids, expected_region) in cases {
+      for uid in uids {
+        assert_eq!(
+          Business::GenshinImpact.detect_uid_server_region(uid),
+          Some(expected_region)
+        );
+        assert_eq!(
+          Business::HonkaiStarRail.detect_uid_server_region(uid),
+          Some(expected_region)
+        );
+      }
+    }
+  }
+
+  #[test]
+  fn test_zzz_uids() {
+    let cases = [
+      (
+        vec![1000_0000, 2000_0000, 3000_0000, 4000_0000],
+        ServerRegion::Official,
+      ),
+      (vec![10_0000_0000], ServerRegion::America),
+      (vec![13_0000_0000], ServerRegion::Asia),
+      (vec![15_0000_0000], ServerRegion::Europe),
+      (vec![17_0000_0000], ServerRegion::Cht),
+    ];
+
+    for (uids, expected_region) in cases {
+      for uid in uids {
+        assert_eq!(
+          Business::ZenlessZoneZero.detect_uid_server_region(uid),
+          Some(expected_region)
+        );
+      }
+    }
+  }
+}

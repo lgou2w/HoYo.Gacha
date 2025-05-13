@@ -12,8 +12,8 @@ import useBusinessContext from '@/hooks/useBusinessContext'
 import useGachaRecordsFetcher, { GachaRecordsFetcherFetchArgs, GachaRecordsFetcherFetchFragment } from '@/hooks/useGachaRecordsFetcher'
 import useI18n from '@/hooks/useI18n'
 import useNotifier from '@/hooks/useNotifier'
-import { KnownAccountProperties, detectAccountUidRegion } from '@/interfaces/Account'
-import { Business, KeyofBusinesses } from '@/interfaces/Business'
+import { KnownAccountProperties } from '@/interfaces/Account'
+import { Business, KeyofBusinesses, detectUidBusinessRegion } from '@/interfaces/Business'
 import { computeGachaTypeAndLastEndIdMappings } from '@/interfaces/GachaRecord'
 import dayjs from '@/utilities/dayjs'
 
@@ -228,7 +228,7 @@ function GachaLegacyViewToolbarUrlButton () {
     setBusy(true)
 
     const { business, uid } = selectedAccount
-    const region = detectAccountUidRegion(business, uid)! // FIXME: Maybe null
+    const region = detectUidBusinessRegion(business, uid)! // FIXME: Maybe null
     const properties = { ...selectedAccount.properties } // Need to modify
     const gachaUrlDeadline = computeGachaUrlDeadline(properties.gachaUrlCreationTime)
 
