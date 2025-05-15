@@ -266,6 +266,12 @@ export default {
               LegacyUigfVersion: {
                 Label: '版本',
               },
+              UigfMinimized: {
+                Label: '最小化数据',
+                Info: '启用最小化数据后，一些可选字段不再导出。',
+                State_true: '启用',
+                State_false: '禁用',
+              },
               CancelBtn: '取消',
               SubmitBtn: '导出',
               Success: {

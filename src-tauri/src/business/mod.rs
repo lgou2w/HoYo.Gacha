@@ -3,6 +3,8 @@ use std::path::PathBuf;
 
 use serde::Deserialize;
 use tauri::{Emitter, WebviewWindow};
+use time::format_description::FormatItem;
+use time::macros::format_description;
 use tokio::sync::mpsc;
 
 use crate::database::{
@@ -25,6 +27,11 @@ pub use gacha_fetcher::*;
 pub use gacha_metadata::*;
 pub use gacha_prettied::*;
 pub use gacha_url::*;
+
+pub const GACHA_TIME_FORMAT: &[FormatItem<'_>] =
+  format_description!("[year]-[month]-[day] [hour]:[minute]:[second]");
+
+time::serde::format_description!(pub gacha_time_format, PrimitiveDateTime, GACHA_TIME_FORMAT);
 
 // region: Tauri plugin
 

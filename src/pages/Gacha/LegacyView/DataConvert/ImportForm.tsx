@@ -12,7 +12,7 @@ import Locale from '@/components/Locale'
 import useBusinessContext from '@/hooks/useBusinessContext'
 import useI18n from '@/hooks/useI18n'
 import useNotifier from '@/hooks/useNotifier'
-import { GachaLocales, SupportedGachaLocale, preferredGachaLocale } from '@/i18n/locales'
+import { Language } from '@/i18n/locales'
 import { Business, Businesses } from '@/interfaces/Business'
 import { KeyofUnion } from '@/interfaces/declares'
 
@@ -76,6 +76,22 @@ const SupportedFormats: Record<Business, SupportedFormat[]> = {
 
 type SaveOnConflict = Required<ImportGachaRecordsArgs>['saveOnConflict']
 const SaveOnConflicts: SaveOnConflict[] = ['Nothing', 'Update']
+
+const GachaLocales = [
+  'de-de', 'en-us', 'es-es', 'fr-fr', 'id-id', 'it-it', 'ja-jp',
+  'ko-kr', 'pt-pt', 'ru-ru', 'th-th', 'tr-tr', 'vi-vn',
+  'zh-cn', 'zh-tw',
+] as const
+
+type SupportedGachaLocale = typeof GachaLocales[number]
+
+function preferredGachaLocale (language: Language): SupportedGachaLocale {
+  switch (language) {
+    case 'zh-Hans': return 'zh-cn'
+    case 'zh-Hant': return 'zh-tw'
+    default: return 'en-us'
+  }
+}
 
 export default function GachaLegacyViewDataConvertImportForm (props: Props) {
   const styles = useStyles()
@@ -160,7 +176,7 @@ export default function GachaLegacyViewDataConvertImportForm (props: Props) {
       draft.busy = true
     })
 
-    const progressChannel = 'DataConvert_ProgressChannel_Import'
+    const progressChannel = 'DATACONVERT_PROGRESSCHANNEL_IMPORT' + Math.random().toString().replace('.', '_')
 
     let changes: number
     try {

@@ -2,7 +2,8 @@ use std::collections::{HashMap, hash_map};
 use std::sync::LazyLock;
 
 use serde::Serialize;
-use time::PrimitiveDateTime;
+use time::OffsetDateTime;
+use time::serde::rfc3339;
 
 use crate::business::{GachaMetadata, GachaMetadataEntryLimited};
 use crate::error::declare_error_kinds;
@@ -40,7 +41,8 @@ static KNOWN_CATEGORIZEDS: LazyLock<HashMap<Business, HashMap<u32, PrettyCategor
         HashMap::from_iter([
           (100, PrettyCategory::Beginner),
           (200, PrettyCategory::Permanent),
-          (301, PrettyCategory::Character), // Include: 400
+          (301, PrettyCategory::Character),
+          (400, PrettyCategory::Character),
           (302, PrettyCategory::Weapon),
           (500, PrettyCategory::Chronicled),
         ]),
@@ -76,12 +78,6 @@ impl PrettyCategory {
   }
 }
 
-time::serde::format_description!(
-  pretty_gacha_record_time_format,
-  PrimitiveDateTime,
-  GachaMetadata::TIME_FORMAT
-);
-
 #[derive(Clone, Debug, Serialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct PrettyGachaRecord {
@@ -90,8 +86,8 @@ pub struct PrettyGachaRecord {
   pub item_category: &'static str,
   pub item_id: String,
   pub name: String,
-  #[serde(with = "pretty_gacha_record_time_format")]
-  pub time: PrimitiveDateTime,
+  #[serde(with = "rfc3339")]
+  pub time: OffsetDateTime,
   #[serde(skip_serializing_if = "Option::is_none")]
   pub used_pity: Option<u64>, // Purple and Golden only
   #[serde(skip_serializing_if = "Option::is_none")]
@@ -121,20 +117,18 @@ impl PrettyGachaRecord {
         item_id: record.item_id.clone(),
       })?;
 
-    let time = PrimitiveDateTime::parse(&record.time, GachaMetadata::TIME_FORMAT).unwrap();
-
     Ok(Self {
       id: record.id.clone(),
       item_category: entry.category,
       item_id: record.item_id.as_deref().unwrap_or(entry.id).to_owned(),
       name: record.name.clone(),
-      time,
+      time: record.time,
       used_pity,
       limited: if golden {
         Some(match entry.limited {
           GachaMetadataEntryLimited::No => false,
           GachaMetadataEntryLimited::Yes => true,
-          GachaMetadataEntryLimited::Deadline(deadline) => time <= *deadline,
+          GachaMetadataEntryLimited::Deadline(deadline) => record.time <= *deadline,
         })
       } else {
         None
@@ -188,8 +182,10 @@ pub struct CategorizedMetadata {
   pub category: PrettyCategory,
   pub total: u64,
   pub gacha_type: u32,
-  pub start_time: Option<String>,
-  pub end_time: Option<String>,
+  #[serde(with = "rfc3339::option")]
+  pub start_time: Option<OffsetDateTime>,
+  #[serde(with = "rfc3339::option")]
+  pub end_time: Option<OffsetDateTime>,
   pub last_end_id: Option<String>,
   pub rankings: CategorizedMetadataRankings,
 }
@@ -198,16 +194,25 @@ pub struct CategorizedMetadata {
 pub enum AggregatedGoldenTag {
   Luck(PrettyGachaRecord),
   Unluck(PrettyGachaRecord),
-  Relation { record: PrettyGachaRecord, sum: u64 },
-  Crazy { time: String, sum: u64 },
+  Relation {
+    record: PrettyGachaRecord,
+    sum: u64,
+  },
+  Crazy {
+    #[serde(with = "rfc3339")]
+    time: OffsetDateTime,
+    sum: u64,
+  },
 }
 
 #[derive(Clone, Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AggregatedMetadata {
   pub total: u64,
-  pub start_time: Option<String>,
-  pub end_time: Option<String>,
+  #[serde(with = "rfc3339::option")]
+  pub start_time: Option<OffsetDateTime>,
+  #[serde(with = "rfc3339::option")]
+  pub end_time: Option<OffsetDateTime>,
   pub rankings: CategorizedMetadataRankings,
   pub golden_tags: Vec<AggregatedGoldenTag>,
 }
@@ -218,8 +223,10 @@ pub struct PrettiedGachaRecords {
   pub business: Business,
   pub uid: u32,
   pub total: u64,
-  pub start_time: Option<String>,
-  pub end_time: Option<String>,
+  #[serde(with = "rfc3339::option")]
+  pub start_time: Option<OffsetDateTime>,
+  #[serde(with = "rfc3339::option")]
+  pub end_time: Option<OffsetDateTime>,
   pub gacha_type_categories: HashMap<u32, PrettyCategory>,
   pub categorizeds: HashMap<PrettyCategory, CategorizedMetadata>,
   pub aggregated: AggregatedMetadata,
@@ -253,8 +260,8 @@ impl PrettiedGachaRecords {
     records: &[GachaRecord],
   ) -> Result<Self, PrettyGachaRecordsError> {
     let total = records.len() as u64;
-    let start_time = records.first().map(|record| record.time.clone());
-    let end_time = records.last().map(|record| record.time.clone());
+    let start_time = records.first().map(|record| record.time);
+    let end_time = records.last().map(|record| record.time);
 
     let gacha_type_records: HashMap<u32, Vec<&GachaRecord>> =
       records.iter().fold(HashMap::new(), |mut acc, record| {
@@ -292,7 +299,10 @@ impl PrettiedGachaRecords {
     let gacha_type_categories = KNOWN_CATEGORIZEDS.get(&business).unwrap(); // SAFETY
     let mut categorizeds = HashMap::with_capacity(gacha_type_categories.len());
 
-    for (gacha_type, category) in gacha_type_categories {
+    for (gacha_type, category) in gacha_type_categories
+      .iter() // See below
+      .filter(|(gacha_type, _)| !(business == Business::GenshinImpact && **gacha_type == 400))
+    {
       let records = {
         let mut result = gacha_type_records.remove(gacha_type).unwrap_or_default();
 
@@ -307,8 +317,8 @@ impl PrettiedGachaRecords {
       };
 
       let total = records.len() as u64;
-      let start_time = records.first().map(|record| record.time.clone());
-      let end_time = records.last().map(|record| record.time.clone());
+      let start_time = records.first().map(|record| record.time);
+      let end_time = records.last().map(|record| record.time);
       let last_end_id = records.last().map(|record| record.id.clone());
       let rankings = Self::compute_categorized_rankings(metadata, records)?;
 
@@ -457,8 +467,8 @@ impl PrettiedGachaRecords {
     };
 
     let total = records.len() as u64;
-    let start_time = records.first().map(|record| record.time.clone());
-    let end_time = records.last().map(|record| record.time.clone());
+    let start_time = records.first().map(|record| record.time);
+    let end_time = records.last().map(|record| record.time);
 
     let mut blue_sum = 0;
     let mut blue_values = Vec::new();
@@ -594,18 +604,17 @@ impl PrettiedGachaRecords {
     }
 
     {
-      let mut time_groups: Vec<(PrimitiveDateTime, u64)> = records
+      let mut time_groups: Vec<(&OffsetDateTime, u64)> = records
         .iter()
         .fold(
-          HashMap::<PrimitiveDateTime, (PrimitiveDateTime, u64)>::with_capacity(records.len()),
+          HashMap::<&OffsetDateTime, (&OffsetDateTime, u64)>::with_capacity(records.len()),
           |mut acc, record| {
-            let time = PrimitiveDateTime::parse(&record.time, GachaMetadata::TIME_FORMAT).unwrap(); // FIXME: Maybe unsafe
-            match acc.entry(time) {
+            match acc.entry(&record.time) {
               hash_map::Entry::Occupied(mut o) => {
                 o.get_mut().1 += 1;
               }
               hash_map::Entry::Vacant(o) => {
-                o.insert((time, 1));
+                o.insert((&record.time, 1));
               }
             }
             acc
@@ -618,7 +627,7 @@ impl PrettiedGachaRecords {
 
       if let Some((time, sum)) = time_groups.first() {
         tags.push(AggregatedGoldenTag::Crazy {
-          time: time.format(GachaMetadata::TIME_FORMAT).unwrap(),
+          time: **time,
           sum: *sum,
         });
       }

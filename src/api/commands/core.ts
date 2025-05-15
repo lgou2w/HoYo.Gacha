@@ -2,6 +2,8 @@ import { OsInfo } from '@/interfaces/Os'
 import { ColorScheme } from '@/interfaces/Theme'
 import { declareCommand } from '.'
 
+// #region: Commands
+
 export const osInfo = declareCommand<undefined, OsInfo>('core_os_info', true)
 
 export const locale = declareCommand<undefined, string | null>('core_locale', true)
@@ -22,6 +24,8 @@ export const pickFile = declareCommand<PickFileArgs, string | null>('core_pick_f
 
 export type PickFolderArgs = Omit<PickFileArgs, 'filters'>
 export const pickFolder = declareCommand<PickFolderArgs, string | null>('core_pick_folder')
+
+// #endregion
 
 // Export
 

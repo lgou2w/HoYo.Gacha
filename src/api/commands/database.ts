@@ -1,5 +1,4 @@
 import { DetailedError, isDetailedError } from '@/api/error'
-import { InvokeOptions } from '@/api/invoke'
 import { Account } from '@/interfaces/Account'
 import { Business } from '@/interfaces/Business'
 import { GachaRecord } from '@/interfaces/GachaRecord'
@@ -42,7 +41,7 @@ export function isSqlxDatabaseError (error: unknown): error is SqlxDatabaseError
 export type ExecuteArgs = { query: string }
 export const execute = declareCommand<ExecuteArgs, number>('database_execute')
 
-// Kv
+// #region: Kv
 
 export type FindKvArgs = Pick<Kv, 'key'>
 export const findKv = declareCommand<FindKvArgs, Kv | null>('database_find_kv')
@@ -57,7 +56,9 @@ export const upsertKv = declareCommand<UpdateKvArgs, Kv>('database_upsert_kv')
 export type DeleteKvArgs = Pick<Kv, 'key'>
 export const deleteKv = declareCommand<DeleteKvArgs, Kv | null>('database_delete_kv')
 
-// Account
+// #endregion
+
+// #region: Account
 
 export type FindAccountsByBusinessArgs = Pick<Account, 'business'>
 export const findAccountsByBusiness = declareCommand<FindAccountsByBusinessArgs, Account[]>('database_find_accounts_by_business')
@@ -77,29 +78,31 @@ export const updateAccountPropertiesByBusinessAndUid = declareCommand<UpdateAcco
 export type DeleteAccountByBusinessAndUidArgs = Pick<Account, 'business' | 'uid'>
 export const deleteAccountByBusinessAndUid = declareCommand<DeleteAccountByBusinessAndUidArgs, Account | null>('database_delete_account_by_business_and_uid')
 
-// Gacha Record
+// #endregion
+
+// #region: Gacha Record
 
 export type FindGachaRecordsByUidArgs = Pick<GachaRecord<Business>, 'uid'>
 export const findGachaRecordsByUid = declareCommand<FindGachaRecordsByUidArgs, GachaRecord<Business>[]>('database_find_gacha_records_by_uid')
 
 export type FindGachaRecordsByBusinessAndUidArgs<T extends Business> = Pick<GachaRecord<T>, 'business' | 'uid'>
-export type FindGachaRecordsByBusinessAndUid = <T extends Business>(args: FindGachaRecordsByBusinessAndUidArgs<T>, options?: InvokeOptions) => Promise<GachaRecord<T>[]>
+export type FindGachaRecordsByBusinessAndUid = <T extends Business>(args: FindGachaRecordsByBusinessAndUidArgs<T>) => Promise<GachaRecord<T>[]>
 export const findGachaRecordsByBusinessAndUid: FindGachaRecordsByBusinessAndUid = declareCommand('database_find_gacha_records_by_business_and_uid')
 
 export type FindGachaRecordsByBusinessAndUidWithLimitArgs<T extends Business> = FindGachaRecordsByBusinessAndUidArgs<T> & { limit: number }
-export type FindGachaRecordsByBusinessAndUidWithLimit = <T extends Business>(args: FindGachaRecordsByBusinessAndUidWithLimitArgs<T>, options?: InvokeOptions) => Promise<GachaRecord<T>[]>
+export type FindGachaRecordsByBusinessAndUidWithLimit = <T extends Business>(args: FindGachaRecordsByBusinessAndUidWithLimitArgs<T>) => Promise<GachaRecord<T>[]>
 export const findGachaRecordsByBusinessAndUidWithLimit: FindGachaRecordsByBusinessAndUidWithLimit = declareCommand('database_find_gacha_records_by_business_and_uid_with_limit')
 
 export type FindGachaRecordsByBusinessAndUidWithGachaTypeArgs<T extends Business> = Pick<GachaRecord<T>, 'business' | 'uid' | 'gachaType'>
-export type FindGachaRecordsByBusinessAndUidWithGachaType = <T extends Business>(args: FindGachaRecordsByBusinessAndUidWithGachaTypeArgs<T>, options?: InvokeOptions) => Promise<GachaRecord<T>[]>
+export type FindGachaRecordsByBusinessAndUidWithGachaType = <T extends Business>(args: FindGachaRecordsByBusinessAndUidWithGachaTypeArgs<T>) => Promise<GachaRecord<T>[]>
 export const findGachaRecordsByBusinessAndUidWithGachaType: FindGachaRecordsByBusinessAndUidWithGachaType = declareCommand('database_find_gacha_records_by_business_and_uid_with_gacha_type')
 
 export type CreateGachaRecordsArgs<T extends Business> = NonNullable<{ records: GachaRecord<T>[], onConflict: 'Nothing' | 'Update' }>
-export type CreateGachaRecords = <T extends Business>(args: CreateGachaRecordsArgs<T>, options?: InvokeOptions) => Promise<number>
+export type CreateGachaRecords = <T extends Business>(args: CreateGachaRecordsArgs<T>) => Promise<number>
 export const createGachaRecords: CreateGachaRecords = declareCommand('database_create_gacha_records')
 
 export type DeleteGachaRecordsByBusinessAndUidArgs<T extends Business> = Pick<GachaRecord<T>, 'business' | 'uid'>
-export type DeleteGachaRecordsByBusinessAndUid = <T extends Business>(args: DeleteGachaRecordsByBusinessAndUidArgs<T>, options?: InvokeOptions) => Promise<number>
+export type DeleteGachaRecordsByBusinessAndUid = <T extends Business>(args: DeleteGachaRecordsByBusinessAndUidArgs<T>) => Promise<number>
 export const deleteGachaRecordsByBusinessAndUid: DeleteGachaRecordsByBusinessAndUid = declareCommand('database_delete_gacha_records_by_business_and_uid')
 
 export type FindGachaRecordsByBusinessesAndUidArgs = NonNullable<{
@@ -115,6 +118,8 @@ export type FindGachaRecordsByBusinessesOrUidArgs = NonNullable<{
 }>
 
 export const findGachaRecordsByBusinessesOrUid = declareCommand<FindGachaRecordsByBusinessesOrUidArgs, GachaRecord<Business>[]>('database_find_gacha_records_by_businesses_or_uid')
+
+// #endregion
 
 // Export
 

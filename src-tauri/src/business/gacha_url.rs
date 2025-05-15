@@ -10,15 +10,16 @@ use futures_util::FutureExt;
 use futures_util::future::BoxFuture;
 use regex::Regex;
 use serde::{Deserialize, Deserializer, Serialize};
-use time::OffsetDateTime;
 use time::serde::rfc3339;
-use tracing::{info, warn};
+use time::{OffsetDateTime, PrimitiveDateTime};
+use tracing::{error, info, warn};
 use url::Url;
 
 use super::disk_cache::{BlockFile, IndexFile};
+use crate::business::gacha_time_format;
 use crate::consts;
 use crate::error::declare_error_kinds;
-use crate::models::{BizInternals, Business, BusinessRegion, GachaRecord};
+use crate::models::{BizInternals, Business, BusinessRegion, GachaRecord, ServerRegion};
 use crate::utilities::serde_helper;
 
 declare_error_kinds! {
@@ -584,7 +585,8 @@ struct GachaRecordsPaginationItem {
   rank_type: u32,
   #[serde(deserialize_with = "serde_helper::de::string_as_number")]
   count: u32,
-  time: String,
+  #[serde(with = "gacha_time_format")]
+  time: PrimitiveDateTime,
   lang: String,
   name: String,
   item_type: String,
@@ -596,17 +598,10 @@ struct GachaRecordsPaginationItem {
   item_id: Option<String>,
 }
 
-#[allow(dead_code)]
 #[derive(Deserialize)]
 struct GachaRecordsPagination {
-  page: String,
-  size: String,
-  // `Honkai: Star Rail`, `Zenless Zone Zero` only
-  total: Option<String>,
   list: Vec<GachaRecordsPaginationItem>,
   region: String,
-  // `Honkai: Star Rail`, `Zenless Zone Zero` only
-  region_time_zone: Option<i8>,
 }
 
 #[tracing::instrument(skip(url))]
@@ -716,6 +711,13 @@ pub async fn fetch_gacha_records(
     }
   };
 
+  let uid = pagination.list.first().map(|item| item.uid).unwrap(); // SAFETY: See above
+  let server_region = ServerRegion::from_uid(business, uid).unwrap_or_else(|| {
+    // Unless there is an extra digit, see FIXME of `from_uid` for details
+    error!(message = "Failed to get server region from uid", %business, %uid, %pagination.region);
+    ServerRegion::Official
+  });
+
   let records = pagination
     .list
     .into_iter()
@@ -727,7 +729,8 @@ pub async fn fetch_gacha_records(
       gacha_id: item.gacha_id,
       rank_type: item.rank_type,
       count: item.count,
-      time: item.time,
+      // HACK: This is already the server time, just need to set the server time zone according to uid
+      time: item.time.assume_offset(server_region.time_zone()),
       lang: item.lang,
       name: item.name,
       item_type: item.item_type,

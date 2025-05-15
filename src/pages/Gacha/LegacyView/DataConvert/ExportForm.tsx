@@ -1,5 +1,5 @@
 import React, { MouseEventHandler, useCallback, useMemo } from 'react'
-import { Button, Field, Input, Radio, RadioGroup, makeStyles, tokens } from '@fluentui/react-components'
+import { Button, Field, Input, Radio, RadioGroup, Switch, makeStyles, tokens } from '@fluentui/react-components'
 import { AttachRegular } from '@fluentui/react-icons'
 import { useImmer } from 'use-immer'
 import { ExportGachaRecordsArgs, exportGachaRecords } from '@/api/commands/business'
@@ -77,11 +77,16 @@ export default function GachaLegacyViewDataConvertExportForm (props: Props) {
   const i18n = useI18n()
   const notifier = useNotifier()
 
-  const [{ folder, folderError, format, formatLegacyUigfVersion, busy }, produce] = useImmer({
+  const [{
+    folder, folderError,
+    format, formatLegacyUigfVersion, formatUigfMinimized,
+    busy,
+  }, produce] = useImmer({
     folder: null as string | null,
     folderError: null as string | null,
     format: supportedFormats[0],
     formatLegacyUigfVersion: LegacyUigfVersions[0] as LegacyUigfVersion,
+    formatUigfMinimized: false,
     busy: false,
   })
 
@@ -107,7 +112,6 @@ export default function GachaLegacyViewDataConvertExportForm (props: Props) {
 
     const accountUid = selectedAccount.uid
     const accountLocale = firstGachaRecord.lang
-    const regionTimeZone = 0 // TODO: timezone
     const exportTime = new Date()
 
     let exporter: ExportGachaRecordsArgs['exporter']
@@ -116,8 +120,9 @@ export default function GachaLegacyViewDataConvertExportForm (props: Props) {
         exporter = {
           [format]: {
             businesses: [business],
-            accounts: { [accountUid]: [regionTimeZone, accountLocale] },
+            accounts: { [accountUid]: accountLocale },
             exportTime,
+            minimized: formatUigfMinimized,
           },
         }
         break
@@ -128,7 +133,6 @@ export default function GachaLegacyViewDataConvertExportForm (props: Props) {
             accountLocale,
             accountUid,
             exportTime,
-            regionTimeZone,
           },
         }
         break
@@ -139,7 +143,6 @@ export default function GachaLegacyViewDataConvertExportForm (props: Props) {
             accountLocale,
             accountUid,
             exportTime,
-            regionTimeZone,
           },
         }
         break
@@ -185,7 +188,7 @@ export default function GachaLegacyViewDataConvertExportForm (props: Props) {
         output: outputFile,
       }),
     })
-  }, [business, firstGachaRecord, folder, format, formatLegacyUigfVersion, i18n, notifier, onSuccess, produce, selectedAccount])
+  }, [business, firstGachaRecord, folder, format, formatLegacyUigfVersion, formatUigfMinimized, i18n, notifier, onSuccess, produce, selectedAccount])
 
   if (!firstGachaRecord) {
     // TODO: Tell the user that there are no records and cannot be exported.
@@ -269,6 +272,27 @@ export default function GachaLegacyViewDataConvertExportForm (props: Props) {
               />
             ))}
           </RadioGroup>
+        </Field>
+      )}
+      {format === 'Uigf' && (
+        <Field
+          size="large"
+          label={<Locale mapping={['Pages.Gacha.LegacyView.DataConvert.ExportForm.UigfMinimized.Label']} />}
+          validationMessage={<Locale mapping={['Pages.Gacha.LegacyView.DataConvert.ExportForm.UigfMinimized.Info']} />}
+          validationState="warning"
+        >
+          <Switch
+            labelPosition="after"
+            label={<Locale mapping={
+              ['Pages.Gacha.LegacyView.DataConvert.ExportForm.UigfMinimized.State',
+                { context: String(formatUigfMinimized) },
+              ]} />}
+            checked={formatUigfMinimized}
+            onChange={(_, data) => produce((draft) => {
+              draft.formatUigfMinimized = data.checked
+            })}
+            disabled={busy}
+          />
         </Field>
       )}
       <div className={styles.actions}>

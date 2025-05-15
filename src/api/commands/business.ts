@@ -1,5 +1,4 @@
 import { DetailedError, isDetailedError } from '@/api/error'
-import { InvokeOptions } from '@/api/invoke'
 import { Account } from '@/interfaces/Account'
 import { Business, BusinessRegion, GenshinImpact } from '@/interfaces/Business'
 import { GachaRecord, GachaTypeAndLastEndIdMappings, PrettizedGachaRecords, PrettyCategory } from '@/interfaces/GachaRecord'
@@ -21,7 +20,7 @@ export interface NativeIOError {
   message: string
 }
 
-// Data Folder
+// #region: Data Folder
 
 const NamedDataFolderError = 'DataFolderError' as const
 
@@ -61,10 +60,12 @@ export type LocateDataFolderArgs<T extends Business> = NonNullable<{
   factory: LocateDataFolderFactory
 }>
 
-export type LocateDataFolder = <T extends Business>(args: LocateDataFolderArgs<T>, options?: InvokeOptions) => Promise<DataFolder<T>>
+export type LocateDataFolder = <T extends Business>(args: LocateDataFolderArgs<T>) => Promise<DataFolder<T>>
 export const locateDataFolder: LocateDataFolder = declareCommand('business_locate_data_folder')
 
-// Gacha Url
+// #endregion
+
+// #region: Gacha Url
 
 const NamedGachaUrlError = 'GachaUrlError' as const
 
@@ -126,7 +127,7 @@ export type FromWebCachesGachaUrlArgs<T extends Business> = NonNullable<{
   expectedUid: Account['uid']
 }>
 
-export type FromWebCachesGachaUrl = <T extends Business>(args: FromWebCachesGachaUrlArgs<T>, options?: InvokeOptions) => Promise<GachaUrl<T>>
+export type FromWebCachesGachaUrl = <T extends Business>(args: FromWebCachesGachaUrlArgs<T>) => Promise<GachaUrl<T>>
 export const fromWebCachesGachaUrl: FromWebCachesGachaUrl = declareCommand('business_from_webcaches_gacha_url')
 
 export type FromDirtyGachaUrlArgs<T extends Business> = NonNullable<{
@@ -136,14 +137,17 @@ export type FromDirtyGachaUrlArgs<T extends Business> = NonNullable<{
   expectedUid: Account['uid']
 }>
 
-export type FromDirtyGachaUrl = <T extends Business>(args: FromDirtyGachaUrlArgs<T>, options?: InvokeOptions) => Promise<GachaUrl<T>>
+export type FromDirtyGachaUrl = <T extends Business>(args: FromDirtyGachaUrlArgs<T>) => Promise<GachaUrl<T>>
 export const fromDirtyGachaUrl: FromDirtyGachaUrl = declareCommand('business_from_dirty_gacha_url')
 
-// Gacha Convert
+// #endregion
+
+// #region: LegacyUigf
 
 const NamedLegacyUigfGachaRecordsWriteError = 'LegacyUigfGachaRecordsWriteError' as const
 
 export enum LegacyUigfGachaRecordsWriteErrorKind {
+  InvalidUid = 'InvalidUid',
   IncompatibleRecordBusiness = 'IncompatibleRecordBusiness',
   IncompatibleRecordOwner = 'IncompatibleRecordOwner',
   IncompatibleRecordLocale = 'IncompatibleRecordLocale',
@@ -153,6 +157,10 @@ export enum LegacyUigfGachaRecordsWriteErrorKind {
 }
 
 export type LegacyUigfGachaRecordsWriteError = DetailedError<typeof NamedLegacyUigfGachaRecordsWriteError,
+  | {
+      kind: LegacyUigfGachaRecordsWriteErrorKind.InvalidUid
+      uid: Account['uid']
+    }
   | {
       kind: LegacyUigfGachaRecordsWriteErrorKind.IncompatibleRecordBusiness
       business: Business
@@ -201,6 +209,8 @@ export enum LegacyUigfGachaRecordsReadErrorKind {
   InvalidVersion = 'InvalidVersion',
   UnsupportedVersion = 'UnsupportedVersion',
   InconsistentUid = 'InconsistentUid',
+  InvalidUid = 'InvalidUid',
+  InvalidRegionTimeZone = 'InvalidRegionTimeZone',
   RequiredField = 'RequiredField',
   MissingMetadataLocale = 'MissingMetadataLocale',
   MissingMetadataEntry = 'MissingMetadataEntry'
@@ -232,19 +242,25 @@ export type LegacyUigfGachaRecordsReadError = DetailedError<typeof NamedLegacyUi
       cursor: number // When it is 0, the info data is incorrect
     }
   | {
+      kind: LegacyUigfGachaRecordsReadErrorKind.InvalidUid
+      uid: Account['uid']
+    }
+  | {
+      kind: LegacyUigfGachaRecordsReadErrorKind.InvalidRegionTimeZone
+      value: number
+    }
+  | {
       kind: LegacyUigfGachaRecordsReadErrorKind.RequiredField
       field: string
       cursor: number // When it is 0, the info data is incorrect
     }
   | {
       kind: LegacyUigfGachaRecordsReadErrorKind.MissingMetadataLocale
-      business: Business
       locale: string
       cursor: number
     }
   | {
       kind: LegacyUigfGachaRecordsReadErrorKind.MissingMetadataEntry
-      business: Business
       locale: string
       key: string
       val: string
@@ -257,10 +273,15 @@ export function isLegacyUigfGachaRecordsReadError (error: unknown): error is Leg
     error.name === NamedLegacyUigfGachaRecordsReadError
 }
 
+// #endregion
+
+// #region: Uigf
+
 const NamedUigfGachaRecordsWriteError = 'UigfGachaRecordsWriteError' as const
 
 export enum UigfGachaRecordsWriteErrorKind {
-  MissingAccountInfo = 'MissingAccountInfo',
+  VacantAccount = 'VacantAccount',
+  InvalidUid = 'InvalidUid',
   MissingMetadataEntry = 'MissingMetadataEntry',
   FailedMappingGachaType = 'FailedMappingGachaType',
   CreateOutput = 'CreateOutput',
@@ -269,7 +290,12 @@ export enum UigfGachaRecordsWriteErrorKind {
 
 export type UigfGachaRecordsWriteError = DetailedError<typeof NamedUigfGachaRecordsWriteError,
   | {
-      kind: UigfGachaRecordsWriteErrorKind.MissingAccountInfo
+      kind: UigfGachaRecordsWriteErrorKind.VacantAccount
+      uid: Account['uid']
+    }
+  | {
+      kind: UigfGachaRecordsWriteErrorKind.InvalidUid
+      business: Business
       uid: Account['uid']
     }
   | {
@@ -308,6 +334,8 @@ export enum UigfGachaRecordsReadErrorKind {
   InvalidInput = 'InvalidInput',
   InvalidVersion = 'InvalidVersion',
   UnsupportedVersion = 'UnsupportedVersion',
+  InvalidUid = 'InvalidUid',
+  InvalidRegionTimeZone = 'InvalidRegionTimeZone',
   MissingMetadataEntry = 'MissingMetadataEntry'
 }
 
@@ -331,6 +359,16 @@ export type UigfGachaRecordsReadError = DetailedError<typeof NamedUigfGachaRecor
       allowed: string[]
     }
   | {
+      kind: UigfGachaRecordsReadErrorKind.InvalidUid
+      business: Business
+      uid: Account['uid']
+    }
+  | {
+      kind: UigfGachaRecordsReadErrorKind.InvalidRegionTimeZone
+      business: Business
+      value: number
+    }
+  | {
       kind: UigfGachaRecordsReadErrorKind.MissingMetadataEntry
       business: Business
       locale: string
@@ -345,9 +383,14 @@ export function isUigfGachaRecordsReadError (error: unknown): error is UigfGacha
     error.name === NamedUigfGachaRecordsReadError
 }
 
+// #endregion
+
+// #region: Srgf
+
 const NamedSrgfGachaRecordsWriteError = 'SrgfGachaRecordsWriteError' as const
 
 export enum SrgfGachaRecordsWriteErrorKind {
+  InvalidUid = 'InvalidUid',
   IncompatibleRecordBusiness = 'IncompatibleRecordBusiness',
   IncompatibleRecordOwner = 'IncompatibleRecordOwner',
   IncompatibleRecordLocale = 'IncompatibleRecordLocale',
@@ -356,6 +399,10 @@ export enum SrgfGachaRecordsWriteErrorKind {
 }
 
 export type SrgfGachaRecordsWriteError = DetailedError<typeof NamedSrgfGachaRecordsWriteError,
+  | {
+      kind: SrgfGachaRecordsWriteErrorKind.InvalidUid
+      uid: Account['uid']
+    }
   | {
       kind: SrgfGachaRecordsWriteErrorKind.IncompatibleRecordBusiness
       business: Business
@@ -399,6 +446,8 @@ export enum SrgfGachaRecordsReadErrorKind {
   InvalidVersion = 'InvalidVersion',
   UnsupportedVersion = 'UnsupportedVersion',
   InconsistentUid = 'InconsistentUid',
+  InvalidUid = 'InvalidUid',
+  InvalidRegionTimeZone = 'InvalidRegionTimeZone',
   MissingMetadataLocale = 'MissingMetadataLocale',
   MissingMetadataEntry = 'MissingMetadataEntry'
 }
@@ -429,14 +478,20 @@ export type SrgfGachaRecordsReadError = DetailedError<typeof NamedSrgfGachaRecor
       cursor: number // When it is 0, the info data is incorrect
     }
   | {
+      kind: SrgfGachaRecordsReadErrorKind.InvalidUid
+      uid: Account['uid']
+    }
+  | {
+      kind: SrgfGachaRecordsReadErrorKind.InvalidRegionTimeZone
+      value: number
+    }
+  | {
       kind: SrgfGachaRecordsReadErrorKind.MissingMetadataLocale
-      business: Business
       locale: string
       cursor: number
     }
   | {
       kind: SrgfGachaRecordsReadErrorKind.MissingMetadataEntry
-      business: Business
       locale: string
       key: string
       val: string
@@ -448,6 +503,10 @@ export function isSrgfGachaRecordsReadError (error: unknown): error is SrgfGacha
   return isDetailedError(error) &&
     error.name === NamedSrgfGachaRecordsReadError
 }
+
+// #endregion
+
+// #region: Gacha Convert
 
 export type ImportGachaRecordsError =
   // Because it needs to be inserted into the database
@@ -466,41 +525,6 @@ export type ExportGachaRecordsError =
   | LegacyUigfGachaRecordsWriteError
   | UigfGachaRecordsWriteError
   | SrgfGachaRecordsWriteError
-
-// Business Advanced
-
-export type CreateGachaRecordsFetcherArgs<T extends Business> = NonNullable<{
-  business: T
-  region: BusinessRegion
-  uid: Account['uid']
-  gachaUrl: string
-  gachaTypeAndLastEndIdMappings: GachaTypeAndLastEndIdMappings<T>
-  eventChannel?: string
-  saveToDatabase?: 'No' | 'Yes' | 'FullUpdate'
-  saveOnConflict?: 'Nothing' | 'Update'
-}>
-
-export type CreateGachaRecordsFetcher = <T extends Business>(args: CreateGachaRecordsFetcherArgs<T>, options?: InvokeOptions) => Promise<number>
-export const createGachaRecordsFetcher: CreateGachaRecordsFetcher = declareCommand('business_create_gacha_records_fetcher')
-
-export enum GachaRecordsFetcherFragmentKind {
-  Sleeping = 'Sleeping',
-  Ready = 'Ready',
-  Pagination = 'Pagination',
-  DataRef = 'DataRef',
-  Data = 'Data',
-  Completed = 'Completed',
-  Finished = 'Finished'
-}
-
-export type GachaRecordsFetcherFragment<T extends Business> =
-  | GachaRecordsFetcherFragmentKind.Sleeping
-  | { [GachaRecordsFetcherFragmentKind.Ready]: PrettyCategory }
-  | { [GachaRecordsFetcherFragmentKind.Pagination]: number }
-  | { [GachaRecordsFetcherFragmentKind.DataRef]: number }
-  | { [GachaRecordsFetcherFragmentKind.Data]: GachaRecord<T>[] }
-  | { [GachaRecordsFetcherFragmentKind.Completed]: PrettyCategory }
-  | GachaRecordsFetcherFragmentKind.Finished
 
 export type ImportGachaRecordsArgs = NonNullable<{
   input: string
@@ -530,23 +554,63 @@ export type ExportGachaRecordsArgs = NonNullable<{
       accountLocale: string
       accountUid: Account['uid']
       exportTime: string | Date
-      regionTimeZone: number
     } }
     | { Uigf: {
       businesses?: Business[],
-      accounts: Record<Account['uid'], [number, string]> // uid: [timezone, locale]
+      accounts: Record<Account['uid'], string> // uid: locale
       exportTime: string | Date
+      minimized?: boolean | null
     } }
     | { Srgf: {
       srgfVersion: 'v1.0'
       accountLocale: string
       accountUid: Account['uid']
       exportTime: string | Date
-      regionTimeZone: number
     } }
 }>
 
 export const exportGachaRecords = declareCommand<ExportGachaRecordsArgs, string>('business_export_gacha_records')
+
+// #endregion
+
+// #region: Gacha Records Fetcher
+
+export type CreateGachaRecordsFetcherArgs<T extends Business> = NonNullable<{
+  business: T
+  region: BusinessRegion
+  uid: Account['uid']
+  gachaUrl: string
+  gachaTypeAndLastEndIdMappings: GachaTypeAndLastEndIdMappings<T>
+  eventChannel?: string
+  saveToDatabase?: 'No' | 'Yes' | 'FullUpdate'
+  saveOnConflict?: 'Nothing' | 'Update'
+}>
+
+export type CreateGachaRecordsFetcher = <T extends Business>(args: CreateGachaRecordsFetcherArgs<T>) => Promise<number>
+export const createGachaRecordsFetcher: CreateGachaRecordsFetcher = declareCommand('business_create_gacha_records_fetcher')
+
+export enum GachaRecordsFetcherFragmentKind {
+  Sleeping = 'Sleeping',
+  Ready = 'Ready',
+  Pagination = 'Pagination',
+  DataRef = 'DataRef',
+  Data = 'Data',
+  Completed = 'Completed',
+  Finished = 'Finished'
+}
+
+export type GachaRecordsFetcherFragment<T extends Business> =
+  | GachaRecordsFetcherFragmentKind.Sleeping
+  | { [GachaRecordsFetcherFragmentKind.Ready]: PrettyCategory }
+  | { [GachaRecordsFetcherFragmentKind.Pagination]: number }
+  | { [GachaRecordsFetcherFragmentKind.DataRef]: number }
+  | { [GachaRecordsFetcherFragmentKind.Data]: GachaRecord<T>[] }
+  | { [GachaRecordsFetcherFragmentKind.Completed]: PrettyCategory }
+  | GachaRecordsFetcherFragmentKind.Finished
+
+// #endregion
+
+// #region: Prettized Gacha Records
 
 const NamedPrettyGachaRecordsError = 'PrettyGachaRecordsError' as const
 
@@ -565,8 +629,10 @@ export function isPrettyGachaRecordsError (error: unknown): error is PrettyGacha
 
 export type FindAndPrettyGachaRecordsArgs<T extends Business> = FindGachaRecordsByBusinessAndUidArgs<T>
 
-export type FindAndPrettyGachaRecords = <T extends Business>(args: FindAndPrettyGachaRecordsArgs<T>, options?: InvokeOptions) => Promise<PrettizedGachaRecords<T>>
+export type FindAndPrettyGachaRecords = <T extends Business>(args: FindAndPrettyGachaRecordsArgs<T>) => Promise<PrettizedGachaRecords<T>>
 export const findAndPrettyGachaRecords: FindAndPrettyGachaRecords = declareCommand('business_find_and_pretty_gacha_records')
+
+// #endregion
 
 // Export
 

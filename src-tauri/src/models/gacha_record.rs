@@ -1,4 +1,6 @@
 use serde::{Deserialize, Serialize};
+use time::OffsetDateTime;
+use time::serde::rfc3339;
 
 use super::Business;
 
@@ -14,7 +16,7 @@ use super::Business;
 // | rank_type  | 3, 4, 5                      | <-                      | 2, 3, 4                      |
 // | count      | 1                            | <-                      | <-                           |
 // | lang       | en-us                        | <-                      | <-                           |
-// | time       | 2023-01-01 00:00:00          | <-                      | <-                           |
+// | time       | 2023-01-01T00:00:00±??:00    | <-                      | <-                           |
 // | name       | Some                         | <-                      | <-                           |
 // | item_type  | [Character, Weapon]          | [Character, Light Cone] | [Agents, W-Engines, Bangboo] |
 // | item_id    | Empty                        | Some                    | Some                         |
@@ -38,7 +40,8 @@ pub struct GachaRecord {
   pub rank_type: u32,
   pub count: u32,
   pub lang: String,
-  pub time: String,
+  #[serde(with = "rfc3339")]
+  pub time: OffsetDateTime,
   pub name: String,
   pub item_type: String,
   pub item_id: Option<String>,

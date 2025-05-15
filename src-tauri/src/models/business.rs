@@ -7,6 +7,8 @@ use std::sync::LazyLock;
 use num_enum::{IntoPrimitive, TryFromPrimitive};
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
+use time::UtcOffset;
+use time::macros::offset;
 
 /// Business
 
@@ -220,6 +222,14 @@ impl ServerRegion {
         }
       }
       _ => None,
+    }
+  }
+
+  pub const fn time_zone(&self) -> UtcOffset {
+    match self {
+      Self::America => offset!(-5),
+      Self::Europe => offset!(+1),
+      Self::Official | Self::Channel | Self::Asia | Self::Cht => offset!(+8),
     }
   }
 }

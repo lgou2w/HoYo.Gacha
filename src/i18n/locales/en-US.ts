@@ -266,6 +266,12 @@ export default {
               LegacyUigfVersion: {
                 Label: 'Version',
               },
+              UigfMinimized: {
+                Label: 'Minimize Data',
+                Info: 'When minimizing data is enabled, some optional fields are no longer exported.',
+                State_true: 'Enable',
+                State_false: 'Disable',
+              },
               CancelBtn: 'Cancel',
               SubmitBtn: 'Export',
               Success: {

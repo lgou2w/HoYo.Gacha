@@ -8,15 +8,13 @@ use std::sync::LazyLock;
 
 use regex::Regex;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
-use time::OffsetDateTime;
-use time::format_description::FormatItem;
-use time::macros::format_description;
 use time::serde::rfc3339;
+use time::{OffsetDateTime, PrimitiveDateTime, UtcOffset};
 
-use crate::business::{GachaMetadata, GachaMetadataEntryRef};
+use crate::business::{GACHA_TIME_FORMAT, GachaMetadata, GachaMetadataEntryRef, gacha_time_format};
 use crate::consts;
 use crate::error::{Error, ErrorDetails, declare_error_kinds};
-use crate::models::{Business, GachaRecord};
+use crate::models::{Business, GachaRecord, ServerRegion};
 use crate::utilities::serde_helper;
 
 // region: Declares
@@ -148,6 +146,11 @@ const FIELD_REGION_TIME_ZONE: &str = "region_time_zone";
 declare_error_kinds! {
   #[derive(Debug, thiserror::Error)]
   LegacyUigfGachaRecordsWriteError {
+    #[error("Invalid business uid: {uid}")]
+    InvalidUid {
+      uid: u32
+    },
+
     #[error("Incompatible record business: {business}, id: {id}, name: {name}, cursor: {cursor}")]
     IncompatibleRecordBusiness {
       business: Business,
@@ -227,22 +230,30 @@ declare_error_kinds! {
       cursor: usize
     },
 
+    #[error("Invalid business uid: {uid}")]
+    InvalidUid {
+      uid: u32
+    },
+
+    #[error("Invalid region time zone: {value}")]
+    InvalidRegionTimeZone {
+      value: i8
+    },
+
     #[error("Required field missing: {field}, cursor: {cursor}")]
     RequiredField {
       field: &'static str,
       cursor: usize
     },
 
-    #[error("Missing metadata locale: {business}, locale: {locale}, cursor: {cursor}")]
+    #[error("Missing metadata locale: {locale}, cursor: {cursor}")]
     MissingMetadataLocale {
-      business: Business,
       locale: String,
       cursor: usize
     },
 
-    #[error("Missing metadata entry: {business}, locale: {locale}, {key}: {val}, cursor: {cursor}")]
+    #[error("Missing metadata entry: {key}: {val}, locale: {locale}, cursor: {cursor}")]
     MissingMetadataEntry {
-      business: Business,
       locale: String,
       key: &'static str,
       val: String,
@@ -303,7 +314,8 @@ pub struct LegacyUigfItem {
     default = "Option::default"
   )]
   pub count: Option<u32>,
-  pub time: String,
+  #[serde(with = "gacha_time_format")]
+  pub time: PrimitiveDateTime,
   // UIGF v2.2: required
   // UIGF v2.3: nullable
   pub name: Option<String>,
@@ -339,7 +351,6 @@ pub struct LegacyUigfGachaRecordsWriter {
   pub account_uid: u32,
   #[serde(with = "rfc3339")]
   pub export_time: OffsetDateTime,
-  pub region_time_zone: i8,
 }
 
 impl GachaRecordsWriter for LegacyUigfGachaRecordsWriter {
@@ -353,27 +364,27 @@ impl GachaRecordsWriter for LegacyUigfGachaRecordsWriter {
   ) -> Result<PathBuf, Self::Error> {
     // Legacy UIGF Gacha Records only support: Genshin Impact
     const BUSINESS: Business = Business::GenshinImpact;
-    const TIME_FORMAT: &[FormatItem<'static>] =
-      format_description!("[year]-[month]-[day] [hour]:[minute]:[second]");
 
     let Self {
       uigf_version,
       account_locale,
       account_uid,
       export_time,
-      region_time_zone,
     } = self;
+
+    let server_region = ServerRegion::from_uid(BUSINESS, *account_uid)
+      .ok_or(LegacyUigfGachaRecordsWriteErrorKind::InvalidUid { uid: *account_uid })?;
 
     let mut uigf = LegacyUigf {
       info: LegacyUigfInfo {
         uid: *account_uid,
         lang: Some(account_locale.to_owned()),
-        export_time: Some(export_time.format(TIME_FORMAT).unwrap()),
+        export_time: Some(export_time.format(GACHA_TIME_FORMAT).unwrap()),
         export_timestamp: Some(export_time.unix_timestamp() as _),
         export_app: Some(consts::ID.to_owned()),
         export_app_version: Some(consts::VERSION_WITH_PREFIX.to_owned()),
         uigf_version: uigf_version.to_string(),
-        region_time_zone: Some(*region_time_zone),
+        region_time_zone: Some(server_region.time_zone().whole_hours()),
       },
       list: Vec::with_capacity(records.len()),
     };
@@ -417,13 +428,17 @@ impl GachaRecordsWriter for LegacyUigfGachaRecordsWriter {
         },
       )?;
 
+      // No need offset, because `region_time_zone` is already there.
+      let time = record.time;
+      let time = PrimitiveDateTime::new(time.date(), time.time());
+
       // Always fill in these optional fields to ensure compatibility
       uigf.list.push(LegacyUigfItem {
         id: record.id,
         uid: Some(record.uid),
         gacha_type: record.gacha_type,
         count: Some(record.count),
-        time: record.time, // TODO: region_time_zone
+        time,
         name: Some(record.name),
         lang: Some(record.lang),
         item_id: record.item_id,
@@ -509,6 +524,9 @@ impl GachaRecordsReader for LegacyUigfGachaRecordsReader {
       })?;
     }
 
+    let server_region = ServerRegion::from_uid(BUSINESS, *expected_uid)
+      .ok_or(LegacyUigfGachaRecordsReadErrorKind::InvalidUid { uid: *expected_uid })?;
+
     let is_v2_2 = uigf_version == UigfVersion::V2_2;
     let is_v2_3 = uigf_version == UigfVersion::V2_3;
     let is_v2_4 = uigf_version == UigfVersion::V2_4;
@@ -519,6 +537,14 @@ impl GachaRecordsReader for LegacyUigfGachaRecordsReader {
         cursor: 0, // When it is 0, the info data is incorrect
       })?;
     }
+
+    let server_time_zone = server_region.time_zone();
+    let target_time_zone = if let Some(value) = uigf.info.region_time_zone {
+      UtcOffset::from_hms(value, 0, 0)
+        .map_err(|_| LegacyUigfGachaRecordsReadErrorKind::InvalidRegionTimeZone { value })?
+    } else {
+      server_time_zone
+    };
 
     let mut records = Vec::with_capacity(uigf.list.len());
     for (cursor, item) in uigf.list.into_iter().enumerate() {
@@ -564,7 +590,6 @@ impl GachaRecordsReader for LegacyUigfGachaRecordsReader {
 
       let metadata_locale = metadata.obtain(BUSINESS, &locale).ok_or_else(|| {
         LegacyUigfGachaRecordsReadErrorKind::MissingMetadataLocale {
-          business: BUSINESS,
           locale: locale.clone(),
           cursor,
         }
@@ -577,7 +602,6 @@ impl GachaRecordsReader for LegacyUigfGachaRecordsReader {
       }
       .ok_or_else(
         || LegacyUigfGachaRecordsReadErrorKind::MissingMetadataEntry {
-          business: BUSINESS,
           locale: locale.clone(),
           key: if is_v2_2 { FIELD_NAME } else { FIELD_ITEM_ID },
           val: if is_v2_2 {
@@ -600,7 +624,10 @@ impl GachaRecordsReader for LegacyUigfGachaRecordsReader {
         rank_type: item.rank_type.unwrap_or(metadata_entry.rank as _),
         count: item.count.unwrap_or(1),
         lang: locale,
-        time: item.time, // TODO: uigf.info.region_time_zone
+        time: item
+          .time
+          .assume_offset(target_time_zone)
+          .to_offset(server_time_zone),
         name: item.name.unwrap_or(metadata_entry.name.to_owned()),
         item_type: item
           .item_type
@@ -620,8 +647,15 @@ impl GachaRecordsReader for LegacyUigfGachaRecordsReader {
 declare_error_kinds! {
   #[derive(Debug, thiserror::Error)]
   UigfGachaRecordsWriteError {
-    #[error("Missing account information provided: {uid}")]
-    MissingAccountInfo {
+    #[error("No account information provided: {business}, uid: {uid}")]
+    VacantAccount {
+      business: Business,
+      uid: u32
+    },
+
+    #[error("Invalid business uid: {business}, uid: {uid}")]
+    InvalidUid {
+      business: Business,
       uid: u32
     },
 
@@ -684,6 +718,18 @@ declare_error_kinds! {
       allowed: &'static [UigfVersion]
     },
 
+    #[error("Invalid business uid: {business}, uid: {uid}")]
+    InvalidUid {
+      business: Business,
+      uid: u32
+    },
+
+    #[error("Invalid region time zone: {business}, time zone: {value}")]
+    InvalidRegionTimeZone {
+      business: Business,
+      value: i8
+    },
+
     #[error("Missing metadata entry: {business}, locale: {locale}, {key}: {val}, cursor: {cursor}")]
     MissingMetadataEntry {
       business: Business,
@@ -699,11 +745,11 @@ declare_error_kinds! {
 pub struct Uigf {
   pub info: UigfInfo,
   #[serde(default = "Option::default", skip_serializing_if = "Option::is_none")]
-  pub hk4e: Option<Vec<UigfProject<UigfHk4eItem>>>,
+  pub hk4e: Option<Vec<UigfEntry<UigfHk4eItem>>>,
   #[serde(default = "Option::default", skip_serializing_if = "Option::is_none")]
-  pub hkrpg: Option<Vec<UigfProject<UigfHkrpgItem>>>,
+  pub hkrpg: Option<Vec<UigfEntry<UigfHkrpgItem>>>,
   #[serde(default = "Option::default", skip_serializing_if = "Option::is_none")]
-  pub nap: Option<Vec<UigfProject<UigfNapItem>>>,
+  pub nap: Option<Vec<UigfEntry<UigfNapItem>>>,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -719,13 +765,14 @@ pub struct UigfInfo {
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
-pub struct UigfProject<Item> {
+pub struct UigfEntry<Item> {
   #[serde(
     deserialize_with = "serde_helper::de::string_as_number",
     serialize_with = "serde_helper::ser::number_as_string"
   )]
   pub uid: u32,
   pub timezone: i8,
+  #[serde(default = "Option::default", skip_serializing_if = "Option::is_none")]
   pub lang: Option<String>,
   pub list: Vec<Item>,
 }
@@ -750,7 +797,8 @@ pub struct UigfHk4eItem {
     skip_serializing_if = "Option::is_none"
   )]
   pub count: Option<u32>,
-  pub time: String,
+  #[serde(with = "gacha_time_format")]
+  pub time: PrimitiveDateTime,
   #[serde(default = "Option::default", skip_serializing_if = "Option::is_none")]
   pub item_type: Option<String>,
   #[serde(
@@ -783,7 +831,8 @@ pub struct UigfHkrpgItem {
     skip_serializing_if = "Option::is_none"
   )]
   pub count: Option<u32>,
-  pub time: String,
+  #[serde(with = "gacha_time_format")]
+  pub time: PrimitiveDateTime,
   #[serde(default = "Option::default", skip_serializing_if = "Option::is_none")]
   pub item_type: Option<String>,
   #[serde(
@@ -818,7 +867,8 @@ pub struct UigfNapItem {
     skip_serializing_if = "Option::is_none"
   )]
   pub count: Option<u32>,
-  pub time: String,
+  #[serde(with = "gacha_time_format")]
+  pub time: PrimitiveDateTime,
   #[serde(default = "Option::default", skip_serializing_if = "Option::is_none")]
   pub item_type: Option<String>,
   #[serde(
@@ -839,9 +889,11 @@ impl Uigf {
 #[serde(rename_all = "camelCase")]
 pub struct UigfGachaRecordsWriter {
   pub businesses: Option<HashSet<Business>>, // None for all businesses
-  pub accounts: HashMap<u32, (i8, String)>,  // uid -> (timezone, lang)
+  pub accounts: HashMap<u32, String>,        // uid -> (timezone, locale)
   #[serde(with = "rfc3339")]
   pub export_time: OffsetDateTime,
+  /// When `true`, all `Option` fields have a value of `None`.
+  pub minimized: Option<bool>,
 }
 
 impl GachaRecordsWriter for UigfGachaRecordsWriter {
@@ -857,7 +909,10 @@ impl GachaRecordsWriter for UigfGachaRecordsWriter {
       businesses,
       accounts,
       export_time,
+      minimized,
     } = self;
+
+    let minimized = minimized.unwrap_or_default();
 
     let mut uigf = Uigf {
       info: UigfInfo {
@@ -914,14 +969,26 @@ impl GachaRecordsWriter for UigfGachaRecordsWriter {
     };
 
     macro_rules! convert {
-      ($business:ident, $project:ident, $item_convert:expr) => {
-        let mut projects = Vec::with_capacity($project.len());
-        for (uid, records) in $project {
+      ($business:ident, $entry:ident, $item_convert:expr) => {
+        let mut entries = Vec::with_capacity($entry.len());
+
+        for (uid, records) in $entry {
           // Ensure that the account information is provided
-          let (timezone, lang) = accounts
-            .get(&uid)
-            .cloned()
-            .ok_or(UigfGachaRecordsWriteErrorKind::MissingAccountInfo { uid })?;
+          let locale =
+            accounts
+              .get(&uid)
+              .cloned()
+              .ok_or(UigfGachaRecordsWriteErrorKind::VacantAccount {
+                business: Business::$business,
+                uid,
+              })?;
+
+          let server_region = ServerRegion::from_uid(Business::$business, uid).ok_or(
+            UigfGachaRecordsWriteErrorKind::InvalidUid {
+              business: Business::$business,
+              uid,
+            },
+          )?;
 
           let mut list = Vec::with_capacity(records.len());
           for (cursor, record) in records.into_iter().enumerate() {
@@ -958,19 +1025,19 @@ impl GachaRecordsWriter for UigfGachaRecordsWriter {
                 cursor,
               })?;
 
-            let item = $item_convert(cursor, record, metadata_entry)?;
+            let item = $item_convert(cursor, record, metadata_entry, minimized)?;
             list.push(item);
           }
 
-          projects.push(UigfProject {
+          entries.push(UigfEntry {
             uid,
-            timezone,
-            lang: Some(lang),
+            timezone: server_region.time_zone().whole_hours(),
+            lang: if minimized { None } else { Some(locale) },
             list,
           });
         }
 
-        uigf.$project.replace(projects);
+        uigf.$entry.replace(entries);
       };
     }
 
@@ -978,7 +1045,14 @@ impl GachaRecordsWriter for UigfGachaRecordsWriter {
       convert!(
         GenshinImpact,
         hk4e,
-        |cursor: usize, record: GachaRecord, metadata_entry: GachaMetadataEntryRef<'_>| {
+        |cursor: usize,
+         record: GachaRecord,
+         metadata_entry: GachaMetadataEntryRef<'_>,
+         minimized: bool| {
+          // No need offset, because `timezone` is already there.
+          let time = record.time;
+          let time = PrimitiveDateTime::new(time.date(), time.time());
+
           Result::<_, Self::Error>::Ok(UigfHk4eItem {
             uigf_gacha_type: *UIGF_GACHA_TYPE_MAPPINGS.get(&record.gacha_type).ok_or(
               UigfGachaRecordsWriteErrorKind::FailedMappingGachaType {
@@ -988,10 +1062,18 @@ impl GachaRecordsWriter for UigfGachaRecordsWriter {
             )?,
             gacha_type: record.gacha_type,
             item_id: record.item_id.unwrap_or(metadata_entry.id.to_owned()),
-            count: Some(record.count),
-            time: record.time,
-            item_type: Some(metadata_entry.category_name.to_owned()),
-            rank_type: Some(record.rank_type),
+            count: if minimized { None } else { Some(record.count) },
+            time,
+            item_type: if minimized {
+              None
+            } else {
+              Some(metadata_entry.category_name.to_owned())
+            },
+            rank_type: if minimized {
+              None
+            } else {
+              Some(record.rank_type)
+            },
             id: record.id,
           })
         }
@@ -1002,7 +1084,10 @@ impl GachaRecordsWriter for UigfGachaRecordsWriter {
       convert!(
         HonkaiStarRail,
         hkrpg,
-        |cursor: usize, record: GachaRecord, metadata_entry: GachaMetadataEntryRef<'_>| {
+        |cursor: usize,
+         record: GachaRecord,
+         metadata_entry: GachaMetadataEntryRef<'_>,
+         minimized: bool| {
           // HACK: In 'Honkai: Star Rail' business,
           //   the gacha_id value of the Record must exist.
           //   Unless the user manually modifies the database record
@@ -1010,14 +1095,26 @@ impl GachaRecordsWriter for UigfGachaRecordsWriter {
             panic!("Missing gacha_id in the record: {record:?}, cursor: {cursor}")
           });
 
+          // No need offset, because `timezone` is already there.
+          let time = record.time;
+          let time = PrimitiveDateTime::new(time.date(), time.time());
+
           Result::<_, Self::Error>::Ok(UigfHkrpgItem {
             gacha_id,
             gacha_type: record.gacha_type,
             item_id: record.item_id.unwrap_or(metadata_entry.id.to_owned()),
-            count: Some(record.count),
-            time: record.time,
-            item_type: Some(record.item_type),
-            rank_type: Some(record.rank_type),
+            count: if minimized { None } else { Some(record.count) },
+            time,
+            item_type: if minimized {
+              None
+            } else {
+              Some(metadata_entry.category_name.to_owned())
+            },
+            rank_type: if minimized {
+              None
+            } else {
+              Some(record.rank_type)
+            },
             id: record.id,
           })
         }
@@ -1028,15 +1125,30 @@ impl GachaRecordsWriter for UigfGachaRecordsWriter {
       convert!(
         ZenlessZoneZero,
         nap,
-        |_: usize, record: GachaRecord, metadata_entry: GachaMetadataEntryRef<'_>| {
+        |_: usize,
+         record: GachaRecord,
+         metadata_entry: GachaMetadataEntryRef<'_>,
+         minimized: bool| {
+          // No need offset, because `timezone` is already there.
+          let time = record.time;
+          let time = PrimitiveDateTime::new(time.date(), time.time());
+
           Result::<_, Self::Error>::Ok(UigfNapItem {
             gacha_id: record.gacha_id,
             gacha_type: record.gacha_type,
             item_id: record.item_id.unwrap_or(metadata_entry.id.to_owned()),
-            count: Some(record.count),
-            time: record.time,
-            item_type: Some(record.item_type),
-            rank_type: Some(record.rank_type),
+            count: if minimized { None } else { Some(record.count) },
+            time,
+            item_type: if minimized {
+              None
+            } else {
+              Some(metadata_entry.category_name.to_owned())
+            },
+            rank_type: if minimized {
+              None
+            } else {
+              Some(record.rank_type)
+            },
             id: record.id,
           })
         }
@@ -1131,26 +1243,39 @@ impl GachaRecordsReader for UigfGachaRecordsReader {
 
     // Calculate the total number of records
     #[inline]
-    fn sum_vec_project<T>(v: Option<&Vec<UigfProject<T>>>) -> usize {
+    fn sum_vec_entry<T>(v: Option<&Vec<UigfEntry<T>>>) -> usize {
       v.map(|v| v.len()).unwrap_or(0)
     }
 
     let mut records = Vec::with_capacity(
-      sum_vec_project(hk4e.as_ref())
-        + sum_vec_project(hkrpg.as_ref())
-        + sum_vec_project(nap.as_ref()),
+      sum_vec_entry(hk4e.as_ref()) + sum_vec_entry(hkrpg.as_ref()) + sum_vec_entry(nap.as_ref()),
     );
 
     macro_rules! convert {
-      ($business:ident, $project:ident, $gacha_id:expr) => {
-        for project in $project {
-          // Skip the project if the account is not expected
-          let Some(locale) = accounts.get(&project.uid) else {
+      ($business:ident, $entry:ident, $gacha_id:expr) => {
+        for entry in $entry {
+          // Skip the entry if the account is not expected
+          let Some(locale) = accounts.get(&entry.uid) else {
             continue;
           };
 
-          let locale = project.lang.unwrap_or(locale.to_owned());
-          for (cursor, item) in project.list.into_iter().enumerate() {
+          let server_region = ServerRegion::from_uid(Business::$business, entry.uid).ok_or(
+            UigfGachaRecordsReadErrorKind::InvalidUid {
+              business: Business::$business,
+              uid: entry.uid,
+            },
+          )?;
+
+          let server_time_zone = server_region.time_zone();
+          let target_time_zone = UtcOffset::from_hms(entry.timezone, 0, 0).map_err(|_| {
+            UigfGachaRecordsReadErrorKind::InvalidRegionTimeZone {
+              business: Business::$business,
+              value: entry.timezone,
+            }
+          })?;
+
+          let locale = entry.lang.unwrap_or(locale.to_owned());
+          for (cursor, item) in entry.list.into_iter().enumerate() {
             // Because the cursor of the user's record starts at 1
             let cursor = cursor + 1;
 
@@ -1168,14 +1293,17 @@ impl GachaRecordsReader for UigfGachaRecordsReader {
             let gacha_id = $gacha_id(&item);
             records.push(GachaRecord {
               business: Business::$business,
-              uid: project.uid,
+              uid: entry.uid,
               id: item.id,
               gacha_type: item.gacha_type,
               gacha_id,
               rank_type: item.rank_type.unwrap_or(metadata_entry.rank as _),
               count: item.count.unwrap_or(1),
               lang: locale.clone(),
-              time: item.time, // TODO: project.timezone
+              time: item
+                .time
+                .assume_offset(target_time_zone)
+                .to_offset(server_time_zone),
               name: metadata_entry.name.to_owned(),
               item_type: item
                 .item_type
@@ -1216,6 +1344,11 @@ impl GachaRecordsReader for UigfGachaRecordsReader {
 declare_error_kinds! {
   #[derive(Debug, thiserror::Error)]
   SrgfGachaRecordsWriteError {
+    #[error("Invalid business uid: {uid}")]
+    InvalidUid {
+      uid: u32
+    },
+
     #[error("Incompatible record business: {business}, id: {id}, name: {name}, cursor: {cursor}")]
     IncompatibleRecordBusiness {
       business: Business,
@@ -1289,16 +1422,24 @@ declare_error_kinds! {
       cursor: usize
     },
 
-    #[error("Missing metadata locale: {business}, locale: {locale}, cursor: {cursor}")]
+    #[error("Invalid business uid: {uid}")]
+    InvalidUid {
+      uid: u32
+    },
+
+    #[error("Invalid region time zone: {value}")]
+    InvalidRegionTimeZone {
+      value: i8
+    },
+
+    #[error("Missing metadata locale: {locale}, cursor: {cursor}")]
     MissingMetadataLocale {
-      business: Business,
       locale: String,
       cursor: usize
     },
 
-    #[error("Missing metadata entry: {business}, locale: {locale}, {key}: {val}, cursor: {cursor}")]
+    #[error("Missing metadata entry: {key}: {val}, locale: {locale}, cursor: {cursor}")]
     MissingMetadataEntry {
-      business: Business,
       locale: String,
       key: &'static str,
       val: String,
@@ -1355,7 +1496,8 @@ pub struct SrgfItem {
     skip_serializing_if = "Option::is_none"
   )]
   pub count: Option<u32>,
-  pub time: String,
+  #[serde(with = "gacha_time_format")]
+  pub time: PrimitiveDateTime,
   pub name: Option<String>,
   pub lang: Option<String>,
   pub item_id: String,
@@ -1382,7 +1524,6 @@ pub struct SrgfGachaRecordsWriter {
   pub account_uid: u32,
   #[serde(with = "rfc3339")]
   pub export_time: OffsetDateTime,
-  pub region_time_zone: i8,
 }
 
 impl GachaRecordsWriter for SrgfGachaRecordsWriter {
@@ -1402,8 +1543,10 @@ impl GachaRecordsWriter for SrgfGachaRecordsWriter {
       account_locale,
       account_uid,
       export_time,
-      region_time_zone,
     } = self;
+
+    let server_region = ServerRegion::from_uid(BUSINESS, *account_uid)
+      .ok_or(SrgfGachaRecordsWriteErrorKind::InvalidUid { uid: *account_uid })?;
 
     let mut srgf = Srgf {
       info: SrgfInfo {
@@ -1413,7 +1556,7 @@ impl GachaRecordsWriter for SrgfGachaRecordsWriter {
         export_app: Some(consts::ID.to_owned()),
         export_app_version: Some(consts::VERSION_WITH_PREFIX.to_owned()),
         srgf_version: srgf_version.to_string(),
-        region_time_zone: *region_time_zone,
+        region_time_zone: server_region.time_zone().whole_hours(),
       },
       list: Vec::with_capacity(records.len()),
     };
@@ -1454,13 +1597,17 @@ impl GachaRecordsWriter for SrgfGachaRecordsWriter {
       let gacha_id = record.gacha_id.unwrap();
       let item_id = record.item_id.unwrap();
 
+      // No need offset, because `region_time_zone` is already there.
+      let time = record.time;
+      let time = PrimitiveDateTime::new(time.date(), time.time());
+
       srgf.list.push(SrgfItem {
         id: record.id,
         uid: Some(record.uid),
         gacha_id,
         gacha_type: record.gacha_type,
         count: Some(record.count),
-        time: record.time, // TODO: region_time_zone
+        time,
         name: Some(record.name),
         lang: Some(record.lang),
         item_id,
@@ -1539,6 +1686,16 @@ impl GachaRecordsReader for SrgfGachaRecordsReader {
       })?;
     }
 
+    let server_region = ServerRegion::from_uid(BUSINESS, *expected_uid)
+      .ok_or(SrgfGachaRecordsReadErrorKind::InvalidUid { uid: *expected_uid })?;
+
+    let server_time_zone = server_region.time_zone();
+    let target_time_zone = UtcOffset::from_hms(srgf.info.region_time_zone, 0, 0).map_err(|_| {
+      SrgfGachaRecordsReadErrorKind::InvalidRegionTimeZone {
+        value: srgf.info.region_time_zone,
+      }
+    })?;
+
     let mut records = Vec::with_capacity(srgf.list.len());
     for (cursor, item) in srgf.list.into_iter().enumerate() {
       // Because the cursor of the user's record starts at 1
@@ -1558,7 +1715,6 @@ impl GachaRecordsReader for SrgfGachaRecordsReader {
 
       let metadata_locale = metadata.obtain(BUSINESS, &locale).ok_or_else(|| {
         SrgfGachaRecordsReadErrorKind::MissingMetadataLocale {
-          business: BUSINESS,
           locale: locale.clone(),
           cursor,
         }
@@ -1567,7 +1723,6 @@ impl GachaRecordsReader for SrgfGachaRecordsReader {
       let metadata_entry = metadata_locale
         .entry_from_id(&item.item_id)
         .ok_or_else(|| SrgfGachaRecordsReadErrorKind::MissingMetadataEntry {
-          business: BUSINESS,
           locale: locale.clone(),
           key: FIELD_ITEM_ID,
           val: item.item_id.clone(),
@@ -1583,7 +1738,10 @@ impl GachaRecordsReader for SrgfGachaRecordsReader {
         rank_type: item.rank_type.unwrap_or(metadata_entry.rank as _),
         count: item.count.unwrap_or(1),
         lang: locale,
-        time: item.time, // TODO: srgf.info.region_time_zone
+        time: item
+          .time
+          .assume_offset(target_time_zone)
+          .to_offset(server_time_zone),
         name: item.name.unwrap_or(metadata_entry.name.to_owned()),
         item_type: item
           .item_type
@@ -1677,6 +1835,7 @@ impl GachaRecordsExporter {
 #[cfg(test)]
 mod tests {
   use io::Cursor;
+  use time::macros::datetime;
 
   use super::*;
 
@@ -1732,7 +1891,7 @@ mod tests {
         rank_type: 5,
         count: 1,
         lang: "en-us".to_owned(),
-        time: "2023-01-01 00:00:00".to_owned(),
+        time: datetime!(2023-01-01 00:00:00 +8),
         name: "Kamisato Ayaka".to_owned(),
         item_type: "Character".to_owned(),
         item_id: Some("10000002".to_owned()),
@@ -1816,7 +1975,7 @@ mod tests {
         rank_type: 5,
         count: 1,
         lang: "en-us".to_owned(),
-        time: "2023-01-01 00:00:00".to_owned(),
+        time: datetime!(2023-01-01 00:00:00 +8), // Because the server time zone of this uid is +8
         name: "Kamisato Ayaka".to_owned(),
         item_type: "Character".to_owned(),
         item_id: Some("10000002".to_owned()),
@@ -1869,7 +2028,7 @@ mod tests {
       rank_type: 5,
       count: 1,
       lang: "en-us".to_owned(),
-      time: "2023-01-01 00:00:00".to_owned(),
+      time: datetime!(2023-01-01 00:00:00 +8), // Because the server time zone of this uid is +8
       name: "Kamisato Ayaka".to_owned(),
       item_type: "Character".to_owned(),
       item_id: Some("10000002".to_owned()),
@@ -1883,7 +2042,6 @@ mod tests {
       account_locale: "en-us".to_owned(),
       account_uid: 100_000_000,
       export_time: OffsetDateTime::now_utc().to_offset(*consts::LOCAL_OFFSET),
-      region_time_zone: 8,
     }
     .write(GachaMetadata::embedded(), records.clone(), &output)
     .unwrap();
@@ -1915,7 +2073,7 @@ mod tests {
       rank_type: 5,
       count: 1,
       lang: "en-us".to_owned(),
-      time: "2023-01-01 00:00:00".to_owned(),
+      time: datetime!(2023-01-01 00:00:00 +8), // Because the server time zone of this uid is +8
       name: "Kamisato Ayaka".to_owned(),
       item_type: "Character".to_owned(),
       item_id: Some("10000002".to_owned()),
@@ -1929,7 +2087,6 @@ mod tests {
       account_locale: "en-us".to_owned(),
       account_uid: correct_uid,
       export_time: OffsetDateTime::now_utc().to_offset(*consts::LOCAL_OFFSET),
-      region_time_zone: 8,
     }
     .write(
       GachaMetadata::embedded(),
@@ -1958,7 +2115,7 @@ mod tests {
       "hk4e": [
         {
           "uid": "100000000",
-          "timezone": 8,
+          "timezone": 0,
           "list": [
             {
               "uigf_gacha_type": "301",
@@ -1973,7 +2130,7 @@ mod tests {
       "hkrpg": [
         {
           "uid": "100000001",
-          "timezone": 8,
+          "timezone": 0,
           "list": [
             {
               "gacha_id": "1",
@@ -1987,8 +2144,8 @@ mod tests {
       ],
       "nap": [
         {
-          "uid": "100000002",
-          "timezone": 8,
+          "uid": "10000002",
+          "timezone": 0,
           "list": [
             {
               "gacha_type": "1",
@@ -2006,7 +2163,7 @@ mod tests {
       accounts: HashMap::from_iter([
         (100_000_000, "en-us".to_owned()),
         (100_000_001, "en-us".to_owned()),
-        (100_000_002, "en-us".to_owned()),
+        (10_000_002, "en-us".to_owned()),
       ]),
     }
     .read(GachaMetadata::embedded(), Cursor::new(input))
@@ -2025,7 +2182,7 @@ mod tests {
         rank_type: 5,
         count: 1,
         lang: "en-us".to_owned(),
-        time: "2023-01-01 00:00:00".to_owned(),
+        time: datetime!(2023-01-01 00:00:00 +0),
         name: "Kamisato Ayaka".to_owned(),
         item_type: "Character".to_owned(),
         item_id: Some("10000002".to_owned()),
@@ -2043,7 +2200,7 @@ mod tests {
         rank_type: 4,
         count: 1,
         lang: "en-us".to_owned(),
-        time: "2023-01-01 00:00:00".to_owned(),
+        time: datetime!(2023-01-01 00:00:00 +0),
         name: "March 7th".to_owned(),
         item_type: "Character".to_owned(),
         item_id: Some("1001".to_owned()),
@@ -2054,14 +2211,14 @@ mod tests {
       records[2],
       GachaRecord {
         business: Business::ZenlessZoneZero,
-        uid: 100_000_002,
+        uid: 10_000_002,
         id: "1000000000000000002".to_owned(),
         gacha_type: 1,
         gacha_id: None,
         rank_type: 3,
         count: 1,
         lang: "en-us".to_owned(),
-        time: "2023-01-01 00:00:00".to_owned(),
+        time: datetime!(2023-01-01 00:00:00 +0),
         name: "Anby".to_owned(),
         item_type: "Agents".to_owned(),
         item_id: Some("1011".to_owned()),
@@ -2081,7 +2238,7 @@ mod tests {
         rank_type: 5,
         count: 1,
         lang: "en-us".to_owned(),
-        time: "2023-01-01 00:00:00".to_owned(),
+        time: datetime!(2023-01-01 00:00:00 +8), // Because the server time zone of this uid is +8
         name: "Kamisato Ayaka".to_owned(),
         item_type: "Character".to_owned(),
         item_id: Some("10000002".to_owned()),
@@ -2095,21 +2252,21 @@ mod tests {
         rank_type: 4,
         count: 1,
         lang: "en-us".to_owned(),
-        time: "2023-01-01 00:00:00".to_owned(),
+        time: datetime!(2023-01-01 00:00:00 +8), // Because the server time zone of this uid is +8
         name: "March 7th".to_owned(),
         item_type: "Character".to_owned(),
         item_id: Some("1001".to_owned()),
       },
       GachaRecord {
         business: Business::ZenlessZoneZero,
-        uid: 100_000_002,
+        uid: 10_000_002,
         id: "1000000000000000002".to_owned(),
         gacha_type: 1,
         gacha_id: None,
         rank_type: 3,
         count: 1,
         lang: "en-us".to_owned(),
-        time: "2023-01-01 00:00:00".to_owned(),
+        time: datetime!(2023-01-01 00:00:00 +8), // Because the server time zone of this uid is +8
         name: "Anby".to_owned(),
         item_type: "Agents".to_owned(),
         item_id: Some("1011".to_owned()),
@@ -2122,11 +2279,12 @@ mod tests {
     UigfGachaRecordsWriter {
       businesses: None,
       accounts: HashMap::from_iter([
-        (100_000_000, (8, "en-us".to_owned())),
-        (100_000_001, (8, "en-us".to_owned())),
-        (100_000_002, (8, "en-us".to_owned())),
+        (100_000_000, "en-us".to_owned()),
+        (100_000_001, "en-us".to_owned()),
+        (10_000_002, "en-us".to_owned()),
       ]),
       export_time: OffsetDateTime::now_utc().to_offset(*consts::LOCAL_OFFSET),
+      minimized: None,
     }
     .write(GachaMetadata::embedded(), records.clone(), &output)
     .unwrap();
@@ -2137,7 +2295,7 @@ mod tests {
       accounts: HashMap::from_iter([
         (100_000_000, "en-us".to_owned()),
         (100_000_001, "en-us".to_owned()),
-        (100_000_002, "en-us".to_owned()),
+        (10_000_002, "en-us".to_owned()),
       ]),
     }
     .read(GachaMetadata::embedded(), input)
@@ -2186,7 +2344,7 @@ mod tests {
         rank_type: 4,
         count: 1,
         lang: "en-us".to_owned(),
-        time: "2023-01-01 00:00:00".to_owned(),
+        time: datetime!(2023-01-01 00:00:00 +8),
         name: "March 7th".to_owned(),
         item_type: "Character".to_owned(),
         item_id: Some("1001".to_owned()),
@@ -2205,7 +2363,7 @@ mod tests {
       rank_type: 4,
       count: 1,
       lang: "en-us".to_owned(),
-      time: "2023-01-01 00:00:00".to_owned(),
+      time: datetime!(2023-01-01 00:00:00 +8), // Because the server time zone of this uid is +8
       name: "March 7th".to_owned(),
       item_type: "Character".to_owned(),
       item_id: Some("1001".to_owned()),
@@ -2219,7 +2377,6 @@ mod tests {
       account_locale: "en-us".to_owned(),
       account_uid: 100_000_000,
       export_time: OffsetDateTime::now_utc().to_offset(*consts::LOCAL_OFFSET),
-      region_time_zone: 8,
     }
     .write(GachaMetadata::embedded(), records.clone(), &output)
     .unwrap();

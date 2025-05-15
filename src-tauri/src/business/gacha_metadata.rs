@@ -9,9 +9,8 @@ use std::time::Instant;
 
 use serde::Deserialize;
 use sha1::{Digest, Sha1};
-use time::PrimitiveDateTime;
-use time::format_description::FormatItem;
-use time::macros::format_description;
+use time::OffsetDateTime;
+use time::serde::rfc3339;
 use tracing::info;
 
 use super::Business;
@@ -32,7 +31,7 @@ struct RawGachaMetadataCategorization {
 #[serde(untagged)]
 enum RawGachaMetadataEntry {
   Limited(String, u8),
-  LimitedDeadline(String, u8, String),
+  LimitedDeadline(String, u8, #[serde(with = "rfc3339")] OffsetDateTime),
   Permanent(String, u8, bool),
 }
 
@@ -52,9 +51,7 @@ pub enum GachaMetadataEntryLimited {
   // Limited
   Yes,
   // Before the deadline, it was limited.
-  // Format: Standard Gacha Time (UTC+8)
-  //   YYYY-MM-dd HH:mm:ss
-  Deadline(PrimitiveDateTime),
+  Deadline(OffsetDateTime),
 }
 
 #[derive(Debug)]
@@ -188,9 +185,6 @@ impl GachaMetadata {
     Self::CATEGORY_WEAPON,
     Self::CATEGORY_BANGBOO,
   ];
-
-  pub const TIME_FORMAT: &[FormatItem<'_>] =
-    format_description!("[year]-[month]-[day] [hour]:[minute]:[second]");
 }
 
 impl GachaMetadata {
@@ -281,8 +275,6 @@ fn raw_categorizations_into_locales(
           let (id, rank, limited) = match entry {
             RawGachaMetadataEntry::Limited(id, rank) => (id, rank, GachaMetadataEntryLimited::Yes),
             RawGachaMetadataEntry::LimitedDeadline(id, rank, deadline) => {
-              let deadline =
-                PrimitiveDateTime::parse(&deadline, GachaMetadata::TIME_FORMAT).unwrap(); // FIXME: Maybe unsafe
               (id, rank, GachaMetadataEntryLimited::Deadline(deadline))
             }
             RawGachaMetadataEntry::Permanent(id, rank, permanently) => (
