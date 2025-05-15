@@ -30,7 +30,7 @@ cfg-if = "1.0.0"
 exponential-backoff = "2.1.0"
 futures-util = "0.3.31"
 num_enum = "0.7.3"
-os_info = "3.10.0"
+os_info = "3.11.0"
 paste = "1.0.15"
 raw-window-handle = "0.6.2"
 regex = "1.11.1"
@@ -44,8 +44,8 @@ sys-locale = "0.3.2"
 tauri-plugin-shell = "2.2.1"
 tauri-plugin-clipboard-manager = "2.2.2"
 thiserror = "2.0.12"
-time = { version = "0.3.41", features = ["formatting", "local-offset", "macros", "serde", "serde-human-readable"] }
-tokio = { version = "1.45.0", features = ["macros", "rt", "rt-multi-thread"] }
+time = { version = "0.3.41", features = ["local-offset", "macros", "serde-human-readable"] }
+tokio = { version = "1.45.0", features = ["macros", "rt-multi-thread"] }
 tracing = "0.1.41"
 tracing-appender = "0.2.3"
 tracing-subscriber = { version = "0.3.19", features = ["env-filter", "local-time"] }
@@ -96,4 +96,4 @@ features = [
 ]
 
 [dev-dependencies]
-tempfile = "3.19.1"
+tempfile = "3.20.0"
