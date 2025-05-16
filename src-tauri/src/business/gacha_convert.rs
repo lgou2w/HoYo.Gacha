@@ -279,10 +279,7 @@ impl LegacyUigf {
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct LegacyUigfInfo {
-  #[serde(
-    deserialize_with = "serde_helper::de::string_as_number",
-    serialize_with = "serde_helper::ser::number_as_string"
-  )]
+  #[serde(with = "serde_helper::string_number_into")]
   pub uid: u32,
   pub lang: Option<String>,
   pub export_time: Option<String>,
@@ -298,19 +295,14 @@ pub struct LegacyUigfInfo {
 pub struct LegacyUigfItem {
   pub id: String,
   #[serde(
-    deserialize_with = "serde_helper::de::string_as_number_option",
-    serialize_with = "serde_helper::ser::option_number_as_string",
+    with = "serde_helper::string_number_into::option",
     default = "Option::default"
   )]
   pub uid: Option<u32>,
-  #[serde(
-    deserialize_with = "serde_helper::de::string_as_number",
-    serialize_with = "serde_helper::ser::number_as_string"
-  )]
+  #[serde(with = "serde_helper::string_number_into")]
   pub gacha_type: u32,
   #[serde(
-    deserialize_with = "serde_helper::de::string_as_number_option",
-    serialize_with = "serde_helper::ser::option_number_as_string",
+    with = "serde_helper::string_number_into::option",
     default = "Option::default"
   )]
   pub count: Option<u32>,
@@ -331,15 +323,11 @@ pub struct LegacyUigfItem {
   // UIGF v2.3: nullable
   pub item_type: Option<String>,
   #[serde(
-    deserialize_with = "serde_helper::de::string_as_number_option",
-    serialize_with = "serde_helper::ser::option_number_as_string",
+    with = "serde_helper::string_number_into::option",
     default = "Option::default"
   )]
   pub rank_type: Option<u32>,
-  #[serde(
-    deserialize_with = "serde_helper::de::string_as_number",
-    serialize_with = "serde_helper::ser::number_as_string"
-  )]
+  #[serde(with = "serde_helper::string_number_into")]
   pub uigf_gacha_type: u32,
 }
 
@@ -754,10 +742,7 @@ pub struct Uigf {
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct UigfInfo {
-  #[serde(
-    deserialize_with = "serde_helper::de::string_as_number",
-    serialize_with = "serde_helper::ser::number_as_string"
-  )]
+  #[serde(with = "serde_helper::string_number_into")]
   pub export_timestamp: u64,
   pub export_app: String,
   pub export_app_version: String,
@@ -766,10 +751,7 @@ pub struct UigfInfo {
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct UigfEntry<Item> {
-  #[serde(
-    deserialize_with = "serde_helper::de::string_as_number",
-    serialize_with = "serde_helper::ser::number_as_string"
-  )]
+  #[serde(with = "serde_helper::string_number_into")]
   pub uid: u32,
   pub timezone: i8,
   #[serde(default = "Option::default", skip_serializing_if = "Option::is_none")]
@@ -779,20 +761,13 @@ pub struct UigfEntry<Item> {
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct UigfHk4eItem {
-  #[serde(
-    deserialize_with = "serde_helper::de::string_as_number",
-    serialize_with = "serde_helper::ser::number_as_string"
-  )]
+  #[serde(with = "serde_helper::string_number_into")]
   pub uigf_gacha_type: u32,
-  #[serde(
-    deserialize_with = "serde_helper::de::string_as_number",
-    serialize_with = "serde_helper::ser::number_as_string"
-  )]
+  #[serde(with = "serde_helper::string_number_into")]
   pub gacha_type: u32,
   pub item_id: String,
   #[serde(
-    deserialize_with = "serde_helper::de::string_as_number_option",
-    serialize_with = "serde_helper::ser::option_number_as_string",
+    with = "serde_helper::string_number_into::option",
     default = "Option::default",
     skip_serializing_if = "Option::is_none"
   )]
@@ -802,8 +777,7 @@ pub struct UigfHk4eItem {
   #[serde(default = "Option::default", skip_serializing_if = "Option::is_none")]
   pub item_type: Option<String>,
   #[serde(
-    deserialize_with = "serde_helper::de::string_as_number_option",
-    serialize_with = "serde_helper::ser::option_number_as_string",
+    with = "serde_helper::string_number_into::option",
     default = "Option::default",
     skip_serializing_if = "Option::is_none"
   )]
@@ -813,20 +787,13 @@ pub struct UigfHk4eItem {
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct UigfHkrpgItem {
-  #[serde(
-    deserialize_with = "serde_helper::de::string_as_number",
-    serialize_with = "serde_helper::ser::number_as_string"
-  )]
+  #[serde(with = "serde_helper::string_number_into")]
   pub gacha_id: u32,
-  #[serde(
-    deserialize_with = "serde_helper::de::string_as_number",
-    serialize_with = "serde_helper::ser::number_as_string"
-  )]
+  #[serde(with = "serde_helper::string_number_into")]
   pub gacha_type: u32,
   pub item_id: String,
   #[serde(
-    deserialize_with = "serde_helper::de::string_as_number_option",
-    serialize_with = "serde_helper::ser::option_number_as_string",
+    with = "serde_helper::string_number_into::option",
     default = "Option::default",
     skip_serializing_if = "Option::is_none"
   )]
@@ -836,8 +803,7 @@ pub struct UigfHkrpgItem {
   #[serde(default = "Option::default", skip_serializing_if = "Option::is_none")]
   pub item_type: Option<String>,
   #[serde(
-    deserialize_with = "serde_helper::de::string_as_number_option",
-    serialize_with = "serde_helper::ser::option_number_as_string",
+    with = "serde_helper::string_number_into::option",
     default = "Option::default",
     skip_serializing_if = "Option::is_none"
   )]
@@ -848,21 +814,16 @@ pub struct UigfHkrpgItem {
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct UigfNapItem {
   #[serde(
-    deserialize_with = "serde_helper::de::string_as_number_option",
-    serialize_with = "serde_helper::ser::option_number_as_string",
+    with = "serde_helper::string_number_into::option",
     default = "Option::default",
     skip_serializing_if = "Option::is_none"
   )]
   pub gacha_id: Option<u32>,
-  #[serde(
-    deserialize_with = "serde_helper::de::string_as_number",
-    serialize_with = "serde_helper::ser::number_as_string"
-  )]
+  #[serde(with = "serde_helper::string_number_into")]
   pub gacha_type: u32,
   pub item_id: String,
   #[serde(
-    deserialize_with = "serde_helper::de::string_as_number_option",
-    serialize_with = "serde_helper::ser::option_number_as_string",
+    with = "serde_helper::string_number_into::option",
     default = "Option::default",
     skip_serializing_if = "Option::is_none"
   )]
@@ -872,8 +833,7 @@ pub struct UigfNapItem {
   #[serde(default = "Option::default", skip_serializing_if = "Option::is_none")]
   pub item_type: Option<String>,
   #[serde(
-    deserialize_with = "serde_helper::de::string_as_number_option",
-    serialize_with = "serde_helper::ser::option_number_as_string",
+    with = "serde_helper::string_number_into::option",
     default = "Option::default",
     skip_serializing_if = "Option::is_none"
   )]
@@ -1456,10 +1416,7 @@ pub struct Srgf {
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct SrgfInfo {
-  #[serde(
-    deserialize_with = "serde_helper::de::string_as_number",
-    serialize_with = "serde_helper::ser::number_as_string"
-  )]
+  #[serde(with = "serde_helper::string_number_into")]
   pub uid: u32,
   pub lang: String,
   pub export_timestamp: Option<u64>,
@@ -1473,25 +1430,17 @@ pub struct SrgfInfo {
 pub struct SrgfItem {
   pub id: String,
   #[serde(
-    deserialize_with = "serde_helper::de::string_as_number_option",
-    serialize_with = "serde_helper::ser::option_number_as_string",
+    with = "serde_helper::string_number_into::option",
     default = "Option::default",
     skip_serializing_if = "Option::is_none"
   )]
   pub uid: Option<u32>,
-  #[serde(
-    deserialize_with = "serde_helper::de::string_as_number",
-    serialize_with = "serde_helper::ser::number_as_string"
-  )]
+  #[serde(with = "serde_helper::string_number_into")]
   pub gacha_id: u32,
-  #[serde(
-    deserialize_with = "serde_helper::de::string_as_number",
-    serialize_with = "serde_helper::ser::number_as_string"
-  )]
+  #[serde(with = "serde_helper::string_number_into")]
   pub gacha_type: u32,
   #[serde(
-    deserialize_with = "serde_helper::de::string_as_number_option",
-    serialize_with = "serde_helper::ser::option_number_as_string",
+    with = "serde_helper::string_number_into::option",
     default = "Option::default",
     skip_serializing_if = "Option::is_none"
   )]
@@ -1503,8 +1452,7 @@ pub struct SrgfItem {
   pub item_id: String,
   pub item_type: Option<String>,
   #[serde(
-    deserialize_with = "serde_helper::de::string_as_number_option",
-    serialize_with = "serde_helper::ser::option_number_as_string",
+    with = "serde_helper::string_number_into::option",
     default = "Option::default",
     skip_serializing_if = "Option::is_none"
   )]

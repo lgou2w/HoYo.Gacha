@@ -564,7 +564,7 @@ where
   match opt.as_deref() {
     None => Ok(None),
     Some(str) => {
-      let num: u64 = serde_helper::de::string_as_number(str.into_deserializer())?;
+      let num: u64 = serde_helper::string_number_into::deserialize(str.into_deserializer())?;
       let res = u32::try_from(num).map_err(serde::de::Error::custom)?;
       Ok(Some(res))
     }
@@ -574,16 +574,16 @@ where
 #[derive(Deserialize)]
 struct GachaRecordsPaginationItem {
   id: String,
-  #[serde(deserialize_with = "serde_helper::de::string_as_number")]
+  #[serde(with = "serde_helper::string_number_into")]
   uid: u32,
-  #[serde(deserialize_with = "serde_helper::de::string_as_number")]
+  #[serde(with = "serde_helper::string_number_into")]
   gacha_type: u32,
   // `Honkai: Star Rail`, `Zenless Zone Zero` only
   #[serde(deserialize_with = "gacha_id_de", default = "Option::default")]
   gacha_id: Option<u32>,
-  #[serde(deserialize_with = "serde_helper::de::string_as_number")]
+  #[serde(with = "serde_helper::string_number_into")]
   rank_type: u32,
-  #[serde(deserialize_with = "serde_helper::de::string_as_number")]
+  #[serde(with = "serde_helper::string_number_into")]
   count: u32,
   #[serde(with = "gacha_time_format")]
   time: PrimitiveDateTime,
