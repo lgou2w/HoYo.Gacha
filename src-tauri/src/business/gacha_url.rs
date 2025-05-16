@@ -406,8 +406,10 @@ impl GachaUrl {
       }
     }
 
-    // If the account's record data has not been synchronised,
-    // then a special error kind is returned.
+    // HACK: If the account's record data has not been
+    //   synchronised, then a special error kind is returned.
+    //   When the record is empty, it is impossible to determine whether
+    //   the URL is consistent with the expected UID. This is a necessary measure.
     if contains_empty != 0 {
       warn!("Gacha url exists for empty record data.");
       Err(GachaUrlErrorKind::EmptyData)?
