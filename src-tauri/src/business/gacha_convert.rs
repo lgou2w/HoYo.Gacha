@@ -416,22 +416,19 @@ impl GachaRecordsWriter for LegacyUigfGachaRecordsWriter {
         },
       )?;
 
-      // No need offset, because `region_time_zone` is already there.
-      let time = record.time;
-      let time = PrimitiveDateTime::new(time.date(), time.time());
-
       // Always fill in these optional fields to ensure compatibility
       uigf.list.push(LegacyUigfItem {
-        id: record.id,
         uid: Some(record.uid),
         gacha_type: record.gacha_type,
         count: Some(record.count),
-        time,
+        // HACK: No need offset, because `region_time_zone` is already there.
+        time: record.time_to_primitive(),
         name: Some(record.name),
         lang: Some(record.lang),
         item_id: record.item_id,
         item_type: Some(record.item_type),
         rank_type: Some(record.rank_type),
+        id: record.id,
         uigf_gacha_type,
       })
     }
@@ -1009,10 +1006,6 @@ impl GachaRecordsWriter for UigfGachaRecordsWriter {
          record: GachaRecord,
          metadata_entry: GachaMetadataEntryRef<'_>,
          minimized: bool| {
-          // No need offset, because `timezone` is already there.
-          let time = record.time;
-          let time = PrimitiveDateTime::new(time.date(), time.time());
-
           Result::<_, Self::Error>::Ok(UigfHk4eItem {
             uigf_gacha_type: *UIGF_GACHA_TYPE_MAPPINGS.get(&record.gacha_type).ok_or(
               UigfGachaRecordsWriteErrorKind::FailedMappingGachaType {
@@ -1021,9 +1014,9 @@ impl GachaRecordsWriter for UigfGachaRecordsWriter {
               },
             )?,
             gacha_type: record.gacha_type,
-            item_id: record.item_id.unwrap_or(metadata_entry.id.to_owned()),
             count: if minimized { None } else { Some(record.count) },
-            time,
+            // HACK: No need offset, because `timezone` is already there.
+            time: record.time_to_primitive(),
             item_type: if minimized {
               None
             } else {
@@ -1034,6 +1027,7 @@ impl GachaRecordsWriter for UigfGachaRecordsWriter {
             } else {
               Some(record.rank_type)
             },
+            item_id: record.item_id.unwrap_or(metadata_entry.id.to_owned()),
             id: record.id,
           })
         }
@@ -1055,16 +1049,12 @@ impl GachaRecordsWriter for UigfGachaRecordsWriter {
             panic!("Missing gacha_id in the record: {record:?}, cursor: {cursor}")
           });
 
-          // No need offset, because `timezone` is already there.
-          let time = record.time;
-          let time = PrimitiveDateTime::new(time.date(), time.time());
-
           Result::<_, Self::Error>::Ok(UigfHkrpgItem {
             gacha_id,
             gacha_type: record.gacha_type,
-            item_id: record.item_id.unwrap_or(metadata_entry.id.to_owned()),
             count: if minimized { None } else { Some(record.count) },
-            time,
+            // HACK: No need offset, because `timezone` is already there.
+            time: record.time_to_primitive(),
             item_type: if minimized {
               None
             } else {
@@ -1075,6 +1065,7 @@ impl GachaRecordsWriter for UigfGachaRecordsWriter {
             } else {
               Some(record.rank_type)
             },
+            item_id: record.item_id.unwrap_or(metadata_entry.id.to_owned()),
             id: record.id,
           })
         }
@@ -1089,16 +1080,12 @@ impl GachaRecordsWriter for UigfGachaRecordsWriter {
          record: GachaRecord,
          metadata_entry: GachaMetadataEntryRef<'_>,
          minimized: bool| {
-          // No need offset, because `timezone` is already there.
-          let time = record.time;
-          let time = PrimitiveDateTime::new(time.date(), time.time());
-
           Result::<_, Self::Error>::Ok(UigfNapItem {
             gacha_id: record.gacha_id,
             gacha_type: record.gacha_type,
-            item_id: record.item_id.unwrap_or(metadata_entry.id.to_owned()),
             count: if minimized { None } else { Some(record.count) },
-            time,
+            // HACK: No need offset, because `timezone` is already there.
+            time: record.time_to_primitive(),
             item_type: if minimized {
               None
             } else {
@@ -1109,6 +1096,7 @@ impl GachaRecordsWriter for UigfGachaRecordsWriter {
             } else {
               Some(record.rank_type)
             },
+            item_id: record.item_id.unwrap_or(metadata_entry.id.to_owned()),
             id: record.id,
           })
         }
@@ -1542,25 +1530,19 @@ impl GachaRecordsWriter for SrgfGachaRecordsWriter {
         panic!("Missing gacha_id or item_id in the record: {record:?}, cursor: {cursor}")
       }
 
-      let gacha_id = record.gacha_id.unwrap();
-      let item_id = record.item_id.unwrap();
-
-      // No need offset, because `region_time_zone` is already there.
-      let time = record.time;
-      let time = PrimitiveDateTime::new(time.date(), time.time());
-
       srgf.list.push(SrgfItem {
-        id: record.id,
         uid: Some(record.uid),
-        gacha_id,
+        gacha_id: record.gacha_id.unwrap(),
         gacha_type: record.gacha_type,
         count: Some(record.count),
-        time,
+        // HACK: No need offset, because `region_time_zone` is already there.
+        time: record.time_to_primitive(),
         name: Some(record.name),
         lang: Some(record.lang),
-        item_id,
+        item_id: record.item_id.unwrap(),
         item_type: Some(record.item_type),
         rank_type: Some(record.rank_type),
+        id: record.id,
       })
     }
 

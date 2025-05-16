@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
-use time::OffsetDateTime;
 use time::serde::rfc3339;
+use time::{OffsetDateTime, PrimitiveDateTime};
 
 use super::Business;
 
@@ -78,5 +78,12 @@ impl GachaRecord {
       Business::GenshinImpact | Business::HonkaiStarRail => self.rank_type == 5,
       Business::ZenlessZoneZero => self.rank_type == 4,
     }
+  }
+
+  /// Convert `time` to [`PrimitiveDateTime`],
+  /// this conversion loses the [`time::UtcOffset`]. Specific use!
+  #[inline]
+  pub const fn time_to_primitive(&self) -> PrimitiveDateTime {
+    PrimitiveDateTime::new(self.time.date(), self.time.time())
   }
 }
