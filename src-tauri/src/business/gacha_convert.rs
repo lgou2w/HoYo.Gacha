@@ -1686,6 +1686,395 @@ impl GachaRecordsReader for SrgfGachaRecordsReader {
 
 // endregion
 
+// region: zzz.rng.moe
+
+// Gacha Records
+// Support version: 1
+// https://zzz.rng.moe
+
+/*
+ * Gacha type mapping between Official and zzz.rng.moe
+ * Only support: Zenless Zone Zero
+ *
+ * Gacha Type (zzz.rng.moe) | Gacha Type (Official)
+ *       1001               |       1
+ *       2001               |       2
+ *       3001               |       3
+ *       5001               |       5
+ */
+static ZENLESS_RNG_MOE_GACHA_TYPE_MAPPINGS: LazyLock<HashMap<u32, u32>> =
+  LazyLock::new(|| HashMap::from_iter([(1001, 1), (2001, 2), (3001, 3), (5001, 5)]));
+
+declare_error_kinds! {
+  #[derive(Debug, thiserror::Error)]
+  ZenlessRngMoeGachaRecordsReadError {
+    #[error("Failed to open input '{path}': {cause}")]
+    OpenInput {
+      path: PathBuf,
+      cause: io::Error => serde_json::json!({
+        "kind": cause.kind().to_string(),
+        "message": cause.to_string(),
+      })
+    },
+
+    #[error("Invalid json input: {cause}")]
+    InvalidInput {
+      cause: serde_json::Error => cause.to_string()
+    },
+
+    #[error("Unsupported backup version: {actual} (Expected: {expected})")]
+    UnsupportedVersion {
+      expected: u32,
+      actual: u32
+    },
+
+    #[error("Unsupported backup game: {actual} (Expected: {expected})")]
+    UnsupportedGame {
+      expected: &'static str,
+      actual: String
+    },
+
+    #[error("Backup profile id {id} does not exist")]
+    ProfileNotExist {
+      id: u32
+    },
+
+    #[error("Inconsistent uid: {actual} (Expected: {expected})")]
+    InconsistentUid {
+      expected: u32,
+      actual: u32
+    },
+
+    #[error("Invalid business uid: {uid}")]
+    InvalidUid {
+      uid: u32
+    },
+
+    #[error("Missing metadata locale: {locale}")]
+    MissingMetadataLocale {
+      locale: String
+    },
+
+    #[error("Failed to mapping zzz.rng.moe gacha type: {value}, cursor: {cursor}")]
+    FailedMappingGachaType {
+      value: u32,
+      cursor: usize
+    },
+
+    #[error("Missing metadata entry: {key}: {val}, locale: {locale}, gacha type: {gacha_type}, cursor: {cursor}")]
+    MissingMetadataEntry {
+      locale: String,
+      gacha_type: u32,
+      rng_moe_gacha_type: u32,
+      key: &'static str,
+      val: String,
+      cursor: usize
+    },
+
+    #[error("Invalid item timestamp: {value}, gacha type: {gacha_type}, cursor: {cursor}")]
+    InvalidTimestamp {
+      gacha_type: u32,
+      rng_moe_gacha_type: u32,
+      value: u64,
+      cursor: usize
+    },
+  }
+}
+
+#[derive(Clone, Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ZenlessRngMoeBackup {
+  pub version: u32, // 1
+  pub game: String, // "zzz"
+  pub data: ZenlessRngMoeBackupData,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ZenlessRngMoeBackupData {
+  // pub action_idx: u64,
+  // pub profile_idx: u32,
+  pub profiles: HashMap<u32, ZenlessRngMoeBackupDataProfile>,
+  // pub cur_profile_id: u32,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ZenlessRngMoeBackupDataProfile {
+  pub name: String,
+  pub id: u32,
+  pub bind_uid: Option<u32>,
+  pub stores: ZenlessRngMoeBackupDataProfileStores,
+  // pub version: u32,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct ZenlessRngMoeBackupDataProfileStores {
+  #[serde(rename = "0")]
+  pub n0: ZenlessRngMoeBackupDataProfileStoreN0,
+  // pub n1: ZenlessRngMoeBackupDataProfileStoreN1,
+  // pub n2: ZenlessRngMoeBackupDataProfileStoreN2,
+  // pub n3: ZenlessRngMoeBackupDataProfileStoreN3,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ZenlessRngMoeBackupDataProfileStoreN0 {
+  // pub identify_hash: String,
+  // pub gacha_banners: ..,
+  // pub gacha_types: ..,
+  pub items: HashMap<u32, Vec<ZenlessRngMoeBackupDataProfileStoreN0Item>>,
+  // pub last_manual_import_uid: u32,
+  // pub share: ..,
+  // pub item_append: ..,
+  // pub flags: ..,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ZenlessRngMoeBackupDataProfileStoreN0Item {
+  pub uid: String,    // => record.id
+  pub id: u32,        // => record.item_id
+  pub timestamp: u64, // milliseconds / 1000 => record.time
+  pub rarity: u32,    // => record.rank_type
+  // pub gacha: u32,   // ↑ gacha_banners
+  pub gacha_type: u32, // => MAPPING => record.gacha_type
+                       // pub pity: u32,
+                       // pub manual: bool,
+                       // pub no: u32,
+                       // pub result: u32,
+}
+
+// #[derive(Clone, Debug, Deserialize)]
+// #[serde(rename_all = "camelCase")]
+// pub struct ZenlessRngMoeBackupDataProfileStoreN1 {
+//   pub item_list: Vec<..>,
+// }
+
+// #[derive(Clone, Debug, Deserialize)]
+// #[serde(rename_all = "camelCase")]
+// pub struct ZenlessRngMoeBackupDataProfileStoreN2 {
+//   pub version: u32,
+//   pub enabled: HashMap<u32, bool>,
+//   pub arcade_enabled: ..,
+//   pub po_enabled: ..,
+// }
+
+// #[derive(Clone, Debug, Deserialize)]
+// #[serde(rename_all = "camelCase")]
+// pub struct ZenlessRngMoeBackupDataProfileStoreN3 {
+//   pub version: u32,
+//   pub settings: ..,
+// }
+
+// TODO: I will not consider Writer for now,
+//   because it has no data standard and cannot determine the meaning of some fields.
+//   Unless we use A data to merge only the records of the items field.
+// pub struct ZenlessRngMoeGachaRecordsWriter {}
+
+#[derive(Clone, Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ZenlessRngMoeGachaRecordsReader {
+  pub expected_profile_id: u32,
+  pub expected_locale: String,
+  pub expected_uid: u32,
+}
+
+impl ZenlessRngMoeGachaRecordsReader {
+  pub fn parse_backup(
+    input: impl Read,
+  ) -> Result<ZenlessRngMoeBackup, ZenlessRngMoeGachaRecordsReadError> {
+    let backup: ZenlessRngMoeBackup = serde_json::from_reader(input)
+      .map_err(|cause| ZenlessRngMoeGachaRecordsReadErrorKind::InvalidInput { cause })?;
+
+    const EXPECTED_VERSION: u32 = 1;
+    const EXPECTED_GAME: &str = "zzz";
+
+    if backup.version != EXPECTED_VERSION {
+      return Err(ZenlessRngMoeGachaRecordsReadErrorKind::UnsupportedVersion {
+        expected: EXPECTED_VERSION,
+        actual: backup.version,
+      })?;
+    }
+
+    if backup.game.as_str() != EXPECTED_GAME {
+      return Err(ZenlessRngMoeGachaRecordsReadErrorKind::UnsupportedGame {
+        expected: EXPECTED_GAME,
+        actual: backup.game,
+      })?;
+    }
+
+    Ok(backup)
+  }
+}
+
+impl GachaRecordsReader for ZenlessRngMoeGachaRecordsReader {
+  type Error = ZenlessRngMoeGachaRecordsReadError;
+
+  fn read_from_file(
+    &self,
+    metadata: &GachaMetadata,
+    input: impl AsRef<Path>,
+  ) -> Result<Vec<GachaRecord>, Self::Error> {
+    let file =
+      File::open(&input).map_err(|cause| ZenlessRngMoeGachaRecordsReadErrorKind::OpenInput {
+        path: input.as_ref().to_path_buf(),
+        cause,
+      })?;
+
+    self.read(metadata, file)
+  }
+
+  fn read(
+    &self,
+    metadata: &GachaMetadata,
+    input: impl Read,
+  ) -> Result<Vec<GachaRecord>, Self::Error> {
+    // zzz.rng.moe Gacha Records only support: Zenless Zone Zero
+    const BUSINESS: Business = Business::ZenlessZoneZero;
+
+    let Self {
+      expected_profile_id,
+      expected_locale,
+      expected_uid,
+    } = self;
+
+    let mut backup = Self::parse_backup(input)?;
+
+    let Some(profile) = backup.data.profiles.remove(expected_profile_id) else {
+      return Err(ZenlessRngMoeGachaRecordsReadErrorKind::ProfileNotExist {
+        id: *expected_profile_id,
+      })?;
+    };
+
+    // drop other useless data
+    drop(backup);
+
+    if let Some(uid) = profile.bind_uid {
+      if uid != *expected_uid {
+        return Err(ZenlessRngMoeGachaRecordsReadErrorKind::InconsistentUid {
+          expected: *expected_uid,
+          actual: uid,
+        })?;
+      }
+    }
+
+    let server_region = ServerRegion::from_uid(BUSINESS, *expected_uid)
+      .ok_or(ZenlessRngMoeGachaRecordsReadErrorKind::InvalidUid { uid: *expected_uid })?;
+
+    let metadata_locale = metadata.obtain(BUSINESS, expected_locale).ok_or(
+      ZenlessRngMoeGachaRecordsReadErrorKind::MissingMetadataLocale {
+        locale: expected_locale.to_owned(),
+      },
+    )?;
+
+    let sum = profile.stores.n0.items.values().map(|e| e.len()).sum();
+    let mut records = Vec::with_capacity(sum);
+
+    for (rng_moe_gacha_type, items) in profile.stores.n0.items {
+      let gacha_type = *ZENLESS_RNG_MOE_GACHA_TYPE_MAPPINGS
+        .get(&rng_moe_gacha_type)
+        .ok_or(
+          ZenlessRngMoeGachaRecordsReadErrorKind::FailedMappingGachaType {
+            value: rng_moe_gacha_type,
+            cursor: 0,
+          },
+        )?;
+
+      for (cursor, item) in items.into_iter().enumerate() {
+        // Because the cursor of the user's record starts at 1
+        let cursor = cursor + 1;
+
+        // Ensure consistency and avoid errors
+        if item.gacha_type != rng_moe_gacha_type {
+          return Err(
+            ZenlessRngMoeGachaRecordsReadErrorKind::FailedMappingGachaType {
+              value: item.gacha_type,
+              cursor,
+            },
+          )?;
+        }
+
+        let item_id = item.id.to_string();
+        let entry = metadata_locale.entry_from_id(&item_id).ok_or({
+          ZenlessRngMoeGachaRecordsReadErrorKind::MissingMetadataEntry {
+            locale: expected_locale.to_owned(),
+            gacha_type,
+            rng_moe_gacha_type,
+            key: FIELD_ITEM_ID,
+            val: item_id.clone(),
+            cursor,
+          }
+        })?;
+
+        let time =
+          OffsetDateTime::from_unix_timestamp(item.timestamp as i64 / 1000).map_err(|_| {
+            ZenlessRngMoeGachaRecordsReadErrorKind::InvalidTimestamp {
+              gacha_type,
+              rng_moe_gacha_type,
+              value: item.timestamp,
+              cursor,
+            }
+          })?;
+
+        records.push(GachaRecord {
+          business: BUSINESS,
+          uid: *expected_uid,
+          id: item.uid,
+          gacha_type,
+          gacha_id: Some(0), // FIXME: Currently, it is always 0 ?
+          rank_type: item.rarity,
+          count: 1, // FIXME: item.no ?
+          lang: expected_locale.to_owned(),
+          // Convert to server time zone
+          time: time.to_offset(server_region.time_zone()),
+          name: entry.name.to_owned(),
+          item_type: entry.category_name.to_owned(),
+          item_id: Some(item_id),
+        });
+      }
+    }
+
+    Ok(records)
+  }
+}
+
+#[derive(Clone, Debug, Serialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct ZenlessRngMoeBackupTouchProfile {
+  pub name: String,
+  pub id: u32,
+  pub bind_uid: Option<u32>,
+}
+
+impl ZenlessRngMoeBackupTouchProfile {
+  pub fn touch_profiles(
+    input: impl Read,
+  ) -> Result<HashMap<u32, Self>, ZenlessRngMoeGachaRecordsReadError> {
+    let backup = ZenlessRngMoeGachaRecordsReader::parse_backup(input)?;
+
+    let profiles = backup
+      .data
+      .profiles
+      .into_iter()
+      .map(|(id, profile)| {
+        (
+          id,
+          Self {
+            name: profile.name,
+            id: profile.id,
+            bind_uid: profile.bind_uid,
+          },
+        )
+      })
+      .collect();
+
+    Ok(profiles)
+  }
+}
+
+// endregion
+
 // region: Excel Writer
 
 // declare_error_kinds! {
@@ -1720,6 +2109,7 @@ pub enum GachaRecordsImporter {
   LegacyUigf(LegacyUigfGachaRecordsReader),
   Uigf(UigfGachaRecordsReader),
   Srgf(SrgfGachaRecordsReader),
+  RngMoe(ZenlessRngMoeGachaRecordsReader),
 }
 
 impl GachaRecordsImporter {
@@ -1732,6 +2122,7 @@ impl GachaRecordsImporter {
       Self::LegacyUigf(r) => r.read_from_file(metadata, input).map_err(Error::boxed),
       Self::Uigf(r) => r.read_from_file(metadata, input).map_err(Error::boxed),
       Self::Srgf(r) => r.read_from_file(metadata, input).map_err(Error::boxed),
+      Self::RngMoe(r) => r.read_from_file(metadata, input).map_err(Error::boxed),
     }
   }
 }
@@ -2321,6 +2712,199 @@ mod tests {
     assert_eq!(records, read_records);
 
     temp_dir.close().unwrap();
+  }
+
+  // HACK: This is a backup of the zzz.rng.moe v1 Gacha Records
+  const ZZZ_RNG_MOE_V1_BACKUP: &[u8] = br#"{
+      "version": 1,
+      "game": "zzz",
+      "data": {
+        "actionIdx": 1747379012555,
+        "profileIdx": 3,
+        "profiles": {
+          "1": {
+            "name": "Default",
+            "id": 1,
+            "bindUid": null,
+            "stores": {
+              "0": {
+                "identityHash": "3205ec98",
+                "gachaBanners": {
+                  "1001001": {
+                    "id": 1001001,
+                    "gachaType": 1001,
+                    "count2": 1,
+                    "count3": 0,
+                    "count4": 0,
+                    "avgPityS": 0,
+                    "avgPityA": 0,
+                    "sWinCount": 0,
+                    "sChallengeCount": 0,
+                    "winRate": 0
+                  }
+                },
+                "gachaTypes": {
+                  "1001": {
+                    "id": 1001,
+                    "lastItemId": "1000000000000000002",
+                    "count2": 1,
+                    "count3": 0,
+                    "count4": 0,
+                    "avgPityS": 0,
+                    "avgPityA": 0,
+                    "winRate": 0,
+                    "sWinCount": 0,
+                    "sChallengeCount": 0,
+                    "pity": {
+                      "pityS": 1,
+                      "pityA": 1
+                    }
+                  },
+                  "2001": {
+                    "id": 2001,
+                    "lastItemId": "0",
+                    "count2": 0,
+                    "count3": 0,
+                    "count4": 0,
+                    "avgPityS": 0,
+                    "avgPityA": 0,
+                    "winRate": 0,
+                    "sWinCount": 0,
+                    "sChallengeCount": 0,
+                    "pity": {
+                      "pityS": 0,
+                      "pityA": 0
+                    }
+                  },
+                  "3001": {
+                    "id": 3001,
+                    "lastItemId": "0",
+                    "count2": 0,
+                    "count3": 0,
+                    "count4": 0,
+                    "avgPityS": 0,
+                    "avgPityA": 0,
+                    "winRate": 0,
+                    "sWinCount": 0,
+                    "sChallengeCount": 0,
+                    "pity": {
+                      "pityS": 0,
+                      "pityA": 0
+                    }
+                  },
+                  "5001": {
+                    "id": 5001,
+                    "lastItemId": "0",
+                    "count2": 0,
+                    "count3": 0,
+                    "count4": 0,
+                    "avgPityS": 0,
+                    "avgPityA": 0,
+                    "winRate": 0,
+                    "sWinCount": 0,
+                    "sChallengeCount": 0,
+                    "pity": {
+                      "pityS": 0,
+                      "pityA": 0
+                    }
+                  }
+                },
+                "items": {
+                  "1001": [
+                    {
+                      "uid": "1000000000000000002",
+                      "id": 1011,
+                      "timestamp": 1672502400000,
+                      "rarity": 3,
+                      "gacha": 1001001,
+                      "gachaType": 1001,
+                      "pity": 0,
+                      "manual": false,
+                      "no": 1,
+                      "result": 0
+                    }
+                  ]
+                },
+                "lastManualImportUid": 0,
+                "share": {
+                  "name": "Proxy",
+                  "profile": 3200000
+                },
+                "itemAppend": {
+                  "1011": 1,
+                  "1031": 1,
+                  "1081": 1
+                },
+                "flags": {}
+              },
+              "1": {
+                "itemList": []
+              },
+              "2": {
+                "version": 2,
+                "enabled": {
+                  "1001001": true
+                },
+                "arcadeEnabled": {},
+                "poEnabled": {}
+              },
+              "3": {
+                "version": 1,
+                "settings": {}
+              }
+            },
+            "version": 6
+          }
+        },
+        "curProfileId": 1
+      }
+    }"#;
+
+  #[test]
+  fn test_zzz_rng_moe_v1_reader() {
+    let input = ZZZ_RNG_MOE_V1_BACKUP;
+    let records = ZenlessRngMoeGachaRecordsReader {
+      expected_profile_id: 1,
+      expected_locale: "en-us".to_owned(),
+      expected_uid: 10_000_002,
+    }
+    .read(GachaMetadata::embedded(), Cursor::new(input))
+    .unwrap();
+
+    assert_eq!(records.len(), 1);
+    assert_eq!(
+      records[0],
+      GachaRecord {
+        business: Business::ZenlessZoneZero,
+        uid: 10_000_002,
+        id: "1000000000000000002".to_owned(),
+        gacha_type: 1,
+        gacha_id: Some(0),
+        rank_type: 3,
+        count: 1,
+        lang: "en-us".to_owned(),
+        time: datetime!(2023-01-01 00:00:00 +8),
+        name: "Anby".to_owned(),
+        item_type: "Agents".to_owned(),
+        item_id: Some("1011".to_owned()),
+      }
+    );
+  }
+
+  #[test]
+  fn test_zzz_rng_moe_v1_touch_profiles() {
+    let input = ZZZ_RNG_MOE_V1_BACKUP;
+    let profiles = ZenlessRngMoeBackupTouchProfile::touch_profiles(Cursor::new(input)).unwrap();
+
+    assert_eq!(profiles.len(), 1);
+    assert_eq!(
+      profiles[&1],
+      ZenlessRngMoeBackupTouchProfile {
+        name: "Default".to_owned(),
+        id: 1,
+        bind_uid: None,
+      }
+    );
   }
 }
 
