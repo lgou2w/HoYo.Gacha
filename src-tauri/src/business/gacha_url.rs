@@ -345,8 +345,8 @@ impl GachaUrl {
   ) -> Result<GachaUrl, GachaUrlError> {
     info!("Find owner consistency gacha url...");
 
-    let mut actual = HashSet::with_capacity(dirty_urls.len());
-    let mut contains_empty: usize = 0;
+    let mut actuals = HashSet::with_capacity(dirty_urls.len());
+    let mut contains_empty = false;
 
     for dirty in dirty_urls {
       let parsed = match ParsedGachaUrl::parse(
@@ -363,70 +363,71 @@ impl GachaUrl {
         }
       };
 
-      match request_gacha_url_with_retry(parsed.value.clone(), None).await {
+      let response = match request_gacha_url_with_retry(parsed.value.clone(), None).await {
+        Ok(response) => response,
         Err(error) => {
           warn!("Error requesting gacha url: {error:?}");
           continue;
         }
-        Ok(response) => match response.data.as_ref().and_then(|page| page.list.first()) {
-          None => {
-            // It's possible. For example:
-            //   There are no gacha records.
-            //   Server is not synchronising data (1 hour delay or more)
-            warn!("Gacha url responded with empty record data");
-            contains_empty += 1;
+      };
 
-            // FIXME: continue may not be secure.
-            //   If the account is not record data and there are hundreds of cached gacha urls
-            //   (when gacha record are constantly opened in game)
-            continue;
-          }
-          Some(record) => {
-            if record.uid == expected_uid {
-              info!(
-                message = "Capture the gacha url with the expected uid",
-                expected_uid,
-                creation_time = ?dirty.creation_time,
-                url = ?dirty.value,
-              );
+      let Some(record) = response.data.as_ref().and_then(|page| page.list.first()) else {
+        // It's possible. For example:
+        //   There are no gacha records.
+        //   Server is not synchronising data (1 hour delay or more)
+        warn!("Gacha url responded with empty record data");
+        contains_empty = true;
 
-              return Ok(GachaUrl {
-                business: biz.business,
-                region: biz.region,
-                creation_time: dirty.creation_time,
-                url: parsed,
-                owner_uid: expected_uid,
-              });
-            } else {
-              // The gacha url does not match the expected uid
-              actual.insert(record.uid);
-            }
-          }
-        },
+        // FIXME: continue may not be secure.
+        //   If the account is not record data and there are hundreds of cached gacha urls
+        //   (when gacha record are constantly opened in game)
+        continue;
+      };
+
+      if record.uid == expected_uid {
+        info!(
+          message = "Capture the gacha url with the expected uid",
+          expected_uid,
+          creation_time = ?dirty.creation_time,
+          url = ?dirty.value,
+        );
+
+        return Ok(GachaUrl {
+          business: biz.business,
+          region: biz.region,
+          creation_time: dirty.creation_time,
+          url: parsed,
+          owner_uid: expected_uid,
+        });
+      } else {
+        // The gacha url does not match the expected uid
+        actuals.insert(record.uid);
       }
     }
 
-    // HACK: If the account's record data has not been
-    //   synchronised, then a special error kind is returned.
-    //   When the record is empty, it is impossible to determine whether
-    //   the URL is consistent with the expected UID. This is a necessary measure.
-    if contains_empty != 0 {
-      warn!("Gacha url exists for empty record data.");
-      Err(GachaUrlErrorKind::EmptyData)?
-    }
-
-    if actual.is_empty() {
-      warn!("No gacha url found");
-      Err(GachaUrlErrorKind::NotFound)?
+    if actuals.is_empty() {
+      // No matching uid found from gacha urls
+      if contains_empty {
+        // HACK: If the account's record data has not been
+        //   synchronised, then a special error kind is returned.
+        //   When the record is empty, it is impossible to determine whether
+        //   the URL is consistent with the expected UID. This is a necessary measure.
+        warn!("Gacha url exists for empty record data.");
+        Err(GachaUrlErrorKind::EmptyData)?
+      } else {
+        warn!("No gacha url found");
+        Err(GachaUrlErrorKind::NotFound)?
+      }
     } else {
+      // Apparently, these actual gacha urls do not match the expected uid
       warn!(
         message = "The expected uid does not match the owner of the existing gacha urls",
         %expected_uid,
-        ?actual
+        ?actuals
       );
       Err(GachaUrlErrorKind::InconsistentUid {
         expected: expected_uid,
-        actual,
+        actuals,
       })?
     }
   }
