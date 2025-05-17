@@ -26,10 +26,13 @@ declare_error_kinds! {
   #[derive(Debug, thiserror::Error)]
   GachaUrlError {
     #[error("Webcaches path does not exist: {path}")]
-    WebCachesNotFound { path: PathBuf },
+    WebCachesNotFound {
+      path: PathBuf
+    },
 
-    #[error("Error opening webcaches: {cause}")]
+    #[error("Error opening webcaches '{path}': {cause}")]
     OpenWebCaches {
+      path: PathBuf,
       cause: std::io::Error => serde_json::json!({
         "kind": cause.kind().to_string(),
         "message": cause.to_string(),
@@ -51,19 +54,31 @@ declare_error_kinds! {
     NotFound,
 
     #[error("Illegal gacha url")]
-    Illegal { url: String },
+    Illegal {
+      url: String
+    },
 
-    #[error("Illegal gacha url game biz (expected: {expected}, actual: {actual}")]
-    IllegalBiz { url: String, expected: String, actual: String },
+    #[error("Illegal gacha url game biz: {actual} (Expected: {expected})")]
+    IllegalBiz {
+      url: String,
+      expected: String,
+      actual: String
+    },
 
     #[error("Invalid gacha url query params: {params:?}")]
-    InvalidParams { params: Vec<String> },
+    InvalidParams {
+      params: Vec<String>
+    },
 
     #[error("Failed to parse gacha url: {cause}")]
-    Parse { cause: url::ParseError => cause.to_string() },
+    Parse {
+      cause: url::ParseError => cause.to_string()
+    },
 
     #[error("Error sending http request: {cause}")]
-    Reqwest { cause: reqwest::Error => cause.to_string() },
+    Reqwest {
+      cause: reqwest::Error => cause.to_string()
+    },
 
     #[error("Authkey timeout for gacha url")]
     AuthkeyTimeout,
@@ -71,11 +86,17 @@ declare_error_kinds! {
     #[error("Visit gacha url too frequently")]
     VisitTooFrequently,
 
-    #[error("Unexpected gacha url error response: retcode = {retcode}, message = {message:?}")]
-    UnexpectedResponse { retcode: i32, message: String },
+    #[error("Unexpected gacha url error response: retcode: {retcode}, message: {message}")]
+    UnexpectedResponse {
+      retcode: i32,
+      message: String
+    },
 
-    #[error("Owner uid of the gacha url does not match (expected: {expected}, actual: {actual:?})")]
-    InconsistentUid { expected: u32, actual: HashSet<u32> },
+    #[error("Owner uid of the gacha url does not match: {actuals:?} (Expected: {expected})")]
+    InconsistentUid {
+      expected: u32,
+      actuals: HashSet<u32>
+    },
   }
 }
 
@@ -162,7 +183,10 @@ impl DirtyGachaUrl {
 
     let mut walk_dir = tokio::fs::read_dir(&webcaches_folder)
       .await
-      .map_err(|cause| GachaUrlErrorKind::OpenWebCaches { cause })?;
+      .map_err(|cause| GachaUrlErrorKind::OpenWebCaches {
+        path: webcaches_folder.clone(),
+        cause,
+      })?;
 
     let mut versions = Vec::new();
     while let Ok(Some(entry)) = walk_dir.next_entry().await {

@@ -88,7 +88,7 @@ export enum GachaUrlErrorKind {
 
 export type GachaUrlError = DetailedError<typeof NamedGachaUrlError,
   | { kind: GachaUrlErrorKind.WebCachesNotFound, path: string }
-  | { kind: GachaUrlErrorKind.OpenWebCaches, cause: NativeIOError }
+  | { kind: GachaUrlErrorKind.OpenWebCaches, path: string, cause: NativeIOError }
   | { kind: GachaUrlErrorKind.ReadDiskCache, cause: NativeIOError }
   | { kind: GachaUrlErrorKind.EmptyData }
   | { kind: GachaUrlErrorKind.NotFound }
@@ -100,7 +100,7 @@ export type GachaUrlError = DetailedError<typeof NamedGachaUrlError,
   | { kind: GachaUrlErrorKind.AuthkeyTimeout }
   | { kind: GachaUrlErrorKind.VisitTooFrequently }
   | { kind: GachaUrlErrorKind.UnexpectedResponse, retcode: number, message: string }
-  | { kind: GachaUrlErrorKind.InconsistentUid, expected: Account['uid'], actual: Array<Account['uid']> }
+  | { kind: GachaUrlErrorKind.InconsistentUid, expected: Account['uid'], actuals: Array<Account['uid']> }
 >
 
 export function isGachaUrlError (error: unknown): error is GachaUrlError {
