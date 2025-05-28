@@ -136,7 +136,7 @@ const useCardsEntryStyles = makeStyles({
     color: tokens.colorPaletteBerryForeground1,
   },
   labelGroupBlue: {
-    color: tokens.colorBrandForeground1,
+    color: tokens.colorPaletteBlueBorderActive,
   },
 })
 
