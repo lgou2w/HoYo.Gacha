@@ -1,32 +1,31 @@
-import React, { Fragment, PropsWithChildren } from 'react'
+import React, { PropsWithChildren } from 'react'
 import { makeStyles, tokens } from '@fluentui/react-components'
 import Navbar from '@/components/Layout/Navbar'
 import Notifier from '@/components/Layout/Notifier'
 import Titlebar from '@/components/Layout/TitleBar'
-import { TitleBarHeight } from '@/components/Layout/declares'
+import { NavbarWidth, TitleBarHeight } from '@/components/Layout/declares'
 
 const useStyles = makeStyles({
-  wrapper: {
+  root: {
     display: 'flex',
     flexDirection: 'row',
-    width: '100%',
+    width: '100vw',
     height: '100vh',
-  },
-  scroller: {
-    display: 'block',
-    width: 'inherit',
-    height: `calc(100vh - ${TitleBarHeight})`,
-    marginTop: TitleBarHeight,
-    overflow: 'hidden auto',
-    // https://www.zhangxinxu.com/wordpress/2022/01/css-scrollbar-gutter/
-    // scrollbarGutter: 'stable both-edges',
   },
   content: {
     display: 'flex',
     flexDirection: 'column',
-    width: 'inherit',
-    rowGap: tokens.spacingHorizontalL,
+    width: `calc(100% - ${NavbarWidth})`,
+    height: `calc(100% - ${TitleBarHeight})`,
+    marginTop: TitleBarHeight,
+    marginLeft: NavbarWidth,
+    overflow: 'hidden auto',
+    // https://www.zhangxinxu.com/wordpress/2022/01/css-scrollbar-gutter/
+    // scrollbarGutter: 'stable both-edges',
+  },
+  wrapper: {
     padding: `${tokens.spacingVerticalL} ${tokens.spacingHorizontalL}`,
+    flex: 1,
   },
 })
 
@@ -34,17 +33,15 @@ export default function Layout (props: PropsWithChildren) {
   const styles = useStyles()
 
   return (
-    <Fragment>
-      <Titlebar />
-      <div className={styles.wrapper}>
-        <Navbar />
-        <div className={styles.scroller}>
-          <main className={styles.content}>
-            <Notifier />
-            {props.children}
-          </main>
+    <div className={styles.root}>
+      <Navbar />
+      <div className={styles.content}>
+        <Titlebar />
+        <Notifier />
+        <div className={styles.wrapper}>
+          {props.children}
         </div>
       </div>
-    </Fragment>
+    </div>
   )
 }

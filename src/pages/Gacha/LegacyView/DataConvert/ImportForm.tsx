@@ -7,7 +7,7 @@ import { ImportGachaRecordsArgs, importGachaRecords } from '@/api/commands/busin
 import { pickFile } from '@/api/commands/core'
 import { extractErrorMessage } from '@/api/error'
 import { useSelectedAccountSuspenseQueryData } from '@/api/queries/accounts'
-import { invalidatePrettizedGachaRecordsQuery, useFirstGachaRecordSuspenseQueryData } from '@/api/queries/business'
+import { invalidateFirstGachaRecordQuery, invalidatePrettizedGachaRecordsQuery, useFirstGachaRecordSuspenseQueryData } from '@/api/queries/business'
 import Locale from '@/components/Locale'
 import useBusinessContext from '@/hooks/useBusinessContext'
 import useI18n from '@/hooks/useI18n'
@@ -217,9 +217,11 @@ export default function GachaLegacyViewDataConvertImportForm (props: Props) {
       }),
     })
 
+    // HACK: If the change is greater than 0, invalidate the gacha records
     if (changes > 0) {
-      // HACK: If the change is greater than 0, invalidate the gacha records
-      invalidatePrettizedGachaRecordsQuery(selectedAccount.business, selectedAccount.uid)
+      console.debug('Invalidating prettized gacha records cache...')
+      invalidatePrettizedGachaRecordsQuery(selectedAccount.business, selectedAccount.uid, i18n.constants.gacha)
+      invalidateFirstGachaRecordQuery(selectedAccount.business, selectedAccount.uid)
     }
   }, [file, format, formatUigfLocale, i18n, notifier, onSuccess, produce, saveOnConflict, selectedAccount])
 

@@ -5,7 +5,7 @@ use serde::Serialize;
 use time::OffsetDateTime;
 use time::serde::rfc3339;
 
-use crate::business::{GachaMetadata, GachaMetadataEntryLimited};
+use crate::business::{GachaMetadata, GachaMetadataEntryLimited, GachaMetadataEntryRef};
 use crate::error::declare_error_kinds;
 use crate::models::{Business, GachaRecord};
 
@@ -17,7 +17,7 @@ declare_error_kinds! {
       business: Business,
       locale: String,
       name: String,
-      item_id: Option<String>
+      item_id: String
     },
   }
 }
@@ -99,40 +99,50 @@ impl PrettyGachaRecord {
     metadata: &GachaMetadata,
     record: &GachaRecord,
     used_pity: Option<u64>,
-    golden: bool,
+    is_golden: bool,
+    custom_locale: Option<&str>,
   ) -> Result<Self, PrettyGachaRecordsError> {
-    let entry = metadata
-      .obtain(record.business, &record.lang)
-      .and_then(|map| {
-        if let Some(item_id) = record.item_id.as_deref() {
-          map.entry_from_id(item_id)
-        } else {
-          map.entry_from_name_first(&record.name)
-        }
-      })
+    #[inline]
+    fn lookup<'a>(
+      metadata: &'a GachaMetadata,
+      record: &'a GachaRecord,
+      locale: &str,
+    ) -> Option<GachaMetadataEntryRef<'a>> {
+      metadata
+        .obtain(record.business, locale)
+        .and_then(|map| map.entry_from_id(&record.item_id))
+    }
+
+    // Use custom locale first, otherwise use record lang
+    let entry = custom_locale
+      .and_then(|locale| lookup(metadata, record, locale))
+      .or(lookup(metadata, record, &record.lang))
       .ok_or_else(|| PrettyGachaRecordsErrorKind::MissingMetadataEntry {
         business: record.business,
-        locale: record.lang.clone(),
+        locale: custom_locale.unwrap_or(&record.lang).to_owned(),
         name: record.name.clone(),
         item_id: record.item_id.clone(),
       })?;
 
+    let limited = if is_golden {
+      Some(match entry.limited {
+        GachaMetadataEntryLimited::No => false,
+        GachaMetadataEntryLimited::Yes => true,
+        GachaMetadataEntryLimited::Deadline(deadline) => record.time <= *deadline,
+      })
+    } else {
+      None
+    };
+
     Ok(Self {
       id: record.id.clone(),
       item_category: entry.category,
-      item_id: record.item_id.as_deref().unwrap_or(entry.id).to_owned(),
-      name: record.name.clone(),
+      // HACK: Always use item_id and name from Metadata
+      item_id: entry.id.to_owned(),
+      name: entry.name.to_owned(),
       time: record.time,
       used_pity,
-      limited: if golden {
-        Some(match entry.limited {
-          GachaMetadataEntryLimited::No => false,
-          GachaMetadataEntryLimited::Yes => true,
-          GachaMetadataEntryLimited::Deadline(deadline) => record.time <= *deadline,
-        })
-      } else {
-        None
-      },
+      limited,
     })
   }
 }
@@ -140,7 +150,8 @@ impl PrettyGachaRecord {
 #[derive(Clone, Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CategorizedMetadataBlueRanking {
-  pub values: Vec<PrettyGachaRecord>,
+  // HACK: The values of 3-star items are not needed for the time being.
+  // pub values: Vec<PrettyGachaRecord>,
   pub sum: u64,
   pub percentage: f64,
 }
@@ -258,6 +269,7 @@ impl PrettiedGachaRecords {
     business: Business,
     uid: u32,
     records: &[GachaRecord],
+    custom_locale: Option<&str>,
   ) -> Result<Self, PrettyGachaRecordsError> {
     let total = records.len() as u64;
     let start_time = records.first().map(|record| record.time);
@@ -269,7 +281,8 @@ impl PrettiedGachaRecords {
         acc
       });
 
-    let categorizeds = Self::compute_categorizeds(metadata, business, gacha_type_records)?;
+    let categorizeds =
+      Self::compute_categorizeds(metadata, business, gacha_type_records, custom_locale)?;
     let aggregated = Self::compute_aggregated(business, records, &categorizeds);
     let gacha_type_categories = categorizeds.values().fold(
       HashMap::with_capacity(categorizeds.len()),
@@ -295,6 +308,7 @@ impl PrettiedGachaRecords {
     metadata: &GachaMetadata,
     business: Business,
     mut gacha_type_records: HashMap<u32, Vec<&GachaRecord>>,
+    custom_locale: Option<&str>,
   ) -> Result<HashMap<PrettyCategory, CategorizedMetadata>, PrettyGachaRecordsError> {
     let gacha_type_categories = KNOWN_CATEGORIZEDS.get(&business).unwrap(); // SAFETY
     let mut categorizeds = HashMap::with_capacity(gacha_type_categories.len());
@@ -320,7 +334,7 @@ impl PrettiedGachaRecords {
       let start_time = records.first().map(|record| record.time);
       let end_time = records.last().map(|record| record.time);
       let last_end_id = records.last().map(|record| record.id.clone());
-      let rankings = Self::compute_categorized_rankings(metadata, records)?;
+      let rankings = Self::compute_categorized_rankings(metadata, records, custom_locale)?;
 
       categorizeds.insert(
         *category,
@@ -342,6 +356,7 @@ impl PrettiedGachaRecords {
   fn compute_categorized_rankings(
     metadata: &GachaMetadata,
     records: Vec<&GachaRecord>,
+    custom_locale: Option<&str>,
   ) -> Result<CategorizedMetadataRankings, PrettyGachaRecordsError> {
     let total = records.len() as u64;
 
@@ -349,13 +364,14 @@ impl PrettiedGachaRecords {
       let values = records
         .iter()
         .filter(|record| record.is_rank_type_blue())
-        .map(|record| PrettyGachaRecord::mapping(metadata, record, None, false))
-        .collect::<Result<Vec<_>, _>>()?;
+        // .map(|record| PrettyGachaRecord::mapping(metadata, record, None, false, custom_locale))
+        // .collect::<Result<Vec<_>, _>>()?;
+        .collect::<Vec<_>>();
 
       let sum = values.len() as u64;
 
       CategorizedMetadataBlueRanking {
-        values,
+        // values,
         sum,
         percentage: percentage!(total, sum),
       }
@@ -379,6 +395,7 @@ impl PrettiedGachaRecords {
             record,
             Some(pity),
             false,
+            custom_locale,
           )?);
         }
 
@@ -416,7 +433,9 @@ impl PrettiedGachaRecords {
         limited_pity += 1;
 
         if is_golden {
-          let pretty = PrettyGachaRecord::mapping(metadata, record, Some(pity), true)?;
+          let pretty =
+            PrettyGachaRecord::mapping(metadata, record, Some(pity), true, custom_locale)?;
+
           if pretty.limited == Some(true) {
             limited_sum += 1;
             limited_used_pity_sum += limited_pity;
@@ -471,7 +490,7 @@ impl PrettiedGachaRecords {
     let end_time = records.last().map(|record| record.time);
 
     let mut blue_sum = 0;
-    let mut blue_values = Vec::new();
+    // let mut blue_values = Vec::new();
 
     let mut purple_sum = 0;
     let mut purple_values = Vec::new();
@@ -484,7 +503,7 @@ impl PrettiedGachaRecords {
       .filter(|categorized| categorized.category != PrettyCategory::Bangboo)
     {
       blue_sum += categorized.rankings.blue.sum;
-      blue_values.extend_from_slice(&categorized.rankings.blue.values);
+      // blue_values.extend_from_slice(&categorized.rankings.blue.values);
 
       purple_sum += categorized.rankings.purple.sum;
       purple_values.extend_from_slice(&categorized.rankings.purple.values);
@@ -493,7 +512,7 @@ impl PrettiedGachaRecords {
       golden_values.extend_from_slice(&categorized.rankings.golden.values);
     }
 
-    blue_values.sort_by(|a, b| a.id.cmp(&b.id));
+    // blue_values.sort_by(|a, b| a.id.cmp(&b.id));
     purple_values.sort_by(|a, b| a.id.cmp(&b.id));
     golden_values.sort_by(|a, b| a.id.cmp(&b.id));
 
@@ -520,7 +539,7 @@ impl PrettiedGachaRecords {
 
     let rankings = CategorizedMetadataRankings {
       blue: CategorizedMetadataBlueRanking {
-        values: blue_values,
+        // values: blue_values,
         sum: blue_sum,
         percentage: percentage!(total, blue_sum),
       },

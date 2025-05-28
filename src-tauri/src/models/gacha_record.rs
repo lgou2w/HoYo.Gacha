@@ -44,7 +44,7 @@ pub struct GachaRecord {
   pub time: OffsetDateTime,
   pub name: String,
   pub item_type: String,
-  pub item_id: Option<String>,
+  pub item_id: String,
 }
 
 impl GachaRecord {

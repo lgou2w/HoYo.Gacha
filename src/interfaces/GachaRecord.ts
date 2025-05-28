@@ -55,13 +55,15 @@ export enum PrettyCategory {
 }
 
 export interface CategorizedMetadataBlueRanking {
-  values: PrettyGachaRecord[]
+  // HACK: The values of 3-star items are not needed for the time being.
+  // values: PrettyGachaRecord[]
   sum: number
   percentage: number
 }
 
 export interface CategorizedMetadataPurpleRanking
 extends CategorizedMetadataBlueRanking {
+  values: PrettyGachaRecord[]
   average: number
   nextPity: number
 }

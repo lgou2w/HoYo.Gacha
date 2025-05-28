@@ -5,8 +5,8 @@ import Locale, { LocaleMapping } from '@/components/Locale'
 import useI18n from '@/hooks/useI18n'
 import { Business, Businesses, ReversedBusinesses } from '@/interfaces/Business'
 import { AggregatedMetadata, CategorizedMetadata, PrettyCategory, PrettyGachaRecord } from '@/interfaces/GachaRecord'
+import { CompositeState } from '@/pages/Gacha/LegacyView/Clientarea/useCompositeState'
 import GachaItem from '@/pages/Gacha/LegacyView/GachaItem'
-import { ParentCompositeState } from './declares'
 
 const useStyles = makeStyles({
   root: {
@@ -27,7 +27,7 @@ const useStyles = makeStyles({
   },
 })
 
-export default function GachaLegacyViewClientareaOverviewGrid (props: ParentCompositeState) {
+export default function GachaLegacyViewClientareaOverviewGrid (props: CompositeState) {
   const styles = useStyles()
   const {
     prettized: {

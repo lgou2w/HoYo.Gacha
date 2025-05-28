@@ -6,6 +6,7 @@ export default {
   constants: {
     text: 'English (US)',
     dayjs: 'en',
+    gacha: 'en-us',
   },
   translation: {
     Business: {
@@ -31,6 +32,7 @@ export default {
             Permanent_Title: 'Wanderlust Invocation',
             Character: 'Character Event Wish',
             Weapon: 'Weapon Event Wish',
+            Weapon_Title: 'Epitome Invocation',
             Chronicled: 'Chronicled Wish',
             Aggregated: 'Aggregated',
           },
@@ -302,7 +304,7 @@ export default {
                 },
               },
               LastUpdated: {
-                Title: 'Latest update date of $t(Business.{{keyofBusinesses}}.Gacha.Name) records: ',
+                Title: 'Latest update date of records: ',
               },
               Tooltips: {
                 Fragment1: {
@@ -313,6 +315,20 @@ export default {
                 },
                 Fragment2: ' $t(Business.{{keyofBusinesses}}.Gacha.Name) records date coverage: ',
                 Fragment3: ' Due to official settings, the latest data is subject to a delay of approximately one hour. During peak periods for new pools, this delay may be extended. For precise timing, please refer to the in-game data.',
+              },
+            },
+            Analysis: {
+              CardsEntry: {
+                Labels: {
+                  AverageAndLimited: 'Average / Limited',
+                  Limited: 'Limited',
+                  Count: 'Count',
+                },
+              },
+              CardsEntryRecord: {
+                NextPity: 'Pity Count',
+                HardPity: 'Hard!',
+                Limited: 'UP',
               },
             },
           },

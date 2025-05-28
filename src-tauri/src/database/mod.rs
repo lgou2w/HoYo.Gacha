@@ -182,7 +182,7 @@ CREATE TABLE IF NOT EXISTS `HG_GACHA_RECORDS` (
   `lang`       TEXT    NOT NULL,
   `name`       TEXT    NOT NULL,
   `item_type`  TEXT    NOT NULL,
-  `item_id`    TEXT,
+  `item_id`    TEXT    NOT NULL,
   PRIMARY KEY (`business`, `uid`, `id`)
 );
 CREATE INDEX IF NOT EXISTS `HG_GACHA_RECORDS.id_idx`                      ON `HG_GACHA_RECORDS` (`id`);

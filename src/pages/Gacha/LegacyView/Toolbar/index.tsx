@@ -11,6 +11,7 @@ const useStyles = makeStyles({
     flexDirection: 'row',
     columnGap: tokens.spacingHorizontalL,
     alignItems: 'center',
+    height: '4rem',
   },
   actions: {
     display: 'flex',

@@ -14,6 +14,7 @@ const useStyles = makeStyles({
     display: 'flex',
     flexDirection: 'column',
     rowGap: tokens.spacingVerticalL,
+    height: '100%',
   },
   toolbar: {},
   clientarea: {},

@@ -2,15 +2,20 @@ import React from 'react'
 import { Caption1, Tooltip, makeStyles, tokens } from '@fluentui/react-components'
 import { CalendarSyncRegular } from '@fluentui/react-icons'
 import Locale from '@/components/Locale'
+import useAutoUpdate from '@/hooks/useAutoUpdate'
 import useI18n from '@/hooks/useI18n'
-import { ParentCompositeState } from './declares'
+import { CompositeState } from '@/pages/Gacha/LegacyView/Clientarea/useCompositeState'
 
 const useStyles = makeStyles({
   root: {
-    display: 'inline-flex',
+    display: 'flex',
     flexDirection: 'row',
     columnGap: tokens.spacingHorizontalXS,
     alignItems: 'center',
+    height: '1rem',
+    '> *': {
+      flexShrink: 0,
+    },
   },
   time: {
     color: tokens.colorBrandForeground2,
@@ -19,11 +24,13 @@ const useStyles = makeStyles({
   },
 })
 
-export default function GachaLegacyViewClientareaOverviewLastUpdated (props: ParentCompositeState) {
+export default function GachaLegacyViewClientareaLastUpdated (props: CompositeState) {
   const styles = useStyles()
   const { keyofBusinesses, selectedAccount } = props
   const lastUpdated = selectedAccount.properties?.lastGachaRecordsUpdated
   const i18n = useI18n()
+
+  useAutoUpdate(60 * 1000)
 
   if (!lastUpdated) {
     return null

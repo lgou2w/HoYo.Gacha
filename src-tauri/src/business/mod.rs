@@ -272,15 +272,21 @@ pub async fn business_find_and_pretty_gacha_records(
   database: DatabaseState<'_>,
   business: Business,
   uid: u32,
+  custom_locale: Option<String>,
 ) -> Result<PrettiedGachaRecords, Box<dyn ErrorDetails + Send + 'static>> {
   let records =
     GachaRecordQuestioner::find_gacha_records_by_business_and_uid(database.as_ref(), business, uid)
       .await
       .map_err(Error::boxed)?;
 
-  let prettied =
-    PrettiedGachaRecords::pretty(GachaMetadata::embedded(), business, uid, &records[..])
-      .map_err(Error::boxed)?;
+  let prettied = PrettiedGachaRecords::pretty(
+    GachaMetadata::embedded(),
+    business,
+    uid,
+    &records[..],
+    custom_locale.as_deref(),
+  )
+  .map_err(Error::boxed)?;
 
   Ok(prettied)
 }

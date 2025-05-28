@@ -6,7 +6,7 @@ import { produce } from 'immer'
 import { GachaRecordsFetcherFragmentKind, GachaUrlErrorKind, fromWebCachesGachaUrl, isGachaUrlError } from '@/api/commands/business'
 import { extractErrorMessage } from '@/api/error'
 import { useSelectedAccountSuspenseQueryData, useUpdateAccountPropertiesMutation } from '@/api/queries/accounts'
-import { invalidatePrettizedGachaRecordsQuery, usePrettizedGachaRecordsSuspenseQueryData } from '@/api/queries/business'
+import { invalidateFirstGachaRecordQuery, invalidatePrettizedGachaRecordsQuery, usePrettizedGachaRecordsSuspenseQueryData } from '@/api/queries/business'
 import Locale, { LocaleMapping } from '@/components/Locale'
 import useBusinessContext from '@/hooks/useBusinessContext'
 import useGachaRecordsFetcher, { GachaRecordsFetcherFetchArgs, GachaRecordsFetcherFetchFragment } from '@/hooks/useGachaRecordsFetcher'
@@ -207,14 +207,14 @@ const useButtonStyles = makeStyles({
 function GachaLegacyViewToolbarUrlButton () {
   const styles = useButtonStyles()
   const { business, keyofBusinesses } = useBusinessContext()
+  const i18n = useI18n()
   const selectedAccount = useSelectedAccountSuspenseQueryData(keyofBusinesses)
-  const prettized = usePrettizedGachaRecordsSuspenseQueryData(business, selectedAccount?.uid)
+  const prettized = usePrettizedGachaRecordsSuspenseQueryData(business, selectedAccount?.uid, i18n.constants.gacha)
 
   const [isBusy, setBusy] = useState(false)
   const updateAccountPropertiesMutation = useUpdateAccountPropertiesMutation()
   const gachaRecordsFetcher = useGachaRecordsFetcher()
   const notifier = useNotifier()
-  const i18n = useI18n()
 
   const disabled = !selectedAccount || !prettized || isBusy || gachaRecordsFetcher.state.isFetching
   const handleUpdate = useCallback(async (
@@ -342,10 +342,11 @@ function GachaLegacyViewToolbarUrlButton () {
       }),
     })
 
-    // if nothing has changed, no need to invalidate the cache
-    if (changes !== 0) {
+    // HACK: If the change is greater than 0, invalidate the gacha records
+    if (changes > 0) {
       console.debug('Invalidating prettized gacha records cache...')
-      await invalidatePrettizedGachaRecordsQuery(business, uid)
+      invalidatePrettizedGachaRecordsQuery(selectedAccount.business, selectedAccount.uid, i18n.constants.gacha)
+      invalidateFirstGachaRecordQuery(selectedAccount.business, selectedAccount.uid)
     }
 
     setBusy(false)

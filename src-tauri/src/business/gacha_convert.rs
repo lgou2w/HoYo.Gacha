@@ -425,7 +425,7 @@ impl GachaRecordsWriter for LegacyUigfGachaRecordsWriter {
         time: record.time_to_primitive(),
         name: Some(record.name),
         lang: Some(record.lang),
-        item_id: record.item_id,
+        item_id: Some(record.item_id),
         item_type: Some(record.item_type),
         rank_type: Some(record.rank_type),
         id: record.id,
@@ -617,7 +617,7 @@ impl GachaRecordsReader for LegacyUigfGachaRecordsReader {
         item_type: item
           .item_type
           .unwrap_or(metadata_entry.category_name.to_owned()),
-        item_id: Some(item.item_id.unwrap_or(metadata_entry.id.to_owned())),
+        item_id: item.item_id.unwrap_or(metadata_entry.id.to_owned()),
       })
     }
 
@@ -952,33 +952,15 @@ impl GachaRecordsWriter for UigfGachaRecordsWriter {
             // The cursor of the user's record, so it starts at 1
             let cursor = cursor + 1;
 
-            // Find the metadata entry
-            let name = record.name.clone();
             let item_id = record.item_id.clone();
-            let has_item_id = item_id.is_some();
-
             let metadata_entry = metadata
               .obtain(Business::$business, &record.lang)
-              .and_then(|map| {
-                if has_item_id {
-                  map.entry_from_id(item_id.as_ref().unwrap())
-                } else {
-                  map.entry_from_name_first(&name)
-                }
-              })
+              .and_then(|map| map.entry_from_id(&item_id))
               .ok_or_else(|| UigfGachaRecordsWriteErrorKind::MissingMetadataEntry {
                 business: Business::$business,
                 locale: record.lang.clone(),
-                key: if has_item_id {
-                  FIELD_ITEM_ID
-                } else {
-                  FIELD_NAME
-                },
-                val: if has_item_id {
-                  item_id.clone().unwrap()
-                } else {
-                  name.clone()
-                },
+                key: FIELD_ITEM_ID,
+                val: item_id.clone(),
                 cursor,
               })?;
 
@@ -1027,7 +1009,7 @@ impl GachaRecordsWriter for UigfGachaRecordsWriter {
             } else {
               Some(record.rank_type)
             },
-            item_id: record.item_id.unwrap_or(metadata_entry.id.to_owned()),
+            item_id: record.item_id,
             id: record.id,
           })
         }
@@ -1065,7 +1047,7 @@ impl GachaRecordsWriter for UigfGachaRecordsWriter {
             } else {
               Some(record.rank_type)
             },
-            item_id: record.item_id.unwrap_or(metadata_entry.id.to_owned()),
+            item_id: record.item_id,
             id: record.id,
           })
         }
@@ -1096,7 +1078,7 @@ impl GachaRecordsWriter for UigfGachaRecordsWriter {
             } else {
               Some(record.rank_type)
             },
-            item_id: record.item_id.unwrap_or(metadata_entry.id.to_owned()),
+            item_id: record.item_id,
             id: record.id,
           })
         }
@@ -1256,7 +1238,7 @@ impl GachaRecordsReader for UigfGachaRecordsReader {
               item_type: item
                 .item_type
                 .unwrap_or(metadata_entry.category_name.to_owned()),
-              item_id: Some(item.item_id),
+              item_id: item.item_id,
             })
           }
         }
@@ -1524,10 +1506,10 @@ impl GachaRecordsWriter for SrgfGachaRecordsWriter {
       }
 
       // HACK: In 'Honkai: Star Rail' business,
-      //   the gacha_id and item_id value of the Record must exist.
+      //   the gacha_id value of the Record must exist.
       //   Unless the user manually modifies the database record
-      if record.gacha_id.is_none() || record.item_id.is_none() {
-        panic!("Missing gacha_id or item_id in the record: {record:?}, cursor: {cursor}")
+      if record.gacha_id.is_none() {
+        panic!("Missing gacha_id in the record: {record:?}, cursor: {cursor}")
       }
 
       srgf.list.push(SrgfItem {
@@ -1539,7 +1521,7 @@ impl GachaRecordsWriter for SrgfGachaRecordsWriter {
         time: record.time_to_primitive(),
         name: Some(record.name),
         lang: Some(record.lang),
-        item_id: record.item_id.unwrap(),
+        item_id: record.item_id,
         item_type: Some(record.item_type),
         rank_type: Some(record.rank_type),
         id: record.id,
@@ -1676,7 +1658,7 @@ impl GachaRecordsReader for SrgfGachaRecordsReader {
         item_type: item
           .item_type
           .unwrap_or(metadata_entry.category_name.to_owned()),
-        item_id: Some(item.item_id),
+        item_id: item.item_id,
       })
     }
 
@@ -2030,7 +2012,7 @@ impl GachaRecordsReader for ZenlessRngMoeGachaRecordsReader {
           time: time.to_offset(server_region.time_zone()),
           name: entry.name.to_owned(),
           item_type: entry.category_name.to_owned(),
-          item_id: Some(item_id),
+          item_id,
         });
       }
     }
@@ -2215,7 +2197,7 @@ mod tests {
         time: datetime!(2023-01-01 00:00:00 +8),
         name: "Kamisato Ayaka".to_owned(),
         item_type: "Character".to_owned(),
-        item_id: Some("10000002".to_owned()),
+        item_id: "10000002".to_owned(),
       }
     );
   }
@@ -2299,7 +2281,7 @@ mod tests {
         time: datetime!(2023-01-01 00:00:00 +8), // Because the server time zone of this uid is +8
         name: "Kamisato Ayaka".to_owned(),
         item_type: "Character".to_owned(),
-        item_id: Some("10000002".to_owned()),
+        item_id: "10000002".to_owned(),
       }
     );
   }
@@ -2352,7 +2334,7 @@ mod tests {
       time: datetime!(2023-01-01 00:00:00 +8), // Because the server time zone of this uid is +8
       name: "Kamisato Ayaka".to_owned(),
       item_type: "Character".to_owned(),
-      item_id: Some("10000002".to_owned()),
+      item_id: "10000002".to_owned(),
     }];
 
     let temp_dir = tempfile::tempdir().unwrap();
@@ -2397,7 +2379,7 @@ mod tests {
       time: datetime!(2023-01-01 00:00:00 +8), // Because the server time zone of this uid is +8
       name: "Kamisato Ayaka".to_owned(),
       item_type: "Character".to_owned(),
-      item_id: Some("10000002".to_owned()),
+      item_id: "10000002".to_owned(),
     };
 
     let mut incorrect = correct.clone();
@@ -2506,7 +2488,7 @@ mod tests {
         time: datetime!(2023-01-01 00:00:00 +0),
         name: "Kamisato Ayaka".to_owned(),
         item_type: "Character".to_owned(),
-        item_id: Some("10000002".to_owned()),
+        item_id: "10000002".to_owned(),
       }
     );
 
@@ -2524,7 +2506,7 @@ mod tests {
         time: datetime!(2023-01-01 00:00:00 +0),
         name: "March 7th".to_owned(),
         item_type: "Character".to_owned(),
-        item_id: Some("1001".to_owned()),
+        item_id: "1001".to_owned(),
       }
     );
 
@@ -2542,7 +2524,7 @@ mod tests {
         time: datetime!(2023-01-01 00:00:00 +0),
         name: "Anby".to_owned(),
         item_type: "Agents".to_owned(),
-        item_id: Some("1011".to_owned()),
+        item_id: "1011".to_owned(),
       }
     );
   }
@@ -2562,7 +2544,7 @@ mod tests {
         time: datetime!(2023-01-01 00:00:00 +8), // Because the server time zone of this uid is +8
         name: "Kamisato Ayaka".to_owned(),
         item_type: "Character".to_owned(),
-        item_id: Some("10000002".to_owned()),
+        item_id: "10000002".to_owned(),
       },
       GachaRecord {
         business: Business::HonkaiStarRail,
@@ -2576,7 +2558,7 @@ mod tests {
         time: datetime!(2023-01-01 00:00:00 +8), // Because the server time zone of this uid is +8
         name: "March 7th".to_owned(),
         item_type: "Character".to_owned(),
-        item_id: Some("1001".to_owned()),
+        item_id: "1001".to_owned(),
       },
       GachaRecord {
         business: Business::ZenlessZoneZero,
@@ -2590,7 +2572,7 @@ mod tests {
         time: datetime!(2023-01-01 00:00:00 +8), // Because the server time zone of this uid is +8
         name: "Anby".to_owned(),
         item_type: "Agents".to_owned(),
-        item_id: Some("1011".to_owned()),
+        item_id: "1011".to_owned(),
       },
     ];
 
@@ -2668,7 +2650,7 @@ mod tests {
         time: datetime!(2023-01-01 00:00:00 +8),
         name: "March 7th".to_owned(),
         item_type: "Character".to_owned(),
-        item_id: Some("1001".to_owned()),
+        item_id: "1001".to_owned(),
       }
     );
   }
@@ -2687,7 +2669,7 @@ mod tests {
       time: datetime!(2023-01-01 00:00:00 +8), // Because the server time zone of this uid is +8
       name: "March 7th".to_owned(),
       item_type: "Character".to_owned(),
-      item_id: Some("1001".to_owned()),
+      item_id: "1001".to_owned(),
     }];
 
     let temp_dir = tempfile::tempdir().unwrap();
@@ -2886,7 +2868,7 @@ mod tests {
         time: datetime!(2023-01-01 00:00:00 +8),
         name: "Anby".to_owned(),
         item_type: "Agents".to_owned(),
-        item_id: Some("1011".to_owned()),
+        item_id: "1011".to_owned(),
       }
     );
   }

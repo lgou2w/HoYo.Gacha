@@ -6,6 +6,7 @@ export default {
   constants: {
     text: '简体中文',
     dayjs: 'zh-cn',
+    gacha: 'zh-cn',
   },
   translation: {
     Business: {
@@ -31,6 +32,7 @@ export default {
             Permanent_Title: '奔行世间',
             Character: '角色活动祈愿',
             Weapon: '武器活动祈愿',
+            Weapon_Title: '神铸赋形',
             Chronicled: '集录祈愿',
             Aggregated: '总计',
           },
@@ -308,6 +310,20 @@ export default {
                 },
                 Fragment2: '$t(Business.{{keyofBusinesses}}.Gacha.Name)记录日期覆盖范围：',
                 Fragment3: '因官方设定，最新数据存在约一小时的延迟。如遇到新池高峰期延迟可能更久。具体时间请以游戏内数据为准。',
+              },
+            },
+            Analysis: {
+              CardsEntry: {
+                Labels: {
+                  AverageAndLimited: '平均 / 限定',
+                  Limited: '限定',
+                  Count: '统计',
+                },
+              },
+              CardsEntryRecord: {
+                NextPity: '已垫',
+                HardPity: '保底!',
+                Limited: 'UP',
               },
             },
           },

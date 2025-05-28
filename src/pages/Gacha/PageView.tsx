@@ -3,7 +3,9 @@ import { makeStyles } from '@fluentui/react-components'
 import GachaLegacyView from './LegacyView'
 
 const useStyles = makeStyles({
-  root: {},
+  root: {
+    height: '100%',
+  },
 })
 
 export default function GachaPageView () {

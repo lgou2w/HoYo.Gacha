@@ -7,7 +7,7 @@ import debounce from 'debounce'
 const useStyles = makeStyles({
   root: {
     marginLeft: 'auto',
-    height: '100%',
+    flexShrink: 0,
   },
   button: {
     height: 'inherit',
@@ -27,7 +27,10 @@ const useStyles = makeStyles({
   },
 })
 
-export default function TitleBarButtons () {
+type TitleBarButtonsProps = Omit<React.JSX.IntrinsicElements['div'], 'children'>
+
+export default function TitleBarButtons (props: TitleBarButtonsProps) {
+  const { className, ...rest } = props
   const styles = useStyles()
   const [maximized, setMaximized] = useState(false)
   const updateMaximized = useCallback(async () => {
@@ -52,7 +55,7 @@ export default function TitleBarButtons () {
   }, [updateMaximized])
 
   return (
-    <div className={styles.root}>
+    <div className={mergeClasses(styles.root, className)} {...rest}>
       <Button
         className={mergeClasses(styles.button, styles.buttonNormal)}
         icon={<SubtractFilled />}

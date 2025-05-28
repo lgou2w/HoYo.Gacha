@@ -83,6 +83,7 @@ export enum GachaUrlErrorKind {
   AuthkeyTimeout = 'AuthkeyTimeout',
   VisitTooFrequently = 'VisitTooFrequently',
   UnexpectedResponse = 'UnexpectedResponse',
+  MissingMetadataEntry = 'MissingMetadataEntry',
   InconsistentUid = 'InconsistentUid'
 }
 
@@ -100,6 +101,7 @@ export type GachaUrlError = DetailedError<typeof NamedGachaUrlError,
   | { kind: GachaUrlErrorKind.AuthkeyTimeout }
   | { kind: GachaUrlErrorKind.VisitTooFrequently }
   | { kind: GachaUrlErrorKind.UnexpectedResponse, retcode: number, message: string }
+  | { kind: GachaUrlErrorKind.MissingMetadataEntry, business: Business, locale: string, name: string }
   | { kind: GachaUrlErrorKind.InconsistentUid, expected: Account['uid'], actuals: Array<Account['uid']> }
 >
 
@@ -619,7 +621,13 @@ export enum PrettyGachaRecordsErrorKind {
 }
 
 export type PrettyGachaRecordsError = DetailedError<typeof NamedPrettyGachaRecordsError,
-  | { kind: PrettyGachaRecordsErrorKind.MissingMetadataEntry, business: Business, locale: string, name: string, itemId: string }
+  | {
+      kind: PrettyGachaRecordsErrorKind.MissingMetadataEntry,
+      business: Business,
+      locale: string,
+      name: string,
+      itemId: string
+    }
 >
 
 export function isPrettyGachaRecordsError (error: unknown): error is PrettyGachaRecordsError {
@@ -627,7 +635,9 @@ export function isPrettyGachaRecordsError (error: unknown): error is PrettyGacha
     error.name === NamedPrettyGachaRecordsError
 }
 
-export type FindAndPrettyGachaRecordsArgs<T extends Business> = FindGachaRecordsByBusinessAndUidArgs<T>
+export type FindAndPrettyGachaRecordsArgs<T extends Business> = FindGachaRecordsByBusinessAndUidArgs<T> & {
+  customLocale?: string
+}
 
 export type FindAndPrettyGachaRecords = <T extends Business>(args: FindAndPrettyGachaRecordsArgs<T>) => Promise<PrettizedGachaRecords<T>>
 export const findAndPrettyGachaRecords: FindAndPrettyGachaRecords = declareCommand('business_find_and_pretty_gacha_records')

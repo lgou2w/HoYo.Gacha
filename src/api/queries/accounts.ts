@@ -62,6 +62,7 @@ export function accountsQueryOptions (keyofBusinesses: KeyofBusinesses) {
       await SelectedAccountUidStorage.inspect(keyofBusinesses, accounts)
       return accounts
     },
+    retry: false,
   })
 }
 
@@ -266,6 +267,7 @@ export function selectedAccountUidQueryOptions (keyofBusinesses: KeyofBusinesses
     queryFn: async function selectedAccountUidQueryFn () {
       return SelectedAccountUidStorage.load(keyofBusinesses)
     },
+    retry: false,
   })
 }
 

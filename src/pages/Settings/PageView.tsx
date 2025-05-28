@@ -10,6 +10,7 @@ const useStyles = makeStyles({
     flexWrap: 'wrap',
     columnGap: tokens.spacingHorizontalL,
     rowGap: tokens.spacingVerticalL,
+    height: '100%',
   },
   options: {
     flex: 1,

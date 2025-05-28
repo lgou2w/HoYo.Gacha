@@ -2,8 +2,14 @@
 //   See: src-tauri/src/models/business.rs
 
 export type GenshinImpact = 0
+export const GenshinImpact = 0
+
 export type HonkaiStarRail = 1
+export const HonkaiStarRail = 1
+
 export type ZenlessZoneZero = 2
+export const ZenlessZoneZero = 2
+
 export const Businesses = {
   GenshinImpact: 0 as GenshinImpact,
   HonkaiStarRail: 1 as HonkaiStarRail,

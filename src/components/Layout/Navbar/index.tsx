@@ -7,6 +7,8 @@ const useStyles = makeStyles({
   root: {
     display: 'flex',
     flexDirection: 'column',
+    position: 'fixed',
+    height: '100%',
     width: NavbarWidth,
     minWidth: NavbarWidth,
     maxWidth: NavbarWidth,

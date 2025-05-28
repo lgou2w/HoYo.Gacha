@@ -16,7 +16,7 @@ use tracing::{error, info, warn};
 use url::Url;
 
 use super::disk_cache::{BlockFile, IndexFile};
-use crate::business::gacha_time_format;
+use crate::business::{GachaMetadata, gacha_time_format};
 use crate::consts;
 use crate::error::declare_error_kinds;
 use crate::models::{BizInternals, Business, BusinessRegion, GachaRecord, ServerRegion};
@@ -90,6 +90,13 @@ declare_error_kinds! {
     UnexpectedResponse {
       retcode: i32,
       message: String
+    },
+
+    #[error("Missing metadata entry: {business}, locale: {locale}, name: {name}")]
+    MissingMetadataEntry {
+      business: Business,
+      locale: String,
+      name: String
     },
 
     #[error("Owner uid of the gacha url does not match: {actuals:?} (Expected: {expected})")]
@@ -745,10 +752,29 @@ pub async fn fetch_gacha_records(
     ServerRegion::Official
   });
 
-  let records = pagination
-    .list
-    .into_iter()
-    .map(|item| GachaRecord {
+  // FIXME: Support from file metadata | MUTEX_METADATA
+  let metadata = GachaMetadata::embedded();
+  let mut records = Vec::with_capacity(pagination.list.len());
+
+  for item in pagination.list {
+    let item_id = match item.item_id {
+      Some(v) => v,
+      // HACK: Genshin Impact only
+      //   Mandatory mapping of item ids.
+      //   If metadata is outdated, this error will be thrown.
+      None => metadata
+        .obtain(business, &item.lang)
+        .and_then(|map| map.entry_from_name_first(&item.name))
+        .ok_or_else(|| GachaUrlErrorKind::MissingMetadataEntry {
+          business,
+          locale: item.lang.clone(),
+          name: item.name.clone(),
+        })?
+        .id
+        .to_owned(),
+    };
+
+    records.push(GachaRecord {
       business,
       uid: item.uid,
       id: item.id,
@@ -761,9 +787,9 @@ pub async fn fetch_gacha_records(
       lang: item.lang,
       name: item.name,
       item_type: item.item_type,
-      item_id: item.item_id,
-    })
-    .collect();
+      item_id,
+    });
+  }
 
   Ok(Some(records))
 }

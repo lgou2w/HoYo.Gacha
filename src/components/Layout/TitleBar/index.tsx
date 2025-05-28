@@ -15,6 +15,7 @@ const useStyles = makeStyles({
     display: 'flex',
     alignItems: 'center',
     height: TitleBarHeight,
+    minHeight: TitleBarHeight,
     maxHeight: TitleBarHeight,
     userSelect: 'none',
     backgroundColor: 'transparent',
@@ -27,6 +28,10 @@ const useStyles = makeStyles({
     pointerEvents: 'none',
     height: '100%',
     padding: `0 ${tokens.spacingHorizontalL}`,
+  },
+  buttons: {
+    display: 'flex',
+    height: '100%',
   },
 })
 
@@ -41,8 +46,9 @@ export default function TitleBar () {
     >
       <Locale
         component={Subtitle2Stronger}
-        as="h1"
         className={styles.title}
+        as="h1"
+        wrap={false}
         mapping={[`Routes.${location.pathname}`]}
       />
       {import.meta.env.DEV && (
@@ -52,7 +58,7 @@ export default function TitleBar () {
           fontFamily: 'serif',
         }}>CONTENT UNDER DEVELOPMENT, NOT FINAL.</pre>
       )}
-      <TitleBarButtons />
+      <TitleBarButtons className={styles.buttons} />
     </header>
   )
 }

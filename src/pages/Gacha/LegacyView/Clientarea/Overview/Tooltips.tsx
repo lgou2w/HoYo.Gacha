@@ -3,7 +3,7 @@ import { Caption1, makeStyles, tokens } from '@fluentui/react-components'
 import BizImages from '@/components/BizImages'
 import Locale from '@/components/Locale'
 import useI18n from '@/hooks/useI18n'
-import { ParentCompositeState } from './declares'
+import { CompositeState } from '@/pages/Gacha/LegacyView/Clientarea/useCompositeState'
 
 const useStyles = makeStyles({
   root: {
@@ -27,7 +27,7 @@ const useStyles = makeStyles({
   },
 })
 
-export default function GachaLegacyViewClientareaOverviewTooltips (props: ParentCompositeState) {
+export default function GachaLegacyViewClientareaOverviewTooltips (props: CompositeState) {
   const styles = useStyles()
   const {
     keyofBusinesses,

@@ -1,10 +1,10 @@
 import React from 'react'
 import { makeStyles, mergeClasses, tokens } from '@fluentui/react-components'
-import BizImages from '@/components/BizImages'
 import Locale from '@/components/Locale'
 import useI18n from '@/hooks/useI18n'
-import { Businesses, KeyofBusinesses } from '@/interfaces/Business'
+import { KeyofBusinesses } from '@/interfaces/Business'
 import { CategorizedMetadataRankings, PrettyGachaRecord } from '@/interfaces/GachaRecord'
+import GachaItemImage from './Image'
 
 const useStyles = makeStyles({
   root: {
@@ -13,14 +13,14 @@ const useStyles = makeStyles({
     width: '4.5rem',
     height: '4.5rem',
     border: `${tokens.strokeWidthThin} solid ${tokens.colorNeutralStroke1}`,
-    '> img': {
-      width: '100%',
-      height: '100%',
-    },
   },
   rootSmall: {
     width: '4rem',
     height: '4rem',
+  },
+  image: {
+    width: '100%',
+    height: '100%',
   },
   rankingBlue: { background: 'linear-gradient(#434e7e, #4d80c8)' },
   rankingPurple: { background: 'linear-gradient(#4e4976, #9061d2)' },
@@ -100,17 +100,6 @@ export default function GachaItem (props: GachaItemProps) {
   const i18n = useI18n()
   const title = name + '\n' + i18n.dayjs(time).format('LLLL')
 
-  let imageSrc = BizImages[keyofBusinesses]?.[itemCategory]?.[itemId]
-  if (!imageSrc) {
-    imageSrc = resolveRemoteImageSrc(keyofBusinesses, itemCategory, itemId)
-    console.warn('No valid embedded Gacha image were found, will try to load from remote:', {
-      keyofBusinesses,
-      itemCategory,
-      itemId,
-      imageSrc,
-    })
-  }
-
   return (
     <div
       className={mergeClasses(
@@ -131,7 +120,12 @@ export default function GachaItem (props: GachaItemProps) {
       title={title}
       {...rest}
     >
-      <img src={imageSrc} alt={name} />
+      <GachaItemImage
+        className={styles.image}
+        keyofBusinesses={keyofBusinesses}
+        record={props.record}
+        alt={name}
+      />
       {!noUsedPityBadge && usedPity && (
         <span className={mergeClasses(styles.label, styles.labelUsedPity)}>
           {usedPity}
@@ -146,30 +140,4 @@ export default function GachaItem (props: GachaItemProps) {
       )}
     </div>
   )
-}
-
-const LEGACY_FACETS = {
-  [Businesses.GenshinImpact]: 'genshin',
-  [Businesses.HonkaiStarRail]: 'starrail',
-  [Businesses.ZenlessZoneZero]: 'zzz',
-} as const
-
-function resolveRemoteImageSrc (
-  keyofBusinesses: KeyofBusinesses,
-  itemCategory: PrettyGachaRecord['itemCategory'],
-  itemId: string,
-  legacy?: boolean,
-) {
-  if (legacy) {
-    // v0 legacy facet
-    console.debug('Using legacy image source')
-    const legacyFacet = LEGACY_FACETS[Businesses[keyofBusinesses]]
-    const legacyCategory = itemCategory.toLowerCase() as Lowercase<typeof itemCategory>
-    return `https://hoyo-gacha.lgou2w.com/static/${legacyFacet}/${legacyCategory}/${itemId}.png`
-  }
-
-  // v1 facet
-  // static or transform
-  // https://docs.netlify.com/image-cdn/overview/
-  return `https://hoyo-gacha-v1.lgou2w.com/${keyofBusinesses}/${itemCategory}/${itemId}.webp`
 }
