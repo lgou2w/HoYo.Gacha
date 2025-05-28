@@ -342,8 +342,8 @@ function GachaLegacyViewToolbarUrlButton () {
       }),
     })
 
-    // HACK: If the change is greater than 0, invalidate the gacha records
-    if (changes > 0) {
+    // HACK: Invalidate the gacha records if there are changes
+    if (changes !== 0) {
       console.debug('Invalidating prettized gacha records cache...')
       invalidatePrettizedGachaRecordsQuery(selectedAccount.business, selectedAccount.uid, i18n.constants.gacha)
       invalidateFirstGachaRecordQuery(selectedAccount.business, selectedAccount.uid)
