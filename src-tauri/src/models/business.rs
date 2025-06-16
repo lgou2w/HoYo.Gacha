@@ -62,10 +62,14 @@ pub struct BizInternals {
   /// Name of the game's entry executable (without suffix)
   pub executable_name: &'static str,
   pub data_folder_name: &'static str,
+  pub base_gacha_url: &'static str,
 }
 
 macro_rules! biz {
-  ($business:ident, $region:ident, $codename:literal, $display_name:literal, $executable_name:literal, $data_folder_name:literal) => {
+  ($business:ident, $region:ident, $codename:literal,
+    $display_name:literal, $executable_name:literal, $data_folder_name:literal,
+    $base_gacha_url:literal,
+  ) => {
     BizInternals {
       business: Business::$business,
       region: BusinessRegion::$region,
@@ -73,6 +77,7 @@ macro_rules! biz {
       display_name: $display_name,
       executable_name: $executable_name,
       data_folder_name: $data_folder_name,
+      base_gacha_url: $base_gacha_url,
     }
   };
 }
@@ -83,7 +88,8 @@ pub const BIZ_GENSHIN_IMPACT_OFFICIAL: BizInternals = biz!(
   "hk4e_cn",
   "原神",
   "YuanShen",
-  "YuanShen_Data"
+  "YuanShen_Data",
+  "https://public-operation-hk4e.mihoyo.com/gacha_info/api/getGachaLog",
 );
 
 pub const BIZ_GENSHIN_IMPACT_GLOBAL: BizInternals = biz!(
@@ -92,7 +98,8 @@ pub const BIZ_GENSHIN_IMPACT_GLOBAL: BizInternals = biz!(
   "hk4e_global",
   "Genshin Impact",
   "GenshinImpact",
-  "GenshinImpact_Data"
+  "GenshinImpact_Data",
+  "https://public-operation-hk4e-sg.hoyoverse.com/gacha_info/api/getGachaLog",
 );
 
 pub const BIZ_HONKAI_STAR_RAIL_OFFICIAL: BizInternals = biz!(
@@ -101,7 +108,8 @@ pub const BIZ_HONKAI_STAR_RAIL_OFFICIAL: BizInternals = biz!(
   "hkrpg_cn",
   "崩坏：星穹铁道",
   "StarRail",
-  "StarRail_Data"
+  "StarRail_Data",
+  "https://public-operation-hkrpg.mihoyo.com/common/gacha_record/api/getGachaLog",
 );
 
 pub const BIZ_HONKAI_STAR_RAIL_GLOBAL: BizInternals = biz!(
@@ -110,7 +118,8 @@ pub const BIZ_HONKAI_STAR_RAIL_GLOBAL: BizInternals = biz!(
   "hkrpg_global",
   "Honkai: Star Rail",
   "StarRail",
-  "StarRail_Data"
+  "StarRail_Data",
+  "https://public-operation-hkrpg-sg.mihoyo.com/common/gacha_record/api/getGachaLog",
 );
 
 pub const BIZ_ZENLESS_ZONE_ZERO_OFFICIAL: BizInternals = biz!(
@@ -119,7 +128,8 @@ pub const BIZ_ZENLESS_ZONE_ZERO_OFFICIAL: BizInternals = biz!(
   "nap_cn",
   "绝区零",
   "ZenlessZoneZero",
-  "ZenlessZoneZero_Data"
+  "ZenlessZoneZero_Data",
+  "https://public-operation-nap.mihoyo.com/common/gacha_record/api/getGachaLog",
 );
 
 pub const BIZ_ZENLESS_ZONE_ZERO_GLOBAL: BizInternals = biz!(
@@ -128,7 +138,8 @@ pub const BIZ_ZENLESS_ZONE_ZERO_GLOBAL: BizInternals = biz!(
   "nap_global",
   "Zenless Zone Zero",
   "ZenlessZoneZero",
-  "ZenlessZoneZero_Data"
+  "ZenlessZoneZero_Data",
+  "https://public-operation-nap-sg.mihoyo.com/common/gacha_record/api/getGachaLog",
 );
 
 static BIZ_INTERNALS: LazyLock<HashMap<(Business, BusinessRegion), &'static BizInternals>> =
@@ -150,6 +161,23 @@ impl BizInternals {
     BIZ_INTERNALS
       .get(&(business, region))
       .unwrap_or_else(|| panic!("No biz internal mapping value with key: {business}.{region}"))
+  }
+
+  /// Game biz codename
+  pub fn from_codename(val: impl AsRef<str>) -> Option<&'static Self> {
+    BIZ_INTERNALS
+      .iter()
+      .find(|(_, biz)| biz.codename == val.as_ref())
+      .map(|(_, biz)| &**biz)
+  }
+
+  /// `gacha_type` and `init_gacha_type`
+  pub const fn gacha_type_fields(&self) -> (&'static str, &'static str) {
+    match self.business {
+      Business::GenshinImpact => ("gacha_type", "init_type"),
+      Business::HonkaiStarRail => ("gacha_type", "default_gacha_type"),
+      Business::ZenlessZoneZero => ("real_gacha_type", "init_log_gacha_base_type"),
+    }
   }
 
   pub fn is_official(&self) -> bool {

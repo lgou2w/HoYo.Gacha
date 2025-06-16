@@ -241,8 +241,6 @@ function GachaLegacyViewToolbarUrlButton () {
     if (!properties.gachaUrl) {
       try {
         const data = await notifier.promise(fromWebCachesGachaUrl({
-          business,
-          region,
           dataFolder: selectedAccount.dataFolder,
           expectedUid: uid,
         }), {

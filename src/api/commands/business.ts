@@ -76,9 +76,8 @@ export enum GachaUrlErrorKind {
   EmptyData = 'EmptyData',
   NotFound = 'NotFound',
   Illegal = 'Illegal',
-  IllegalBiz = 'IllegalBiz',
+  IllegalGameBiz = 'IllegalGameBiz',
   InvalidParams = 'InvalidParams',
-  Parse = 'Parse',
   Reqwest = 'Reqwest',
   AuthkeyTimeout = 'AuthkeyTimeout',
   VisitTooFrequently = 'VisitTooFrequently',
@@ -94,9 +93,8 @@ export type GachaUrlError = DetailedError<typeof NamedGachaUrlError,
   | { kind: GachaUrlErrorKind.EmptyData }
   | { kind: GachaUrlErrorKind.NotFound }
   | { kind: GachaUrlErrorKind.Illegal, url: string }
-  | { kind: GachaUrlErrorKind.IllegalBiz, url: string, expected: string, actual: string }
+  | { kind: GachaUrlErrorKind.IllegalGameBiz, url: string, value: string }
   | { kind: GachaUrlErrorKind.InvalidParams, params: string[] }
-  | { kind: GachaUrlErrorKind.Parse, cause: string }
   | { kind: GachaUrlErrorKind.Reqwest, cause: string }
   | { kind: GachaUrlErrorKind.AuthkeyTimeout }
   | { kind: GachaUrlErrorKind.VisitTooFrequently }
@@ -115,32 +113,22 @@ export interface GachaUrl<T extends Business> {
   region: BusinessRegion
   ownerUid: Account['uid']
   creationTime: string | null
-  paramGameBiz: string
-  paramRegion: string
-  paramLang: string
-  paramAuthkey: string
   value: string
 }
 
-export type FromWebCachesGachaUrlArgs<T extends Business> = NonNullable<{
-  business: T
-  region: BusinessRegion
+export type FromWebCachesGachaUrlArgs = NonNullable<{
   dataFolder: string
   expectedUid: Account['uid']
 }>
 
-export type FromWebCachesGachaUrl = <T extends Business>(args: FromWebCachesGachaUrlArgs<T>) => Promise<GachaUrl<T>>
-export const fromWebCachesGachaUrl: FromWebCachesGachaUrl = declareCommand('business_from_webcaches_gacha_url')
+export const fromWebCachesGachaUrl = declareCommand<FromWebCachesGachaUrlArgs, GachaUrl<Business>>('business_from_webcaches_gacha_url')
 
-export type FromDirtyGachaUrlArgs<T extends Business> = NonNullable<{
-  business: T
-  region: BusinessRegion
+export type FromDirtyGachaUrlArgs = NonNullable<{
   dirtyUrl: string
   expectedUid: Account['uid']
 }>
 
-export type FromDirtyGachaUrl = <T extends Business>(args: FromDirtyGachaUrlArgs<T>) => Promise<GachaUrl<T>>
-export const fromDirtyGachaUrl: FromDirtyGachaUrl = declareCommand('business_from_dirty_gacha_url')
+export const fromDirtyGachaUrl = declareCommand<FromDirtyGachaUrlArgs, GachaUrl<Business>>('business_from_dirty_gacha_url')
 
 // #endregion
 

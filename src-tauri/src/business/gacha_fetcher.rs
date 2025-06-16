@@ -100,7 +100,7 @@ pub async fn create_gacha_records_fetcher(
 #[tracing::instrument(skip_all, fields(?gacha_type, ?last_end_id))]
 async fn pull_gacha_records(
   business: Business,
-  region: BusinessRegion,
+  _region: BusinessRegion,
   sender: &mpsc::Sender<GachaRecordsFetcherFragment>,
   gacha_url: &str,
   gacha_type: &u32,
@@ -140,8 +140,6 @@ async fn pull_gacha_records(
     sender.send(Fragment::Pagination(pagination)).await.unwrap();
 
     if let Some(records) = super::gacha_url::fetch_gacha_records(
-      business,
-      region,
       gacha_url,
       Some(&format!("{}", *gacha_type)),
       Some(&end_id),
