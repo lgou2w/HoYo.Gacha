@@ -155,11 +155,11 @@ declare global {
    * @deprecated For devtools only, do not use in code.
    */
   // eslint-disable-next-line no-var
-  var __APP_COMMANDS_DATABASE_: typeof DatabaseCommands
+  var __APP_COMMANDS_DATABASE__: typeof DatabaseCommands
 }
 
 // eslint-disable-next-line deprecation/deprecation
-if (!globalThis.__APP_COMMANDS_DATABASE_) {
+if (!globalThis.__APP_COMMANDS_DATABASE__) {
   // eslint-disable-next-line deprecation/deprecation
-  globalThis.__APP_COMMANDS_DATABASE_ = DatabaseCommands
+  globalThis.__APP_COMMANDS_DATABASE__ = DatabaseCommands
 }

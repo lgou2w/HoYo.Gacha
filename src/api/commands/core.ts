@@ -48,11 +48,11 @@ declare global {
    * @deprecated For devtools only, do not use in code.
    */
   // eslint-disable-next-line no-var
-  var __APP_COMMANDS_CORE_: typeof CoreCommands
+  var __APP_COMMANDS_CORE__: typeof CoreCommands
 }
 
 // eslint-disable-next-line deprecation/deprecation
-if (!globalThis.__APP_COMMANDS_CORE_) {
+if (!globalThis.__APP_COMMANDS_CORE__) {
   // eslint-disable-next-line deprecation/deprecation
-  globalThis.__APP_COMMANDS_CORE_ = CoreCommands
+  globalThis.__APP_COMMANDS_CORE__ = CoreCommands
 }

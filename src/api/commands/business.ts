@@ -653,11 +653,11 @@ declare global {
    * @deprecated For devtools only, do not use in code.
    */
   // eslint-disable-next-line no-var
-  var __APP_COMMANDS_BUSINESS: typeof BusinessCommands
+  var __APP_COMMANDS_BUSINESS__: typeof BusinessCommands
 }
 
 // eslint-disable-next-line deprecation/deprecation
-if (!globalThis.__APP_COMMANDS_BUSINESS) {
+if (!globalThis.__APP_COMMANDS_BUSINESS__) {
   // eslint-disable-next-line deprecation/deprecation
-  globalThis.__APP_COMMANDS_BUSINESS = BusinessCommands
+  globalThis.__APP_COMMANDS_BUSINESS__ = BusinessCommands
 }
