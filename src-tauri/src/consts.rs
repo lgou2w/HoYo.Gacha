@@ -37,7 +37,7 @@ pub const REPOSITORY: &str = env!("CARGO_PKG_REPOSITORY");
 
 // Crashs
 
-pub const CRASHS_DIRECTORY: &str = "crashs";
+pub const CRASHS_DIRECTORY: &str = "Crashs";
 pub const CRASHS_TIME_FORMAT: &[FormatItem<'_>] =
   format_description!("[year][month][day]_[hour][minute][second]");
 
@@ -45,7 +45,7 @@ pub const CRASHS_TIME_FORMAT: &[FormatItem<'_>] =
 
 pub const TRACING_TIME_FORMAT: &[FormatItem<'_>] =
   format_description!("[year]-[month]-[day] [hour]:[minute]:[second].[subsecond digits:9]");
-pub const TRACING_LOGS_DIRECTORY: &str = "logs";
+pub const TRACING_LOGS_DIRECTORY: &str = "Logs";
 pub const TRACING_LOGS_ROTATION: Rotation = Rotation::DAILY;
 pub const TRACING_LOGS_MAX_FILES: usize = 30;
 pub const TRACING_LOGS_FILE_NAME_PREFIX: &str = APP_NAME;
