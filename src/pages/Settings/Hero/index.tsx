@@ -68,9 +68,9 @@ export default function SettingsHero (props: React.JSX.IntrinsicElements['div'])
         </div>
         <div className={styles.copyright}>
           <Caption1>
-            License MIT OR Apache-2.0
+            {'License MIT OR Apache-2.0'}
             <br/>
-            Copyright &copy; 2022 - Present The lgou2w
+            {'Copyright \u00A9 2022 - Present The lgou2w'}
             <br/>
             <Locale mapping={['Pages.Settings.Hero.LicenseNote']} />
           </Caption1>

@@ -179,7 +179,7 @@ function CardsEntry (props: CardsEntryProps) {
     const end = i18n.dayjs(metadata.endTime).format('L')
     timeRange = (start + ' - ' + end).replace(/\//g, '.')
   } else {
-    timeRange = <i aria-label="placeholder">&nbsp;</i>
+    timeRange = <i aria-label="placeholder">{'\u00A0'}</i>
   }
 
   let gachaTicket = BizImages[keyofBusinesses].Material?.IconGachaTicket02
@@ -216,7 +216,7 @@ function CardsEntry (props: CardsEntryProps) {
                 mapping={['Pages.Gacha.LegacyView.Clientarea.Analysis.CardsEntry.Labels.AverageAndLimited']}
                 childrenPosition="before"
               >
-                {RankingsPrefix[business].golden}&nbsp;
+                {RankingsPrefix[business].golden}{'\u00A0'}
               </Locale>
               <Caption1>
                 {metadata.rankings.golden.average} / {metadata.rankings.golden.limitedAverage}
@@ -228,7 +228,7 @@ function CardsEntry (props: CardsEntryProps) {
                 mapping={['Pages.Gacha.LegacyView.Clientarea.Analysis.CardsEntry.Labels.Limited']}
                 childrenPosition="before"
               >
-                {RankingsPrefix[business].golden}&nbsp;
+                {RankingsPrefix[business].golden}{'\u00A0'}
               </Locale>
               <Caption1>
                 {metadata.rankings.golden.limitedSum} [{metadata.rankings.golden.limitedPercentage}%]
@@ -238,8 +238,8 @@ function CardsEntry (props: CardsEntryProps) {
         )}
         {!hasLimited && (
           <Fragment>
-            <Caption1 aria-label="placeholder">&nbsp;</Caption1>
-            <Caption1 aria-label="placeholder">&nbsp;</Caption1>
+            <Caption1 aria-label="placeholder">{'\u00A0'}</Caption1>
+            <Caption1 aria-label="placeholder">{'\u00A0'}</Caption1>
           </Fragment>
         )}
         <div className={mergeClasses(styles.labelGroup, styles.labelGroupGolden)}>
@@ -248,7 +248,7 @@ function CardsEntry (props: CardsEntryProps) {
             mapping={['Pages.Gacha.LegacyView.Clientarea.Analysis.CardsEntry.Labels.Count']}
             childrenPosition="before"
           >
-            {RankingsPrefix[business].golden}&nbsp;
+            {RankingsPrefix[business].golden}{'\u00A0'}
           </Locale>
           <Caption1>
             {metadata.rankings.golden.sum} [{metadata.rankings.golden.percentage}%]
@@ -260,7 +260,7 @@ function CardsEntry (props: CardsEntryProps) {
             mapping={['Pages.Gacha.LegacyView.Clientarea.Analysis.CardsEntry.Labels.Count']}
             childrenPosition="before"
           >
-            {RankingsPrefix[business].purple}&nbsp;
+            {RankingsPrefix[business].purple}{'\u00A0'}
           </Locale>
           <Caption1>
             {metadata.rankings.purple.sum} [{metadata.rankings.purple.percentage}%]
@@ -272,7 +272,7 @@ function CardsEntry (props: CardsEntryProps) {
             mapping={['Pages.Gacha.LegacyView.Clientarea.Analysis.CardsEntry.Labels.Count']}
             childrenPosition="before"
           >
-            {RankingsPrefix[business].blue}&nbsp;
+            {RankingsPrefix[business].blue}{'\u00A0'}
           </Locale>
           <Caption1>
             {metadata.rankings.blue.sum} [{metadata.rankings.blue.percentage}%]

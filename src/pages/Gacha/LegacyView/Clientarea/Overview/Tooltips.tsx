@@ -46,7 +46,7 @@ export default function GachaLegacyViewClientareaOverviewTooltips (props: Compos
   return (
     <div className={styles.root}>
       <Caption1>
-        &#x2756;&nbsp;
+        {'\u2756\u00A0'}
         <Locale mapping={['Pages.Gacha.LegacyView.Clientarea.Overview.Tooltips.Fragment1.Token1', { keyofBusinesses }]} />
         <Locale
           component="span"
@@ -62,14 +62,14 @@ export default function GachaLegacyViewClientareaOverviewTooltips (props: Compos
         <img className={styles.currencyIcon} src={BizImages[keyofBusinesses].Material!.IconCurrency01} />
       </Caption1>
       <Caption1>
-        &#x2756;&nbsp;
+        {'\u2756\u00A0'}
         <Locale mapping={['Pages.Gacha.LegacyView.Clientarea.Overview.Tooltips.Fragment2', { keyofBusinesses }]} />
         <span className={styles.secondary}>{i18n.dayjs(startTime || now).format('LLLL')}</span>
-        &nbsp;&#x7E;&nbsp;
+        {'\u00A0\u007E\u00A0'}
         <span className={styles.secondary}>{i18n.dayjs(endTime || now).format('LLLL')}</span>
       </Caption1>
       <Caption1>
-        &#x2756;&nbsp;
+        {'\u2756\u00A0'}
         <Locale mapping={['Pages.Gacha.LegacyView.Clientarea.Overview.Tooltips.Fragment3']} />
       </Caption1>
     </div>

@@ -153,7 +153,7 @@ function GridCard (props: GridCardProps) {
       const end = i18n.dayjs(metadata.endTime).format('L')
       timeRange = (start + ' - ' + end).replace(/\//g, '.')
     } else {
-      timeRange = <i aria-label="placeholder">&nbsp;</i>
+      timeRange = <i aria-label="placeholder">{'\u00A0'}</i>
     }
 
     let gachaTicket = BizImages[keyofBusinesses].Material?.IconGachaTicket02
@@ -216,7 +216,7 @@ function GridCard (props: GridCardProps) {
               mapping={[`Business.${keyofBusinesses}.Gacha.Category.${state.category}`, { context: 'NoBangboo' }]}
               childrenPosition="before"
             >
-              <i aria-label="placeholder">&nbsp;</i>
+              <i aria-label="placeholder">{'\u00A0'}</i>
             </Locale>
           )}
         </div>
@@ -266,7 +266,7 @@ function GridCard (props: GridCardProps) {
               { count: state.goldenRanking.average },
             ]}
           >
-            <i aria-label="placeholder">&nbsp;</i>
+            <i aria-label="placeholder">{'\u00A0'}</i>
             <img src={state.gachaTicket} />
           </GridCardLabelBadge>
           <GridCardLabelBadge
@@ -284,7 +284,7 @@ function GridCard (props: GridCardProps) {
                 { count: state.goldenRanking.limitedAverage },
               ]}
             >
-              <i aria-label="placeholder">&nbsp;</i>
+              <i aria-label="placeholder">{'\u00A0'}</i>
               <img src={state.gachaTicket} />
             </GridCardLabelBadge>
             <GridCardLabelBadge
