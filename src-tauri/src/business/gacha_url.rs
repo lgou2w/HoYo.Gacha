@@ -765,8 +765,7 @@ pub async fn fetch_gacha_records(
     ServerRegion::Official
   });
 
-  // FIXME: Support from file metadata | MUTEX_METADATA
-  let metadata = GachaMetadata::embedded();
+  let metadata = GachaMetadata::current();
   let mut records = Vec::with_capacity(pagination.list.len());
 
   for item in pagination.list {

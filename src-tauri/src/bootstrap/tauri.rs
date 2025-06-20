@@ -14,6 +14,7 @@ use super::ffi;
 use super::internals;
 use super::singleton::Singleton;
 use super::tracing::Tracing;
+use crate::business::GachaMetadata;
 use crate::database::{self, Database, KvMut};
 use crate::models::ThemeData;
 use crate::utilities::file_dialog;
@@ -90,6 +91,18 @@ pub async fn start(singleton: Singleton, tracing: Tracing, database: Database) {
         main_window.open_devtools();
       }
 
+      // Force load metadata and create a thread to check if it needs to be updated
+      {
+        let _ = GachaMetadata::current();
+
+        // Update Gacha metadata if needed
+        tokio::spawn(async move {
+          if let Err(error) = GachaMetadata::update().await {
+            tracing::error!(message = "Failed to update Gacha metadata", ?error);
+          }
+        });
+      }
+
       info!("Application setup completed");
       Ok(())
     })
@@ -128,6 +141,8 @@ pub async fn start(singleton: Singleton, tracing: Tracing, database: Database) {
       business::business_import_gacha_records,
       business::business_export_gacha_records,
       business::business_find_and_pretty_gacha_records,
+      business::business_gacha_metadata_is_updating,
+      business::business_gacha_metadata_update,
     ])
     .build(generate_context!())
     .expect("Error while building Tauri application");

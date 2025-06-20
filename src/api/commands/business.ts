@@ -632,6 +632,14 @@ export const findAndPrettyGachaRecords: FindAndPrettyGachaRecords = declareComma
 
 // #endregion
 
+// #region: Gacha metadata
+
+export const gachaMetadataIsUpdating = declareCommand<undefined, boolean>('business_gacha_metadata_is_updating')
+
+export const gachaMetadataUpdate = declareCommand<undefined, void>('business_gacha_metadata_update')
+
+// #endregion
+
 // Export
 
 const BusinessCommands = {
@@ -642,6 +650,8 @@ const BusinessCommands = {
   importGachaRecords,
   exportGachaRecords,
   findAndPrettyGachaRecords,
+  gachaMetadataIsUpdating,
+  gachaMetadataUpdate,
 } as const
 
 Object.freeze(BusinessCommands)

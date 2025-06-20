@@ -178,7 +178,7 @@ pub async fn business_import_gacha_records(
   save_on_conflict: Option<GachaRecordSaveOnConflict>,
   progress_channel: Option<String>,
 ) -> Result<u64, Box<dyn ErrorDetails + Send + 'static>> {
-  let records = importer.import(GachaMetadata::embedded(), input)?;
+  let records = importer.import(GachaMetadata::current(), input)?;
 
   // Progress reporting
   let (progress_reporter, progress_task) = if let Some(event_channel) = progress_channel {
@@ -259,7 +259,7 @@ pub async fn business_export_gacha_records(
     }
   };
 
-  exporter.export(GachaMetadata::embedded(), records, output)
+  exporter.export(GachaMetadata::current(), records, output)
 }
 
 #[tauri::command]
@@ -276,7 +276,7 @@ pub async fn business_find_and_pretty_gacha_records(
       .map_err(Error::boxed)?;
 
   let prettied = PrettiedGachaRecords::pretty(
-    GachaMetadata::embedded(),
+    GachaMetadata::current(),
     business,
     uid,
     &records[..],
@@ -285,6 +285,19 @@ pub async fn business_find_and_pretty_gacha_records(
   .map_err(Error::boxed)?;
 
   Ok(prettied)
+}
+
+#[tauri::command]
+#[tracing::instrument(skip_all)]
+pub async fn business_gacha_metadata_is_updating() -> bool {
+  GachaMetadata::is_updating()
+}
+
+#[tauri::command]
+#[tracing::instrument(skip_all)]
+pub async fn business_gacha_metadata_update() -> Result<(), String> {
+  // TODO: Custom error kind
+  GachaMetadata::update().await.map_err(|e| e.to_string())
 }
 
 // endregion

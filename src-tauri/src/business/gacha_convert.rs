@@ -2179,7 +2179,7 @@ mod tests {
       expected_locale: "en-us".to_owned(),
       expected_uid: 100_000_000,
     }
-    .read(GachaMetadata::embedded(), Cursor::new(input))
+    .read(GachaMetadata::current(), Cursor::new(input))
     .unwrap();
 
     assert_eq!(records.len(), 1);
@@ -2229,7 +2229,7 @@ mod tests {
       expected_locale: "en-us".to_owned(),
       expected_uid: 100_000_000,
     }
-    .read(GachaMetadata::embedded(), Cursor::new(input))
+    .read(GachaMetadata::current(), Cursor::new(input))
     .unwrap_err();
 
     assert!(matches!(
@@ -2263,7 +2263,7 @@ mod tests {
       expected_locale: "en-us".to_owned(),
       expected_uid: 100_000_000,
     }
-    .read(GachaMetadata::embedded(), Cursor::new(input))
+    .read(GachaMetadata::current(), Cursor::new(input))
     .unwrap();
 
     assert_eq!(records.len(), 1);
@@ -2310,7 +2310,7 @@ mod tests {
       expected_locale: "en-us".to_owned(),
       expected_uid: 100_000_000,
     }
-    .read(GachaMetadata::embedded(), Cursor::new(input))
+    .read(GachaMetadata::current(), Cursor::new(input))
     .unwrap_err();
 
     assert!(matches!(
@@ -2346,7 +2346,7 @@ mod tests {
       account_uid: 100_000_000,
       export_time: OffsetDateTime::now_utc().to_offset(*consts::LOCAL_OFFSET),
     }
-    .write(GachaMetadata::embedded(), records.clone(), &output)
+    .write(GachaMetadata::current(), records.clone(), &output)
     .unwrap();
 
     let input = File::open(output.with_extension("json")).unwrap();
@@ -2354,7 +2354,7 @@ mod tests {
       expected_locale: "en-us".to_owned(),
       expected_uid: 100_000_000,
     }
-    .read(GachaMetadata::embedded(), input)
+    .read(GachaMetadata::current(), input)
     .unwrap();
 
     assert_eq!(records, read_records);
@@ -2392,7 +2392,7 @@ mod tests {
       export_time: OffsetDateTime::now_utc().to_offset(*consts::LOCAL_OFFSET),
     }
     .write(
-      GachaMetadata::embedded(),
+      GachaMetadata::current(),
       vec![correct, incorrect],
       "It will not be written",
     )
@@ -2469,7 +2469,7 @@ mod tests {
         (10_000_002, "en-us".to_owned()),
       ]),
     }
-    .read(GachaMetadata::embedded(), Cursor::new(input))
+    .read(GachaMetadata::current(), Cursor::new(input))
     .unwrap();
 
     assert_eq!(records.len(), 3);
@@ -2589,7 +2589,7 @@ mod tests {
       export_time: OffsetDateTime::now_utc().to_offset(*consts::LOCAL_OFFSET),
       minimized: None,
     }
-    .write(GachaMetadata::embedded(), records.clone(), &output)
+    .write(GachaMetadata::current(), records.clone(), &output)
     .unwrap();
 
     let input = File::open(output.with_extension("json")).unwrap();
@@ -2601,7 +2601,7 @@ mod tests {
         (10_000_002, "en-us".to_owned()),
       ]),
     }
-    .read(GachaMetadata::embedded(), input)
+    .read(GachaMetadata::current(), input)
     .unwrap();
 
     assert_eq!(records, read_records);
@@ -2632,7 +2632,7 @@ mod tests {
     let records = SrgfGachaRecordsReader {
       expected_uid: 100_000_000,
     }
-    .read(GachaMetadata::embedded(), Cursor::new(input))
+    .read(GachaMetadata::current(), Cursor::new(input))
     .unwrap();
 
     assert_eq!(records.len(), 1);
@@ -2681,14 +2681,14 @@ mod tests {
       account_uid: 100_000_000,
       export_time: OffsetDateTime::now_utc().to_offset(*consts::LOCAL_OFFSET),
     }
-    .write(GachaMetadata::embedded(), records.clone(), &output)
+    .write(GachaMetadata::current(), records.clone(), &output)
     .unwrap();
 
     let input = File::open(output.with_extension("json")).unwrap();
     let read_records = SrgfGachaRecordsReader {
       expected_uid: 100_000_000,
     }
-    .read(GachaMetadata::embedded(), input)
+    .read(GachaMetadata::current(), input)
     .unwrap();
 
     assert_eq!(records, read_records);
@@ -2850,7 +2850,7 @@ mod tests {
       expected_locale: "en-us".to_owned(),
       expected_uid: 10_000_002,
     }
-    .read(GachaMetadata::embedded(), Cursor::new(input))
+    .read(GachaMetadata::current(), Cursor::new(input))
     .unwrap();
 
     assert_eq!(records.len(), 1);
