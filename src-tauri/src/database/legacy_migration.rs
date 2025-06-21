@@ -1,7 +1,7 @@
 use std::env;
 use std::error::Error as StdError;
 use std::fmt::Debug;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::str::FromStr;
 use std::time::Instant;
 
@@ -10,13 +10,15 @@ use sqlx::{Executor, Row, SqlitePool, SqliteTransaction};
 use time::PrimitiveDateTime;
 use tracing::{info, warn};
 
-use crate::business::{GACHA_TIME_FORMAT, GachaMetadata};
+use crate::business::{
+  DataFolderLocator, GACHA_TIME_FORMAT, GachaMetadata, UnityLogDataFolderLocator,
+};
 use crate::consts;
 use crate::database::{
   AccountQuestioner, Database, GachaRecordQuestioner, GachaRecordQuestionerAdditions,
   GachaRecordSaveOnConflict,
 };
-use crate::models::{AccountProperties, Business, GachaRecord, ServerRegion};
+use crate::models::{AccountProperties, Business, GachaRecord};
 
 //
 // Migration v0.3.x ~ v0.4.x database to v1.0.0
@@ -76,7 +78,7 @@ pub async fn migration_with(
   {
     let facet: String = row.try_get("facet")?;
     let uid: u32 = row.try_get::<String, _>("uid")?.parse()?;
-    let game_data_dir: String = row.try_get("game_data_dir")?;
+    let mut game_data_dir: String = row.try_get("game_data_dir")?;
     // let gacha_url: Option<String> = row.try_get("gacha_url")?;
     let properties: Option<serde_json::Map<String, serde_json::Value>> = row
       .try_get::<Option<String>, _>("properties")?
@@ -92,6 +94,10 @@ pub async fn migration_with(
         continue;
       }
     };
+
+    let business_region = business.detect_uid_business_region(uid).ok_or(format!(
+      "Failed to detect business region for uid: {uid} ({business})"
+    ))?;
 
     let properties = properties.and_then(move |mut props| {
       // Legacy {
@@ -125,6 +131,26 @@ pub async fn migration_with(
 
       Some(new_props)
     });
+
+    // Check game data dir
+    {
+      let legacy = PathBuf::from(&game_data_dir);
+      if !legacy.exists() {
+        if let Ok(data_folder) = UnityLogDataFolderLocator
+          .locate_data_folder(business, business_region)
+          .await
+        {
+          game_data_dir = format!("{}", data_folder.value.display());
+          warn!(
+            message = "Legacy game data directory does not exist, using new location",
+            %business,
+            uid,
+            legacy = %legacy.display(),
+            new = %game_data_dir,
+          );
+        }
+      }
+    }
 
     if let Err(error) =
       AccountQuestioner::sql_create_account(business, uid, game_data_dir, properties)
@@ -200,7 +226,7 @@ pub async fn migration_with(
 
     while let Some(row) = stream.try_next().await? {
       let uid = row.try_get::<String, _>("uid")?.parse()?;
-      let server_region = ServerRegion::from_uid(business, uid).ok_or(format!(
+      let server_region = business.detect_uid_server_region(uid).ok_or(format!(
         "Failed to determine server region for uid: {uid} ({business})"
       ))?;
 
