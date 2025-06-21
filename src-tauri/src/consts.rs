@@ -23,8 +23,11 @@ cfg_if! {if #[cfg(any(debug_assertions, test))] {
 } else {
   // for Production
   pub const APP_NAME: &str = "HoYo.Gacha";
-  pub const DATABASE: &str = "HoYo.Gacha.v1.db"; // Legacy: HoYo.Gacha.db
+  pub const DATABASE: &str = "HoYo.Gacha.v1.db";
 }}
+
+#[deprecated = "Legacy"]
+pub const LEGACY_DATABASE: &str = "HoYo.Gacha.db";
 
 // Package info
 pub const PKG_NAME: &str = env!("CARGO_PKG_NAME");

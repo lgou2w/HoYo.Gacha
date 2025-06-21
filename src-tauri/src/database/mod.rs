@@ -1,5 +1,6 @@
 use std::collections::HashSet;
-use std::path::PathBuf;
+use std::fmt::Debug;
+use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::time::Instant;
 use std::{env, fmt};
@@ -25,6 +26,7 @@ use crate::error::{Error, ErrorDetails};
 use crate::models::{Account, AccountProperties, Business, GachaRecord, Kv};
 
 mod kvs;
+mod legacy_migration;
 
 pub use kvs::*;
 
@@ -60,7 +62,6 @@ impl AsRef<SqlitePool> for Database {
 }
 
 impl Database {
-  #[tracing::instrument(fields(filename))]
   pub async fn new() -> Self {
     // Database storage folder
     //   In debug mode  : is in the src-tauri folder
@@ -75,8 +76,11 @@ impl Database {
         .join(consts::DATABASE)
     };
 
-    Span::current().record("filename", filename.to_str());
+    Self::new_with(filename).await
+  }
 
+  #[tracing::instrument]
+  pub async fn new_with(filename: impl AsRef<Path> + Debug) -> Self {
     info!("Connecting to database...");
     let sqlite = SqlitePool::connect_with(
       SqliteConnectOptions::new()
@@ -554,6 +558,26 @@ impl GachaRecordSaveOnConflict {
 
 #[async_trait]
 pub trait GachaRecordQuestionerAdditions {
+  #[inline]
+  fn sql_create_gacha_record(
+    record: GachaRecord,
+    save_on_conflict: GachaRecordSaveOnConflict,
+  ) -> SqliteQuery {
+    sqlx::query(save_on_conflict.sql())
+      .bind(record.business)
+      .bind(record.uid)
+      .bind(record.id)
+      .bind(record.gacha_type)
+      .bind(record.gacha_id)
+      .bind(record.rank_type)
+      .bind(record.count)
+      .bind(record.time)
+      .bind(record.lang)
+      .bind(record.name)
+      .bind(record.item_type)
+      .bind(record.item_id)
+  }
+
   #[tracing::instrument(skip(database, records, progress_reporter), fields(records = records.len()))]
   async fn create_gacha_records(
     database: &Database,
@@ -564,7 +588,6 @@ pub trait GachaRecordQuestionerAdditions {
     info!("Executing create gacha records database operation...");
     let total = records.len();
     let start = Instant::now();
-    let sql = save_on_conflict.sql();
 
     let mut txn = database.as_ref().begin().await?;
     let mut changes = 0;
@@ -573,19 +596,11 @@ pub trait GachaRecordQuestionerAdditions {
 
     for record in records {
       completes += 1;
-      changes += sqlx::query(sql)
-        .bind(record.business)
-        .bind(record.uid)
-        .bind(record.id)
-        .bind(record.gacha_type)
-        .bind(record.gacha_id)
-        .bind(record.rank_type)
-        .bind(record.count)
-        .bind(record.time)
-        .bind(record.lang)
-        .bind(record.name)
-        .bind(record.item_type)
-        .bind(record.item_id)
+      changes +=
+        <GachaRecordQuestioner as GachaRecordQuestionerAdditions>::sql_create_gacha_record(
+          record,
+          save_on_conflict,
+        )
         .execute(&mut *txn)
         .await?
         .rows_affected();
