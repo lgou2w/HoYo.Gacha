@@ -134,6 +134,7 @@ pub async fn start(singleton: Singleton, tracing: Tracing, database: Database) {
       database::gacha_record_questioner_additions::database_delete_gacha_records_by_business_and_uid,
       database::gacha_record_questioner_additions::database_find_gacha_records_by_businesses_and_uid,
       database::gacha_record_questioner_additions::database_find_gacha_records_by_businesses_or_uid,
+      database::database_legacy_migration,
       business::business_locate_data_folder,
       business::business_from_webcaches_gacha_url,
       business::business_from_dirty_gacha_url,

@@ -121,6 +121,8 @@ export const findGachaRecordsByBusinessesOrUid = declareCommand<FindGachaRecords
 
 // #endregion
 
+export const legacyMigration = declareCommand<undefined, void>('database_legacy_migration')
+
 // Export
 
 const DatabaseCommands = {
@@ -144,6 +146,7 @@ const DatabaseCommands = {
   deleteGachaRecordsByBusinessAndUid,
   findGachaRecordsByBusinessesAndUid,
   findGachaRecordsByBusinessesOrUid,
+  legacyMigration,
 } as const
 
 Object.freeze(DatabaseCommands)

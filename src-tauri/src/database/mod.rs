@@ -19,7 +19,7 @@ use sqlx::{Decode, Encode, Executor, FromRow, Row, Type};
 use tauri::State as TauriState;
 use time::OffsetDateTime;
 use tokio::sync::mpsc;
-use tracing::{Span, debug, info};
+use tracing::{debug, info};
 
 use crate::consts;
 use crate::error::{Error, ErrorDetails};
@@ -785,6 +785,14 @@ pub mod gacha_record_questioner_additions {
     )
     .await
   }
+}
+
+#[tauri::command]
+#[tracing::instrument(skip_all)]
+pub async fn database_legacy_migration(database: DatabaseState<'_>) -> Result<(), String> {
+  legacy_migration::migration(&database)
+    .await
+    .map_err(|e| e.to_string())
 }
 
 // endregion
