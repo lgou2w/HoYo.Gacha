@@ -5,7 +5,7 @@ import { useLocation, useNavigate } from '@tanstack/react-router'
 import BizImages from '@/components/BizImages'
 import Locale from '@/components/Locale'
 import { Businesses, KeyofBusinesses } from '@/interfaces/Business'
-import Routes, { mergeRouteParams } from '@/routes'
+import Routes from '@/routes'
 
 const useStyles = makeStyles({
   root: { height: '100%' },
@@ -50,7 +50,7 @@ const Navs: NavItem[] = [
     .entries(Businesses)
     .map(([keyofBusinesses]) => {
       return {
-        path: mergeRouteParams(Routes.Gacha, { keyofBusinesses }),
+        path: Routes.Gacha.replace('$keyofBusinesses', keyofBusinesses),
         icon: BizImages[keyofBusinesses as KeyofBusinesses].Material!.Icon,
       } as NavItem
     }),
