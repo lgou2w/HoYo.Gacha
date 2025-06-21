@@ -327,6 +327,17 @@ function GachaLegacyViewToolbarUrlButton () {
         },
       }) ?? 0
     } catch (error) {
+      if (isGachaUrlError(error) && error.details.kind === GachaUrlErrorKind.AuthkeyTimeout) {
+        // Expired, remove fields
+        properties.gachaUrl = null
+        properties.gachaUrlCreationTime = null
+        await updateAccountPropertiesMutation.mutateAsync({
+          business,
+          uid,
+          properties,
+        })
+      }
+
       setBusy(false)
       throw error
     }

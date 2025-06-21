@@ -77,7 +77,7 @@ pub async fn migration_with(
     let facet: String = row.try_get("facet")?;
     let uid: u32 = row.try_get::<String, _>("uid")?.parse()?;
     let game_data_dir: String = row.try_get("game_data_dir")?;
-    let gacha_url: Option<String> = row.try_get("gacha_url")?;
+    // let gacha_url: Option<String> = row.try_get("gacha_url")?;
     let properties: Option<serde_json::Map<String, serde_json::Value>> = row
       .try_get::<Option<String>, _>("properties")?
       .map(|json| serde_json::from_str(&json))
@@ -117,7 +117,7 @@ pub async fn migration_with(
         "displayName".into(),
         props.remove("displayName").unwrap_or_default(),
       );
-      new_props.insert("gachaUrl".into(), gacha_url.into());
+      // new_props.insert("gachaUrl".into(), gacha_url.into());
       new_props.insert(
         "lastGachaRecordsUpdated".into(),
         props.remove("lastGachaUpdated").unwrap_or_default(),
