@@ -9,7 +9,6 @@ export default defineConfig(({ command }) => {
   const isProd = command === 'build'
 
   const env = process.env
-  const isWindows = process.platform === 'win32' || env.TAURI_ENV_PLATFORM === 'windows'
   const appName = (isDev ? '__DEV__' : '') + packageJson.displayName
 
   return {
@@ -73,8 +72,7 @@ export default defineConfig(({ command }) => {
     build: {
       sourcemap: isDev,
       minify: isProd ? 'esbuild' : false,
-      // Tauri uses Chromium on Windows and WebKit on macOS and Linux
-      target: isWindows ? 'chrome105' : 'safari13',
+      target: 'baseline-widely-available',
     },
   }
 })

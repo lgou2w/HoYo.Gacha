@@ -10,9 +10,9 @@
   "license": "MIT OR Apache-2.0",
   "private": "true",
   "type": "module",
-  "packageManager": "pnpm@10.12.1+sha512.f0dda8580f0ee9481c5c79a1d927b9164f2c478e90992ad268bbb2465a736984391d6333d2c327913578b2804af33474ca554ba29c04a8b13060a717675ae3ac",
+  "packageManager": "pnpm@10.12.3+sha512.467df2c586056165580ad6dfb54ceaad94c5a30f80893ebdec5a44c5aa73c205ae4a5bb9d5ed6bb84ea7c249ece786642bbb49d06a307df218d03da41c317417",
   "engines": {
-    "node": "^20.9.0 || >= 22",
+    "node": "^20.19.0 || >= 22",
     "pnpm": "^10"
   },
   "scripts": {
@@ -37,12 +37,12 @@
     "backend:lint": "cargo check"
   },
   "dependencies": {
-    "@fluentui/react-components": "^9.66.2",
+    "@fluentui/react-components": "^9.66.3",
     "@fluentui/react-icons": "^2.0.304",
     "@fluentui/react-motion-components-preview": "^0.6.1",
-    "@tanstack/react-query": "^5.80.10",
-    "@tanstack/react-query-devtools": "^5.80.10",
-    "@tanstack/react-router": "^1.121.27",
+    "@tanstack/react-query": "^5.81.2",
+    "@tanstack/react-query-devtools": "^5.81.2",
+    "@tanstack/react-router": "^1.121.34",
     "@tauri-apps/api": "^2.5.0",
     "@tauri-apps/plugin-clipboard-manager": "^2.2.3",
     "@tauri-apps/plugin-shell": "^2.2.2",
@@ -63,7 +63,7 @@
     "@babel/preset-typescript": "^7.27.1",
     "@griffel/tag-processor": "^1.0.13",
     "@griffel/vite-plugin": "^0.1.13",
-    "@tanstack/eslint-plugin-query": "^5.78.0",
+    "@tanstack/eslint-plugin-query": "^5.81.2",
     "@tauri-apps/cli": "^2.5.0",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.3.0",
@@ -73,10 +73,10 @@
     "@types/react": "^18.3.23",
     "@types/react-dom": "^18.3.7",
     "@types/react-window": "^1.8.8",
-    "@typescript-eslint/eslint-plugin": "^8.34.1",
-    "@typescript-eslint/parser": "^8.34.1",
+    "@typescript-eslint/eslint-plugin": "^8.35.0",
+    "@typescript-eslint/parser": "^8.35.0",
     "@vitejs/plugin-react-swc": "^3.10.2",
-    "concurrently": "^9.1.2",
+    "concurrently": "^9.2.0",
     "cross-env": "^7.0.3",
     "eslint": "^8.57.1",
     "eslint-config-standard": "^17.1.0",
@@ -97,7 +97,7 @@
     "rimraf": "^6.0.1",
     "ts-jest": "^29.4.0",
     "typescript": "^5.8.3",
-    "vite": "^6.3.5"
+    "vite": "^7.0.0"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
