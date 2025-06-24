@@ -22,6 +22,7 @@ use tokio::sync::mpsc;
 use tracing::{debug, info};
 
 use crate::consts;
+use crate::database::legacy_migration::MigrationMetrics;
 use crate::error::{Error, ErrorDetails};
 use crate::models::{Account, AccountProperties, Business, GachaRecord, Kv};
 
@@ -789,10 +790,16 @@ pub mod gacha_record_questioner_additions {
 
 #[tauri::command]
 #[tracing::instrument(skip_all)]
-pub async fn database_legacy_migration(database: DatabaseState<'_>) -> Result<(), String> {
-  legacy_migration::migration(&database)
-    .await
-    .map_err(|e| e.to_string())
+pub async fn database_legacy_migration(
+  database: DatabaseState<'_>,
+  legacy_database: Option<PathBuf>,
+) -> Result<MigrationMetrics, String> {
+  if let Some(legacy_database) = legacy_database {
+    legacy_migration::migration_with(&database, legacy_database).await
+  } else {
+    legacy_migration::migration(&database).await
+  }
+  .map_err(|e| e.to_string())
 }
 
 // endregion

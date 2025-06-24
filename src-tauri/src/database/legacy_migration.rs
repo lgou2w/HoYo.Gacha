@@ -5,6 +5,7 @@ use std::path::{Path, PathBuf};
 use std::str::FromStr;
 use std::time::Instant;
 
+use serde::Serialize;
 use sqlx::sqlite::SqliteConnectOptions;
 use sqlx::{Executor, Row, SqlitePool, SqliteTransaction};
 use time::PrimitiveDateTime;
@@ -26,7 +27,18 @@ use crate::models::{AccountProperties, Business, GachaRecord};
 // https://github.com/lgou2w/HoYo.Gacha/tree/0.4.4/src-tauri/src/storage
 //
 
-pub async fn migration(database: &Database) -> Result<(), Box<dyn StdError + 'static>> {
+// TODO: Custom error kind
+
+#[derive(Debug, Default, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MigrationMetrics {
+  pub accounts: u32,
+  pub gacha_records: u64,
+}
+
+pub async fn migration(
+  database: &Database,
+) -> Result<MigrationMetrics, Box<dyn StdError + 'static>> {
   let legacy_database = env::current_exe()
     .expect("Failed to get current executable path")
     .parent()
@@ -40,10 +52,14 @@ pub async fn migration(database: &Database) -> Result<(), Box<dyn StdError + 'st
 pub async fn migration_with(
   database: &Database,
   legacy_database: impl AsRef<Path> + Debug,
-) -> Result<(), Box<dyn StdError + 'static>> {
+) -> Result<MigrationMetrics, Box<dyn StdError + 'static>> {
   let legacy_database = legacy_database.as_ref();
   if !legacy_database.exists() {
     return Err("Legacy database does not exist".into());
+  }
+
+  if database.as_ref().connect_options().get_filename() == legacy_database {
+    return Err("Legacy database path cannot be the same as the current database path".into());
   }
 
   let start = Instant::now();
@@ -60,6 +76,9 @@ pub async fn migration_with(
       .shared_cache(false),
   )
   .await?;
+
+  // Metrics
+  let mut metrics = MigrationMetrics::default();
 
   // Write txn
   let mut txn = database.as_ref().begin().await?;
@@ -176,6 +195,8 @@ pub async fn migration_with(
       %business,
       uid,
     );
+
+    metrics.accounts += 1;
   }
 
   // entity_genshin_gacha_record.rs
@@ -198,7 +219,7 @@ pub async fn migration_with(
     legacy_database: &SqlitePool,
     table: &'static str,
     business: Business,
-  ) -> Result<(), Box<dyn StdError + 'static>> {
+  ) -> Result<u64, Box<dyn StdError + 'static>> {
     use futures_util::TryStreamExt;
 
     info!(message = "Migrating gacha records from legacy table", %table, ?business);
@@ -216,7 +237,7 @@ pub async fn migration_with(
 
     if !exists {
       warn!("Legacy table does not exist, skipping migration: {table}");
-      return Ok(());
+      return Ok(0);
     }
 
     let sql = format!("SELECT * FROM `{table}`;");
@@ -224,6 +245,7 @@ pub async fn migration_with(
     let metadata = GachaMetadata::current();
     let is_genshin_impact = business == Business::GenshinImpact;
 
+    let mut total = 0;
     while let Some(row) = stream.try_next().await? {
       let uid = row.try_get::<String, _>("uid")?.parse()?;
       let server_region = business.detect_uid_server_region(uid).ok_or(format!(
@@ -299,6 +321,7 @@ pub async fn migration_with(
       );
 
       database_txn.execute(query).await?;
+      total += 1;
     }
 
     info!(
@@ -308,10 +331,10 @@ pub async fn migration_with(
       ?business,
     );
 
-    Ok(())
+    Ok(total)
   }
 
-  migration_gacha_records(
+  metrics.gacha_records += migration_gacha_records(
     &mut txn,
     &legacy_database,
     "genshin_gacha_records",
@@ -319,7 +342,7 @@ pub async fn migration_with(
   )
   .await?;
 
-  migration_gacha_records(
+  metrics.gacha_records += migration_gacha_records(
     &mut txn,
     &legacy_database,
     "starrail_gacha_records",
@@ -328,7 +351,7 @@ pub async fn migration_with(
   .await?;
 
   // Zenless Zone Zero in v0.4.0+
-  migration_gacha_records(
+  metrics.gacha_records += migration_gacha_records(
     &mut txn,
     &legacy_database,
     "zzz_gacha_records",
@@ -344,7 +367,7 @@ pub async fn migration_with(
     elapsed = ?start.elapsed(),
   );
 
-  Ok(())
+  Ok(metrics)
 }
 
 #[cfg(test)]
@@ -358,7 +381,8 @@ mod tests {
     let legacy_database = r"\HoYo.Gacha\migration\HoYo.Gacha.db";
 
     let database = Database::new_with(database).await;
-    migration_with(&database, legacy_database).await.unwrap();
+    let metrics = migration_with(&database, legacy_database).await.unwrap();
+    println!("Migration metrics: {:?}", metrics);
 
     database.close().await;
   }

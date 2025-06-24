@@ -341,10 +341,23 @@ export default {
           LicenseNote: 'For personal study and communication use only. Please do not use it for any commercial or illegal purposes.',
         },
         Options: {
-          Cloud: {
-            Test: {
-              Title: 'Cloud Storage',
-              Subtitle: 'Synchronize data anytime and anywhere through cloud storage services to avoid data loss.',
+          Migration: {
+            Title: 'Database Migration',
+            Subtitle: 'Migrate the old version v0 database to this.',
+            Migrate: {
+              Btn: 'Migrate',
+              Loading: {
+                Title: 'Migrating...',
+                Body: 'Do not exit the application and wait for the migration to complete.',
+              },
+              Success: {
+                Title: 'Migration success:',
+                Body: 'Count of accounts: {{accounts}}, Gacha records: {{gachaRecords}}',
+              },
+              Error: {
+                Title: 'Migration failed:',
+                Body: '{{message}}',
+              },
             },
           },
           General: {

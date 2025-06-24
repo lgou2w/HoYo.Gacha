@@ -336,10 +336,23 @@ export default {
           LicenseNote: '仅供个人学习交流使用。请勿用于任何商业或违法违规用途。',
         },
         Options: {
-          Cloud: {
-            Test: {
-              Title: '云存储',
-              Subtitle: '通过云存储服务，随时随地同步数据，避免数据丢失。',
+          Migration: {
+            Title: '数据库迁移',
+            Subtitle: '将旧版本 v0 的数据库迁移至此。',
+            Migrate: {
+              Btn: '迁移',
+              Loading: {
+                Title: '迁移中...',
+                Body: '请勿退出应用程序并等待迁移操作完成。',
+              },
+              Success: {
+                Title: '迁移成功:',
+                Body: '账号数量：{{accounts}}，抽卡记录：{{gachaRecords}}',
+              },
+              Error: {
+                Title: '迁移失败：',
+                Body: '{{message}}',
+              },
             },
           },
           General: {

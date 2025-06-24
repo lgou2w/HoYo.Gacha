@@ -121,7 +121,14 @@ export const findGachaRecordsByBusinessesOrUid = declareCommand<FindGachaRecords
 
 // #endregion
 
-export const legacyMigration = declareCommand<undefined, void>('database_legacy_migration')
+export type LegacyMigrationArgs = NonNullable<{
+  legacyDatabase?: string | null
+}>
+
+export const legacyMigration = declareCommand<LegacyMigrationArgs, {
+  accounts: number
+  gachaRecords: number
+}>('database_legacy_migration')
 
 // Export
 
