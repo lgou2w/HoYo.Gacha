@@ -28,6 +28,12 @@ icon = [
   "icons/icon.ico"
 ]
 
+[bundle.windows]
+digest-algorithm = "SHA-256"
+
+[bundle.windows.webview-install-mode]
+type = "skip"
+
 [app]
 with-global-tauri = true
 
