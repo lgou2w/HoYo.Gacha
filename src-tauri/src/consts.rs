@@ -83,7 +83,7 @@ pub static LOCAL_OFFSET: LazyLock<UtcOffset> =
 
 pub static REQWEST: LazyLock<Reqwest> = LazyLock::new(|| {
   Reqwest::builder()
-    .user_agent(format!("{}/{}", APP_NAME, VERSION))
+    .user_agent(format!("{APP_NAME}/{VERSION}"))
     .build()
     .unwrap()
 });

@@ -382,7 +382,7 @@ mod tests {
 
     let database = Database::new_with(database).await;
     let metrics = migration_with(&database, legacy_database).await.unwrap();
-    println!("Migration metrics: {:?}", metrics);
+    println!("Migration metrics: {metrics:?}");
 
     database.close().await;
   }
