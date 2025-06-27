@@ -1,9 +1,10 @@
-import React, { Fragment, useCallback, useState } from 'react'
-import { Body1, Button, Caption1, Caption2, Dialog, DialogSurface, Field, Input, Menu, MenuDivider, MenuGroup, MenuGroupHeader, MenuItem, MenuList, MenuPopover, MenuTrigger, Spinner, SplitButton, Tooltip, inputClassNames, makeStyles, mergeClasses, tokens } from '@fluentui/react-components'
+import React, { ElementRef, Fragment, forwardRef, useCallback, useImperativeHandle, useRef, useState } from 'react'
+import { SubmitHandler, useForm } from 'react-hook-form'
+import { Body1, Button, Caption1, Caption2, Dialog, DialogBody, DialogContent, DialogSurface, DialogTitle, Field, Input, Menu, MenuDivider, MenuGroup, MenuGroupHeader, MenuItem, MenuList, MenuPopover, MenuTrigger, Spinner, SplitButton, Textarea, Tooltip, inputClassNames, makeStyles, mergeClasses, tokens } from '@fluentui/react-components'
 import { ArrowClockwiseRegular, ArrowSyncRegular, CopyRegular, LinkEditRegular, LinkRegular } from '@fluentui/react-icons'
 import * as clipboard from '@tauri-apps/plugin-clipboard-manager'
 import { produce } from 'immer'
-import { GachaRecordsFetcherFragmentKind, GachaUrlErrorKind, fromWebCachesGachaUrl, isGachaUrlError } from '@/api/commands/business'
+import { GachaRecordsFetcherFragmentKind, GachaUrl, GachaUrlErrorKind, fromDirtyGachaUrl, fromWebCachesGachaUrl, isGachaUrlError } from '@/api/commands/business'
 import { extractErrorMessage } from '@/api/error'
 import { useSelectedAccountSuspenseQueryData, useUpdateAccountPropertiesMutation } from '@/api/queries/accounts'
 import { invalidateFirstGachaRecordQuery, invalidatePrettizedGachaRecordsQuery, usePrettizedGachaRecordsSuspenseQueryData } from '@/api/queries/business'
@@ -361,6 +362,11 @@ function GachaLegacyViewToolbarUrlButton () {
     setBusy(false)
   }, [gachaRecordsFetcher, i18n, keyofBusinesses, notifier, prettized, selectedAccount, updateAccountPropertiesMutation])
 
+  const manualInputDialogRef = useRef<ElementRef<typeof UrlManualInputDialog>>(null)
+  const handleManualInputClick = useCallback(() => {
+    manualInputDialogRef.current?.setOpen(true)
+  }, [])
+
   return (
     <Fragment>
       <Menu positioning="below-end">
@@ -398,8 +404,8 @@ function GachaLegacyViewToolbarUrlButton () {
               <Locale
                 component={MenuItem}
                 icon={<LinkEditRegular />}
+                onClick={handleManualInputClick}
                 mapping={['Pages.Gacha.LegacyView.Toolbar.Url.ManualInputBtn']}
-                // TODO: Manual input url
               />
             </MenuGroup>
           </MenuList>
@@ -420,6 +426,11 @@ function GachaLegacyViewToolbarUrlButton () {
           </div>
         </DialogSurface>
       </Dialog>
+      <UrlManualInputDialog
+        ref={manualInputDialogRef}
+        business={business}
+        keyofBusinesses={keyofBusinesses}
+      />
     </Fragment>
   )
 }
@@ -461,3 +472,155 @@ function stringifyFragment (
     options,
   ]
 }
+
+const useUrlManualInputDialogStyles = makeStyles({
+  form: {
+    display: 'flex',
+    flexDirection: 'column',
+    rowGap: tokens.spacingVerticalS,
+  },
+  actions: {
+    display: 'flex',
+    flexDirection: 'row',
+    columnGap: tokens.spacingHorizontalS,
+    justifyContent: 'flex-end',
+  },
+})
+
+// HACK: See -> src-tauri/src/business/gacha_url.rs
+const GachaUrlRegex = /^https:\/\/.*(mihoyo.com|hoyoverse.com).*(authkey=.+).*$/i
+const GachaUrlExample = 'https://*.mihoyo|hoyoverse.com/xxx?authkey=yourauthkey&fullParamsGachaUrl'
+
+const UrlManualInputDialog = forwardRef<{
+  setOpen: React.Dispatch<React.SetStateAction<boolean>>
+}, {
+  business: Business
+  keyofBusinesses: KeyofBusinesses
+}>(function UrlManualInputDialog (props, ref) {
+  const styles = useUrlManualInputDialogStyles()
+  const { business, keyofBusinesses } = props
+  const [open, setOpen] = useState(false)
+
+  useImperativeHandle(ref, () => ({
+    setOpen,
+  }))
+
+  type FormData = { url: string }
+
+  const selectedAccount = useSelectedAccountSuspenseQueryData(keyofBusinesses)
+  const updateAccountPropertiesMutation = useUpdateAccountPropertiesMutation()
+  const i18n = useI18n()
+
+  const {
+    register,
+    resetField,
+    setError,
+    handleSubmit,
+    formState: { isValid, isSubmitting, errors },
+  } = useForm<FormData>({
+    mode: 'onChange',
+    defaultValues: { url: '' },
+    values: { url: '' },
+  })
+
+  const handleCancel = useCallback(() => {
+    resetField('url')
+    setOpen(false)
+  }, [resetField])
+
+  const onSubmit = useCallback<SubmitHandler<FormData>>(async (data) => {
+    // HACK: When unavailable, the parent component is disabled
+    if (!selectedAccount) {
+      return
+    }
+
+    const expectedUid = selectedAccount.uid
+    const properties = { ...selectedAccount.properties } // Need to modify
+
+    let gachaUrl: GachaUrl<Business>
+    try {
+      gachaUrl = await fromDirtyGachaUrl({
+        dirtyUrl: data.url,
+        expectedUid,
+      })
+    } catch (error) {
+      const message = extractErrorMessage(error)
+      setError('url', { message })
+      throw error
+    }
+
+    properties.gachaUrl = gachaUrl.value
+    properties.gachaUrlCreationTime = null
+    // Dirty URLs have no creation date and cannot know their validity period.
+    await updateAccountPropertiesMutation.mutateAsync({
+      business,
+      uid: expectedUid,
+      properties,
+    })
+
+    resetField('url')
+    setOpen(false)
+  }, [business, resetField, selectedAccount, setError, updateAccountPropertiesMutation])
+
+  return (
+    <Dialog
+      modalType="alert"
+      open={open}
+    >
+      <DialogSurface>
+        <DialogBody>
+          <Locale
+            component={DialogTitle}
+            mapping={['Pages.Gacha.LegacyView.Toolbar.Url.ManualInputDialog.Title']}
+          />
+          <DialogContent>
+            <form
+              className={styles.form}
+              onSubmit={handleSubmit(onSubmit)}
+              noValidate
+            >
+              <Field
+                size="large"
+                validationState={errors.url ? 'error' : isValid ? 'success' : 'none'}
+                validationMessage={errors.url ? errors.url.message : undefined}
+                required
+              >
+                <Textarea
+                  placeholder={i18n.t('Pages.Gacha.LegacyView.Toolbar.Url.ManualInputDialog.Placeholder', { example: GachaUrlExample })}
+                  autoComplete="off"
+                  appearance="filled-darker"
+                  rows={6}
+                  required
+                  {...register('url', {
+                    required: i18n.t('Pages.Gacha.LegacyView.Toolbar.Url.ManualInputDialog.Required'),
+                    validate (value) {
+                      if (!value || !GachaUrlRegex.test(value)) {
+                        return i18n.t('Pages.Gacha.LegacyView.Toolbar.Url.ManualInputDialog.Validate')
+                      }
+                    },
+                  })}
+                />
+              </Field>
+              <div className={styles.actions}>
+                <Locale
+                  component={Button}
+                  appearance="secondary"
+                  disabled={isSubmitting}
+                  onClick={handleCancel}
+                  mapping={['Pages.Gacha.LegacyView.Toolbar.Url.ManualInputDialog.CancelBtn']}
+                />
+                <Locale
+                  component={Button}
+                  appearance="primary"
+                  type="submit"
+                  disabled={!isValid || isSubmitting}
+                  mapping={['Pages.Gacha.LegacyView.Toolbar.Url.ManualInputDialog.SubmitBtn']}
+                />
+              </div>
+            </form>
+          </DialogContent>
+        </DialogBody>
+      </DialogSurface>
+    </Dialog>
+  )
+})

@@ -105,7 +105,7 @@ declare_error_kinds! {
 // https://webstatic.mihoyo.com/xxx/event/xxx/index.html?params
 // https://public-operation-xxx.mihoyo.com/gacha_info/api/getGachaLog?params
 static REGEX_GACHA_URL: LazyLock<Regex> = LazyLock::new(|| {
-  Regex::new(r"(?i)^https:\/\/.*(mihoyo.com|hoyoverse.com).*(authkey\=).*$").unwrap()
+  Regex::new(r"(?i)^https:\/\/.*(mihoyo.com|hoyoverse.com).*(authkey\=.+).*$").unwrap()
 });
 
 static REGEX_WEBCACHES_VERSION: LazyLock<Regex> = LazyLock::new(|| {

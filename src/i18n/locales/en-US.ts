@@ -135,6 +135,14 @@ export default {
               More: 'More options',
               FullUpdateBtn: 'Full update',
               ManualInputBtn: 'Manual input URL',
+              ManualInputDialog: {
+                Title: 'Manual input URL:',
+                Placeholder: 'A Gacha URL with full parameters:\n{{example}}',
+                Required: 'Please enter the URL value.',
+                Validate: 'Please enter a valid URL format.',
+                CancelBtn: 'Cancel',
+                SubmitBtn: 'Submit',
+              },
               Obtain: {
                 Loading: 'Obtaining $t(Business.{{keyofBusinesses}}.Gacha.Name) URL...',
                 Error: {

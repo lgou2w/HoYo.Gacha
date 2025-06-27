@@ -135,6 +135,14 @@ export default {
               More: '更多操作',
               FullUpdateBtn: '全量更新',
               ManualInputBtn: '手动输入链接',
+              ManualInputDialog: {
+                Title: '手动输入链接：',
+                Placeholder: '带有完整参数的 URL 抽卡链接：\n{{example}}',
+                Required: '请输入 URL 抽卡链接。',
+                Validate: '请输入有效的 URL 抽卡链接格式。',
+                CancelBtn: '取消',
+                SubmitBtn: '确定',
+              },
               Obtain: {
                 Loading: '获取$t(Business.{{keyofBusinesses}}.Gacha.Name)链接...',
                 Error: {
