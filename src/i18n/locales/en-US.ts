@@ -120,6 +120,7 @@ export default {
               Title: 'Account',
               Available: 'Available',
               NoAvailable: 'No account',
+              EditAccount: 'Edit account',
               AddNewAccount: 'Add new account',
             },
             Url: {
@@ -205,9 +206,9 @@ export default {
             },
           },
           UpsertAccountDialog: {
-            AddTitle: 'Add new account: "$t(Business.{{keyofBusinesses}}.Name)"',
+            AddTitle: 'Add new account: $t(Business.{{keyofBusinesses}}.Name)',
             AddSuccess: 'Successfully added new account: {{uid}}',
-            EditTitle: 'Edit account: "$t(Business.{{keyofBusinesses}}.Name)"',
+            EditTitle: 'Edit account: $t(Business.{{keyofBusinesses}}.Name)',
             EditSuccess: 'Successfully edited account: {{uid}}',
           },
           DataConvert: {

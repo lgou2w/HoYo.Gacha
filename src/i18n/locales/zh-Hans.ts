@@ -120,6 +120,7 @@ export default {
               Title: '账号',
               Available: '可用',
               NoAvailable: '无账号',
+              EditAccount: '编辑账号',
               AddNewAccount: '添加新的账号',
             },
             Url: {
@@ -205,9 +206,9 @@ export default {
             },
           },
           UpsertAccountDialog: {
-            AddTitle: '添加新账号："$t(Business.{{keyofBusinesses}}.Name)"',
+            AddTitle: '添加新账号：$t(Business.{{keyofBusinesses}}.Name)',
             AddSuccess: '成功添加新账号：{{uid}}',
-            EditTitle: '编辑账号："$t(Business.{{keyofBusinesses}}.Name)"',
+            EditTitle: '编辑账号：$t(Business.{{keyofBusinesses}}.Name)',
             EditSuccess: '成功编辑账号：{{uid}}',
           },
           DataConvert: {
