@@ -21,7 +21,7 @@ publish = false
 custom-protocol = [ "tauri/custom-protocol" ]
 
 [build-dependencies]
-tauri-build = { version = "2.2.0", default-features = false, features = ["config-toml"] }
+tauri-build = { version = "2.3.0", default-features = false, features = ["config-toml"] }
 
 [dependencies]
 async-trait = "0.1.88"
@@ -41,8 +41,8 @@ serde = { version = "1.0.219", features = ["derive"] }
 serde_json = "1.0.140"
 serde_repr = "0.1.20"
 sys-locale = "0.3.2"
-tauri-plugin-shell = "2.2.2"
-tauri-plugin-clipboard-manager = "2.2.3"
+tauri-plugin-shell = "2.3.0"
+tauri-plugin-clipboard-manager = "2.3.0"
 thiserror = "2.0.12"
 time = { version = "0.3.41", features = ["local-offset", "macros", "serde-human-readable"] }
 tokio = { version = "1.45.1", features = ["macros", "rt-multi-thread"] }
@@ -63,13 +63,12 @@ features = [
 
 # https://github.com/tauri-apps/tauri/blob/dev/crates/tauri/Cargo.toml
 [dependencies.tauri]
-version = "2.5.1"
+version = "2.6.1"
 default-features = false
 features = [
   "wry",
   "compression",
-  "objc-exception",
-  "devtools"
+  "devtools",
 ]
 
 # Ensure that some dependencies are version-consistent with tauri to avoid type conflicts
@@ -77,10 +76,10 @@ features = [
 [target.'cfg(windows)'.dependencies]
 windows-registry = "0.5.3"
 windows-version = "0.1.4"
-webview2-com = "0.37.0"
+webview2-com = "0.38.0"
 
 [target.'cfg(windows)'.dependencies.windows]
-version = "0.61.1"
+version = "0.61.3"
 features = [
   "Win32_Foundation",
   "Win32_Graphics",
