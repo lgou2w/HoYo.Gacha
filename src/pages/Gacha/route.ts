@@ -1,5 +1,5 @@
 import { Spinner } from '@fluentui/react-components'
-import { createRoute } from '@tanstack/react-router'
+import { ErrorComponentProps, createRoute } from '@tanstack/react-router'
 import { isDetailedError } from '@/api/error'
 import { ensureAccountsQueryData, ensureSelectedAccountUidQueryData } from '@/api/queries/accounts'
 import { prefetchFirstGachaRecordQuery, prefetchPrettizedGachaRecordsQuery } from '@/api/queries/business'
@@ -41,7 +41,7 @@ const GachaRoute = createRoute({
   },
   component: Gacha,
   pendingComponent: Spinner,
-  errorComponent: ({ error }) => {
+  errorComponent ({ error }: ErrorComponentProps) {
     // TODO
     return (
       'Error: ' + (isDetailedError(error) || error instanceof Error ? error.message : String(error))
