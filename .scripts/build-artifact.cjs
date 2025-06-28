@@ -6,14 +6,12 @@ const child_process = require('node:child_process')
 const crypto = require('node:crypto')
 const packageJson = require('../package.json')
 
-// HACK: See -> src-tauri/Tauri.toml
-const mainBinaryName = 'HoYo_Gacha'
 const isWindows = process.platform === 'win32'
 const executable = isWindows ? 'exe' : undefined
 const cwd = path.resolve(__dirname, '..')
 
 const buildDir = path.join(cwd, 'target', 'release')
-const buildFile = executable && path.join(buildDir, `${mainBinaryName}.${executable}`)
+const buildFile = executable && path.join(buildDir, `${packageJson.name}.${executable}`)
 if (!buildFile || !fs.existsSync(buildFile)) {
   console.error(`Build file not found: ${buildFile}`)
   process.exit(1)
