@@ -10,7 +10,7 @@
   "license": "MIT OR Apache-2.0",
   "private": "true",
   "type": "module",
-  "packageManager": "pnpm@10.12.3+sha512.467df2c586056165580ad6dfb54ceaad94c5a30f80893ebdec5a44c5aa73c205ae4a5bb9d5ed6bb84ea7c249ece786642bbb49d06a307df218d03da41c317417",
+  "packageManager": "pnpm@10.12.4+sha512.5ea8b0deed94ed68691c9bad4c955492705c5eeb8a87ef86bc62c74a26b037b08ff9570f108b2e4dbd1dd1a9186fea925e527f141c648e85af45631074680184",
   "engines": {
     "node": "^20.19.0 || >= 22",
     "pnpm": "^10"
@@ -38,12 +38,12 @@
     "backend:lint": "cargo check"
   },
   "dependencies": {
-    "@fluentui/react-components": "^9.66.4",
-    "@fluentui/react-icons": "^2.0.304",
+    "@fluentui/react-components": "^9.66.5",
+    "@fluentui/react-icons": "^2.0.305",
     "@fluentui/react-motion-components-preview": "^0.6.2",
-    "@tanstack/react-query": "^5.81.2",
-    "@tanstack/react-query-devtools": "^5.81.2",
-    "@tanstack/react-router": "^1.121.40",
+    "@tanstack/react-query": "^5.81.5",
+    "@tanstack/react-query-devtools": "^5.81.5",
+    "@tanstack/react-router": "^1.122.0",
     "@tauri-apps/api": "^2.6.0",
     "@tauri-apps/plugin-clipboard-manager": "^2.3.0",
     "@tauri-apps/plugin-shell": "^2.3.0",
@@ -54,7 +54,7 @@
     "is-promise": "^4.0.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-hook-form": "^7.58.1",
+    "react-hook-form": "^7.59.0",
     "react-i18next": "^15.5.3",
     "react-virtuoso": "^4.13.0",
     "use-immer": "^0.11.0"
