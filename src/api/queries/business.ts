@@ -86,6 +86,16 @@ export function invalidatePrettizedGachaRecordsQuery (
   })
 }
 
+export function removePrettizedGachaRecordsQuery (
+  business: Business,
+  uid: Account['uid'] | null | undefined,
+  customLocale?: FindAndPrettyGachaRecordsArgs<Business>['customLocale'],
+) {
+  queryClient.removeQueries({
+    queryKey: prettizedGachaRecordsQueryKey(business, uid, customLocale),
+  })
+}
+
 // #endregion
 
 // #region: First Gacha Record
@@ -166,6 +176,15 @@ export function invalidateFirstGachaRecordQuery (
   uid: Account['uid'] | null | undefined,
 ) {
   return queryClient.invalidateQueries({
+    queryKey: firstGachaRecordQueryKey(business, uid),
+  })
+}
+
+export function removeFirstGachaRecordQuery (
+  business: Business,
+  uid: Account['uid'] | null | undefined,
+) {
+  queryClient.removeQueries({
     queryKey: firstGachaRecordQueryKey(business, uid),
   })
 }

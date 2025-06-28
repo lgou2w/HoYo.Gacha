@@ -120,8 +120,21 @@ export default {
               Title: 'Account',
               Available: 'Available',
               NoAvailable: 'No account',
-              EditAccount: 'Edit account',
               AddNewAccount: 'Add new account',
+              Options: {
+                Title: 'More options',
+                Edit: 'Edit account',
+                Delete: 'Delete account',
+              },
+              DeleteAccountDialog: {
+                Title: 'Confirm to delete account: $t(Business.{{keyofBusinesses}}.Name)',
+                Uid: 'UID:',
+                DisplayName: 'DisplayName:',
+                Whole: 'Delete as a whole:',
+                WholeInformation: 'Warning! After enabling, this will delete this account and the gacha records.',
+                CancelBtn: 'Cancel',
+                SubmitBtn: 'Delete',
+              },
             },
             Url: {
               Title: '$t(Business.{{keyofBusinesses}}.Gacha.Name) URL',

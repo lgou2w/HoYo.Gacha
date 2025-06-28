@@ -186,9 +186,12 @@ export function useDeleteAccountMutation () {
   >({
     mutationKey: [KeyAccounts, 'Delete'],
     mutationFn: deleteAccountByBusinessAndUid,
-    onSuccess (data) {
-      data && setAccountsQueryData(
-        ReversedBusinesses[data.business],
+    async onSuccess (data) {
+      if (!data) return
+
+      const keyofBusinesses = ReversedBusinesses[data.business]
+      const accounts = setAccountsQueryData(
+        keyofBusinesses,
         produce((draft = []) => {
           let index: number
           if ((index = draft.findIndex((el) => isSamePrimaryKeyAccount(el, data))) !== -1) {
@@ -196,6 +199,12 @@ export function useDeleteAccountMutation () {
           }
         }),
       )
+
+      // If the deleted account was selected, delete the selected account uid
+      if (accounts) {
+        await SelectedAccountUidStorage.inspect(keyofBusinesses, accounts)
+        await invalidateSelectedAccountUidQuery(keyofBusinesses)
+      }
     },
   })
 }

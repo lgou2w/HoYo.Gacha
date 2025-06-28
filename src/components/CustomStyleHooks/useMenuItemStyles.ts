@@ -41,11 +41,20 @@ const useCheckmarkStyles = makeStyles({
   },
 })
 
+const useSubmenuIndicatorStyles = makeStyles({
+  root: {
+    width: '1.25rem',
+    height: '1.25rem',
+    fontSize: '1.25rem',
+  },
+})
+
 export default function useMenuItemStyles (state: MenuItemState) {
   const styles = useStyles()
   const iconStyles = useIconStyles()
   const contentStyles = useContentStyles()
   const checkmarkStyles = useCheckmarkStyles()
+  const submenuIndicatorStyles = useSubmenuIndicatorStyles()
 
   state.root.className = mergeClasses(
     state.root.className,
@@ -74,6 +83,14 @@ export default function useMenuItemStyles (state: MenuItemState) {
       state.checkmark.className,
       checkmarkStyles.root,
       getSlotClassNameProp_unstable(state.checkmark),
+    )
+  }
+
+  if (state.submenuIndicator) {
+    state.submenuIndicator.className = mergeClasses(
+      state.submenuIndicator.className,
+      submenuIndicatorStyles.root,
+      getSlotClassNameProp_unstable(state.submenuIndicator),
     )
   }
 }

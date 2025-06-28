@@ -120,8 +120,21 @@ export default {
               Title: '账号',
               Available: '可用',
               NoAvailable: '无账号',
-              EditAccount: '编辑账号',
               AddNewAccount: '添加新的账号',
+              Options: {
+                Title: '更多选项',
+                Edit: '编辑账号',
+                Delete: '删除账号',
+              },
+              DeleteAccountDialog: {
+                Title: '确认删除账号：$t(Business.{{keyofBusinesses}}.Name)',
+                Uid: 'UID：',
+                DisplayName: '显示名称：',
+                Whole: '完整删除：',
+                WholeInformation: '敬告！启用后，这将删除此账号以及抽卡记录数据。',
+                CancelBtn: '取消',
+                SubmitBtn: '删除',
+              },
             },
             Url: {
               Title: '$t(Business.{{keyofBusinesses}}.Gacha.Name)链接',

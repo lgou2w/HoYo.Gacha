@@ -15,6 +15,7 @@ import useMenuItemRadioStyles from './useMenuItemRadioStyles'
 import useMenuItemStyles from './useMenuItemStyles'
 import useMenuListStyles from './useMenuListStyles'
 import useMenuPopoverStyles from './useMenuPopoverStyles'
+import useMenuSplitGroupStyles from './useMenuSplitGroupStyles'
 import useRadioStyles from './useRadioStyles'
 import useSelectStyles from './useSelectStyles'
 import useSpinnerStyles from './useSpinnerStyles'
@@ -48,6 +49,7 @@ const CustomStylesHooks: FluentProviderCustomStyleHooks = {
   useMenuItemStyles_unstable: useMenuItemStyles as CustomStyleHook,
   useMenuListStyles_unstable: useMenuListStyles as CustomStyleHook,
   useMenuPopoverStyles_unstable: useMenuPopoverStyles as CustomStyleHook,
+  useMenuSplitGroupStyles_unstable: useMenuSplitGroupStyles as CustomStyleHook,
   useRadioStyles_unstable: useRadioStyles as CustomStyleHook,
   useSelectStyles_unstable: useSelectStyles as CustomStyleHook,
   useSpinnerStyles_unstable: useSpinnerStyles as CustomStyleHook,

@@ -1,7 +1,10 @@
-import React, { ElementRef, Fragment, MouseEventHandler, useCallback, useEffect, useRef, useState } from 'react'
-import { Body1Strong, Button, Caption1, Menu, MenuButton, MenuDivider, MenuGroup, MenuGroupHeader, MenuItem, MenuItemRadio, MenuList, MenuListProps, MenuPopover, MenuTrigger, Tooltip, makeStyles, menuItemClassNames, tokens } from '@fluentui/react-components'
-import { PeopleListRegular, PersonAddRegular, PersonEditRegular } from '@fluentui/react-icons'
-import { useAccountsSuspenseQueryData, useSelectedAccountSuspenseQueryData, useUpdateSelectedAccountUidMutation } from '@/api/queries/accounts'
+import React, { ElementRef, Fragment, MouseEventHandler, forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react'
+import { Body1Strong, Button, Caption1, Dialog, DialogActions, DialogBody, DialogContent, DialogSurface, DialogTitle, Field, Input, Menu, MenuButton, MenuDivider, MenuGroup, MenuGroupHeader, MenuItem, MenuItemRadio, MenuList, MenuListProps, MenuPopover, MenuSplitGroup, MenuTrigger, Switch, makeStyles, menuItemClassNames, tokens } from '@fluentui/react-components'
+import { PeopleListRegular, PersonAddRegular, PersonDeleteRegular, PersonEditRegular } from '@fluentui/react-icons'
+import { useImmer } from 'use-immer'
+import { deleteGachaRecordsByBusinessAndUid } from '@/api/commands/database'
+import { useAccountsSuspenseQueryData, useDeleteAccountMutation, useSelectedAccountSuspenseQueryData, useUpdateSelectedAccountUidMutation } from '@/api/queries/accounts'
+import { removeFirstGachaRecordQuery, removePrettizedGachaRecordsQuery } from '@/api/queries/business'
 import BizImages from '@/components/BizImages'
 import Locale from '@/components/Locale'
 import useBusinessContext from '@/hooks/useBusinessContext'
@@ -25,7 +28,7 @@ const useStyles = makeStyles({
   },
   content: {
     height: '2.5rem',
-    minWidth: `calc(8.625rem + (${tokens.spacingHorizontalXS} * 2) + 4px)`,
+    minWidth: `calc(10.625rem + (${tokens.spacingHorizontalXS} * 2) + 4px)`,
   },
 })
 
@@ -83,11 +86,14 @@ const useAccountListStyle = makeStyles({
       },
     },
   },
-  editAccountBtn: {
-    marginLeft: 'auto',
-  },
   addAccountBtn: {
     fontSize: tokens.fontSizeBase200,
+  },
+  accountOptionsDelete: {
+    color: tokens.colorStatusDangerForeground1,
+    [`:hover, &:hover .${menuItemClassNames.icon}`]: {
+      color: tokens.colorStatusDangerForeground1,
+    },
   },
 })
 
@@ -101,7 +107,6 @@ interface AccountListProps {
 function AccountList (props: AccountListProps) {
   const styles = useAccountListStyle()
   const { business, keyofBusinesses, accounts, onAddAccountClick } = props
-  const [open, setOpen] = useState(false)
 
   const selectedAccount = useSelectedAccountSuspenseQueryData(keyofBusinesses)
   const updateSelectedAccountUidMutation = useUpdateSelectedAccountUidMutation()
@@ -125,18 +130,29 @@ function AccountList (props: AccountListProps) {
     selectedAccountUidRef.current = selectedAccount?.uid
   }, [notifier, selectedAccount?.uid])
 
-  const i18n = useI18n()
   const editAccountDialogRef = useRef<ElementRef<typeof UpsertAccountDialog>>(null)
-  const handleEditAccountClick = useCallback<MouseEventHandler>(() => {
-    setOpen(false)
-    editAccountDialogRef.current?.setOpen(true)
-  }, [])
+  const deleteAccountDialogRef = useRef<ElementRef<typeof DeleteAccountDialog>>(null)
+  const [activeAccount, setActiveAccount] = useState<Account | null>(null)
+  const handleActiveAccountClick = useCallback<MouseEventHandler>((evt) => {
+    const operation = evt.currentTarget.getAttribute('data-operation')
+    const targetUid = evt.currentTarget.getAttribute('data-account')
+    const target = targetUid && accounts.find((el) => el.uid === +targetUid)
+    if (operation && target) {
+      setActiveAccount(target)
+      switch (operation) {
+        case 'edit':
+          editAccountDialogRef.current?.setOpen(true)
+          break
+        case 'delete':
+          deleteAccountDialogRef.current?.setOpen(true)
+          break
+      }
+    }
+  }, [accounts])
 
   return (
-    <>
+    <Fragment>
       <Menu
-        open={open}
-        onOpenChange={(_, data) => setOpen(data.open)}
         positioning={{ offset: { crossAxis: 0, mainAxis: 8 } }}
         checkedValues={{ account: selectedAccount ? [String(selectedAccount.uid)] : [] }}
         onCheckedValueChange={handleAccountSelect}
@@ -153,35 +169,56 @@ function AccountList (props: AccountListProps) {
           <MenuList className={styles.menuList}>
             {accounts.length > 0 && (
               <Fragment>
-                <MenuGroupHeader>
-                  <Locale mapping={['Pages.Gacha.LegacyView.Toolbar.Account.Available']} />
-                  <Tooltip
-                    content={i18n.t('Pages.Gacha.LegacyView.Toolbar.Account.EditAccount')}
-                    relationship="label"
-                    positioning="before"
-                    withArrow
-                  >
-                    <Button
-                      className={styles.editAccountBtn}
-                      onClick={handleEditAccountClick}
-                      icon={<PersonEditRegular />}
-                      appearance="subtle"
-                      size="small"
-                    />
-                  </Tooltip>
-                </MenuGroupHeader>
+                <Locale
+                  component={MenuGroupHeader}
+                  mapping={['Pages.Gacha.LegacyView.Toolbar.Account.Available']}
+                />
                 <MenuGroup>
                   {accounts.map((account) => (
-                    <MenuItemRadio
-                      key={account.uid}
-                      name="account"
-                      value={String(account.uid)}
-                    >
-                      <AccountItem
-                        keyofBusinesses={keyofBusinesses}
-                        account={account}
-                      />
-                    </MenuItemRadio>
+                    <Menu key={account.uid} openOnHover={false}>
+                      <MenuSplitGroup>
+                        <MenuItemRadio
+                          name="account"
+                          value={String(account.uid)}
+                        >
+                          <AccountItem
+                            keyofBusinesses={keyofBusinesses}
+                            account={account}
+                          />
+                        </MenuItemRadio>
+                        <MenuTrigger disableButtonEnhancement>
+                          <MenuItem />
+                        </MenuTrigger>
+                      </MenuSplitGroup>
+                      <MenuPopover>
+                        <MenuList>
+                          <Locale
+                            component={MenuGroupHeader}
+                            mapping={['Pages.Gacha.LegacyView.Toolbar.Account.Options.Title']}
+                          />
+                          <MenuGroup>
+                            <Locale
+                              component={MenuItem}
+                              icon={<PersonEditRegular />}
+                              onClick={handleActiveAccountClick}
+                              data-account={String(account.uid)}
+                              data-operation="edit"
+                              mapping={['Pages.Gacha.LegacyView.Toolbar.Account.Options.Edit']}
+                            />
+                            <MenuDivider />
+                            <Locale
+                              component={MenuItem}
+                              className={styles.accountOptionsDelete}
+                              icon={<PersonDeleteRegular />}
+                              onClick={handleActiveAccountClick}
+                              data-account={String(account.uid)}
+                              data-operation="delete"
+                              mapping={['Pages.Gacha.LegacyView.Toolbar.Account.Options.Delete']}
+                            />
+                          </MenuGroup>
+                        </MenuList>
+                      </MenuPopover>
+                    </Menu>
                   ))}
                 </MenuGroup>
                 <MenuDivider />
@@ -204,11 +241,191 @@ function AccountList (props: AccountListProps) {
         business={business}
         keyofBusinesses={keyofBusinesses}
         accounts={accounts}
-        edit={selectedAccount}
+        edit={activeAccount}
       />
-    </>
+      <DeleteAccountDialog
+        ref={deleteAccountDialogRef}
+        account={activeAccount}
+      />
+    </Fragment>
   )
 }
+
+const useDeleteAccountDialogStyles = makeStyles({
+  root: {
+    maxWidth: '32rem',
+  },
+  content: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: tokens.spacingHorizontalS,
+  },
+})
+
+const InitTimeoutCount = 10
+const DeleteAccountDialog = forwardRef<{
+  setOpen: React.Dispatch<React.SetStateAction<boolean>>
+}, {
+  account: Account | null
+}>(function DeleteAccountDialog (props, ref) {
+  const styles = useDeleteAccountDialogStyles()
+  const { account } = props
+  const [state, produce] = useImmer({
+    open: false,
+    timeoutCount: InitTimeoutCount,
+    busy: false,
+  })
+
+  useImperativeHandle(ref, () => ({
+    setOpen () {
+      produce((draft) => {
+        draft.open = true
+      })
+    },
+  }))
+
+  useEffect(() => {
+    if (!account || !state.open) return
+
+    produce((draft) => {
+      draft.timeoutCount = InitTimeoutCount
+    })
+
+    const timer = setInterval(() => {
+      produce((draft) => {
+        if (draft.timeoutCount - 1 <= 0) {
+          clearInterval(timer)
+          draft.timeoutCount = 0
+        } else {
+          draft.timeoutCount -= 1
+        }
+      })
+    }, 1000)
+
+    return () => {
+      clearInterval(timer)
+    }
+  }, [account, produce, state.open])
+
+  const i18n = useI18n()
+  const deleteAccountMutation = useDeleteAccountMutation()
+  const wholeRef = useRef<ElementRef<typeof Switch>>(null)
+  const handleSubmit = useCallback<MouseEventHandler>(async () => {
+    if (!account) return
+
+    const whole = !!wholeRef.current?.checked
+    const args = { business: account.business, uid: account.uid }
+
+    produce((draft) => {
+      draft.busy = true
+    })
+
+    try {
+      if (whole) {
+        const count = await deleteGachaRecordsByBusinessAndUid(args)
+        console.log(`Deleted ${count} gacha records for account ${account.uid}.`)
+      }
+
+      console.log(`Deleting account ${account.uid}...`)
+      await deleteAccountMutation.mutateAsync(args)
+    } catch (error) {
+      // FIXME: Generally no errors
+      produce((draft) => {
+        draft.busy = false
+      })
+      throw error
+    }
+
+    produce((draft) => {
+      draft.busy = false
+      draft.open = false
+    })
+
+    console.log(`Deleting prettized gacha records for account ${account.uid}...`)
+    removePrettizedGachaRecordsQuery(args.business, args.uid, i18n.constants.gacha)
+    removeFirstGachaRecordQuery(args.business, args.uid)
+  }, [account, deleteAccountMutation, i18n.constants.gacha, produce])
+
+  if (!account || !state.open) {
+    return null
+  }
+
+  return (
+    <Dialog
+      modalType="alert"
+      open={state.open}
+    >
+      <DialogSurface className={styles.root}>
+        <DialogBody>
+          <Locale
+            component={DialogTitle}
+            mapping={[
+              'Pages.Gacha.LegacyView.Toolbar.Account.DeleteAccountDialog.Title',
+              { keyofBusinesses: ReversedBusinesses[account.business] },
+            ]}
+          />
+          <DialogContent className={styles.content}>
+            <Field
+              label={<Locale mapping={['Pages.Gacha.LegacyView.Toolbar.Account.DeleteAccountDialog.Uid']} />}
+              orientation="horizontal"
+            >
+              <Input
+                appearance="filled-darker"
+                value={String(account.uid)}
+                readOnly
+              />
+            </Field>
+            {account.properties?.displayName && (
+              <Field
+                label={<Locale mapping={['Pages.Gacha.LegacyView.Toolbar.Account.DeleteAccountDialog.DisplayName']} />}
+                orientation="horizontal"
+              >
+                <Input
+                  appearance="filled-darker"
+                  value={account.properties.displayName}
+                  readOnly
+                />
+              </Field>
+            )}
+            <Field
+              label={<Locale mapping={['Pages.Gacha.LegacyView.Toolbar.Account.DeleteAccountDialog.Whole']} />}
+              orientation="horizontal"
+              validationState="error"
+              validationMessage={<Locale
+                mapping={['Pages.Gacha.LegacyView.Toolbar.Account.DeleteAccountDialog.WholeInformation']} />}
+            >
+              <Switch ref={wholeRef} />
+            </Field>
+          </DialogContent>
+          <DialogActions>
+            <Locale
+              component={Button}
+              appearance="secondary"
+              disabled={state.busy}
+              onClick={() => produce((draft) => {
+                draft.open = false
+              })}
+              mapping={['Pages.Gacha.LegacyView.Toolbar.Account.DeleteAccountDialog.CancelBtn']}
+            />
+            <Locale
+              component={Button}
+              appearance="primary"
+              disabled={state.timeoutCount > 0 || state.busy}
+              onClick={handleSubmit}
+              mapping={(i18n) => {
+                if (state.timeoutCount > 0) {
+                  return state.timeoutCount
+                } else {
+                  return i18n.t(['Pages.Gacha.LegacyView.Toolbar.Account.DeleteAccountDialog.SubmitBtn'])
+                }
+              }}
+            />
+          </DialogActions>
+        </DialogBody>
+      </DialogSurface>
+    </Dialog>
+  )
+})
 
 const useAccountItemStyles = makeStyles({
   root: {
