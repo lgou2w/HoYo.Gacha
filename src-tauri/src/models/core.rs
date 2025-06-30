@@ -8,3 +8,15 @@ pub struct ThemeData {
   pub color_scheme: Option<Theme>,
   pub scale: Option<u32>,
 }
+
+#[derive(Clone, Debug, Default, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct WindowState {
+  pub width: u32,
+  pub height: u32,
+  pub x: i32,
+  pub y: i32,
+  pub prev_x: i32,
+  pub prev_y: i32,
+  pub maximized: bool,
+}

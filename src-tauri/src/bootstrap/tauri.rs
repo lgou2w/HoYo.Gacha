@@ -1,14 +1,14 @@
 use std::path::PathBuf;
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 use std::{env, process};
 
 use os_info::Info as OsInfo;
 use tauri::webview::{WebviewWindow, WebviewWindowBuilder};
 use tauri::{
-  Builder as TauriBuilder, Error as TauriError, Manager, Runtime, Theme, WebviewUrl,
-  generate_context, generate_handler,
+  Builder as TauriBuilder, Error as TauriError, Manager, Monitor, PhysicalPosition, PhysicalSize,
+  Runtime, Theme, WebviewUrl, WindowEvent, generate_context, generate_handler,
 };
-use tracing::{debug, info};
+use tracing::{debug, error, info};
 
 use super::ffi;
 use super::internals;
@@ -16,9 +16,11 @@ use super::singleton::Singleton;
 use super::tracing::Tracing;
 use crate::business::GachaMetadata;
 use crate::database::{self, Database, KvMut};
-use crate::models::ThemeData;
+use crate::models::{ThemeData, WindowState};
 use crate::utilities::file_dialog;
 use crate::{business, consts};
+
+struct WindowStateCache(Arc<Mutex<WindowState>>);
 
 #[tracing::instrument(skip_all)]
 pub async fn start(singleton: Singleton, tracing: Tracing, database: Database) {
@@ -44,6 +46,34 @@ pub async fn start(singleton: Singleton, tracing: Tracing, database: Database) {
       }
     });
 
+  info!("Loading window state...");
+  let window_state = KvMut::from(&database, consts::KV_WINDOW_STATE)
+    .try_read_val_json::<WindowState>()
+    .await
+    .expect("Error reading window state from database")
+    .transpose()
+    .expect("Error deserializing window state from database");
+
+  let is_some_window_state = window_state.is_some();
+
+  fn update_window_state(state: &mut WindowState, window: &WebviewWindow) -> tauri::Result<()> {
+    state.maximized = window.is_maximized()?;
+
+    if !state.maximized {
+      let size = window.inner_size()?;
+      if size.width > 0 && size.height > 0 {
+        state.width = size.width;
+        state.height = size.height;
+      }
+
+      let position = window.outer_position()?;
+      state.x = position.x;
+      state.y = position.y;
+    }
+
+    Ok(())
+  }
+
   info!("Creating Tauri application...");
   let database_state = Arc::clone(&database);
   let app = TauriBuilder::default()
@@ -53,9 +83,65 @@ pub async fn start(singleton: Singleton, tracing: Tracing, database: Database) {
       // Database state
       // See: src/database/mod.rs
       app.manage(database_state);
+      app.manage(WindowStateCache(Arc::new(Mutex::new(window_state.unwrap_or_default()))));
 
       info!("Creating the Main window...");
       let main_window = create_main_window(app, color_scheme)?;
+
+      info!("Restoring window state...");
+      let window_state_cache = app.state::<WindowStateCache>();
+      let mut window_state = window_state_cache.inner().0.lock().unwrap();
+
+      if is_some_window_state {
+        fn intersects(monitor: &Monitor, position: PhysicalPosition<i32>, size: PhysicalSize<u32>) -> bool {
+          let PhysicalPosition { x, y } = *monitor.position();
+          let PhysicalSize { width, height } = *monitor.size();
+
+          let left = x;
+          let right = x + width as i32;
+          let top = y;
+          let bottom = y + height as i32;
+
+          [
+            (position.x, position.y),
+            (position.x + size.width as i32, position.y),
+            (position.x, position.y + size.height as i32),
+            (
+              position.x + size.width as i32,
+              position.y + size.height as i32,
+            )
+          ]
+          .into_iter()
+          .any(|(x, y)| x >= left && x < right && y >= top && y < bottom)
+        }
+
+        let position = PhysicalPosition {
+          x: window_state.x,
+          y: window_state.y,
+        };
+
+        let size = PhysicalSize {
+          width: window_state.width,
+          height: window_state.height,
+        };
+
+        for monitor in main_window.available_monitors()? {
+          if intersects(&monitor, position, size) {
+            main_window.set_position(PhysicalPosition {
+              x: if window_state.maximized { window_state.prev_x } else { window_state.x },
+              y: if window_state.maximized { window_state.prev_y } else { window_state.y },
+            })?;
+          }
+        }
+
+        main_window.set_size(size)?;
+
+        if window_state.maximized {
+          main_window.maximize()?;
+        }
+      } else {
+        let _ = update_window_state(&mut window_state, &main_window);
+      }
 
       #[cfg(windows)]
       ffi::webview_version(&main_window, |version| {
@@ -105,6 +191,54 @@ pub async fn start(singleton: Singleton, tracing: Tracing, database: Database) {
 
       info!("Application setup completed");
       Ok(())
+    })
+    .on_window_event(|window, event| {
+      if window.label() != consts::TAURI_MAIN_WINDOW_LABEL {
+        return;
+      }
+
+      match event {
+        WindowEvent::CloseRequested { .. } => {
+          let main_window = window.get_webview_window(consts::TAURI_MAIN_WINDOW_LABEL).unwrap();
+          let window_state_cache = window.state::<WindowStateCache>();
+          let mut window_state = window_state_cache.inner().0.lock().unwrap();
+
+          match update_window_state(&mut window_state, &main_window) {
+            Err(error) => error!("Failed to update window state: {error}"),
+            Ok(_) => {
+              let database = window.state::<Arc<Database>>();
+              let ret = tokio::task::block_in_place(move || {
+                tauri::async_runtime::block_on(async move {
+                  KvMut::from(&database, consts::KV_WINDOW_STATE)
+                    .try_write_json(&*window_state)
+                    .await
+                })
+              });
+
+              debug!("Saving window state to database: {ret:?}");
+            }
+          }
+        },
+        WindowEvent::Moved(position) => {
+          let window_state_cache = window.state::<WindowStateCache>();
+          let mut window_state = window_state_cache.inner().0.lock().unwrap();
+          window_state.prev_x = window_state.x;
+          window_state.prev_y = window_state.y;
+          window_state.x = position.x;
+          window_state.y = position.y;
+        },
+        WindowEvent::Resized(size) => {
+          let is_maximized = window.is_maximized().unwrap_or_default();
+          let is_minimized = window.is_minimized().unwrap_or_default();
+          if !is_maximized && !is_minimized {
+            let window_state_cache = window.state::<WindowStateCache>();
+            let mut window_state = window_state_cache.inner().0.lock().unwrap();
+            window_state.width = size.width;
+            window_state.height = size.height;
+          }
+        },
+        _ => {},
+      }
     })
     .invoke_handler(generate_handler![
       core_os_info,

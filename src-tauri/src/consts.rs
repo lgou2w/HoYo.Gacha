@@ -73,6 +73,7 @@ pub const ENV_DEVTOOLS: &str = "HG_DEVTOOLS";
 // Known database kvs
 
 pub const KV_THEME_DATA: &str = "HG_THEME_DATA";
+pub const KV_WINDOW_STATE: &str = "HG_WINDOW_STATE";
 
 // Lazy
 
