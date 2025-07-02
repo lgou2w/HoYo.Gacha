@@ -447,6 +447,8 @@ function CardsEntryRecord (props: CardsEntryRecordProps) {
     value,
   } = props
 
+  const i18n = useI18n()
+
   // Next pity
   if (typeof value === 'number') {
     return (
@@ -493,6 +495,7 @@ function CardsEntryRecord (props: CardsEntryRecordProps) {
         '--progress':
           calcPityProgressVar(category, record.usedPity),
       }}
+      title={i18n.dayjs(record.time).format('LLLL')}
     >
       <GachaItemImage
         className={styles.icon}
