@@ -112,12 +112,17 @@ function AccountList (props: AccountListProps) {
   const updateSelectedAccountUidMutation = useUpdateSelectedAccountUidMutation()
   const handleAccountSelect = useCallback<Required<MenuListProps>['onCheckedValueChange']>(async (_, data) => {
     if (data.name === 'account') {
+      const targetUid = +data.checkedItems[0]
+      if (targetUid === selectedAccount?.uid) {
+        return
+      }
+
       await updateSelectedAccountUidMutation.mutateAsync({
         business,
-        data: accounts.find((el) => el.uid === +data.checkedItems[0])?.uid ?? null,
+        data: accounts.find((el) => el.uid === targetUid)?.uid ?? null,
       })
     }
-  }, [accounts, business, updateSelectedAccountUidMutation])
+  }, [accounts, business, selectedAccount?.uid, updateSelectedAccountUidMutation])
 
   // HACK: Dismiss all toasts when the selected account changes
   const notifier = useNotifier()
