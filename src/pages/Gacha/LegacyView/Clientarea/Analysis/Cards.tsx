@@ -39,16 +39,22 @@ export default function GachaLegacyViewClientareaAnalysisCards (props: Composite
         Permanent,
         Chronicled,
         Bangboo,
+        CollaborationCharacter,
+        CollaborationWeapon,
       },
     },
   } = props
 
   const state = useMemo(() => ({
-    hasChronicled: !!Chronicled && Chronicled.total > 0,
-    hasBangboo: !!Bangboo && Bangboo.total > 0,
+    hasChronicled: Chronicled && Chronicled.total > 0,
+    hasBangboo: Bangboo && Bangboo.total > 0,
+    hasCollaborationCharacter: CollaborationCharacter && CollaborationCharacter.total > 0,
+    hasCollaborationWeapon: CollaborationWeapon && CollaborationWeapon.total > 0,
   }), [
     Bangboo,
     Chronicled,
+    CollaborationCharacter,
+    CollaborationWeapon,
   ])
 
   return (
@@ -71,6 +77,16 @@ export default function GachaLegacyViewClientareaAnalysisCards (props: Composite
         {state.hasBangboo && (
           <div className={styles.card}>
             <CardsEntry business={business} metadata={Bangboo} />
+          </div>
+        )}
+        {state.hasCollaborationCharacter && (
+          <div className={styles.card}>
+            <CardsEntry business={business} metadata={CollaborationCharacter} />
+          </div>
+        )}
+        {state.hasCollaborationWeapon && (
+          <div className={styles.card}>
+            <CardsEntry business={business} metadata={CollaborationWeapon} />
           </div>
         )}
       </div>

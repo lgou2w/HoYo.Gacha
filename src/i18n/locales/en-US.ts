@@ -63,6 +63,8 @@ export default {
             Permanent_Title: 'Stellar Warp',
             Character: 'Character Event Wrap',
             Weapon: 'Light Cone Event Warp',
+            CollaborationCharacter: 'Character Collaboration Warp',
+            CollaborationWeapon: 'Light Cone Collaboration Warp',
             Aggregated: 'Aggregated',
           },
         },

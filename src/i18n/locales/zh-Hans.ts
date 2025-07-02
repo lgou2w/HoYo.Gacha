@@ -63,6 +63,8 @@ export default {
             Permanent_Title: '群星跃迁',
             Character: '角色活动跃迁',
             Weapon: '光锥活动跃迁',
+            CollaborationCharacter: '角色联动跃迁',
+            CollaborationWeapon: '光锥联动跃迁',
             Aggregated: '总计',
           },
         },

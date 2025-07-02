@@ -9,7 +9,7 @@ export type GachaRecord<T extends Business> = {
   id: string
   gachaType:
       T extends GenshinImpact ? 100 | 200 | 301 | 400 | 302 | 500
-    : T extends HonkaiStarRail ? 1 | 2 | 11 | 12
+    : T extends HonkaiStarRail ? 1 | 2 | 11 | 12 | 21 | 22
     : T extends ZenlessZoneZero ? 1 | 2 | 3 | 5
     : never
   gachaId:
@@ -52,6 +52,8 @@ export enum PrettyCategory {
   Weapon = 'Weapon',
   Chronicled = 'Chronicled', // 'Genshin Impact' only
   Bangboo = 'Bangboo', // 'Zenless Zone Zero' only
+  CollaborationCharacter = 'CollaborationCharacter', // 'Honkai: Star Rail' only
+  CollaborationWeapon = 'CollaborationWeapon', // 'Honkai: Star Rail' only
 }
 
 export interface CategorizedMetadataBlueRanking {

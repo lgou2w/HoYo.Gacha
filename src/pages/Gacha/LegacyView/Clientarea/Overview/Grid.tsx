@@ -39,33 +39,77 @@ export default function GachaLegacyViewClientareaOverviewGrid (props: CompositeS
         Permanent,
         Chronicled,
         Bangboo,
+        CollaborationCharacter,
+        CollaborationWeapon,
       },
       aggregated,
     },
   } = props
 
   const state = useMemo(() => ({
-    hasChronicled: !!Chronicled && Chronicled.total > 0,
-    hasBangboo: !!Bangboo && Bangboo.total > 0,
+    hasChronicled: Chronicled && Chronicled.total > 0,
+    hasBangboo: Bangboo && Bangboo.total > 0,
+    hasCollaborationCharacter: CollaborationCharacter && CollaborationCharacter.total > 0,
+    hasCollaborationWeapon: CollaborationWeapon && CollaborationWeapon.total > 0,
   }), [
     Bangboo,
     Chronicled,
+    CollaborationCharacter,
+    CollaborationWeapon,
   ])
+
+  const items = [
+    createGridItem(styles.half, PrettyCategory.Character, business, Character),
+    createGridItem(styles.half, PrettyCategory.Weapon, business, Weapon),
+  ]
+
+  if (business === Businesses.HonkaiStarRail) {
+    if (state.hasCollaborationCharacter) {
+      items.push(createGridItem(styles.half, PrettyCategory.CollaborationCharacter, business, CollaborationCharacter))
+    }
+
+    if (state.hasCollaborationWeapon) {
+      items.push(createGridItem(styles.half, PrettyCategory.CollaborationWeapon, business, CollaborationWeapon))
+    }
+  }
+
+  items.push(createGridItem(styles.half, PrettyCategory.Permanent, business, Permanent))
+
+  if (state.hasChronicled) {
+    items.push(createGridItem(styles.half, PrettyCategory.Chronicled, business, Chronicled))
+  }
+
+  if (state.hasBangboo) {
+    items.push(createGridItem(styles.half, PrettyCategory.Bangboo, business, Bangboo))
+  }
+
+  items.push(createGridItem(
+    items.length % 2 === 0
+      ? styles.full
+      : styles.half,
+    'Aggregated',
+    business,
+    aggregated,
+    Beginner,
+  ))
 
   return (
     <div className={styles.root}>
-      <div className={styles.half}><GridCard business={business} metadata={Character} /></div>
-      <div className={styles.half}><GridCard business={business} metadata={Weapon} /></div>
-      <div className={styles.half}><GridCard business={business} metadata={Permanent} /></div>
-      {state.hasChronicled && (
-        <div className={styles.half}><GridCard business={business} metadata={Chronicled} /></div>
-      )}
-      {state.hasBangboo && (
-        <div className={styles.half}><GridCard business={business} metadata={Bangboo} /></div>
-      )}
-      <div className={state.hasChronicled || state.hasBangboo ? styles.full : styles.half}>
-        <GridCard business={business} metadata={aggregated} beginner={Beginner} />
-      </div>
+      {items}
+    </div>
+  )
+}
+
+function createGridItem (
+  className: string,
+  category: PrettyCategory | 'Aggregated',
+  business: Business,
+  metadata: CategorizedMetadata<Business> | AggregatedMetadata | null,
+  beginner?: CategorizedMetadata<Business> | null,
+) {
+  return (
+    <div key={category} className={className}>
+      <GridCard business={business} metadata={metadata} beginner={beginner} />
     </div>
   )
 }

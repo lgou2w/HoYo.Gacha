@@ -28,8 +28,10 @@ pub enum PrettyCategory {
   Permanent,
   Character,
   Weapon,
-  Chronicled, // 'Genshin Impact' only
-  Bangboo,    // 'Zenless Zone Zero' only
+  Chronicled,             // 'Genshin Impact' only
+  Bangboo,                // 'Zenless Zone Zero' only
+  CollaborationCharacter, // 'Honkai: Star Rail' only
+  CollaborationWeapon,    // 'Honkai: Star Rail' only
 }
 
 // See: models/gacha_record.rs
@@ -54,6 +56,8 @@ static KNOWN_CATEGORIZEDS: LazyLock<HashMap<Business, HashMap<u32, PrettyCategor
           (1, PrettyCategory::Permanent),
           (11, PrettyCategory::Character),
           (12, PrettyCategory::Weapon),
+          (21, PrettyCategory::CollaborationCharacter),
+          (22, PrettyCategory::CollaborationWeapon),
         ]),
       ),
       (
