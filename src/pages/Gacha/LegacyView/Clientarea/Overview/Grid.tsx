@@ -63,17 +63,13 @@ export default function GachaLegacyViewClientareaOverviewGrid (props: CompositeS
     createGridItem(styles.half, PrettyCategory.Weapon, business, Weapon),
   ]
 
-  if (business === Businesses.HonkaiStarRail) {
-    if (state.hasCollaborationCharacter) {
-      items.push(createGridItem(styles.half, PrettyCategory.CollaborationCharacter, business, CollaborationCharacter))
-    }
-
-    if (state.hasCollaborationWeapon) {
-      items.push(createGridItem(styles.half, PrettyCategory.CollaborationWeapon, business, CollaborationWeapon))
-    }
+  if (state.hasCollaborationCharacter) {
+    items.push(createGridItem(styles.half, PrettyCategory.CollaborationCharacter, business, CollaborationCharacter))
   }
 
-  items.push(createGridItem(styles.half, PrettyCategory.Permanent, business, Permanent))
+  if (state.hasCollaborationWeapon) {
+    items.push(createGridItem(styles.half, PrettyCategory.CollaborationWeapon, business, CollaborationWeapon))
+  }
 
   if (state.hasChronicled) {
     items.push(createGridItem(styles.half, PrettyCategory.Chronicled, business, Chronicled))
@@ -83,10 +79,9 @@ export default function GachaLegacyViewClientareaOverviewGrid (props: CompositeS
     items.push(createGridItem(styles.half, PrettyCategory.Bangboo, business, Bangboo))
   }
 
+  items.push(createGridItem(styles.half, PrettyCategory.Permanent, business, Permanent))
   items.push(createGridItem(
-    items.length % 2 === 0
-      ? styles.full
-      : styles.half,
+    items.length % 2 === 0 ? styles.full : styles.half,
     'Aggregated',
     business,
     aggregated,
