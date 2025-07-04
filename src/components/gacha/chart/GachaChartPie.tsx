@@ -111,8 +111,8 @@ export default function GachaChartCalendar () {
                     ? [
                         { id: '角色', value: character.total },
                         { id: '光锥', value: weapon.total },
-                        ...(collaborationCharacter ? [{ id: '角联', value: collaborationCharacter.total }] : []),
-                        ...(collaborationWeapon ? [{ id: '光联', value: collaborationWeapon.total }] : []),
+                        ...(collaborationCharacter && collaborationCharacter.total > 0 ? [{ id: '角联', value: collaborationCharacter.total }] : []),
+                        ...(collaborationWeapon && collaborationWeapon.total > 0 ? [{ id: '光联', value: collaborationWeapon.total }] : []),
                         { id: '常驻', value: permanent.total },
                         { id: '新手', value: newbie.total }
                       ]
