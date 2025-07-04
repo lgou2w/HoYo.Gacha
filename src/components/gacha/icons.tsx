@@ -45,6 +45,17 @@ import GenshinCharacter10000101 from '@/assets/images/genshin/character/10000101
 import GenshinCharacter10000102 from '@/assets/images/genshin/character/10000102.png'
 import GenshinCharacter10000103 from '@/assets/images/genshin/character/10000103.png'
 import GenshinCharacter10000104 from '@/assets/images/genshin/character/10000104.png'
+import GenshinCharacter10000105 from '@/assets/images/genshin/character/10000105.png'
+import GenshinCharacter10000106 from '@/assets/images/genshin/character/10000106.png'
+import GenshinCharacter10000107 from '@/assets/images/genshin/character/10000107.png'
+import GenshinCharacter10000108 from '@/assets/images/genshin/character/10000108.png'
+import GenshinCharacter10000109 from '@/assets/images/genshin/character/10000109.png'
+import GenshinCharacter10000110 from '@/assets/images/genshin/character/10000110.png'
+import GenshinCharacter10000111 from '@/assets/images/genshin/character/10000111.png'
+import GenshinCharacter10000112 from '@/assets/images/genshin/character/10000112.png'
+import GenshinCharacter10000113 from '@/assets/images/genshin/character/10000113.png'
+import GenshinCharacter10000114 from '@/assets/images/genshin/character/10000114.png'
+import GenshinCharacter10000115 from '@/assets/images/genshin/character/10000115.png'
 import GenshinWeapon11501 from '@/assets/images/genshin/weapon/11501.png'
 import GenshinWeapon11502 from '@/assets/images/genshin/weapon/11502.png'
 import GenshinWeapon11503 from '@/assets/images/genshin/weapon/11503.png'
@@ -58,6 +69,7 @@ import GenshinWeapon11513 from '@/assets/images/genshin/weapon/11513.png'
 import GenshinWeapon11514 from '@/assets/images/genshin/weapon/11514.png'
 import GenshinWeapon11515 from '@/assets/images/genshin/weapon/11515.png'
 import GenshinWeapon11516 from '@/assets/images/genshin/weapon/11516.png'
+import GenshinWeapon11517 from '@/assets/images/genshin/weapon/11517.png'
 import GenshinWeapon12501 from '@/assets/images/genshin/weapon/12501.png'
 import GenshinWeapon12502 from '@/assets/images/genshin/weapon/12502.png'
 import GenshinWeapon12503 from '@/assets/images/genshin/weapon/12503.png'
@@ -66,6 +78,7 @@ import GenshinWeapon12510 from '@/assets/images/genshin/weapon/12510.png'
 import GenshinWeapon12511 from '@/assets/images/genshin/weapon/12511.png'
 import GenshinWeapon12512 from '@/assets/images/genshin/weapon/12512.png'
 import GenshinWeapon12513 from '@/assets/images/genshin/weapon/12513.png'
+import GenshinWeapon12514 from '@/assets/images/genshin/weapon/12514.png'
 import GenshinWeapon13501 from '@/assets/images/genshin/weapon/13501.png'
 import GenshinWeapon13502 from '@/assets/images/genshin/weapon/13502.png'
 import GenshinWeapon13504 from '@/assets/images/genshin/weapon/13504.png'
@@ -75,6 +88,7 @@ import GenshinWeapon13509 from '@/assets/images/genshin/weapon/13509.png'
 import GenshinWeapon13511 from '@/assets/images/genshin/weapon/13511.png'
 import GenshinWeapon13512 from '@/assets/images/genshin/weapon/13512.png'
 import GenshinWeapon13513 from '@/assets/images/genshin/weapon/13513.png'
+import GenshinWeapon13514 from '@/assets/images/genshin/weapon/13514.png'
 import GenshinWeapon14501 from '@/assets/images/genshin/weapon/14501.png'
 import GenshinWeapon14502 from '@/assets/images/genshin/weapon/14502.png'
 import GenshinWeapon14504 from '@/assets/images/genshin/weapon/14504.png'
@@ -87,6 +101,9 @@ import GenshinWeapon14513 from '@/assets/images/genshin/weapon/14513.png'
 import GenshinWeapon14514 from '@/assets/images/genshin/weapon/14514.png'
 import GenshinWeapon14515 from '@/assets/images/genshin/weapon/14515.png'
 import GenshinWeapon14516 from '@/assets/images/genshin/weapon/14516.png'
+import GenshinWeapon14517 from '@/assets/images/genshin/weapon/14517.png'
+import GenshinWeapon14518 from '@/assets/images/genshin/weapon/14518.png'
+import GenshinWeapon14519 from '@/assets/images/genshin/weapon/14519.png'
 import GenshinWeapon15501 from '@/assets/images/genshin/weapon/15501.png'
 import GenshinWeapon15502 from '@/assets/images/genshin/weapon/15502.png'
 import GenshinWeapon15503 from '@/assets/images/genshin/weapon/15503.png'
@@ -260,7 +277,18 @@ const Genshin = {
     基尼奇: [10000101, GenshinCharacter10000101],
     玛拉妮: [10000102, GenshinCharacter10000102],
     希诺宁: [10000103, GenshinCharacter10000103],
-    恰斯卡: [10000104, GenshinCharacter10000104]
+    恰斯卡: [10000104, GenshinCharacter10000104],
+    欧洛伦: [10000105, GenshinCharacter10000105],
+    玛薇卡: [10000106, GenshinCharacter10000106],
+    茜特菈莉: [10000107, GenshinCharacter10000107],
+    蓝砚: [10000108, GenshinCharacter10000108],
+    梦见月瑞希: [10000109, GenshinCharacter10000109],
+    伊安珊: [10000110, GenshinCharacter10000110],
+    瓦雷莎: [10000111, GenshinCharacter10000111],
+    爱可菲娅: [10000112, GenshinCharacter10000112],
+    伊法妮: [10000113, GenshinCharacter10000113],
+    丝柯克: [10000114, GenshinCharacter10000114],
+    塔利雅: [10000115, GenshinCharacter10000115]
   },
   weapon: {
     风鹰剑: [11501, GenshinWeapon11501],
@@ -276,6 +304,7 @@ const Genshin = {
     有乐御簾切: [11514, GenshinWeapon11514],
     赦罪: [11515, GenshinWeapon11515],
     岩峰巡歌: [11516, GenshinWeapon11516],
+    苍耀: [11517, GenshinWeapon11517],
     天空之傲: [12501, GenshinWeapon12501],
     狼的末路: [12502, GenshinWeapon12502],
     松籁响起之时: [12503, GenshinWeapon12503],
@@ -284,6 +313,7 @@ const Genshin = {
     苇海信标: [12511, GenshinWeapon12511],
     裁断: [12512, GenshinWeapon12512],
     山王长牙: [12513, GenshinWeapon12513],
+    焚曜千阳: [12514, GenshinWeapon12514],
     护摩之杖: [13501, GenshinWeapon13501],
     天空之脊: [13502, GenshinWeapon13502],
     贯虹之槊: [13504, GenshinWeapon13504],
@@ -293,6 +323,7 @@ const Genshin = {
     赤沙之杖: [13511, GenshinWeapon13511],
     赤月之形: [13512, GenshinWeapon13512],
     柔灯挽歌: [13513, GenshinWeapon13513],
+    香韵奏者: [13514, GenshinWeapon13514],
     天空之卷: [14501, GenshinWeapon14501],
     四风原典: [14502, GenshinWeapon14502],
     尘世之锁: [14504, GenshinWeapon14504],
@@ -305,6 +336,9 @@ const Genshin = {
     万世流涌大典: [14514, GenshinWeapon14514],
     鹤鸣余音: [14515, GenshinWeapon14515],
     冲浪时光: [14516, GenshinWeapon14516],
+    祭星者之望: [14517, GenshinWeapon14517],
+    寝正月初晴: [14518, GenshinWeapon14518],
+    溢彩心念: [14519, GenshinWeapon14519],
     天空之翼: [15501, GenshinWeapon15501],
     阿莫斯之弓: [15502, GenshinWeapon15502],
     终末嗟叹之诗: [15503, GenshinWeapon15503],
