@@ -1,4 +1,10 @@
+use shadow_rs::{BuildPattern, ShadowBuilder};
+
 fn main() {
-  shadow_rs::new().unwrap();
+  ShadowBuilder::builder()
+    .build_pattern(BuildPattern::RealTime)
+    .build()
+    .unwrap();
+
   tauri_build::build();
 }
