@@ -63,30 +63,12 @@ export default function GachaChartCalendar () {
   const now = dayjs()
   const from = now.subtract(1, 'year')
 
-  // HACK: Transform weekdays to Chinese
-  // -> https://github.com/plouc/nivo/blob/0f0a926627c370f4ae0ca435a91573a16d96affc/packages/calendar/src/TimeRange.tsx#L117
-  // -> https://github.com/plouc/nivo/blob/0f0a926627c370f4ae0ca435a91573a16d96affc/packages/calendar/src/compute/timeRange.ts#L310
-  const containerRef = React.useRef<HTMLDivElement>(null)
-  React.useEffect(() => {
-    if (!containerRef.current) return
-    if (!transformWeekdays(containerRef.current)) {
-      // Wait for next tick
-      console.debug('Calendar weekdays not ready, wait for next tick')
-      window.setTimeout(() => {
-        const hasTransformed = transformWeekdays(containerRef.current)
-        if (!hasTransformed) {
-          console.warn('Failed to transform weekdays')
-        }
-      }, 0)
-    }
-  }, [containerRef.current])
-
   const theme = useTheme()
 
   return (
     <Stack direction="column" gap={2}>
       <Typography variant="h6" gutterBottom>{`❖ ${currencyAction}日历`}</Typography>
-      <Box ref={containerRef} position="relative" width="100%" height={220}>
+      <Box position="relative" width="100%" height={220}>
         <ResponsiveTimeRange
           data={calendars}
           from={from.toDate()}
@@ -101,6 +83,7 @@ export default function GachaChartCalendar () {
           margin={{ top: 32, right: 64, bottom: 0, left: 16 }}
           weekdayTicks={[0, 2, 4, 6]}
           weekdayLegendOffset={64}
+          weekdays={['周日', '周一', '周二', '周三', '周四', '周五', '周六']}
           firstWeekday="sunday"
           monthLegendPosition="before"
           monthLegendOffset={12}
@@ -175,36 +158,4 @@ export default function GachaChartCalendar () {
       </Box>
     </Stack>
   )
-}
-
-const WeekdayMappings: Record<string, string> = {
-  Monday: '周一',
-  Tuesday: '周二',
-  Wednesday: '周三',
-  Thursday: '周四',
-  Friday: '周五',
-  Saturday: '周六',
-  Sunday: '周日'
-}
-
-function transformWeekdays (containerRef: HTMLDivElement | null): boolean {
-  if (!containerRef) return false
-  const texts = containerRef
-    .querySelector('svg')
-    ?.querySelector('g')
-    ?.querySelectorAll('text')
-
-  if (!texts) {
-    // console.warn('Cannot find weekday legend texts')
-    return false
-  }
-
-  for (const text of texts) {
-    const content = text.textContent
-    const mapping = content && WeekdayMappings[content]
-    if (mapping) {
-      text.textContent = mapping
-    }
-  }
-  return true
 }
