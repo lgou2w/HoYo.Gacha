@@ -196,25 +196,44 @@ import ZenlessCharacter1161 from '@/assets/images/zzz/character/1161.png'
 import ZenlessCharacter1171 from '@/assets/images/zzz/character/1171.png'
 import ZenlessCharacter1181 from '@/assets/images/zzz/character/1181.png'
 import ZenlessCharacter1191 from '@/assets/images/zzz/character/1191.png'
+import ZenlessCharacter1201 from '@/assets/images/zzz/character/1201.png'
 import ZenlessCharacter1211 from '@/assets/images/zzz/character/1211.png'
 import ZenlessCharacter1221 from '@/assets/images/zzz/character/1221.png'
 import ZenlessCharacter1241 from '@/assets/images/zzz/character/1241.png'
 import ZenlessCharacter1251 from '@/assets/images/zzz/character/1251.png'
 import ZenlessCharacter1261 from '@/assets/images/zzz/character/1261.png'
+import ZenlessCharacter1291 from '@/assets/images/zzz/character/1291.png'
+import ZenlessCharacter1311 from '@/assets/images/zzz/character/1311.png'
+import ZenlessCharacter1321 from '@/assets/images/zzz/character/1321.png'
+import ZenlessCharacter1331 from '@/assets/images/zzz/character/1331.png'
+import ZenlessCharacter1361 from '@/assets/images/zzz/character/1361.png'
+import ZenlessCharacter1371 from '@/assets/images/zzz/character/1371.png'
+import ZenlessCharacter1381 from '@/assets/images/zzz/character/1381.png'
+import ZenlessCharacter1391 from '@/assets/images/zzz/character/1391.png'
 import ZenlessWeapon14102 from '@/assets/images/zzz/weapon/14102.png'
 import ZenlessWeapon14104 from '@/assets/images/zzz/weapon/14104.png'
 import ZenlessWeapon14107 from '@/assets/images/zzz/weapon/14107.png'
+import ZenlessWeapon14109 from '@/assets/images/zzz/weapon/14109.png'
 import ZenlessWeapon14110 from '@/assets/images/zzz/weapon/14110.png'
 import ZenlessWeapon14114 from '@/assets/images/zzz/weapon/14114.png'
 import ZenlessWeapon14116 from '@/assets/images/zzz/weapon/14116.png'
 import ZenlessWeapon14117 from '@/assets/images/zzz/weapon/14117.png'
 import ZenlessWeapon14118 from '@/assets/images/zzz/weapon/14118.png'
 import ZenlessWeapon14119 from '@/assets/images/zzz/weapon/14119.png'
+import ZenlessWeapon14120 from '@/assets/images/zzz/weapon/14120.png'
 import ZenlessWeapon14121 from '@/assets/images/zzz/weapon/14121.png'
 import ZenlessWeapon14122 from '@/assets/images/zzz/weapon/14122.png'
 import ZenlessWeapon14124 from '@/assets/images/zzz/weapon/14124.png'
 import ZenlessWeapon14125 from '@/assets/images/zzz/weapon/14125.png'
 import ZenlessWeapon14126 from '@/assets/images/zzz/weapon/14126.png'
+import ZenlessWeapon14129 from '@/assets/images/zzz/weapon/14129.png'
+import ZenlessWeapon14131 from '@/assets/images/zzz/weapon/14131.png'
+import ZenlessWeapon14132 from '@/assets/images/zzz/weapon/14132.png'
+import ZenlessWeapon14133 from '@/assets/images/zzz/weapon/14133.png'
+import ZenlessWeapon14136 from '@/assets/images/zzz/weapon/14136.png'
+import ZenlessWeapon14137 from '@/assets/images/zzz/weapon/14137.png'
+import ZenlessWeapon14138 from '@/assets/images/zzz/weapon/14138.png'
+import ZenlessWeapon14139 from '@/assets/images/zzz/weapon/14139.png'
 import ZenlessBangboo54001 from '@/assets/images/zzz/bangboo/54001.png'
 import ZenlessBangboo54002 from '@/assets/images/zzz/bangboo/54002.png'
 import ZenlessBangboo54004 from '@/assets/images/zzz/bangboo/54004.png'
@@ -226,6 +245,9 @@ import ZenlessBangboo54011 from '@/assets/images/zzz/bangboo/54011.png'
 import ZenlessBangboo54012 from '@/assets/images/zzz/bangboo/54012.png'
 import ZenlessBangboo54013 from '@/assets/images/zzz/bangboo/54013.png'
 import ZenlessBangboo54014 from '@/assets/images/zzz/bangboo/54014.png'
+import ZenlessBangboo54015 from '@/assets/images/zzz/bangboo/54015.png'
+import ZenlessBangboo54016 from '@/assets/images/zzz/bangboo/54016.png'
+import ZenlessBangboo54017 from '@/assets/images/zzz/bangboo/54017.png'
 
 // HACK: These static resources only contain five-star!
 
@@ -443,27 +465,46 @@ const Zenless = {
     1171: [1171, ZenlessCharacter1171],
     1181: [1181, ZenlessCharacter1181],
     1191: [1191, ZenlessCharacter1191],
+    1201: [1201, ZenlessCharacter1201],
     1211: [1211, ZenlessCharacter1211],
     1221: [1221, ZenlessCharacter1221],
     1241: [1241, ZenlessCharacter1241],
     1251: [1251, ZenlessCharacter1251],
-    1261: [1261, ZenlessCharacter1261]
+    1261: [1261, ZenlessCharacter1261],
+    1291: [1291, ZenlessCharacter1291],
+    1311: [1311, ZenlessCharacter1311],
+    1321: [1321, ZenlessCharacter1321],
+    1331: [1331, ZenlessCharacter1331],
+    1361: [1361, ZenlessCharacter1361],
+    1371: [1371, ZenlessCharacter1371],
+    1381: [1381, ZenlessCharacter1381],
+    1391: [1391, ZenlessCharacter1391]
   },
   weapon: {
     14102: [14102, ZenlessWeapon14102],
     14104: [14104, ZenlessWeapon14104],
     14107: [14107, ZenlessWeapon14107],
+    14109: [14109, ZenlessWeapon14109],
     14110: [14110, ZenlessWeapon14110],
     14114: [14114, ZenlessWeapon14114],
     14116: [14116, ZenlessWeapon14116],
     14117: [14117, ZenlessWeapon14117],
     14118: [14118, ZenlessWeapon14118],
     14119: [14119, ZenlessWeapon14119],
+    14120: [14120, ZenlessWeapon14120],
     14121: [14121, ZenlessWeapon14121],
     14122: [14122, ZenlessWeapon14122],
     14124: [14124, ZenlessWeapon14124],
     14125: [14125, ZenlessWeapon14125],
-    14126: [14126, ZenlessWeapon14126]
+    14126: [14126, ZenlessWeapon14126],
+    14129: [14129, ZenlessWeapon14129],
+    14131: [14131, ZenlessWeapon14131],
+    14132: [14132, ZenlessWeapon14132],
+    14133: [14133, ZenlessWeapon14133],
+    14136: [14136, ZenlessWeapon14136],
+    14137: [14137, ZenlessWeapon14137],
+    14138: [14138, ZenlessWeapon14138],
+    14139: [14139, ZenlessWeapon14139]
   },
   bangboo: {
     54001: [54001, ZenlessBangboo54001],
@@ -476,7 +517,10 @@ const Zenless = {
     54011: [54011, ZenlessBangboo54011],
     54012: [54012, ZenlessBangboo54012],
     54013: [54013, ZenlessBangboo54013],
-    54014: [54014, ZenlessBangboo54014]
+    54014: [54014, ZenlessBangboo54014],
+    54015: [54015, ZenlessBangboo54015],
+    54016: [54016, ZenlessBangboo54016],
+    54017: [54017, ZenlessBangboo54017]
   }
 } as const
 
