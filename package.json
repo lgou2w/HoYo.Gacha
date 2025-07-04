@@ -9,8 +9,8 @@
   "private": "true",
   "type": "module",
   "engines": {
-    "node": ">=18.0.0",
-    "pnpm": ">=7.0.0"
+    "node": "^20.19.0 || >= 22",
+    "pnpm": "^10"
   },
   "scripts": {
     "tauri": "tauri",
@@ -45,7 +45,7 @@
   },
   "devDependencies": {
     "@tauri-apps/cli": "^1.6.3",
-    "@types/node": "^18.19.115",
+    "@types/node": "^20.19.4",
     "@types/react": "^18.3.23",
     "@types/react-dom": "^18.3.7",
     "@typescript-eslint/eslint-plugin": "^8.35.1",
