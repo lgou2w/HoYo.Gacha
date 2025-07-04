@@ -15,9 +15,16 @@ export interface GachaRecords {
   readonly uid: Account['uid']
   readonly gachaTypeToCategoryMappings: Record<GachaRecord['gacha_type'], NamedGachaRecords['category']>
   readonly values: Partial<Record<GachaRecord['gacha_type'], GachaRecord[]>>
-  readonly namedValues: Omit<Record<NamedGachaRecords['category'], NamedGachaRecords>, 'anthology' | 'bangboo'>
+  readonly namedValues: Omit<
+    Record<NamedGachaRecords['category'], NamedGachaRecords>,
+    'anthology' | 'bangboo' | 'collaborationCharacter' | 'collaborationWeapon'
+  >
     & { 'anthology'?: NamedGachaRecords } // Genshin Impact only
     & { 'bangboo'?: NamedGachaRecords } // Zenless Zone Zero only
+    & { // Honkai: Star Rail only
+      'collaborationCharacter'?: NamedGachaRecords
+      'collaborationWeapon'?: NamedGachaRecords
+    }
   readonly aggregatedValues: Omit<NamedGachaRecords, 'category' | 'categoryTitle' | 'gachaType' | 'lastEndId'>
   readonly total: number
   readonly firstTime?: GachaRecord['time']
@@ -25,7 +32,12 @@ export interface GachaRecords {
 }
 
 export interface NamedGachaRecords {
-  category: 'newbie' | 'permanent' | 'character' | 'weapon' | 'anthology' | 'bangboo'
+  category:
+    | 'newbie' | 'permanent' | 'character' | 'weapon'
+    | 'anthology'
+    | 'bangboo'
+    | 'collaborationCharacter'
+    | 'collaborationWeapon'
   categoryTitle: string
   gachaType: GachaRecord['gacha_type']
   lastEndId?: GachaRecord['id']
@@ -154,7 +166,9 @@ const KnownStarRailGachaTypes: Record<StarRailGachaRecord['gacha_type'], NamedGa
   2: 'newbie',
   1: 'permanent',
   11: 'character',
-  12: 'weapon'
+  12: 'weapon',
+  21: 'collaborationCharacter',
+  22: 'collaborationWeapon'
 }
 
 const KnownZenlessZoneZeroGachaTypes: Record<ZenlessZoneZeroGachaRecord['gacha_type'], NamedGachaRecords['category']> = {
@@ -167,6 +181,8 @@ const KnownZenlessZoneZeroGachaTypes: Record<ZenlessZoneZeroGachaRecord['gacha_t
 
 const KnownCategoryTitles: Record<AccountFacet, Record<NamedGachaRecords['category'], string>> = {
   [AccountFacet.Genshin]: {
+    collaborationWeapon: '', // Useless
+    collaborationCharacter: '', // Useless
     bangboo: '', // Useless
     anthology: '集录',
     character: '角色活动',
@@ -175,6 +191,8 @@ const KnownCategoryTitles: Record<AccountFacet, Record<NamedGachaRecords['catego
     newbie: '新手'
   },
   [AccountFacet.StarRail]: {
+    collaborationWeapon: '光锥联动',
+    collaborationCharacter: '角色联动',
     bangboo: '', // Useless
     anthology: '', // Useless
     character: '角色活动',
@@ -183,6 +201,8 @@ const KnownCategoryTitles: Record<AccountFacet, Record<NamedGachaRecords['catego
     newbie: '新手'
   },
   [AccountFacet.ZenlessZoneZero]: {
+    collaborationWeapon: '', // Useless
+    collaborationCharacter: '', // Useless
     bangboo: '邦布频段',
     anthology: '', // Useless
     character: '独家频段',
@@ -282,14 +302,16 @@ function computeAggregatedGachaRecords (
   const total = data.length
   const firstTime = data[0]?.time
   const lastTime = data[total - 1]?.time
-  const { newbie, permanent, character, weapon, anthology } = namedValues
+  const { newbie, permanent, character, weapon, anthology, collaborationCharacter, collaborationWeapon } = namedValues
 
   const blueSum =
     newbie.metadata.blue.sum +
     permanent.metadata.blue.sum +
     character.metadata.blue.sum +
     weapon.metadata.blue.sum +
-    (anthology ? anthology.metadata.blue.sum : 0)
+    (anthology ? anthology.metadata.blue.sum : 0) +
+    (collaborationCharacter ? collaborationCharacter.metadata.blue.sum : 0) +
+    (collaborationWeapon ? collaborationWeapon.metadata.blue.sum : 0)
 
   const blueSumPercentage = blueSum > 0 ? Math.round(blueSum / total * 10000) / 100 : 0
   const blueValues = data.filter((v) => isRankTypeOfBlue(facet, v))
@@ -299,7 +321,9 @@ function computeAggregatedGachaRecords (
     permanent.metadata.purple.sum +
     character.metadata.purple.sum +
     weapon.metadata.purple.sum +
-    (anthology ? anthology.metadata.purple.sum : 0)
+    (anthology ? anthology.metadata.purple.sum : 0) +
+    (collaborationCharacter ? collaborationCharacter.metadata.purple.sum : 0) +
+    (collaborationWeapon ? collaborationWeapon.metadata.purple.sum : 0)
 
   const purpleSumPercentage = purpleSum > 0 ? Math.round(purpleSum / total * 10000) / 100 : 0
   const purpleValues = data.filter((v) => isRankTypeOfPurple(facet, v))
@@ -309,7 +333,9 @@ function computeAggregatedGachaRecords (
     permanent.metadata.golden.sum +
     character.metadata.golden.sum +
     weapon.metadata.golden.sum +
-    (anthology ? anthology.metadata.golden.sum : 0)
+    (anthology ? anthology.metadata.golden.sum : 0) +
+    (collaborationCharacter ? collaborationCharacter.metadata.golden.sum : 0) +
+    (collaborationWeapon ? collaborationWeapon.metadata.golden.sum : 0)
 
   const goldenSumPercentage = goldenSum > 0 ? Math.round(goldenSum / total * 10000) / 100 : 0
   const goldenValues = Array.from(newbie.metadata.golden.values)
@@ -317,6 +343,8 @@ function computeAggregatedGachaRecords (
     .concat(Array.from(character.metadata.golden.values))
     .concat(Array.from(weapon.metadata.golden.values))
     .concat(anthology ? Array.from(anthology.metadata.golden.values) : [])
+    .concat(collaborationCharacter ? Array.from(collaborationCharacter.metadata.golden.values) : [])
+    .concat(collaborationWeapon ? Array.from(collaborationWeapon.metadata.golden.values) : [])
     .sort(sortGachaRecordById)
 
   const { goldenSumRestricted, goldenUsedPitySum } = goldenValues.reduce((acc, record) => {

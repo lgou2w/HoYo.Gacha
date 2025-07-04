@@ -13,35 +13,81 @@ import dayjs from '@/utilities/dayjs'
 
 export default function GachaOverviewGrid () {
   const { facet, gachaRecords } = useGachaLayoutContext()
-  const { namedValues: { character, weapon, permanent, newbie, anthology, bangboo }, aggregatedValues } = gachaRecords
+  const {
+    namedValues: {
+      character,
+      weapon,
+      permanent,
+      newbie,
+      anthology,
+      bangboo,
+      collaborationCharacter,
+      collaborationWeapon
+    },
+    aggregatedValues
+  } = gachaRecords
+
   const hasAnthology = !!anthology && anthology.total > 0
   const hasBangboo = facet === AccountFacet.ZenlessZoneZero && !!bangboo && bangboo.total > 0
+  const hasCollaborationCharacter = facet === AccountFacet.StarRail && !!collaborationCharacter && collaborationCharacter.total > 0
+  const hasCollaborationWeapon = facet === AccountFacet.StarRail && !!collaborationWeapon && collaborationWeapon.total > 0
+
+  const items = [
+    <Grid key="character" xs={6} item>
+      <GachaOverviewGridCard facet={facet} value={character} />
+    </Grid>,
+    <Grid key="weapon" xs={6} item>
+      <GachaOverviewGridCard facet={facet} value={weapon} />
+    </Grid>
+  ]
+
+  if (hasAnthology) {
+    items.push(
+      <Grid key="anthology" xs={6} item>
+        <GachaOverviewGridCard facet={facet} value={anthology} />
+      </Grid>
+    )
+  }
+
+  if (hasBangboo) {
+    items.push(
+      <Grid key="bangboo" xs={6} item>
+        <GachaOverviewGridCard facet={facet} value={bangboo} />
+      </Grid>
+    )
+  }
+
+  if (hasCollaborationCharacter) {
+    items.push(
+      <Grid key="collaborationCharacter" xs={6} item>
+        <GachaOverviewGridCard facet={facet} value={collaborationCharacter} />
+      </Grid>
+    )
+  }
+
+  if (hasCollaborationWeapon) {
+    items.push(
+      <Grid key="collaborationWeapon" xs={6} item>
+        <GachaOverviewGridCard facet={facet} value={collaborationWeapon} />
+      </Grid>
+    )
+  }
+
+  items.push(
+    <Grid key="permanent" xs={6} item>
+      <GachaOverviewGridCard facet={facet} value={permanent} />
+    </Grid>
+  )
+  items.push(
+    <Grid key="aggregated" xs={items.length % 2 === 0 ? 12 : 6} item>
+      <GachaOverviewGridCard facet={facet} value={aggregatedValues} newbie={newbie} />
+    </Grid>
+  )
 
   return (
     <Box>
       <Grid spacing={2} container>
-        <Grid xs={6} item>
-          <GachaOverviewGridCard facet={facet} value={character} />
-        </Grid>
-        <Grid xs={6} item>
-          <GachaOverviewGridCard facet={facet} value={weapon} />
-        </Grid>
-        <Grid xs={6} item>
-          <GachaOverviewGridCard facet={facet} value={permanent} />
-        </Grid>
-        {hasAnthology && (
-          <Grid xs={6} item>
-            <GachaOverviewGridCard facet={facet} value={anthology} />
-          </Grid>
-        )}
-        {hasBangboo && (
-          <Grid xs={6} item>
-            <GachaOverviewGridCard facet={facet} value={bangboo} />
-          </Grid>
-        )}
-        <Grid xs={hasAnthology || hasBangboo ? 12 : 6} item>
-          <GachaOverviewGridCard facet={facet} value={aggregatedValues} newbie={newbie} />
-        </Grid>
+        {items}
       </Grid>
     </Box>
   )

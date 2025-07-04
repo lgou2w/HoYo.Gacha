@@ -19,7 +19,7 @@ export interface StarRailGachaRecord {
   id: string
   uid: string
   gacha_id: string
-  gacha_type: string // 1 | 2 | 11 | 12
+  gacha_type: string // 1 | 2 | 11 | 12 | 21 | 22
   item_id: string
   count: string      // always 1
   time: string

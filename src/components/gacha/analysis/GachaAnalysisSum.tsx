@@ -9,8 +9,25 @@ import { AccountFacet } from '@/interfaces/account'
 
 export default function GachaAnalysisSum () {
   const { facet, gachaRecords } = useGachaLayoutContext()
-  const { namedValues: { character, weapon, permanent, newbie, anthology, bangboo }, aggregatedValues } = gachaRecords
+  const {
+    namedValues: {
+      character,
+      weapon,
+      permanent,
+      newbie,
+      anthology,
+      bangboo,
+      collaborationCharacter,
+      collaborationWeapon
+    },
+    aggregatedValues
+  } = gachaRecords
+
   const isZZZ = facet === AccountFacet.ZenlessZoneZero
+  const hasAnthology = !!anthology && anthology.total > 0
+  const hasBangboo = isZZZ && !!bangboo && bangboo.total > 0
+  const hasCollaborationCharacter = facet === AccountFacet.StarRail && !!collaborationCharacter && collaborationCharacter.total > 0
+  const hasCollaborationWeapon = facet === AccountFacet.StarRail && !!collaborationWeapon && collaborationWeapon.total > 0
 
   return (
     <Box className={GachaAnalysisSumCls} sx={GachaAnalysisSumSx}>
@@ -27,9 +44,11 @@ export default function GachaAnalysisSum () {
         />
         <GachaAnalysisSumCol title={character.categoryTitle} values={computeNamedGachaRecordsValues(character)} />
         <GachaAnalysisSumCol title={weapon.categoryTitle} values={computeNamedGachaRecordsValues(weapon)} />
-        {anthology && anthology.total > 0 && <GachaAnalysisSumCol title={anthology.categoryTitle} values={computeNamedGachaRecordsValues(anthology)} />}
+        {hasAnthology && <GachaAnalysisSumCol title={anthology.categoryTitle} values={computeNamedGachaRecordsValues(anthology)} />}
+        {hasCollaborationCharacter && <GachaAnalysisSumCol title={collaborationCharacter.categoryTitle} values={computeNamedGachaRecordsValues(collaborationCharacter)} />}
+        {hasCollaborationWeapon && <GachaAnalysisSumCol title={collaborationWeapon.categoryTitle} values={computeNamedGachaRecordsValues(collaborationWeapon)} />}
         <GachaAnalysisSumCol title={permanent.categoryTitle} values={computeNamedGachaRecordsValues(permanent)} />
-        {bangboo && bangboo.total > 0 && <GachaAnalysisSumCol title={bangboo.categoryTitle} values={computeNamedGachaRecordsValues(bangboo)} />}
+        {hasBangboo && <GachaAnalysisSumCol title={bangboo.categoryTitle} values={computeNamedGachaRecordsValues(bangboo)} />}
         {newbie.total > 0 && <GachaAnalysisSumCol title={newbie.categoryTitle} values={computeNamedGachaRecordsValues(newbie)} />}
         <GachaAnalysisSumCol
           title={isZZZ ? '合计（不含邦布）' : '合计'}
