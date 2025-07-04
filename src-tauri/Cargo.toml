@@ -1,6 +1,6 @@
 [package]
 name = "hoyo_gacha"
-version = "0.4.4"
+version = "0.4.5"
 edition = "2021"
 authors = ["lgou2w"]
 description = "An unofficial tool for managing and analyzing your miHoYo gacha records"
@@ -13,34 +13,34 @@ build = "build.rs"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [build-dependencies]
-shadow-rs = "0.36.0"
-tauri-build = { version = "1.5.5", features = [] }
+shadow-rs = "1.2.0"
+tauri-build = { version = "1.5.6", features = [] }
 
 [dependencies]
-anyhow = "1.0.94"
-async-trait = "0.1.83"
+anyhow = "1.0.98"
+async-trait = "0.1.88"
 byteorder = "1.5.0"
-exponential-backoff = "2.0.0"
+exponential-backoff = "2.1.0"
 form_urlencoded = "1.2.1"
 futures = { version = "0.3.31", default-features = false, features = ["std", "async-await"] }
-once_cell = "1.20.2"
+once_cell = "1.21.3"
 paste = "1.0.15"
-reqwest = { version = "0.12.9", features = ["json", "stream"] }
+reqwest = { version = "0.12.22", features = ["json", "stream"] }
 sea-orm = { version = "0.12.15", features = ["sqlx-sqlite", "runtime-tokio", "macros", "runtime-tokio-native-tls"], default-features = false }
-serde = { version = "1.0.215", features = ["derive"] }
-serde_json = "1.0.133"
-shadow-rs = "0.36.0"
+serde = { version = "1.0.219", features = ["derive"] }
+serde_json = "1.0.140"
+shadow-rs = "1.2.0"
 sqlx-core = "0.7.4"
-tauri = { version = "1.8.1", features = ["clipboard-all", "dialog-all", "path-all", "process-all", "shell-all", "devtools"] }
-thiserror = "2.0.4"
-time = { version = "0.3.37", features = ["formatting", "serde", "macros", "serde-human-readable", "local-offset"] }
-tokio = { version = "1.42.0", features = ["full"] }
+tauri = { version = "1.8.3", features = ["clipboard-all", "dialog-all", "path-all", "process-all", "shell-all", "devtools"] }
+thiserror = "2.0.12"
+time = { version = "0.3.41", features = ["formatting", "serde", "macros", "serde-human-readable", "local-offset"] }
+tokio = { version = "1.46.0", features = ["full"] }
 tracing = "0.1.41"
 tracing-subscriber = { version = "0.3.19", features = ["env-filter"] }
 url = "2.5.4"
 
 [target."cfg(windows)".dependencies.windows]
-version = "0.58.0"
+version = "0.61.3"
 features = [
   "Win32_UI_WindowsAndMessaging"
 ]

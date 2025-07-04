@@ -12,7 +12,16 @@ export default function GachaChartCalendar () {
     facet,
     gachaRecords: {
       aggregatedValues,
-      namedValues: { character, weapon, permanent, newbie, anthology, bangboo }
+      namedValues: {
+        character,
+        weapon,
+        permanent,
+        newbie,
+        anthology,
+        bangboo,
+        collaborationCharacter,
+        collaborationWeapon
+      }
     }
   } = useGachaLayoutContext()
 
@@ -102,6 +111,8 @@ export default function GachaChartCalendar () {
                     ? [
                         { id: '角色', value: character.total },
                         { id: '光锥', value: weapon.total },
+                        ...(collaborationCharacter ? [{ id: '角联', value: collaborationCharacter.total }] : []),
+                        ...(collaborationWeapon ? [{ id: '光联', value: collaborationWeapon.total }] : []),
                         { id: '常驻', value: permanent.total },
                         { id: '新手', value: newbie.total }
                       ]

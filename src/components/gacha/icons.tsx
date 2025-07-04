@@ -45,6 +45,17 @@ import GenshinCharacter10000101 from '@/assets/images/genshin/character/10000101
 import GenshinCharacter10000102 from '@/assets/images/genshin/character/10000102.png'
 import GenshinCharacter10000103 from '@/assets/images/genshin/character/10000103.png'
 import GenshinCharacter10000104 from '@/assets/images/genshin/character/10000104.png'
+import GenshinCharacter10000105 from '@/assets/images/genshin/character/10000105.png'
+import GenshinCharacter10000106 from '@/assets/images/genshin/character/10000106.png'
+import GenshinCharacter10000107 from '@/assets/images/genshin/character/10000107.png'
+import GenshinCharacter10000108 from '@/assets/images/genshin/character/10000108.png'
+import GenshinCharacter10000109 from '@/assets/images/genshin/character/10000109.png'
+import GenshinCharacter10000110 from '@/assets/images/genshin/character/10000110.png'
+import GenshinCharacter10000111 from '@/assets/images/genshin/character/10000111.png'
+import GenshinCharacter10000112 from '@/assets/images/genshin/character/10000112.png'
+import GenshinCharacter10000113 from '@/assets/images/genshin/character/10000113.png'
+import GenshinCharacter10000114 from '@/assets/images/genshin/character/10000114.png'
+import GenshinCharacter10000115 from '@/assets/images/genshin/character/10000115.png'
 import GenshinWeapon11501 from '@/assets/images/genshin/weapon/11501.png'
 import GenshinWeapon11502 from '@/assets/images/genshin/weapon/11502.png'
 import GenshinWeapon11503 from '@/assets/images/genshin/weapon/11503.png'
@@ -58,6 +69,7 @@ import GenshinWeapon11513 from '@/assets/images/genshin/weapon/11513.png'
 import GenshinWeapon11514 from '@/assets/images/genshin/weapon/11514.png'
 import GenshinWeapon11515 from '@/assets/images/genshin/weapon/11515.png'
 import GenshinWeapon11516 from '@/assets/images/genshin/weapon/11516.png'
+import GenshinWeapon11517 from '@/assets/images/genshin/weapon/11517.png'
 import GenshinWeapon12501 from '@/assets/images/genshin/weapon/12501.png'
 import GenshinWeapon12502 from '@/assets/images/genshin/weapon/12502.png'
 import GenshinWeapon12503 from '@/assets/images/genshin/weapon/12503.png'
@@ -66,6 +78,7 @@ import GenshinWeapon12510 from '@/assets/images/genshin/weapon/12510.png'
 import GenshinWeapon12511 from '@/assets/images/genshin/weapon/12511.png'
 import GenshinWeapon12512 from '@/assets/images/genshin/weapon/12512.png'
 import GenshinWeapon12513 from '@/assets/images/genshin/weapon/12513.png'
+import GenshinWeapon12514 from '@/assets/images/genshin/weapon/12514.png'
 import GenshinWeapon13501 from '@/assets/images/genshin/weapon/13501.png'
 import GenshinWeapon13502 from '@/assets/images/genshin/weapon/13502.png'
 import GenshinWeapon13504 from '@/assets/images/genshin/weapon/13504.png'
@@ -75,6 +88,7 @@ import GenshinWeapon13509 from '@/assets/images/genshin/weapon/13509.png'
 import GenshinWeapon13511 from '@/assets/images/genshin/weapon/13511.png'
 import GenshinWeapon13512 from '@/assets/images/genshin/weapon/13512.png'
 import GenshinWeapon13513 from '@/assets/images/genshin/weapon/13513.png'
+import GenshinWeapon13514 from '@/assets/images/genshin/weapon/13514.png'
 import GenshinWeapon14501 from '@/assets/images/genshin/weapon/14501.png'
 import GenshinWeapon14502 from '@/assets/images/genshin/weapon/14502.png'
 import GenshinWeapon14504 from '@/assets/images/genshin/weapon/14504.png'
@@ -87,6 +101,9 @@ import GenshinWeapon14513 from '@/assets/images/genshin/weapon/14513.png'
 import GenshinWeapon14514 from '@/assets/images/genshin/weapon/14514.png'
 import GenshinWeapon14515 from '@/assets/images/genshin/weapon/14515.png'
 import GenshinWeapon14516 from '@/assets/images/genshin/weapon/14516.png'
+import GenshinWeapon14517 from '@/assets/images/genshin/weapon/14517.png'
+import GenshinWeapon14518 from '@/assets/images/genshin/weapon/14518.png'
+import GenshinWeapon14519 from '@/assets/images/genshin/weapon/14519.png'
 import GenshinWeapon15501 from '@/assets/images/genshin/weapon/15501.png'
 import GenshinWeapon15502 from '@/assets/images/genshin/weapon/15502.png'
 import GenshinWeapon15503 from '@/assets/images/genshin/weapon/15503.png'
@@ -101,6 +118,8 @@ import StarRailCharacter1003 from '@/assets/images/starrail/character/1003.png'
 import StarRailCharacter1004 from '@/assets/images/starrail/character/1004.png'
 import StarRailCharacter1005 from '@/assets/images/starrail/character/1005.png'
 import StarRailCharacter1006 from '@/assets/images/starrail/character/1006.png'
+import StarRailCharacter1014 from '@/assets/images/starrail/character/1014.png'
+import StarRailCharacter1015 from '@/assets/images/starrail/character/1015.png'
 import StarRailCharacter1101 from '@/assets/images/starrail/character/1101.png'
 import StarRailCharacter1102 from '@/assets/images/starrail/character/1102.png'
 import StarRailCharacter1104 from '@/assets/images/starrail/character/1104.png'
@@ -133,6 +152,15 @@ import StarRailCharacter1313 from '@/assets/images/starrail/character/1313.png'
 import StarRailCharacter1314 from '@/assets/images/starrail/character/1314.png'
 import StarRailCharacter1315 from '@/assets/images/starrail/character/1315.png'
 import StarRailCharacter1317 from '@/assets/images/starrail/character/1317.png'
+import StarRailCharacter1401 from '@/assets/images/starrail/character/1401.png'
+import StarRailCharacter1402 from '@/assets/images/starrail/character/1402.png'
+import StarRailCharacter1403 from '@/assets/images/starrail/character/1403.png'
+import StarRailCharacter1404 from '@/assets/images/starrail/character/1404.png'
+import StarRailCharacter1405 from '@/assets/images/starrail/character/1405.png'
+import StarRailCharacter1406 from '@/assets/images/starrail/character/1406.png'
+import StarRailCharacter1407 from '@/assets/images/starrail/character/1407.png'
+import StarRailCharacter1408 from '@/assets/images/starrail/character/1408.png'
+import StarRailCharacter1409 from '@/assets/images/starrail/character/1409.png'
 import StarRailWeapon23000 from '@/assets/images/starrail/weapon/23000.png'
 import StarRailWeapon23001 from '@/assets/images/starrail/weapon/23001.png'
 import StarRailWeapon23002 from '@/assets/images/starrail/weapon/23002.png'
@@ -169,6 +197,17 @@ import StarRailWeapon23032 from '@/assets/images/starrail/weapon/23032.png'
 import StarRailWeapon23033 from '@/assets/images/starrail/weapon/23033.png'
 import StarRailWeapon23034 from '@/assets/images/starrail/weapon/23034.png'
 import StarRailWeapon23035 from '@/assets/images/starrail/weapon/23035.png'
+import StarRailWeapon23036 from '@/assets/images/starrail/weapon/23036.png'
+import StarRailWeapon23037 from '@/assets/images/starrail/weapon/23037.png'
+import StarRailWeapon23038 from '@/assets/images/starrail/weapon/23038.png'
+import StarRailWeapon23039 from '@/assets/images/starrail/weapon/23039.png'
+import StarRailWeapon23040 from '@/assets/images/starrail/weapon/23040.png'
+import StarRailWeapon23041 from '@/assets/images/starrail/weapon/23041.png'
+import StarRailWeapon23042 from '@/assets/images/starrail/weapon/23042.png'
+import StarRailWeapon23043 from '@/assets/images/starrail/weapon/23043.png'
+import StarRailWeapon23044 from '@/assets/images/starrail/weapon/23044.png'
+import StarRailWeapon23045 from '@/assets/images/starrail/weapon/23045.png'
+import StarRailWeapon23046 from '@/assets/images/starrail/weapon/23046.png'
 import ZenlessCharacter1021 from '@/assets/images/zzz/character/1021.png'
 import ZenlessCharacter1041 from '@/assets/images/zzz/character/1041.png'
 import ZenlessCharacter1071 from '@/assets/images/zzz/character/1071.png'
@@ -179,25 +218,44 @@ import ZenlessCharacter1161 from '@/assets/images/zzz/character/1161.png'
 import ZenlessCharacter1171 from '@/assets/images/zzz/character/1171.png'
 import ZenlessCharacter1181 from '@/assets/images/zzz/character/1181.png'
 import ZenlessCharacter1191 from '@/assets/images/zzz/character/1191.png'
+import ZenlessCharacter1201 from '@/assets/images/zzz/character/1201.png'
 import ZenlessCharacter1211 from '@/assets/images/zzz/character/1211.png'
 import ZenlessCharacter1221 from '@/assets/images/zzz/character/1221.png'
 import ZenlessCharacter1241 from '@/assets/images/zzz/character/1241.png'
 import ZenlessCharacter1251 from '@/assets/images/zzz/character/1251.png'
 import ZenlessCharacter1261 from '@/assets/images/zzz/character/1261.png'
+import ZenlessCharacter1291 from '@/assets/images/zzz/character/1291.png'
+import ZenlessCharacter1311 from '@/assets/images/zzz/character/1311.png'
+import ZenlessCharacter1321 from '@/assets/images/zzz/character/1321.png'
+import ZenlessCharacter1331 from '@/assets/images/zzz/character/1331.png'
+import ZenlessCharacter1361 from '@/assets/images/zzz/character/1361.png'
+import ZenlessCharacter1371 from '@/assets/images/zzz/character/1371.png'
+import ZenlessCharacter1381 from '@/assets/images/zzz/character/1381.png'
+import ZenlessCharacter1391 from '@/assets/images/zzz/character/1391.png'
 import ZenlessWeapon14102 from '@/assets/images/zzz/weapon/14102.png'
 import ZenlessWeapon14104 from '@/assets/images/zzz/weapon/14104.png'
 import ZenlessWeapon14107 from '@/assets/images/zzz/weapon/14107.png'
+import ZenlessWeapon14109 from '@/assets/images/zzz/weapon/14109.png'
 import ZenlessWeapon14110 from '@/assets/images/zzz/weapon/14110.png'
 import ZenlessWeapon14114 from '@/assets/images/zzz/weapon/14114.png'
 import ZenlessWeapon14116 from '@/assets/images/zzz/weapon/14116.png'
 import ZenlessWeapon14117 from '@/assets/images/zzz/weapon/14117.png'
 import ZenlessWeapon14118 from '@/assets/images/zzz/weapon/14118.png'
 import ZenlessWeapon14119 from '@/assets/images/zzz/weapon/14119.png'
+import ZenlessWeapon14120 from '@/assets/images/zzz/weapon/14120.png'
 import ZenlessWeapon14121 from '@/assets/images/zzz/weapon/14121.png'
 import ZenlessWeapon14122 from '@/assets/images/zzz/weapon/14122.png'
 import ZenlessWeapon14124 from '@/assets/images/zzz/weapon/14124.png'
 import ZenlessWeapon14125 from '@/assets/images/zzz/weapon/14125.png'
 import ZenlessWeapon14126 from '@/assets/images/zzz/weapon/14126.png'
+import ZenlessWeapon14129 from '@/assets/images/zzz/weapon/14129.png'
+import ZenlessWeapon14131 from '@/assets/images/zzz/weapon/14131.png'
+import ZenlessWeapon14132 from '@/assets/images/zzz/weapon/14132.png'
+import ZenlessWeapon14133 from '@/assets/images/zzz/weapon/14133.png'
+import ZenlessWeapon14136 from '@/assets/images/zzz/weapon/14136.png'
+import ZenlessWeapon14137 from '@/assets/images/zzz/weapon/14137.png'
+import ZenlessWeapon14138 from '@/assets/images/zzz/weapon/14138.png'
+import ZenlessWeapon14139 from '@/assets/images/zzz/weapon/14139.png'
 import ZenlessBangboo54001 from '@/assets/images/zzz/bangboo/54001.png'
 import ZenlessBangboo54002 from '@/assets/images/zzz/bangboo/54002.png'
 import ZenlessBangboo54004 from '@/assets/images/zzz/bangboo/54004.png'
@@ -209,6 +267,9 @@ import ZenlessBangboo54011 from '@/assets/images/zzz/bangboo/54011.png'
 import ZenlessBangboo54012 from '@/assets/images/zzz/bangboo/54012.png'
 import ZenlessBangboo54013 from '@/assets/images/zzz/bangboo/54013.png'
 import ZenlessBangboo54014 from '@/assets/images/zzz/bangboo/54014.png'
+import ZenlessBangboo54015 from '@/assets/images/zzz/bangboo/54015.png'
+import ZenlessBangboo54016 from '@/assets/images/zzz/bangboo/54016.png'
+import ZenlessBangboo54017 from '@/assets/images/zzz/bangboo/54017.png'
 
 // HACK: These static resources only contain five-star!
 
@@ -260,7 +321,18 @@ const Genshin = {
     基尼奇: [10000101, GenshinCharacter10000101],
     玛拉妮: [10000102, GenshinCharacter10000102],
     希诺宁: [10000103, GenshinCharacter10000103],
-    恰斯卡: [10000104, GenshinCharacter10000104]
+    恰斯卡: [10000104, GenshinCharacter10000104],
+    欧洛伦: [10000105, GenshinCharacter10000105],
+    玛薇卡: [10000106, GenshinCharacter10000106],
+    茜特菈莉: [10000107, GenshinCharacter10000107],
+    蓝砚: [10000108, GenshinCharacter10000108],
+    梦见月瑞希: [10000109, GenshinCharacter10000109],
+    伊安珊: [10000110, GenshinCharacter10000110],
+    瓦雷莎: [10000111, GenshinCharacter10000111],
+    爱可菲娅: [10000112, GenshinCharacter10000112],
+    伊法妮: [10000113, GenshinCharacter10000113],
+    丝柯克: [10000114, GenshinCharacter10000114],
+    塔利雅: [10000115, GenshinCharacter10000115]
   },
   weapon: {
     风鹰剑: [11501, GenshinWeapon11501],
@@ -276,6 +348,7 @@ const Genshin = {
     有乐御簾切: [11514, GenshinWeapon11514],
     赦罪: [11515, GenshinWeapon11515],
     岩峰巡歌: [11516, GenshinWeapon11516],
+    苍耀: [11517, GenshinWeapon11517],
     天空之傲: [12501, GenshinWeapon12501],
     狼的末路: [12502, GenshinWeapon12502],
     松籁响起之时: [12503, GenshinWeapon12503],
@@ -284,6 +357,7 @@ const Genshin = {
     苇海信标: [12511, GenshinWeapon12511],
     裁断: [12512, GenshinWeapon12512],
     山王长牙: [12513, GenshinWeapon12513],
+    焚曜千阳: [12514, GenshinWeapon12514],
     护摩之杖: [13501, GenshinWeapon13501],
     天空之脊: [13502, GenshinWeapon13502],
     贯虹之槊: [13504, GenshinWeapon13504],
@@ -293,6 +367,7 @@ const Genshin = {
     赤沙之杖: [13511, GenshinWeapon13511],
     赤月之形: [13512, GenshinWeapon13512],
     柔灯挽歌: [13513, GenshinWeapon13513],
+    香韵奏者: [13514, GenshinWeapon13514],
     天空之卷: [14501, GenshinWeapon14501],
     四风原典: [14502, GenshinWeapon14502],
     尘世之锁: [14504, GenshinWeapon14504],
@@ -305,6 +380,9 @@ const Genshin = {
     万世流涌大典: [14514, GenshinWeapon14514],
     鹤鸣余音: [14515, GenshinWeapon14515],
     冲浪时光: [14516, GenshinWeapon14516],
+    祭星者之望: [14517, GenshinWeapon14517],
+    寝正月初晴: [14518, GenshinWeapon14518],
+    溢彩心念: [14519, GenshinWeapon14519],
     天空之翼: [15501, GenshinWeapon15501],
     阿莫斯之弓: [15502, GenshinWeapon15502],
     终末嗟叹之诗: [15503, GenshinWeapon15503],
@@ -324,6 +402,8 @@ const StarRail = {
     1004: [1004, StarRailCharacter1004],
     1005: [1005, StarRailCharacter1005],
     1006: [1006, StarRailCharacter1006],
+    1014: [1014, StarRailCharacter1014],
+    1015: [1015, StarRailCharacter1015],
     1101: [1101, StarRailCharacter1101],
     1102: [1102, StarRailCharacter1102],
     1104: [1104, StarRailCharacter1104],
@@ -355,7 +435,16 @@ const StarRail = {
     1313: [1313, StarRailCharacter1313],
     1314: [1314, StarRailCharacter1314],
     1315: [1315, StarRailCharacter1315],
-    1317: [1317, StarRailCharacter1317]
+    1317: [1317, StarRailCharacter1317],
+    1401: [1401, StarRailCharacter1401],
+    1402: [1402, StarRailCharacter1402],
+    1403: [1403, StarRailCharacter1403],
+    1404: [1404, StarRailCharacter1404],
+    1405: [1405, StarRailCharacter1405],
+    1406: [1406, StarRailCharacter1406],
+    1407: [1407, StarRailCharacter1407],
+    1408: [1408, StarRailCharacter1408],
+    1409: [1409, StarRailCharacter1409]
   },
   weapon: {
     23000: [23000, StarRailWeapon23000],
@@ -393,7 +482,18 @@ const StarRail = {
     23032: [23032, StarRailWeapon23032],
     23033: [23033, StarRailWeapon23033],
     23034: [23034, StarRailWeapon23034],
-    23035: [23035, StarRailWeapon23035]
+    23035: [23035, StarRailWeapon23035],
+    23036: [23036, StarRailWeapon23036],
+    23037: [23037, StarRailWeapon23037],
+    23038: [23038, StarRailWeapon23038],
+    23039: [23039, StarRailWeapon23039],
+    23040: [23040, StarRailWeapon23040],
+    23041: [23041, StarRailWeapon23041],
+    23042: [23042, StarRailWeapon23042],
+    23043: [23043, StarRailWeapon23043],
+    23044: [23044, StarRailWeapon23044],
+    23045: [23045, StarRailWeapon23045],
+    23046: [23046, StarRailWeapon23046]
   }
 } as const
 
@@ -409,27 +509,46 @@ const Zenless = {
     1171: [1171, ZenlessCharacter1171],
     1181: [1181, ZenlessCharacter1181],
     1191: [1191, ZenlessCharacter1191],
+    1201: [1201, ZenlessCharacter1201],
     1211: [1211, ZenlessCharacter1211],
     1221: [1221, ZenlessCharacter1221],
     1241: [1241, ZenlessCharacter1241],
     1251: [1251, ZenlessCharacter1251],
-    1261: [1261, ZenlessCharacter1261]
+    1261: [1261, ZenlessCharacter1261],
+    1291: [1291, ZenlessCharacter1291],
+    1311: [1311, ZenlessCharacter1311],
+    1321: [1321, ZenlessCharacter1321],
+    1331: [1331, ZenlessCharacter1331],
+    1361: [1361, ZenlessCharacter1361],
+    1371: [1371, ZenlessCharacter1371],
+    1381: [1381, ZenlessCharacter1381],
+    1391: [1391, ZenlessCharacter1391]
   },
   weapon: {
     14102: [14102, ZenlessWeapon14102],
     14104: [14104, ZenlessWeapon14104],
     14107: [14107, ZenlessWeapon14107],
+    14109: [14109, ZenlessWeapon14109],
     14110: [14110, ZenlessWeapon14110],
     14114: [14114, ZenlessWeapon14114],
     14116: [14116, ZenlessWeapon14116],
     14117: [14117, ZenlessWeapon14117],
     14118: [14118, ZenlessWeapon14118],
     14119: [14119, ZenlessWeapon14119],
+    14120: [14120, ZenlessWeapon14120],
     14121: [14121, ZenlessWeapon14121],
     14122: [14122, ZenlessWeapon14122],
     14124: [14124, ZenlessWeapon14124],
     14125: [14125, ZenlessWeapon14125],
-    14126: [14126, ZenlessWeapon14126]
+    14126: [14126, ZenlessWeapon14126],
+    14129: [14129, ZenlessWeapon14129],
+    14131: [14131, ZenlessWeapon14131],
+    14132: [14132, ZenlessWeapon14132],
+    14133: [14133, ZenlessWeapon14133],
+    14136: [14136, ZenlessWeapon14136],
+    14137: [14137, ZenlessWeapon14137],
+    14138: [14138, ZenlessWeapon14138],
+    14139: [14139, ZenlessWeapon14139]
   },
   bangboo: {
     54001: [54001, ZenlessBangboo54001],
@@ -442,7 +561,10 @@ const Zenless = {
     54011: [54011, ZenlessBangboo54011],
     54012: [54012, ZenlessBangboo54012],
     54013: [54013, ZenlessBangboo54013],
-    54014: [54014, ZenlessBangboo54014]
+    54014: [54014, ZenlessBangboo54014],
+    54015: [54015, ZenlessBangboo54015],
+    54016: [54016, ZenlessBangboo54016],
+    54017: [54017, ZenlessBangboo54017]
   }
 } as const
 
