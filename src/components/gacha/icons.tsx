@@ -118,6 +118,8 @@ import StarRailCharacter1003 from '@/assets/images/starrail/character/1003.png'
 import StarRailCharacter1004 from '@/assets/images/starrail/character/1004.png'
 import StarRailCharacter1005 from '@/assets/images/starrail/character/1005.png'
 import StarRailCharacter1006 from '@/assets/images/starrail/character/1006.png'
+import StarRailCharacter1014 from '@/assets/images/starrail/character/1014.png'
+import StarRailCharacter1015 from '@/assets/images/starrail/character/1015.png'
 import StarRailCharacter1101 from '@/assets/images/starrail/character/1101.png'
 import StarRailCharacter1102 from '@/assets/images/starrail/character/1102.png'
 import StarRailCharacter1104 from '@/assets/images/starrail/character/1104.png'
@@ -150,6 +152,15 @@ import StarRailCharacter1313 from '@/assets/images/starrail/character/1313.png'
 import StarRailCharacter1314 from '@/assets/images/starrail/character/1314.png'
 import StarRailCharacter1315 from '@/assets/images/starrail/character/1315.png'
 import StarRailCharacter1317 from '@/assets/images/starrail/character/1317.png'
+import StarRailCharacter1401 from '@/assets/images/starrail/character/1401.png'
+import StarRailCharacter1402 from '@/assets/images/starrail/character/1402.png'
+import StarRailCharacter1403 from '@/assets/images/starrail/character/1403.png'
+import StarRailCharacter1404 from '@/assets/images/starrail/character/1404.png'
+import StarRailCharacter1405 from '@/assets/images/starrail/character/1405.png'
+import StarRailCharacter1406 from '@/assets/images/starrail/character/1406.png'
+import StarRailCharacter1407 from '@/assets/images/starrail/character/1407.png'
+import StarRailCharacter1408 from '@/assets/images/starrail/character/1408.png'
+import StarRailCharacter1409 from '@/assets/images/starrail/character/1409.png'
 import StarRailWeapon23000 from '@/assets/images/starrail/weapon/23000.png'
 import StarRailWeapon23001 from '@/assets/images/starrail/weapon/23001.png'
 import StarRailWeapon23002 from '@/assets/images/starrail/weapon/23002.png'
@@ -186,6 +197,17 @@ import StarRailWeapon23032 from '@/assets/images/starrail/weapon/23032.png'
 import StarRailWeapon23033 from '@/assets/images/starrail/weapon/23033.png'
 import StarRailWeapon23034 from '@/assets/images/starrail/weapon/23034.png'
 import StarRailWeapon23035 from '@/assets/images/starrail/weapon/23035.png'
+import StarRailWeapon23036 from '@/assets/images/starrail/weapon/23036.png'
+import StarRailWeapon23037 from '@/assets/images/starrail/weapon/23037.png'
+import StarRailWeapon23038 from '@/assets/images/starrail/weapon/23038.png'
+import StarRailWeapon23039 from '@/assets/images/starrail/weapon/23039.png'
+import StarRailWeapon23040 from '@/assets/images/starrail/weapon/23040.png'
+import StarRailWeapon23041 from '@/assets/images/starrail/weapon/23041.png'
+import StarRailWeapon23042 from '@/assets/images/starrail/weapon/23042.png'
+import StarRailWeapon23043 from '@/assets/images/starrail/weapon/23043.png'
+import StarRailWeapon23044 from '@/assets/images/starrail/weapon/23044.png'
+import StarRailWeapon23045 from '@/assets/images/starrail/weapon/23045.png'
+import StarRailWeapon23046 from '@/assets/images/starrail/weapon/23046.png'
 import ZenlessCharacter1021 from '@/assets/images/zzz/character/1021.png'
 import ZenlessCharacter1041 from '@/assets/images/zzz/character/1041.png'
 import ZenlessCharacter1071 from '@/assets/images/zzz/character/1071.png'
@@ -380,6 +402,8 @@ const StarRail = {
     1004: [1004, StarRailCharacter1004],
     1005: [1005, StarRailCharacter1005],
     1006: [1006, StarRailCharacter1006],
+    1014: [1014, StarRailCharacter1014],
+    1015: [1015, StarRailCharacter1015],
     1101: [1101, StarRailCharacter1101],
     1102: [1102, StarRailCharacter1102],
     1104: [1104, StarRailCharacter1104],
@@ -411,7 +435,16 @@ const StarRail = {
     1313: [1313, StarRailCharacter1313],
     1314: [1314, StarRailCharacter1314],
     1315: [1315, StarRailCharacter1315],
-    1317: [1317, StarRailCharacter1317]
+    1317: [1317, StarRailCharacter1317],
+    1401: [1401, StarRailCharacter1401],
+    1402: [1402, StarRailCharacter1402],
+    1403: [1403, StarRailCharacter1403],
+    1404: [1404, StarRailCharacter1404],
+    1405: [1405, StarRailCharacter1405],
+    1406: [1406, StarRailCharacter1406],
+    1407: [1407, StarRailCharacter1407],
+    1408: [1408, StarRailCharacter1408],
+    1409: [1409, StarRailCharacter1409]
   },
   weapon: {
     23000: [23000, StarRailWeapon23000],
@@ -449,7 +482,18 @@ const StarRail = {
     23032: [23032, StarRailWeapon23032],
     23033: [23033, StarRailWeapon23033],
     23034: [23034, StarRailWeapon23034],
-    23035: [23035, StarRailWeapon23035]
+    23035: [23035, StarRailWeapon23035],
+    23036: [23036, StarRailWeapon23036],
+    23037: [23037, StarRailWeapon23037],
+    23038: [23038, StarRailWeapon23038],
+    23039: [23039, StarRailWeapon23039],
+    23040: [23040, StarRailWeapon23040],
+    23041: [23041, StarRailWeapon23041],
+    23042: [23042, StarRailWeapon23042],
+    23043: [23043, StarRailWeapon23043],
+    23044: [23044, StarRailWeapon23044],
+    23045: [23045, StarRailWeapon23045],
+    23046: [23046, StarRailWeapon23046]
   }
 } as const
 
