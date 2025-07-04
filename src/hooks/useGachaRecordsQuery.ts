@@ -469,7 +469,7 @@ function isRestrictedGolden (
 //   Temporary use of embedded resources
 
 const KnownGenshinPermanentGoldenNames: string[] = [
-  '琴', '迪卢克', '七七', '莫娜', '刻晴', '提纳里', '迪希雅',
+  '琴', '迪卢克', '七七', '莫娜', '刻晴', '提纳里', '迪希雅', '梦见月瑞希',
   '风鹰剑', '天空之刃', '天空之傲', '狼的末路', '天空之脊',
   '和璞鸢', '天空之卷', '四风原典', '天空之翼', '阿莫斯之弓'
 ]

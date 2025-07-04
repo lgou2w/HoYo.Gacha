@@ -45,17 +45,12 @@ import GenshinCharacter10000101 from '@/assets/images/genshin/character/10000101
 import GenshinCharacter10000102 from '@/assets/images/genshin/character/10000102.png'
 import GenshinCharacter10000103 from '@/assets/images/genshin/character/10000103.png'
 import GenshinCharacter10000104 from '@/assets/images/genshin/character/10000104.png'
-import GenshinCharacter10000105 from '@/assets/images/genshin/character/10000105.png'
 import GenshinCharacter10000106 from '@/assets/images/genshin/character/10000106.png'
 import GenshinCharacter10000107 from '@/assets/images/genshin/character/10000107.png'
-import GenshinCharacter10000108 from '@/assets/images/genshin/character/10000108.png'
 import GenshinCharacter10000109 from '@/assets/images/genshin/character/10000109.png'
-import GenshinCharacter10000110 from '@/assets/images/genshin/character/10000110.png'
 import GenshinCharacter10000111 from '@/assets/images/genshin/character/10000111.png'
 import GenshinCharacter10000112 from '@/assets/images/genshin/character/10000112.png'
-import GenshinCharacter10000113 from '@/assets/images/genshin/character/10000113.png'
 import GenshinCharacter10000114 from '@/assets/images/genshin/character/10000114.png'
-import GenshinCharacter10000115 from '@/assets/images/genshin/character/10000115.png'
 import GenshinWeapon11501 from '@/assets/images/genshin/weapon/11501.png'
 import GenshinWeapon11502 from '@/assets/images/genshin/weapon/11502.png'
 import GenshinWeapon11503 from '@/assets/images/genshin/weapon/11503.png'
@@ -322,17 +317,12 @@ const Genshin = {
     玛拉妮: [10000102, GenshinCharacter10000102],
     希诺宁: [10000103, GenshinCharacter10000103],
     恰斯卡: [10000104, GenshinCharacter10000104],
-    欧洛伦: [10000105, GenshinCharacter10000105],
     玛薇卡: [10000106, GenshinCharacter10000106],
     茜特菈莉: [10000107, GenshinCharacter10000107],
-    蓝砚: [10000108, GenshinCharacter10000108],
     梦见月瑞希: [10000109, GenshinCharacter10000109],
-    伊安珊: [10000110, GenshinCharacter10000110],
     瓦雷莎: [10000111, GenshinCharacter10000111],
-    爱可菲娅: [10000112, GenshinCharacter10000112],
-    伊法妮: [10000113, GenshinCharacter10000113],
-    丝柯克: [10000114, GenshinCharacter10000114],
-    塔利雅: [10000115, GenshinCharacter10000115]
+    爱可菲: [10000112, GenshinCharacter10000112],
+    丝柯克: [10000114, GenshinCharacter10000114]
   },
   weapon: {
     风鹰剑: [11501, GenshinWeapon11501],
