@@ -21,6 +21,7 @@ export default function SettingsOptionsAboutUpdater () {
                 menuButton={triggerProps}
                 appearance="primary"
                 mapping={['Pages.Settings.Options.About.Updater.CheckBtn']}
+                disabled
               />
             )}
           </MenuTrigger>
