@@ -1,0 +1,46 @@
+import React from 'react'
+import { Menu, MenuItem, MenuList, MenuPopover, MenuTrigger, SplitButton } from '@fluentui/react-components'
+import { ArrowClockwiseRegular, SparkleRegular, WarningRegular } from '@fluentui/react-icons'
+import Locale from '@/components/Locale'
+import SettingsOptionsItem from '@/pages/Settings/Options/OptionsItem'
+
+// TODO: Check Application Version Updates
+
+export default function SettingsOptionsAboutUpdater () {
+  return (
+    <SettingsOptionsItem
+      icon={<ArrowClockwiseRegular />}
+      title={<Locale mapping={['Pages.Settings.Options.About.Updater.Title']} />}
+      subtitle={<Locale mapping={['Pages.Settings.Options.About.Updater.Subtitle']} />}
+      action={(
+        <Menu positioning="below-end">
+          <MenuTrigger disableButtonEnhancement>
+            {(triggerProps) => (
+              <Locale
+                component={SplitButton}
+                menuButton={triggerProps}
+                appearance="primary"
+                mapping={['Pages.Settings.Options.About.Updater.CheckBtn']}
+                disabled
+              />
+            )}
+          </MenuTrigger>
+          <MenuPopover>
+            <MenuList>
+              <Locale
+                component={MenuItem}
+                icon={<SparkleRegular />}
+                mapping={['Pages.Settings.Options.About.Updater.Channel.Stable']}
+                />
+              <Locale
+                component={MenuItem}
+                icon={<WarningRegular />}
+                mapping={['Pages.Settings.Options.About.Updater.Channel.Insider']}
+              />
+            </MenuList>
+          </MenuPopover>
+        </Menu>
+      )}
+    />
+  )
+}

@@ -1,21 +1,17 @@
 import React from 'react'
-import { RouterProvider } from 'react-router-dom'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
-import { queryClient } from '@/api/store'
-import ThemeProvider from '@/components/Commons/Theme'
-import TitleBar from '@/components/Commons/TitleBar'
+import { RouterProvider } from '@tanstack/react-router'
+import useAppInit from '@/hooks/useAppInit'
+import queryClient from '@/queryClient'
 import router from '@/router'
-import '@/assets/global.css'
-import '@/locales/init'
+import '@/i18n'
 
 export default function App () {
+  useAppInit()
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider>
-        <TitleBar />
-        <RouterProvider router={router} />
-      </ThemeProvider>
+      <RouterProvider router={router} />
       <ReactQueryDevtools />
     </QueryClientProvider>
   )

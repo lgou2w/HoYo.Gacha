@@ -1,8 +1,10 @@
-import { invoke as invokeTauri } from '@tauri-apps/api'
+import { invoke as _ } from '@tauri-apps/api/core'
 
-const invoke: typeof invokeTauri = (...args) => {
-  console.debug('Invoke tauri with arguments:', ...args)
-  return invokeTauri(...args)
+export type { InvokeArgs, InvokeOptions } from '@tauri-apps/api/core'
+
+const invoke: typeof _ = function invoke (...rest) {
+  console.debug('Invoke tauri:', ...rest) // For trace
+  return _(...rest)
 }
 
 export default invoke

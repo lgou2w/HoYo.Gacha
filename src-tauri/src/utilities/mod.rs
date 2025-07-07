@@ -1,5 +1,2 @@
-pub mod commons;
-pub mod paths;
-
-#[cfg(windows)]
-pub mod windows;
+pub mod file_dialog;
+pub mod serde_helper;

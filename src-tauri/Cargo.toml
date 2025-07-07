@@ -1,44 +1,58 @@
 [package]
 name = "hoyo_gacha"
 version = "1.0.0"
-edition = "2021"
+edition = "2024"
+rust-version = "1.85"
 authors = ["lgou2w <lgou2w@hotmail.com>"]
 description = "An unofficial tool for managing and analyzing your miHoYo gacha records"
 homepage = "https://github.com/lgou2w/HoYo.Gacha#readme"
 repository = "https://github.com/lgou2w/HoYo.Gacha"
 readme = "../README.md"
 license = "MIT OR Apache-2.0"
-build = "src/build.rs"
+build = "build.rs"
 publish = false
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[features]
+# this feature is used for production builds or when `devPath` points to the filesystem and the built-in dev server is disabled.
+# If you use cargo directly instead of tauri's cli you can use this feature flag to switch between tauri's `dev` and `build` modes.
+# DO NOT REMOVE!!
+custom-protocol = [ "tauri/custom-protocol" ]
+
 [build-dependencies]
-tauri-build = { version = "1.5.3", features = [] }
+tauri-build = { version = "2.3.0", default-features = false, features = ["config-toml"] }
 
 [dependencies]
-async-trait = "0.1.81"
-backtrace = "0.3.73"
-exponential-backoff = "1.2.0"
-futures-util = "0.3.30"
-num_enum = "0.7.2"
-once_cell = "1.19.0"
+async-trait = "0.1.88"
+backtrace = "0.3.75"
+cfg-if = "1.0.1"
+exponential-backoff = "2.1.0"
+futures-util = "0.3.31"
+num_enum = "0.7.4"
+os_info = "3.12.0"
 paste = "1.0.15"
-regex = "1.10.5"
-reqwest = { version = "0.12.5", features = ["json"] }
-serde = { version = "1.0.204", features = ["derive"] }
-serde_json = { version = "1.0.120", features = ["preserve_order"] }
-serde_repr = "0.1.19"
-thiserror = "1.0.61"
-time = { version = "0.3.36", features = ["formatting", "local-offset", "macros", "serde", "serde-human-readable"] }
-tokio = { version = "1.38.0", features = ["macros", "rt", "rt-multi-thread"] }
-tracing = "0.1.40"
+raw-window-handle = "0.6.2"
+regex = "1.11.1"
+reqwest = { version = "0.12.22", features = ["json"] }
+rfd = { version = "0.15.3", default-features = false }
+sha1 = "0.10.6"
+serde = { version = "1.0.219", features = ["derive"] }
+serde_json = "1.0.140"
+serde_repr = "0.1.20"
+sys-locale = "0.3.2"
+tauri-plugin-shell = "2.3.0"
+tauri-plugin-clipboard-manager = "2.3.0"
+thiserror = "2.0.12"
+time = { version = "0.3.41", features = ["local-offset", "macros", "serde-human-readable"] }
+tokio = { version = "1.46.1", features = ["macros", "rt-multi-thread"] }
+tracing = "0.1.41"
 tracing-appender = "0.2.3"
-tracing-subscriber = { version = "0.3.18", features = ["env-filter", "local-time"] }
-url = "2.5.2"
+tracing-subscriber = { version = "0.3.19", features = ["env-filter", "local-time"] }
+url = "2.5.4"
 
 [dependencies.sqlx]
-version = "0.7.4"
+version = "0.8.6"
 default-features = false
 features = [
   "runtime-tokio",
@@ -47,39 +61,38 @@ features = [
   "tls-native-tls"
 ]
 
+# https://github.com/tauri-apps/tauri/blob/dev/crates/tauri/Cargo.toml
 [dependencies.tauri]
-version = "1.7.1"
+version = "2.6.2"
+default-features = false
 features = [
+  "wry",
+  "compression",
   "devtools",
-  "dialog-all",
-  "os-all",
-  "window-close",
-  "window-maximize",
-  "window-minimize",
-  "window-unmaximize",
-  "window-unminimize",
-  "window-start-dragging"
 ]
 
+# Ensure that some dependencies are version-consistent with tauri to avoid type conflicts
+
 [target.'cfg(windows)'.dependencies]
-raw-window-handle = "0.5.2"
-windows-version = "0.1.1"
+windows-registry = "0.5.3"
+windows-version = "0.1.4"
+webview2-com = "0.38.0"
 
 [target.'cfg(windows)'.dependencies.windows]
-version = "0.58.0"
+version = "0.61.3"
 features = [
   "Win32_Foundation",
   "Win32_Graphics",
   "Win32_Graphics_Dwm",
+  "Win32_Security",
   "Win32_System_Com",
+  "Win32_System_Console",
+  "Win32_System_Threading",
   "Win32_UI",
   "Win32_UI_Controls",
   "Win32_UI_Shell",
   "Win32_UI_WindowsAndMessaging"
 ]
 
-[features]
-# this feature is used for production builds or when `devPath` points to the filesystem and the built-in dev server is disabled.
-# If you use cargo directly instead of tauri's cli you can use this feature flag to switch between tauri's `dev` and `build` modes.
-# DO NOT REMOVE!!
-custom-protocol = [ "tauri/custom-protocol" ]
+[dev-dependencies]
+tempfile = "3.20.0"

@@ -1,10 +1,22 @@
 {
   "editor.tabSize": 2,
+
+  "typescript.tsdk": "./node_modules/typescript/lib",
+
   "rust-analyzer.check.command": "clippy",
   "rust-analyzer.diagnostics.enable": true,
   "rust-analyzer.showUnlinkedFileNotification": false,
   "[rust]": {
     "editor.formatOnSave": true,
     "editor.defaultFormatter": "rust-lang.rust-analyzer"
+  },
+
+  "eslint.format.enable": true,
+  "eslint.validate": ["javascript", "typescript"],
+  "[javascript][typescript][typescriptreact]": {
+    "editor.formatOnSave": false, // Because it conflicts with ESLint.
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "explicit"
+    }
   }
 }
