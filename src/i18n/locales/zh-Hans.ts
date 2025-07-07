@@ -149,7 +149,7 @@ export default {
         InvalidRegionTimeZone: '无效的区域时区：{{value}}',
         RequiredField: '缺失必选字段：{{field}}，游标：{{cursor}}',
         MissingMetadataLocale: '缺失元数据语言：{{locale}}，游标：{{cursor}}',
-        MissingMetadataEntry: '缺失元数据条目：{{key}}：{{val}}，语言：{{locale}}，游标：{{cursor}}',
+        MissingMetadataEntry: '缺失元数据条目：语言：{{locale}}，{{key}}：{{val}}，游标：{{cursor}}',
       },
       UigfGachaRecordsWriteError: {
         VacantAccount: '没有提供账号信息：{{business}}，UID：{{uid}}',
@@ -189,6 +189,16 @@ export default {
       },
       PrettyGachaRecordsError: {
         MissingMetadataEntry: '缺失元数据条目：{{business}}，语言：{{locale}}，名称：{{name}}，物品 ID：{{itemId}}',
+      },
+      LegacyMigrationError: {
+        NotFound: '旧数据库未存在。',
+        SamePath: '旧数据库路径不能与当前数据库路径相同。',
+        Sqlx: '发生 sqlx 错误：{{cause}}',
+        ParseInt: '无法解析整数：{{cause}}',
+        SerdeJson: '序列化 JSON 错误：{{cause}}',
+        InvalidUid: '无法检测 UID 的业务区域：{{uid}} ({{business}})',
+        MissingMetadataLocale: '缺失元数据语言：{{business}}，语言：{{locale}}',
+        MissingMetadataEntry: '缺失元数据条目：{{business}}, 语言：{{locale}}，{{key}}：{{val}}',
       },
     },
     Routes: {
@@ -454,10 +464,7 @@ export default {
                 Title: '迁移成功:',
                 Body: '账号数量：{{accounts}}，抽卡记录：{{gachaRecords}}',
               },
-              Error: {
-                Title: '迁移失败：',
-                Body: '{{message}}',
-              },
+              Error: '迁移失败：',
             },
           },
           General: {

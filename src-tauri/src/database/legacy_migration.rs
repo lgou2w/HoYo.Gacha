@@ -1,5 +1,4 @@
 use std::env;
-use std::error::Error as StdError;
 use std::fmt::Debug;
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
@@ -19,6 +18,7 @@ use crate::database::{
   AccountQuestioner, Database, GachaRecordQuestioner, GachaRecordQuestionerAdditions,
   GachaRecordSaveOnConflict,
 };
+use crate::error::declare_error_kinds;
 use crate::models::{AccountProperties, Business, GachaRecord};
 
 //
@@ -27,7 +27,67 @@ use crate::models::{AccountProperties, Business, GachaRecord};
 // https://github.com/lgou2w/HoYo.Gacha/tree/0.4.4/src-tauri/src/storage
 //
 
-// TODO: Custom error kind
+declare_error_kinds! {
+  #[derive(Debug, thiserror::Error)]
+  LegacyMigrationError {
+    #[error("Legacy database does not exist")]
+    NotFound,
+
+    #[error("Legacy database path cannot be the same as the current database path")]
+    SamePath,
+
+    #[error("An sqlx error occurred: {cause}")]
+    Sqlx {
+      cause: sqlx::Error => cause.to_string()
+    },
+
+    #[error("Failed to parse integer: {cause}")]
+    ParseInt {
+      cause: std::num::ParseIntError => cause.to_string()
+    },
+
+    #[error("Serialization json error: {cause}")]
+    SerdeJson {
+      cause: serde_json::Error => cause.to_string()
+    },
+
+    #[error("Failed to detect business region for uid: {uid} ({business})")]
+    InvalidUid {
+      business: Business,
+      uid: u32
+    },
+
+    #[error("Missing metadata locale: {business}, locale: {locale}")]
+    MissingMetadataLocale {
+      business: Business,
+      locale: String
+    },
+
+    #[error("Missing metadata entry: {business}, locale: {locale}, {key}: {val}")]
+    MissingMetadataEntry {
+      business: Business,
+      locale: String,
+      key: &'static str,
+      val: String
+    },
+  }
+}
+
+mod private {
+  use super::{LegacyMigrationError, LegacyMigrationErrorKind};
+
+  impl From<sqlx::Error> for LegacyMigrationError {
+    fn from(value: sqlx::Error) -> Self {
+      Self::from(LegacyMigrationErrorKind::Sqlx { cause: value })
+    }
+  }
+
+  impl From<std::num::ParseIntError> for LegacyMigrationError {
+    fn from(value: std::num::ParseIntError) -> Self {
+      Self::from(LegacyMigrationErrorKind::ParseInt { cause: value })
+    }
+  }
+}
 
 #[derive(Debug, Default, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -36,9 +96,8 @@ pub struct MigrationMetrics {
   pub gacha_records: u64,
 }
 
-pub async fn migration(
-  database: &Database,
-) -> Result<MigrationMetrics, Box<dyn StdError + 'static>> {
+pub async fn migration(database: &Database) -> Result<MigrationMetrics, LegacyMigrationError> {
+  #[allow(deprecated)]
   let legacy_database = env::current_exe()
     .expect("Failed to get current executable path")
     .parent()
@@ -52,14 +111,15 @@ pub async fn migration(
 pub async fn migration_with(
   database: &Database,
   legacy_database: impl AsRef<Path> + Debug,
-) -> Result<MigrationMetrics, Box<dyn StdError + 'static>> {
+) -> Result<MigrationMetrics, LegacyMigrationError> {
   let legacy_database = legacy_database.as_ref();
+
   if !legacy_database.exists() {
-    return Err("Legacy database does not exist".into());
+    return Err(LegacyMigrationErrorKind::NotFound)?;
   }
 
   if database.as_ref().connect_options().get_filename() == legacy_database {
-    return Err("Legacy database path cannot be the same as the current database path".into());
+    return Err(LegacyMigrationErrorKind::SamePath)?;
   }
 
   let start = Instant::now();
@@ -102,7 +162,8 @@ pub async fn migration_with(
     let properties: Option<serde_json::Map<String, serde_json::Value>> = row
       .try_get::<Option<String>, _>("properties")?
       .map(|json| serde_json::from_str(&json))
-      .transpose()?;
+      .transpose()
+      .map_err(|cause| LegacyMigrationErrorKind::SerdeJson { cause })?;
 
     let business = match facet.as_str() {
       "genshin" => Business::GenshinImpact,
@@ -114,9 +175,9 @@ pub async fn migration_with(
       }
     };
 
-    let business_region = business.detect_uid_business_region(uid).ok_or(format!(
-      "Failed to detect business region for uid: {uid} ({business})"
-    ))?;
+    let business_region = business
+      .detect_uid_business_region(uid)
+      .ok_or(LegacyMigrationErrorKind::InvalidUid { business, uid })?;
 
     let properties = properties.and_then(move |mut props| {
       // Legacy {
@@ -219,7 +280,7 @@ pub async fn migration_with(
     legacy_database: &SqlitePool,
     table: &'static str,
     business: Business,
-  ) -> Result<u64, Box<dyn StdError + 'static>> {
+  ) -> Result<u64, LegacyMigrationError> {
     use futures_util::TryStreamExt;
 
     info!(message = "Migrating gacha records from legacy table", %table, ?business);
@@ -248,9 +309,9 @@ pub async fn migration_with(
     let mut total = 0;
     while let Some(row) = stream.try_next().await? {
       let uid = row.try_get::<String, _>("uid")?.parse()?;
-      let server_region = business.detect_uid_server_region(uid).ok_or(format!(
-        "Failed to determine server region for uid: {uid} ({business})"
-      ))?;
+      let server_region = business
+        .detect_uid_server_region(uid)
+        .ok_or(LegacyMigrationErrorKind::InvalidUid { business, uid })?;
 
       let id = row.try_get("id")?;
       let gacha_type = row.try_get::<String, _>("gacha_type")?.parse()?;
@@ -266,34 +327,48 @@ pub async fn migration_with(
 
       let rank_type = row.try_get::<String, _>("rank_type")?.parse()?;
       let count = row.try_get::<String, _>("count")?.parse()?;
-      let lang = row.try_get("lang")?;
+      let locale: String = row.try_get("lang")?;
 
       let time = row.try_get::<String, _>("time")?;
-      let time = PrimitiveDateTime::parse(&time, GACHA_TIME_FORMAT)?
+      let time = PrimitiveDateTime::parse(&time, GACHA_TIME_FORMAT)
+        .unwrap()
         .assume_offset(server_region.time_zone());
 
       let mut name = row.try_get::<String, _>("name")?;
       let item_type = row.try_get("item_type")?;
       let mut item_id = row.try_get::<String, _>("item_id")?;
 
-      let metadata_locale = metadata
-        .obtain(business, &lang)
-        .ok_or(format!("Missing metadata locale: {lang} ({business})"))?;
+      let metadata_locale = metadata.obtain(business, &locale).ok_or(
+        LegacyMigrationErrorKind::MissingMetadataLocale {
+          business,
+          locale: locale.clone(),
+        },
+      )?;
 
       match item_id.trim() {
         "" => {
           // Genshin Impact only
-          let metadata_entry = metadata_locale.entry_from_name_first(&name).ok_or(format!(
-            "Missing metadata entry: {name}, locale: {lang} ({business})"
-          ))?;
+          let metadata_entry = metadata_locale.entry_from_name_first(&name).ok_or(
+            LegacyMigrationErrorKind::MissingMetadataEntry {
+              business,
+              locale: locale.clone(),
+              key: "name",
+              val: name.clone(),
+            },
+          )?;
 
           item_id = metadata_entry.id.to_owned();
         }
         other => {
           // Honkai: Star Rail & Zenless Zone Zero
-          let metadata_entry = metadata_locale.entry_from_id(other).ok_or(format!(
-            "Missing metadata entry: {other}, locale: {lang} ({business})"
-          ))?;
+          let metadata_entry = metadata_locale.entry_from_id(other).ok_or(
+            LegacyMigrationErrorKind::MissingMetadataEntry {
+              business,
+              locale: locale.clone(),
+              key: "item_id",
+              val: other.to_owned(),
+            },
+          )?;
 
           // Prefer metadata item name
           if name != metadata_entry.name {
@@ -311,7 +386,7 @@ pub async fn migration_with(
           gacha_id,
           rank_type,
           count,
-          lang,
+          lang: locale,
           time,
           name,
           item_type,

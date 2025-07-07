@@ -252,7 +252,7 @@ declare_error_kinds! {
       cursor: usize
     },
 
-    #[error("Missing metadata entry: {key}: {val}, locale: {locale}, cursor: {cursor}")]
+    #[error("Missing metadata entry: locale: {locale}, {key}: {val}, cursor: {cursor}")]
     MissingMetadataEntry {
       locale: String,
       key: &'static str,

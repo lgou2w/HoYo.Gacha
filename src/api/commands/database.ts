@@ -121,6 +121,43 @@ export const findGachaRecordsByBusinessesOrUid = declareCommand<FindGachaRecords
 
 // #endregion
 
+// #region: Legacy Migration
+
+const NamedLegacyMigrationError = 'LegacyMigrationError' as const
+
+export enum LegacyMigrationErrorKind {
+  NotFound = 'NotFound',
+  SamePath = 'SamePath',
+  Sqlx = 'Sqlx',
+  ParseInt = 'ParseInt',
+  SerdeJson = 'SerdeJson',
+  InvalidUid = 'InvalidUid',
+  MissingMetadataLocale = 'MissingMetadataLocale',
+  MissingMetadataEntry = 'MissingMetadataEntry',
+}
+
+export type LegacyMigrationError = DetailedError<typeof NamedLegacyMigrationError,
+  | { kind: LegacyMigrationErrorKind.NotFound }
+  | { kind: LegacyMigrationErrorKind.SamePath }
+  | { kind: LegacyMigrationErrorKind.Sqlx, cause: string }
+  | { kind: LegacyMigrationErrorKind.ParseInt, cause: string }
+  | { kind: LegacyMigrationErrorKind.SerdeJson, cause: string }
+  | { kind: LegacyMigrationErrorKind.InvalidUid, business: Business, uid: number }
+  | { kind: LegacyMigrationErrorKind.MissingMetadataLocale, business: Business, locale: string }
+  | {
+      kind: LegacyMigrationErrorKind.MissingMetadataEntry
+      business: Business
+      locale: string
+      key: string
+      val: string
+    }
+>
+
+export function isLegacyMigrationError (error: unknown): error is LegacyMigrationError {
+  return isDetailedError(error) &&
+    error.name === NamedLegacyMigrationError
+}
+
 export type LegacyMigrationArgs = NonNullable<{
   legacyDatabase?: string | null
 }>
@@ -129,6 +166,8 @@ export const legacyMigration = declareCommand<LegacyMigrationArgs, {
   accounts: number
   gachaRecords: number
 }>('database_legacy_migration')
+
+// #endregion
 
 // Export
 

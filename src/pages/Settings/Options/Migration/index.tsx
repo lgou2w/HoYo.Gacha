@@ -3,7 +3,7 @@ import { Button } from '@fluentui/react-components'
 import { DatabaseLinkRegular } from '@fluentui/react-icons'
 import { pickFile } from '@/api/commands/core'
 import { legacyMigration } from '@/api/commands/database'
-import { extractErrorMessage } from '@/api/error'
+import errorTranslation from '@/api/errorTranslation'
 import Locale from '@/components/Locale'
 import useI18n from '@/hooks/useI18n'
 import useNotifier from '@/hooks/useNotifier'
@@ -56,12 +56,9 @@ function SettingsOptionsMigrationAction () {
           }
         },
         error (error) {
-          const message = extractErrorMessage(error)
           return {
-            title: i18n.t('Pages.Settings.Options.Migration.Migrate.Error.Title'),
-            body: i18n.t('Pages.Settings.Options.Migration.Migrate.Error.Body', {
-              message,
-            }),
+            title: i18n.t('Pages.Settings.Options.Migration.Migrate.Error'),
+            body: errorTranslation(i18n, error),
             timeout: -1,
             dismissible: true,
           }

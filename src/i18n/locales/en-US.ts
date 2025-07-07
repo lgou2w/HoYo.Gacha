@@ -149,7 +149,7 @@ export default {
         InvalidRegionTimeZone: 'Invalid region time zone: {{value}}',
         RequiredField: 'Required field missing: {{field}}, cursor: {{cursor}}',
         MissingMetadataLocale: 'Missing metadata locale: {{locale}}, cursor: {{cursor}}',
-        MissingMetadataEntry: 'Missing metadata entry: {{key}}: {{val}}, locale: {{locale}}, cursor: {{cursor}}',
+        MissingMetadataEntry: 'Missing metadata entry: locale: {{locale}}, {{key}}: {{val}}, cursor: {{cursor}}',
       },
       UigfGachaRecordsWriteError: {
         VacantAccount: 'No account information provided: {{business}}, uid: {{uid}}',
@@ -189,6 +189,16 @@ export default {
       },
       PrettyGachaRecordsError: {
         MissingMetadataEntry: 'Missing metadata entry: {{business}}, locale: {{locale}}, name: {{name}}, item id: {{itemId}}',
+      },
+      LegacyMigrationError: {
+        NotFound: 'Legacy database does not exist.',
+        SamePath: 'Legacy database path cannot be the same as the current database path.',
+        Sqlx: 'An sqlx error occurred: {{cause}}',
+        ParseInt: 'Failed to parse integer: {{cause}}',
+        SerdeJson: 'Serialization json error: {{cause}}',
+        InvalidUid: 'Failed to detect business region for uid: {{uid}} ({{business}})',
+        MissingMetadataLocale: 'Missing metadata locale: {{business}}, locale: {{locale}}',
+        MissingMetadataEntry: 'Missing metadata entry: {{business}}, locale: {{locale}}, {{key}}: {{val}}',
       },
     },
     Routes: {
@@ -459,10 +469,7 @@ export default {
                 Title: 'Migration success:',
                 Body: 'Count of accounts: {{accounts}}, Gacha records: {{gachaRecords}}',
               },
-              Error: {
-                Title: 'Migration failed:',
-                Body: '{{message}}',
-              },
+              Error: 'Migration failed:',
             },
           },
           General: {
