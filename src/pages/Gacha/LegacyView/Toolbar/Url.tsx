@@ -5,7 +5,7 @@ import { ArrowClockwiseRegular, ArrowSyncRegular, CopyRegular, LinkEditRegular, 
 import * as clipboard from '@tauri-apps/plugin-clipboard-manager'
 import { produce } from 'immer'
 import { GachaRecordsFetcherFragmentKind, GachaUrl, GachaUrlErrorKind, fromDirtyGachaUrl, fromWebCachesGachaUrl, isGachaUrlError } from '@/api/commands/business'
-import { extractErrorMessage } from '@/api/error'
+import errorTranslation from '@/api/errorTranslation'
 import { useSelectedAccountSuspenseQueryData, useUpdateAccountPropertiesMutation } from '@/api/queries/accounts'
 import { invalidateFirstGachaRecordQuery, invalidatePrettizedGachaRecordsQuery, usePrettizedGachaRecordsSuspenseQueryData } from '@/api/queries/business'
 import Locale, { LocaleMapping } from '@/components/Locale'
@@ -249,12 +249,9 @@ function GachaLegacyViewToolbarUrlButton () {
             title: i18n.t('Pages.Gacha.LegacyView.Toolbar.Url.Obtain.Loading', { keyofBusinesses }),
           },
           error: (error) => {
-            const message = extractErrorMessage(error)
             return {
-              title: i18n.t('Pages.Gacha.LegacyView.Toolbar.Url.Obtain.Error.Title', { keyofBusinesses }),
-              body: i18n.t('Pages.Gacha.LegacyView.Toolbar.Url.Obtain.Error.Body', {
-                message,
-              }),
+              title: i18n.t('Pages.Gacha.LegacyView.Toolbar.Url.Obtain.Error', { keyofBusinesses }),
+              body: errorTranslation(i18n, error),
               timeout: -1,
               dismissible: true,
             }
@@ -316,12 +313,9 @@ function GachaLegacyViewToolbarUrlButton () {
           }
         },
         error: (error) => {
-          const message = extractErrorMessage(error)
           return {
-            title: i18n.t('Pages.Gacha.LegacyView.Toolbar.Url.Fetch.Error.Title', { keyofBusinesses }),
-            body: i18n.t('Pages.Gacha.LegacyView.Toolbar.Url.Fetch.Error.Body', {
-              message,
-            }),
+            title: i18n.t('Pages.Gacha.LegacyView.Toolbar.Url.Fetch.Error', { keyofBusinesses }),
+            body: errorTranslation(i18n, error),
             timeout: -1,
             dismissible: true,
           }
@@ -544,7 +538,7 @@ const UrlManualInputDialog = forwardRef<{
         expectedUid,
       })
     } catch (error) {
-      const message = extractErrorMessage(error)
+      const message = errorTranslation(i18n, error)
       setError('url', { message })
       throw error
     }
@@ -560,7 +554,7 @@ const UrlManualInputDialog = forwardRef<{
 
     resetField('url')
     setOpen(false)
-  }, [business, resetField, selectedAccount, setError, updateAccountPropertiesMutation])
+  }, [business, i18n, resetField, selectedAccount, setError, updateAccountPropertiesMutation])
 
   return (
     <Dialog

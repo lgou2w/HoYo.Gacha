@@ -4,7 +4,7 @@ import { Button, Input, Textarea, buttonClassNames, makeStyles, tokens } from '@
 import { CursorHoverRegular, FolderSearchRegular, PersonTagRegular } from '@fluentui/react-icons'
 import { produce } from 'immer'
 import { DataFolder, LocateDataFolderFactory, locateDataFolder } from '@/api/commands/business'
-import { extractErrorMessage } from '@/api/error'
+import errorTranslation from '@/api/errorTranslation'
 import { useCreateAccountMutation, useUpdateAccountDataFolderAndPropertiesMutation } from '@/api/queries/accounts'
 import Locale from '@/components/Locale'
 import useI18n from '@/hooks/useI18n'
@@ -126,7 +126,7 @@ export default function GachaLegacyViewUpsertAccountForm (props: Props) {
         factory,
       })
     } catch (error) {
-      const message = extractErrorMessage(error)
+      const message = errorTranslation(i18n, error)
       setError('dataFolder', { message }, { shouldFocus: true })
       return
     }
@@ -168,13 +168,13 @@ export default function GachaLegacyViewUpsertAccountForm (props: Props) {
         ? await createAccountMutation.mutateAsync(args)
         : await updateAccountDataFolderAndPropertiesMutation.mutateAsync(args) || edit
     } catch (error) {
-      const message = extractErrorMessage(error)
+      const message = errorTranslation(i18n, error)
       setError('uid', { message }, { shouldFocus: true })
       return
     }
 
     onSuccess?.(result)
-  }, [business, createAccountMutation, edit, isEditMode, onSuccess, setError, updateAccountDataFolderAndPropertiesMutation])
+  }, [business, createAccountMutation, edit, i18n, isEditMode, onSuccess, setError, updateAccountDataFolderAndPropertiesMutation])
 
   return (
     <form

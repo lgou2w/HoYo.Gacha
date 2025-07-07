@@ -5,7 +5,7 @@ import { listen } from '@tauri-apps/api/event'
 import { useImmer } from 'use-immer'
 import { ImportGachaRecordsArgs, importGachaRecords } from '@/api/commands/business'
 import { pickFile } from '@/api/commands/core'
-import { extractErrorMessage } from '@/api/error'
+import errorTranslation from '@/api/errorTranslation'
 import { useSelectedAccountSuspenseQueryData } from '@/api/queries/accounts'
 import { invalidateFirstGachaRecordQuery, invalidatePrettizedGachaRecordsQuery, useFirstGachaRecordSuspenseQueryData } from '@/api/queries/business'
 import Locale from '@/components/Locale'
@@ -198,7 +198,7 @@ export default function GachaLegacyViewDataConvertImportForm (props: Props) {
       }
     } catch (error) {
       produce((draft) => {
-        draft.fileError = extractErrorMessage(error)
+        draft.fileError = errorTranslation(i18n, error)
         draft.busy = false
       })
 

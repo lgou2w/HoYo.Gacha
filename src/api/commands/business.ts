@@ -89,7 +89,7 @@ export enum GachaUrlErrorKind {
 export type GachaUrlError = DetailedError<typeof NamedGachaUrlError,
   | { kind: GachaUrlErrorKind.WebCachesNotFound, path: string }
   | { kind: GachaUrlErrorKind.OpenWebCaches, path: string, cause: NativeIOError }
-  | { kind: GachaUrlErrorKind.ReadDiskCache, cause: NativeIOError }
+  | { kind: GachaUrlErrorKind.ReadDiskCache, path: string, cause: NativeIOError }
   | { kind: GachaUrlErrorKind.EmptyData }
   | { kind: GachaUrlErrorKind.NotFound }
   | { kind: GachaUrlErrorKind.Illegal, url: string }
@@ -281,6 +281,7 @@ export enum UigfGachaRecordsWriteErrorKind {
 export type UigfGachaRecordsWriteError = DetailedError<typeof NamedUigfGachaRecordsWriteError,
   | {
       kind: UigfGachaRecordsWriteErrorKind.VacantAccount
+      business: Business
       uid: Account['uid']
     }
   | {

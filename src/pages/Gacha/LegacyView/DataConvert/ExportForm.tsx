@@ -4,7 +4,7 @@ import { AttachRegular } from '@fluentui/react-icons'
 import { useImmer } from 'use-immer'
 import { ExportGachaRecordsArgs, exportGachaRecords } from '@/api/commands/business'
 import { pickFolder } from '@/api/commands/core'
-import { extractErrorMessage } from '@/api/error'
+import errorTranslation from '@/api/errorTranslation'
 import { useSelectedAccountSuspenseQueryData } from '@/api/queries/accounts'
 import { useFirstGachaRecordSuspenseQueryData } from '@/api/queries/business'
 import Locale from '@/components/Locale'
@@ -170,7 +170,7 @@ export default function GachaLegacyViewDataConvertExportForm (props: Props) {
       })
     } catch (error) {
       produce((draft) => {
-        draft.folderError = extractErrorMessage(error)
+        draft.folderError = errorTranslation(i18n, error)
         draft.busy = false
       })
 

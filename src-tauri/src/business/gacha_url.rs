@@ -40,8 +40,9 @@ declare_error_kinds! {
       })
     },
 
-    #[error("Error reading disk cache: {cause}")]
+    #[error("Error reading disk cache '{path}': {cause}")]
     ReadDiskCache {
+      path: PathBuf,
       cause: std::io::Error => serde_json::json!({
         "kind": cause.kind().to_string(),
         "message": cause.to_string(),
@@ -164,8 +165,7 @@ impl DirtyGachaUrl {
     info!("Reading gacha urls from webcaches...");
 
     let cache_data_folder = Self::combie_cache_data_folder(data_folder).await?;
-    let gacha_urls = Self::read_cache_data_gacha_urls(cache_data_folder, skip_expired)
-      .map_err(|cause| GachaUrlErrorKind::ReadDiskCache { cause })?;
+    let gacha_urls = Self::read_cache_data_gacha_urls(cache_data_folder, skip_expired)?;
 
     Ok(gacha_urls)
   }
@@ -226,18 +226,35 @@ impl DirtyGachaUrl {
   fn read_cache_data_gacha_urls(
     cache_data_folder: impl AsRef<Path> + Debug,
     skip_expired: bool,
-  ) -> std::io::Result<Vec<Self>> {
+  ) -> Result<Vec<Self>, GachaUrlError> {
     info!("Starting to read disk cache gacha urls...");
     let cache_data_folder = cache_data_folder.as_ref();
 
     info!("Reading index file...");
-    let index_file = IndexFile::from_file(cache_data_folder.join("index"))?;
+    let index_file = cache_data_folder.join("index");
+    let index_file =
+      IndexFile::from_file(&index_file).map_err(|cause| GachaUrlErrorKind::ReadDiskCache {
+        path: index_file,
+        cause,
+      })?;
 
     info!("Reading block data_1 file...");
-    let block_file1 = BlockFile::from_file(cache_data_folder.join("data_1"))?;
+    let block_file1_path = cache_data_folder.join("data_1");
+    let block_file1 = BlockFile::from_file(&block_file1_path).map_err(|cause| {
+      GachaUrlErrorKind::ReadDiskCache {
+        path: block_file1_path.clone(),
+        cause,
+      }
+    })?;
 
     info!("Reading block data_2 file...");
-    let block_file2 = BlockFile::from_file(cache_data_folder.join("data_2"))?;
+    let block_file2_path = cache_data_folder.join("data_1");
+    let block_file2 = BlockFile::from_file(&block_file2_path).map_err(|cause| {
+      GachaUrlErrorKind::ReadDiskCache {
+        path: block_file2_path.clone(),
+        cause,
+      }
+    })?;
 
     let mut urls = Vec::new();
     let now_local = OffsetDateTime::now_utc().to_offset(*consts::LOCAL_OFFSET);
@@ -249,7 +266,13 @@ impl DirtyGachaUrl {
       //debug!("Read the entry store at cache address: {addr:?}");
 
       // Read the entry store from the data_1 block file by cache address
-      let entry_store = block_file1.read_entry_store(&addr)?;
+      let entry_store =
+        block_file1
+          .read_entry_store(&addr)
+          .map_err(|cause| GachaUrlErrorKind::ReadDiskCache {
+            path: block_file1_path.join(format!("{addr:?}")),
+            cause,
+          })?;
 
       // Gacha url must be a long key and stored in the data_2 block file,
       // So the long key of entry store must not be zero.
@@ -277,7 +300,12 @@ impl DirtyGachaUrl {
       }
 
       // Read the long key of entry store from the data_2 block file
-      let url = entry_store.read_long_key(&block_file2)?;
+      let url = entry_store.read_long_key(&block_file2).map_err(|cause| {
+        GachaUrlErrorKind::ReadDiskCache {
+          path: block_file2_path.join(format!("{:?}", entry_store.long_key)),
+          cause,
+        }
+      })?;
 
       // These url start with '1/0/', only get the later part
       let url = if let Some(stripped) = url.strip_prefix("1/0/") {
