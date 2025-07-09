@@ -2,9 +2,9 @@ name: Build
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, v1 ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, v1 ]
 
 env:
   CARGO_TERM_COLOR: always
@@ -22,7 +22,7 @@ jobs:
     runs-on: ${{ matrix.platform }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Rust environment
         uses: dtolnay/rust-toolchain@stable
@@ -35,19 +35,25 @@ jobs:
           workspaces: '. -> target'
 
       - name: Install pnpm
-        uses: pnpm/action-setup@v2
+        uses: pnpm/action-setup@v4
         with:
-          version: 8
+          version: 10
           run_install: false
 
       - name: Install Node and setup cache
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
           cache: pnpm
 
       - name: Install app dependencies
         run: pnpm install
 
-      - name: Build Tauri app
-        run: pnpm tauri build
+      - name: Lint code
+        run: pnpm lint
+
+      - name: Run tests
+        run: pnpm test
+
+      - name: Build app
+        run: pnpm build
