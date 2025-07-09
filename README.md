@@ -38,7 +38,7 @@ TODO
 
 ©miHoYo | 上海米哈游影铁科技有限公司 版权所有
 
-* [public/Logo.webp](public/Logo.webp)
+* [public/Logo.avif](public/Logo.avif)
 * [src/assets/images/GenshinImpact/*](src/assets/images/GenshinImpact)
 * [src/assets/images/HonkaiStarRail/*](src/assets/images/HonkaiStarRail)
 * [src/assets/images/ZenlessZoneZero/*](src/assets/images/ZenlessZoneZero)

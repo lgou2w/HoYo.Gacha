@@ -55,5 +55,5 @@ function resolveRemoteImageSrc (
   // v1 facet
   // static or transform
   // https://docs.netlify.com/image-cdn/overview/
-  return `https://hoyo-gacha-v1.lgou2w.com/${keyofBusinesses}/${itemCategory}/${itemId}.webp`
+  return `https://hoyo-gacha-v1.lgou2w.com/${keyofBusinesses}/${itemCategory}/${itemId}.avif`
 }

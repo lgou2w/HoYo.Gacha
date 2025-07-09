@@ -44,7 +44,7 @@ type NavItem =
   | { divider: true }
 
 const Navs: NavItem[] = [
-  { path: Routes.Home, icon: '/Logo.webp' },
+  { path: Routes.Home, icon: '/Logo.avif' },
   { spacing: true },
   ...Object
     .entries(Businesses)

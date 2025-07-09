@@ -42,7 +42,7 @@ export default function SettingsHero (props: React.JSX.IntrinsicElements['div'])
     <div className={mergeClasses(styles.root, className)} {...rest}>
       <div className={styles.hero}>
         <div className={styles.brand}>
-          <Image src="/Logo.webp" />
+          <Image src="/Logo.avif" />
           <Caption1Strong align="center">{__APP_NAME__}</Caption1Strong>
           <Caption2 align="center">v{__APP_VERSION__}</Caption2>
         </div>

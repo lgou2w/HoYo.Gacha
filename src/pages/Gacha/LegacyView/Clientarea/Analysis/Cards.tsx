@@ -1,7 +1,7 @@
 import React, { ComponentProps, Fragment, ReactNode, useMemo } from 'react'
 import { Virtuoso } from 'react-virtuoso'
 import { Caption1, Divider, Subtitle2, Title1, caption1ClassNames, makeStyles, mergeClasses, title1ClassNames, tokens } from '@fluentui/react-components'
-import ImagesNone from '@/assets/images/None.webp'
+import ImagesNone from '@/assets/images/None.avif'
 import BizImages from '@/components/BizImages'
 import Locale from '@/components/Locale'
 import useI18n from '@/hooks/useI18n'
