@@ -139,6 +139,9 @@ pub async fn start(singleton: Singleton, tracing: Tracing, database: Database) {
         if window_state.maximized {
           main_window.maximize()?;
         }
+
+        // HACK: Delay window show to avoid moving animation
+        main_window.show()?;
       } else {
         let _ = update_window_state(&mut window_state, &main_window);
       }
@@ -317,6 +320,7 @@ where
   .transparent(!consts::TAURI_MAIN_WINDOW_DECORATIONS)
   .theme(Some(color_scheme))
   .center()
+  .visible(false) // HACK: Restore and show
   .build()
 }
 
