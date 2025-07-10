@@ -56,3 +56,13 @@ jobs:
 
       - name: Build app
         run: pnpm build
+
+      - name: Build artifact
+        run: pnpm build:artifact
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts
+          path: |
+            ${{ github.workspace }}/target/release/*git*.exe
