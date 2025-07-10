@@ -14,11 +14,12 @@ An unofficial tool for managing and analyzing your miHoYo gacha records.
 ![Logo](src-tauri/icons/128x128.png)
 
 > [!WARNING]
+> **工作中** - 此分支用于未来的 `v1.0.0` 版本。
 > **Work In Process** - This branch is for future `v1.0.0` release.
 
 ## 功能 / Features
 
-- [x] 支持 `原神`、`崩坏：星穹铁道` 和 `绝区零` 游戏。 Support `Genshin Impact`, `Honkai: Star Rail` and `Zenless Zone Zero`.
+- [x] 支持 `原神 Genshin Impact`、`崩坏：星穹铁道 Honkai: Star Rail` 和 `绝区零 Zenless Zone Zero`。
 - [x] 支持游戏的多个账号。获取游戏的抽卡链接。 Support multiple accounts for the game. Get the gacha url.
 - [x] 支持获取抽卡数据并保存到本地数据库。 Support fetch gacha data and saving it to the local database.
 - [x] 支持导入或导出的数据交换文件格式。 Support data exchange file formats for import or export.
@@ -68,8 +69,8 @@ Open the new version of the tool app. Click the gear-shaped `Settings` button in
 
 ©miHoYo | 上海米哈游影铁科技有限公司 版权所有
 
-* [public/Logo.avif](public/Logo.avif)
-* [src/assets/images/GenshinImpact/*](src/assets/images/GenshinImpact)
-* [src/assets/images/HonkaiStarRail/*](src/assets/images/HonkaiStarRail)
-* [src/assets/images/ZenlessZoneZero/*](src/assets/images/ZenlessZoneZero)
-* [src-tauri/icons/*](src-tauri/icons/)
+- [public/Logo.avif](public/Logo.avif)
+- [src/assets/images/GenshinImpact/*](src/assets/images/GenshinImpact)
+- [src/assets/images/HonkaiStarRail/*](src/assets/images/HonkaiStarRail)
+- [src/assets/images/ZenlessZoneZero/*](src/assets/images/ZenlessZoneZero)
+- [src-tauri/icons/*](src-tauri/icons/)
