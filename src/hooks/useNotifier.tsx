@@ -5,6 +5,13 @@ import { NotifierId } from '@/components/Layout/declares'
 
 export type NotifyOptions = Omit<NonNullable<Parameters<ReturnType<typeof useToastController>['dispatchToast']>['1']>, 'content'>
 
+const DefaultTimeouts = {
+  info: 3000,
+  success: 3000,
+  error: 5000,
+  warning: 5000,
+} as const
+
 export default function useNotifier () {
   const {
     dispatchToast,
@@ -76,10 +83,10 @@ export default function useNotifier () {
     }
 
     return {
-      info: createHandler({ intent: 'info', timeout: 3000, ...handlerDefaultOptions }),
-      success: createHandler({ intent: 'success', timeout: 3000, ...handlerDefaultOptions }),
-      error: createHandler({ intent: 'error', timeout: 5000, ...handlerDefaultOptions }),
-      warning: createHandler({ intent: 'warning', timeout: 5000, ...handlerDefaultOptions }),
+      info: createHandler({ intent: 'info', timeout: DefaultTimeouts.info, ...handlerDefaultOptions }),
+      success: createHandler({ intent: 'success', timeout: DefaultTimeouts.success, ...handlerDefaultOptions }),
+      error: createHandler({ intent: 'error', timeout: DefaultTimeouts.error, ...handlerDefaultOptions }),
+      warning: createHandler({ intent: 'warning', timeout: DefaultTimeouts.warning, ...handlerDefaultOptions }),
     }
   }, [notify])
 
@@ -153,6 +160,7 @@ export default function useNotifier () {
 
   return {
     NotifierId,
+    DefaultTimeouts,
     info,
     success,
     error,

@@ -252,7 +252,7 @@ function GachaLegacyViewToolbarUrlButton () {
             return {
               title: i18n.t('Pages.Gacha.LegacyView.Toolbar.Url.Obtain.Error', { keyofBusinesses }),
               body: errorTranslation(i18n, error),
-              timeout: -1,
+              timeout: notifier.DefaultTimeouts.error * 2,
               dismissible: true,
             }
           },
@@ -308,7 +308,7 @@ function GachaLegacyViewToolbarUrlButton () {
             body: i18n.t(`Pages.Gacha.LegacyView.Toolbar.Url.Fetch.Success.${body}`, {
               changes: Math.abs(changes),
             }),
-            timeout: -1,
+            timeout: notifier.DefaultTimeouts.success * 2,
             dismissible: true,
           }
         },
@@ -316,7 +316,7 @@ function GachaLegacyViewToolbarUrlButton () {
           return {
             title: i18n.t('Pages.Gacha.LegacyView.Toolbar.Url.Fetch.Error', { keyofBusinesses }),
             body: errorTranslation(i18n, error),
-            timeout: -1,
+            timeout: notifier.DefaultTimeouts.error * 2,
             dismissible: true,
           }
         },

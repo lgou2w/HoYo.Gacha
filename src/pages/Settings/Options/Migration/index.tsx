@@ -51,16 +51,12 @@ function SettingsOptionsMigrationAction () {
           return {
             title: i18n.t('Pages.Settings.Options.Migration.Migrate.Success.Title'),
             body: i18n.t('Pages.Settings.Options.Migration.Migrate.Success.Body', metrics),
-            timeout: -1,
-            dismissible: true,
           }
         },
         error (error) {
           return {
             title: i18n.t('Pages.Settings.Options.Migration.Migrate.Error'),
             body: errorTranslation(i18n, error),
-            timeout: -1,
-            dismissible: true,
           }
         },
       })
