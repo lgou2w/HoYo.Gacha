@@ -9,7 +9,6 @@ import BizImages from '@/components/BizImages'
 import Locale from '@/components/Locale'
 import useBusinessContext from '@/hooks/useBusinessContext'
 import useI18n from '@/hooks/useI18n'
-import useNotifier from '@/hooks/useNotifier'
 import type { Account } from '@/interfaces/Account'
 import { Business, KeyofBusinesses, ReversedBusinesses } from '@/interfaces/Business'
 import UpsertAccountDialog from '@/pages/Gacha/LegacyView/UpsertAccount/Dialog'
@@ -123,17 +122,6 @@ function AccountList (props: AccountListProps) {
       })
     }
   }, [accounts, business, selectedAccount?.uid, updateSelectedAccountUidMutation])
-
-  // HACK: Dismiss all toasts when the selected account changes
-  const notifier = useNotifier()
-  const selectedAccountUidRef = useRef(selectedAccount?.uid)
-  useEffect(() => {
-    if (selectedAccountUidRef.current !== selectedAccount?.uid) {
-      notifier.dismissAll()
-    }
-
-    selectedAccountUidRef.current = selectedAccount?.uid
-  }, [notifier, selectedAccount?.uid])
 
   const editAccountDialogRef = useRef<ElementRef<typeof UpsertAccountDialog>>(null)
   const deleteAccountDialogRef = useRef<ElementRef<typeof DeleteAccountDialog>>(null)
