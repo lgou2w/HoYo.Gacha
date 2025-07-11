@@ -180,6 +180,14 @@ impl BizInternals {
     }
   }
 
+  pub fn base_gacha_url_to_hkrpg_collaboration(&self) -> Option<String> {
+    if self.business == Business::HonkaiStarRail {
+      Some(self.base_gacha_url.replace("getGachaLog", "getLdGachaLog"))
+    } else {
+      None
+    }
+  }
+
   pub fn is_official(&self) -> bool {
     matches!(self.region, BusinessRegion::Official)
   }

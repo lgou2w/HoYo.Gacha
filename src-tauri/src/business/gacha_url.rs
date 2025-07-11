@@ -17,7 +17,7 @@ use tracing::{error, info, warn};
 use url::Url;
 
 use crate::business::disk_cache::{BlockFile, IndexFile};
-use crate::business::{GachaMetadata, gacha_time_format};
+use crate::business::{GachaMetadata, PrettyCategory, gacha_time_format};
 use crate::consts;
 use crate::error::declare_error_kinds;
 use crate::models::{BizInternals, Business, BusinessRegion, GachaRecord, ServerRegion};
@@ -602,8 +602,19 @@ impl ParsedGachaUrl {
 
     let biz = BizInternals::mapped(biz.0, biz.1);
 
+    let gacha_type = gacha_type.unwrap_or(original_gacha_type);
+    let base_gacha_url = if let Ok(value) = u32::from_str(gacha_type)
+      && let Some(category) = PrettyCategory::from_gacha_type(&biz.business, value)
+      && category.is_hkrpg_collaboration()
+    {
+      biz.base_gacha_url_to_hkrpg_collaboration()
+    } else {
+      None
+    }
+    .unwrap_or(biz.base_gacha_url.to_owned());
+
     Url::parse_with_params(
-      biz.base_gacha_url,
+      &base_gacha_url,
       &[
         ("sign_type", sign_type.as_str()),
         ("authkey_ver", authkey_ver.as_str()),
@@ -611,7 +622,7 @@ impl ParsedGachaUrl {
         ("game_biz", game_biz.as_str()),
         ("region", region.as_str()),
         ("lang", lang.as_str()),
-        (gacha_type_field, gacha_type.unwrap_or(original_gacha_type)),
+        (gacha_type_field, gacha_type),
         ("end_id", end_id.unwrap_or("0")),
         ("page", "1"),
         ("size", page_size.unwrap_or(20).to_string().as_str()),

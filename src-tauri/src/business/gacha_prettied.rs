@@ -80,6 +80,13 @@ impl PrettyCategory {
       .get(&value)
       .cloned()
   }
+
+  pub const fn is_hkrpg_collaboration(&self) -> bool {
+    matches!(
+      self,
+      Self::CollaborationCharacter | Self::CollaborationWeapon
+    )
+  }
 }
 
 #[derive(Clone, Debug, Serialize, PartialEq, Eq)]

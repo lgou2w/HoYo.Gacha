@@ -540,7 +540,9 @@ function calcPityProgressVar (category: PrettyCategory, usedPity: number | undef
   }
 
   let maxPity = 80
-  if (category === PrettyCategory.Character || category === PrettyCategory.Permanent) {
+  if (category === PrettyCategory.Character ||
+    category === PrettyCategory.Permanent ||
+    category === PrettyCategory.CollaborationCharacter) {
     maxPity = 90
   }
 
