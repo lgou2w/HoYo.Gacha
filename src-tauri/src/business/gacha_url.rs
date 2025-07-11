@@ -248,7 +248,7 @@ impl DirtyGachaUrl {
     })?;
 
     info!("Reading block data_2 file...");
-    let block_file2_path = cache_data_folder.join("data_1");
+    let block_file2_path = cache_data_folder.join("data_2");
     let block_file2 = BlockFile::from_file(&block_file2_path).map_err(|cause| {
       GachaUrlErrorKind::ReadDiskCache {
         path: block_file2_path.clone(),
