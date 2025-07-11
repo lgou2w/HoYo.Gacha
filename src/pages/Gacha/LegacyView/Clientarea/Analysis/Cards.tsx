@@ -479,7 +479,9 @@ function CardsEntryRecord (props: CardsEntryRecordProps) {
   // Record
   const [record, prevRecord] = value
   const showLimitedLabels = category === PrettyCategory.Character ||
-    category === PrettyCategory.Weapon
+    category === PrettyCategory.Weapon ||
+    category === PrettyCategory.CollaborationCharacter ||
+    category === PrettyCategory.CollaborationWeapon
 
   let isHardPity = false
   if (prevRecord && !prevRecord.limited && record.limited) {
