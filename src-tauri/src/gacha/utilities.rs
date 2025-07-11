@@ -176,7 +176,7 @@ pub(super) fn lookup_valid_cache_data_dir<P: AsRef<Path>>(game_data_dir: P) -> R
 
 pub(super) fn lookup_gacha_urls_from_endpoint<P: AsRef<Path>>(
   cache_data_dir: P,
-  endpoint: &str,
+  endpoints: &[&str],
   skip_expired: bool,
 ) -> Result<Vec<GachaUrl>> {
   let cache_data_dir = cache_data_dir.as_ref();
@@ -211,8 +211,10 @@ pub(super) fn lookup_gacha_urls_from_endpoint<P: AsRef<Path>>(
     let url = entry.read_long_url(&block_file2)?;
 
     // Get only valid gacha url
-    if !url.contains(endpoint) && !url.contains("&gacha_type=") {
-      continue;
+    for endpoint in endpoints {
+      if !url.contains(endpoint) && !url.contains("&gacha_type=") {
+        continue;
+      }
     }
 
     // These url start with '1/0/', only get the later part
@@ -258,14 +260,14 @@ pub(super) struct GachaResponse<T> {
 pub(super) async fn fetch_gacha_records<T: Sized + DeserializeOwned + Send>(
   reqwest: &Reqwest,
   facet: &AccountFacet,
-  endpoint: &str,
   gacha_url: &str,
   gacha_type: Option<&str>,
   end_id: Option<&str>,
+  base_url_mut: Option<Box<dyn Fn(&str, &str) -> String + Send + 'static>>,
 ) -> Result<GachaResponse<T>> {
-  let endpoint_start = gacha_url.find(endpoint).ok_or(Error::IllegalGachaUrl)?;
-  let base_url = &gacha_url[0..endpoint_start + endpoint.len()];
-  let query_str = &gacha_url[endpoint_start + endpoint.len()..];
+  let query_start = gacha_url.find('?').ok_or(Error::IllegalGachaUrl)?;
+  let base_url = &gacha_url[0..query_start];
+  let query_str = &gacha_url[query_start + 1..];
 
   let mut queries: HashMap<String, String> = form_urlencoded::parse(query_str.as_bytes())
     .into_owned()
@@ -291,7 +293,13 @@ pub(super) async fn fetch_gacha_records<T: Sized + DeserializeOwned + Send>(
   queries.remove("begin_id");
   queries.remove("end_id");
 
-  let mut url = Url::parse_with_params(base_url, queries).map_err(|_| Error::IllegalGachaUrl)?;
+  let base_url = if let Some(base_url_mut) = base_url_mut {
+    base_url_mut(base_url, gacha_type)
+  } else {
+    base_url.to_owned()
+  };
+
+  let mut url = Url::parse_with_params(&base_url, queries).map_err(|_| Error::IllegalGachaUrl)?;
 
   url
     .query_pairs_mut()

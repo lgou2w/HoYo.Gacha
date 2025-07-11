@@ -79,7 +79,19 @@ export default function GachaActionFetch () {
 
     const { facet, uid, gachaUrl } = selectedAccount
     try {
-      const { namedValues: { character, weapon, permanent, newbie, anthology, bangboo } } = gachaRecords
+      const {
+        namedValues: {
+          character,
+          weapon,
+          permanent,
+          newbie,
+          anthology,
+          bangboo,
+          collaborationCharacter,
+          collaborationWeapon
+        }
+      } = gachaRecords
+
       const pullNewbie = shouldPullNewbie(facet, newbie)
       const changes = await pull(facet, uid, {
         gachaUrl,
@@ -89,6 +101,8 @@ export default function GachaActionFetch () {
           [permanent.gachaType]: permanent.lastEndId ?? null,
           ...(anthology ? { [anthology.gachaType]: anthology.lastEndId ?? null } : {}),
           ...(bangboo ? { [bangboo.gachaType]: bangboo.lastEndId ?? null } : {}),
+          ...(collaborationCharacter ? { [collaborationCharacter.gachaType]: collaborationCharacter.lastEndId ?? null } : {}),
+          ...(collaborationWeapon ? { [collaborationWeapon.gachaType]: collaborationWeapon.lastEndId ?? null } : {}),
           ...(pullNewbie || {})
         },
         eventChannel: 'gachaRecords-fetcher-event-channel',

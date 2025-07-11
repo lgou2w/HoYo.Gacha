@@ -47,13 +47,13 @@ impl GameDataDirectoryFinder for GenshinGacha {
 }
 
 /// Gacha Url
-const ENDPOINT: &str = "/api/getGachaLog?";
+const ENDPOINTS: &[&str] = &["/api/getGachaLog?"];
 
 impl GachaUrlFinder for GenshinGacha {
   fn find_gacha_urls<P: AsRef<Path>>(&self, game_data_dir: P) -> Result<Vec<GachaUrl>> {
     // See: https://github.com/lgou2w/HoYo.Gacha/issues/10
     let cache_data_dir = lookup_valid_cache_data_dir(game_data_dir)?;
-    lookup_gacha_urls_from_endpoint(cache_data_dir, ENDPOINT, true)
+    lookup_gacha_urls_from_endpoint(cache_data_dir, ENDPOINTS, true)
   }
 }
 
@@ -113,10 +113,10 @@ impl GachaRecordFetcher for GenshinGacha {
     let response = fetch_gacha_records::<GenshinGachaRecordPagination>(
       reqwest,
       &AccountFacet::Genshin,
-      ENDPOINT,
       gacha_url,
       gacha_type,
       end_id,
+      None,
     )
     .await?;
 

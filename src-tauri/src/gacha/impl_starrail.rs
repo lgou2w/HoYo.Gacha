@@ -47,13 +47,16 @@ impl GameDataDirectoryFinder for StarRailGacha {
 }
 
 /// Gacha Url
-const ENDPOINT: &str = "/api/getGachaLog?";
+const ENDPOINTS: &[&str] = &["/api/getGachaLog?", "/api/getLdGachaLog?"];
+
+const END_DEFAULT: &str = "getGachaLog";
+const END_COLLABORATION: &str = "getLdGachaLog";
 
 impl GachaUrlFinder for StarRailGacha {
   fn find_gacha_urls<P: AsRef<Path>>(&self, game_data_dir: P) -> Result<Vec<GachaUrl>> {
     // See: https://github.com/lgou2w/HoYo.Gacha/issues/10
     let cache_data_dir = lookup_valid_cache_data_dir(game_data_dir)?;
-    lookup_gacha_urls_from_endpoint(cache_data_dir, ENDPOINT, true)
+    lookup_gacha_urls_from_endpoint(cache_data_dir, ENDPOINTS, true)
   }
 }
 
@@ -116,10 +119,16 @@ impl GachaRecordFetcher for StarRailGacha {
     let response = fetch_gacha_records::<StarRailGachaRecordPagination>(
       reqwest,
       &AccountFacet::StarRail,
-      ENDPOINT,
       gacha_url,
       gacha_type,
       end_id,
+      Some(Box::new(|base_url, gacha_type| {
+        if gacha_type == "21" || gacha_type == "22" {
+          base_url.replace(END_DEFAULT, END_COLLABORATION)
+        } else {
+          base_url.replace(END_COLLABORATION, END_DEFAULT)
+        }
+      })),
     )
     .await?;
 
