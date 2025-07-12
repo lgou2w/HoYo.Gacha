@@ -5,7 +5,7 @@
   "description": "An unofficial tool for managing and analyzing your miHoYo gacha records",
   "author": "lgou2w <lgou2w@hotmail.com>",
   "homepage": "https://github.com/lgou2w/HoYo.Gacha#readme",
-  "repository": "https://github.com/lgou2w/HoYo.Gacha.git",
+  "repository": "https://github.com/lgou2w/HoYo.Gacha",
   "bugs": "https://github.com/lgou2w/HoYo.Gacha/issues",
   "license": "MIT OR Apache-2.0",
   "private": "true",

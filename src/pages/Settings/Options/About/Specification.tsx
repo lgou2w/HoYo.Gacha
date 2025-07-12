@@ -1,11 +1,12 @@
 import React, { Suspense, createRef, useCallback, useMemo } from 'react'
-import { Button, Spinner, Table, TableBody, TableCell, TableRow, makeStyles, tableCellClassNames, tableRowClassNames } from '@fluentui/react-components'
+import { Button, Link, Spinner, Table, TableBody, TableCell, TableRow, makeStyles, tableCellClassNames, tableRowClassNames } from '@fluentui/react-components'
 import { InfoRegular } from '@fluentui/react-icons'
 import { Await } from '@tanstack/react-router'
 import { writeText } from '@tauri-apps/plugin-clipboard-manager'
 import isPromise from 'is-promise'
-import { osInfo, tauriVersion, webview2Version } from '@/api/commands/core'
+import { gitCommit, osInfo, tauriVersion, webview2Version } from '@/api/commands/core'
 import Locale from '@/components/Locale'
+import useI18n from '@/hooks/useI18n'
 import { stringifyOsInfoVersion } from '@/interfaces/Os'
 import SettingsOptionsCollapse from '@/pages/Settings/Options/OptionsCollapse'
 
@@ -20,21 +21,33 @@ const useStyles = makeStyles({
     [`& .${tableCellClassNames.root}`]: {
       padding: 0,
       minHeight: '2.125rem',
+      '&[data-clipboard-key="true"]': {
+        maxWidth: '12rem',
+      },
     },
   },
 })
 
 export default function SettingsOptionsAboutSpecification () {
   const styles = useStyles()
-  const data: Record<string, string | Promise<string>> = useMemo(() => {
+  const i18n = useI18n()
+  const data: Record<string, string | Promise<string | { value: string, link: string }>> = useMemo(() => {
     return {
       OperatingSystem: osInfo().then((value) => value.edition || value.os_type),
-      SystemVersion: osInfo().then((value) => stringifyOsInfoVersion(value.version)),
-      SystemType: osInfo().then((value) => value.architecture || value.bitness),
+      SystemVersion: osInfo().then((value) => {
+        return stringifyOsInfoVersion(value.version) + ' ' + (value.architecture || value.bitness)
+      }),
       Webview2: webview2Version(),
       Tauri: tauriVersion(),
+      GitCommit: gitCommit().then((commit) => commit.hash),
+      AppVersion: gitCommit().then((commit) => {
+        return {
+          value: `v${__APP_VERSION__}-git-${commit.hash.substring(0, 7)} (${i18n.dayjs(commit.date).fromNow()})`,
+          link: `${__APP_REPOSITORY__}/commit/${commit.hash}`,
+        }
+      }),
     }
-  }, [])
+  }, [i18n])
 
   const tableRef = createRef<HTMLDivElement>()
   const handleCopy = useCallback(() => {
@@ -79,7 +92,9 @@ export default function SettingsOptionsAboutSpecification () {
                   ? (
                       <Suspense fallback={<Spinner />}>
                         <Await promise={val}>
-                          {(data) => data}
+                          {(data) => typeof data === 'string'
+                            ? data
+                            : <Link href={data.link} target="_blank" rel="noreferre">{data.value}</Link>}
                         </Await>
                       </Suspense>
                     )

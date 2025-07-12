@@ -38,6 +38,11 @@ pub const DESCRIPTION: &str = env!("CARGO_PKG_DESCRIPTION");
 pub const HOMEPAGE: &str = env!("CARGO_PKG_HOMEPAGE");
 pub const REPOSITORY: &str = env!("CARGO_PKG_REPOSITORY");
 
+// Embedded Environment Variables
+// See: src-tauri/build.rs
+pub const GIT_COMMIT_HASH: &str = env!("GIT_COMMIT_HASH");
+pub const GIT_COMMIT_DATE: &str = env!("GIT_COMMIT_DATE");
+
 // Crashs
 
 pub const CRASHS_DIRECTORY: &str = "Crashs";

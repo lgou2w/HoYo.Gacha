@@ -12,6 +12,11 @@ export const webview2Version = declareCommand<undefined, string>('core_webview2_
 
 export const tauriVersion = declareCommand<undefined, string>('core_tauri_version', true)
 
+export const gitCommit = declareCommand<undefined, {
+  hash: string
+  date: string
+}>('core_git_commit', true)
+
 export type ChangeThemeArgs = { colorScheme: ColorScheme }
 export const changeTheme = declareCommand<ChangeThemeArgs>('core_change_theme')
 
@@ -34,6 +39,7 @@ const CoreCommands = {
   locale,
   webview2Version,
   tauriVersion,
+  gitCommit,
   changeTheme,
   pickFile,
   pickFolder,
