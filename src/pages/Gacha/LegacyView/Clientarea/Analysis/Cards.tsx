@@ -1,4 +1,4 @@
-import React, { ComponentProps, Fragment, ReactNode, useMemo } from 'react'
+import React, { ComponentProps, Fragment, ReactNode, WheelEventHandler, useCallback, useMemo } from 'react'
 import { Virtuoso } from 'react-virtuoso'
 import { Caption1, Divider, Subtitle2, Title1, caption1ClassNames, makeStyles, mergeClasses, title1ClassNames, tokens } from '@fluentui/react-components'
 import ImagesNone from '@/assets/images/None.avif'
@@ -21,9 +21,14 @@ const useStyles = makeStyles({
     flexDirection: 'row',
     gap: tokens.spacingVerticalM,
     height: '100%',
+    overflow: 'auto hidden',
+    scrollBehavior: 'smooth',
+    padding: '2px',
   },
   card: {
     flexGrow: 1,
+    minWidth: '12.75rem',
+    boxShadow: tokens.shadow2,
   },
 })
 
@@ -57,9 +62,32 @@ export default function GachaLegacyViewClientareaAnalysisCards (props: Composite
     CollaborationWeapon,
   ])
 
+  const transformScroll = useCallback<WheelEventHandler>((evt) => {
+    function shouldPreventHorizontalScroll (evt: React.WheelEvent) {
+      let el: EventTarget | ParentNode | null = evt.target
+
+      while (el && el instanceof HTMLElement && el !== evt.currentTarget) {
+        if (el.style.overflowY === 'auto' || el.style.overflowY === 'scroll') {
+          return false
+        }
+        el = el.parentNode
+      }
+
+      return true
+    }
+
+    if (!evt.deltaY || !shouldPreventHorizontalScroll(evt)) {
+      return
+    }
+
+    const delta = Math.abs(evt.deltaY)
+    const dir = evt.deltaY > 0 ? 1 : -1
+    evt.currentTarget.scrollLeft += Math.max(delta, 100) * dir + evt.deltaX
+  }, [])
+
   return (
     <div className={styles.root}>
-      <div className={styles.cards}>
+      <div className={styles.cards} onWheel={transformScroll}>
         <div className={styles.card}>
           <CardsEntry business={business} metadata={Character} />
         </div>
@@ -107,7 +135,6 @@ const useCardsEntryStyles = makeStyles({
     padding: tokens.spacingHorizontalM,
     borderRadius: tokens.borderRadiusMedium,
     background: tokens.colorNeutralBackgroundAlpha,
-    boxShadow: tokens.shadow2,
     height: '100%',
   },
   header: {
