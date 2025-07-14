@@ -3,6 +3,7 @@ use std::mem::{self, MaybeUninit};
 use tauri::{Theme, WebviewWindow};
 use webview2_com::Microsoft::Web::WebView2::Win32::{
   COREWEBVIEW2_PREFERRED_COLOR_SCHEME_DARK, COREWEBVIEW2_PREFERRED_COLOR_SCHEME_LIGHT,
+  ICoreWebView2Settings4,
 };
 use webview2_com::Microsoft::Web::WebView2::Win32::{ICoreWebView2_2, ICoreWebView2_13};
 use windows::Win32::Foundation::{FALSE, HANDLE, TRUE};
@@ -116,6 +117,23 @@ pub fn set_webview_theme(window: &WebviewWindow, color_scheme: Theme) -> tauri::
         .unwrap()
         .SetPreferredColorScheme(color_scheme);
     }
+  })
+}
+
+pub fn set_webview_accelerator_keys_enabled(
+  window: &WebviewWindow,
+  enable: bool,
+) -> tauri::Result<()> {
+  window.with_webview(move |webview| unsafe {
+    let _ = webview
+      .controller()
+      .CoreWebView2()
+      .unwrap()
+      .Settings()
+      .unwrap()
+      .cast::<ICoreWebView2Settings4>()
+      .unwrap()
+      .SetAreBrowserAcceleratorKeysEnabled(enable);
   })
 }
 

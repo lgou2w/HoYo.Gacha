@@ -175,10 +175,14 @@ pub async fn start(singleton: Singleton, tracing: Tracing, database: Database) {
       }
 
       // Open devtools in debug or when specifying environment variable
-      if cfg!(debug_assertions) || env::var(consts::ENV_DEVTOOLS).is_ok() {
+      let devtools = cfg!(debug_assertions) || env::var(consts::ENV_DEVTOOLS).is_ok();
+      if devtools {
         debug!("Opens the developer tools window...");
         main_window.open_devtools();
       }
+
+      // Set webview accelerator keys
+      ffi::set_webview_accelerator_keys_enabled(&main_window, devtools)?;
 
       // Force load metadata and create a thread to check if it needs to be updated
       {
