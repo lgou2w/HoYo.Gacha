@@ -128,7 +128,7 @@ export default {
         VisitTooFrequently: 'The gacha url was visit too frequently, please try again later!',
         UnexpectedResponse: 'The gacha url returned an unexpected response: {{message}} (retcode: {{retcode}})',
         MissingMetadataEntry: 'Missing metadata entry: {{business}}, locale: {{locale}}, name: {{name}}',
-        InconsistentUid: 'Owner uid of the gacha url does not match: {{actuals}} (expected: {expected})',
+        InconsistentUid: 'Owner uid of the gacha url does not match: {{actuals}} (expected: {{expected}})',
       },
       LegacyUigfGachaRecordsWriteError: {
         InvalidUid: 'Invalid business uid: {{uid}}',

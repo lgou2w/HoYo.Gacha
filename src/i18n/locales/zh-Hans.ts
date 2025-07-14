@@ -128,7 +128,7 @@ export default {
         VisitTooFrequently: '抽卡链接访问过于频繁。请稍后重试！',
         UnexpectedResponse: '抽卡链接返回了意外响应：{{message}} (返回码：{{retcode}})',
         MissingMetadataEntry: '缺失元数据条目：{{business}}，语言：{{locale}}，名称：{{name}}',
-        InconsistentUid: '抽卡链接的拥有者 UID 不匹配：{{actuals}} (预期：{expected})',
+        InconsistentUid: '抽卡链接的拥有者 UID 不匹配：{{actuals}} (预期：{{expected}})',
       },
       LegacyUigfGachaRecordsWriteError: {
         InvalidUid: '无效的业务 UID：{{uid}}',
