@@ -541,7 +541,7 @@ export type ExportGachaRecordsArgs = NonNullable<{
   output: string
   exporter:
     | { LegacyUigf: {
-      uigfVersion: 'v2.2' | 'v2.3' | 'v2.4' | 'v3.0'
+      uigfVersion: 'v2.0' | 'v2.1' | 'v2.2' | 'v2.3' | 'v2.4' | 'v3.0'
       accountLocale: string
       accountUid: Account['uid']
       exportTime: string | Date

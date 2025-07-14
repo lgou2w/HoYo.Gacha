@@ -60,6 +60,8 @@ static VERSION_NUMBER_REGEX: LazyLock<Regex> =
   LazyLock::new(|| Regex::new(r"^v(?P<major>\d+)\.(?P<minor>\d+)$").unwrap());
 
 impl UigfVersion {
+  pub const V2_0: Self = Self::new(2, 0);
+  pub const V2_1: Self = Self::new(2, 1);
   pub const V2_2: Self = Self::new(2, 2);
   pub const V2_3: Self = Self::new(2, 3);
   pub const V2_4: Self = Self::new(2, 4);
@@ -140,7 +142,7 @@ const FIELD_REGION_TIME_ZONE: &str = "region_time_zone";
 
 // Legacy UIGF Gacha Records
 // Only business: Genshin Impact
-// Only support: v2.2, v2.3, v2.4, v3.0
+// Only support: v2.0, v2.1, v2.2, v2.3, v2.4, v3.0
 // https://uigf.org/zh/standards/uigf-legacy-v3.0.html
 
 declare_error_kinds! {
@@ -269,7 +271,9 @@ pub struct LegacyUigf {
 }
 
 impl LegacyUigf {
-  pub const SUPPORTED_VERSIONS: [UigfVersion; 4] = [
+  pub const SUPPORTED_VERSIONS: [UigfVersion; 6] = [
+    UigfVersion::V2_0,
+    UigfVersion::V2_1,
     UigfVersion::V2_2,
     UigfVersion::V2_3,
     UigfVersion::V2_4,
@@ -334,7 +338,7 @@ pub struct LegacyUigfItem {
 #[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct LegacyUigfGachaRecordsWriter {
-  pub uigf_version: UigfVersion, // Legacy UIGF version: v2.2, v2.3, v2.4, v3.0
+  pub uigf_version: UigfVersion, // Legacy UIGF version: v2.0, v2.1, v2.2, v2.3, v2.4, v3.0
   pub account_locale: String,
   pub account_uid: u32,
   #[serde(with = "rfc3339")]
@@ -512,11 +516,11 @@ impl GachaRecordsReader for LegacyUigfGachaRecordsReader {
     let server_region = ServerRegion::from_uid(BUSINESS, *expected_uid)
       .ok_or(LegacyUigfGachaRecordsReadErrorKind::InvalidUid { uid: *expected_uid })?;
 
-    let is_v2_2 = uigf_version == UigfVersion::V2_2;
-    let is_v2_3 = uigf_version == UigfVersion::V2_3;
-    let is_v2_4 = uigf_version == UigfVersion::V2_4;
+    let is_v2_0_to_v2_2 = uigf_version >= UigfVersion::V2_0 && uigf_version <= UigfVersion::V2_2;
+    let is_v2_3_and_higher = uigf_version >= UigfVersion::V2_3;
+    let is_v2_4_and_higher = uigf_version >= UigfVersion::V2_4;
 
-    if is_v2_4 && uigf.info.region_time_zone.is_none() {
+    if is_v2_4_and_higher && uigf.info.region_time_zone.is_none() {
       return Err(LegacyUigfGachaRecordsReadErrorKind::RequiredField {
         field: FIELD_REGION_TIME_ZONE,
         cursor: 0, // When it is 0, the info data is incorrect
@@ -546,7 +550,7 @@ impl GachaRecordsReader for LegacyUigfGachaRecordsReader {
         }
       }
 
-      if is_v2_2 {
+      if is_v2_0_to_v2_2 {
         if item.name.is_none() {
           return Err(LegacyUigfGachaRecordsReadErrorKind::RequiredField {
             field: FIELD_NAME,
@@ -558,7 +562,7 @@ impl GachaRecordsReader for LegacyUigfGachaRecordsReader {
             cursor,
           })?;
         }
-      } else if is_v2_3 && item.item_id.is_none() {
+      } else if is_v2_3_and_higher && item.item_id.is_none() {
         return Err(LegacyUigfGachaRecordsReadErrorKind::RequiredField {
           field: FIELD_ITEM_ID,
           cursor,
@@ -580,7 +584,7 @@ impl GachaRecordsReader for LegacyUigfGachaRecordsReader {
         }
       })?;
 
-      let metadata_entry = if is_v2_2 {
+      let metadata_entry = if is_v2_0_to_v2_2 {
         metadata_locale.entry_from_name_first(name.as_ref().unwrap())
       } else {
         metadata_locale.entry_from_id(item_id.as_ref().unwrap())
@@ -588,8 +592,12 @@ impl GachaRecordsReader for LegacyUigfGachaRecordsReader {
       .ok_or_else(
         || LegacyUigfGachaRecordsReadErrorKind::MissingMetadataEntry {
           locale: locale.clone(),
-          key: if is_v2_2 { FIELD_NAME } else { FIELD_ITEM_ID },
-          val: if is_v2_2 {
+          key: if is_v2_0_to_v2_2 {
+            FIELD_NAME
+          } else {
+            FIELD_ITEM_ID
+          },
+          val: if is_v2_0_to_v2_2 {
             name.clone().unwrap()
           } else {
             item_id.clone().unwrap()

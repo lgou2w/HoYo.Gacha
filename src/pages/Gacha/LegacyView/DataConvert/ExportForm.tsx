@@ -64,7 +64,9 @@ type LegacyUigfVersion = Extract<
   { LegacyUigf: unknown }
 >['LegacyUigf']['uigfVersion']
 
-const LegacyUigfVersions: LegacyUigfVersion[] = ['v2.2', 'v2.3', 'v2.4', 'v3.0']
+const LegacyUigfVersions: LegacyUigfVersion[] = [
+  'v2.0', 'v2.1', 'v2.2', 'v2.3', 'v2.4', 'v3.0',
+]
 
 export default function GachaLegacyViewDataConvertExportForm (props: Props) {
   const styles = useStyles()

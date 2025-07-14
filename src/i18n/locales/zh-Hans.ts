@@ -337,7 +337,7 @@ export default {
               },
               LegacyUigf: {
                 Text: 'UIGF (Legacy)',
-                Info: '统一可交换抽卡记录标准 (UIGF) v2.2, v2.3, v2.4, v3.0',
+                Info: '统一可交换抽卡记录标准 (UIGF) v2.0, v2.1, v2.2, v2.3, v2.4, v3.0',
               },
               Srgf: {
                 Text: 'SRGF',
