@@ -15,16 +15,17 @@ An unofficial tool for managing and analyzing your miHoYo gacha records.
 
 > [!WARNING]
 > **工作中** - 此分支用于未来的 `v1.0.0` 版本。
+>
 > **Work In Process** - This branch is for future `v1.0.0` release.
 
 ## 功能 / Features
 
-- [x] 支持 `原神 Genshin Impact`、`崩坏：星穹铁道 Honkai: Star Rail` 和 `绝区零 Zenless Zone Zero`。
+- [x] 支持 `原神 Genshin Impact`、`崩坏：星穹铁道 Honkai: Star Rail` 和 `绝区零 Zenless Zone Zero`.
 - [x] 支持游戏的多个账号。获取游戏的抽卡链接。 Support multiple accounts for the game. Get the gacha url.
 - [x] 支持获取抽卡数据并保存到本地数据库。 Support fetch gacha data and saving it to the local database.
 - [x] 支持导入或导出的数据交换文件格式。 Support data exchange file formats for import or export.
-  - [x] [`UIGF`](https://uigf.org/zh/standards/uigf.html) 统一可交换抽卡记录标准 v2.2, v2.3, v2.4, v3.0, v4.0
-  - [x] [`SRGF`](https://uigf.org/zh/standards/srgf.html) 星穹铁道抽卡记录标准 v1.0
+  - [x] [`UIGF`](https://uigf.org/zh/standards/uigf.html) 统一可交换抽卡记录标准：v2.0, v2.1, v2.2, v2.3, v2.4, v3.0, v4.0
+  - [x] [`SRGF`](https://uigf.org/zh/standards/srgf.html) 星穹铁道抽卡记录标准：v1.0
   - [ ] `CSV` 逗号分隔文件格式。
   - [ ] `XLSX` Excel 表格文件格式。
   - [ ] [`zzz.rng.moe`](https://zzz.rng.moe) 绝区零工具箱。
