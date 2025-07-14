@@ -106,7 +106,7 @@ declare_error_kinds! {
 // https://webstatic.mihoyo.com/xxx/event/xxx/index.html?params
 // https://public-operation-xxx.mihoyo.com/gacha_info/api/getGachaLog?params
 static REGEX_GACHA_URL: LazyLock<Regex> = LazyLock::new(|| {
-  Regex::new(r"(?i)^https:\/\/.*(mihoyo.com|hoyoverse.com).*(authkey\=.+).*$").unwrap()
+  Regex::new(r"(?i)^https:\/\/.*(mihoyo.com|hoyoverse.com).*\?.*(authkey\=.+).*$").unwrap()
 });
 
 static REGEX_WEBCACHES_VERSION: LazyLock<Regex> = LazyLock::new(|| {
@@ -517,13 +517,14 @@ impl FromStr for ParsedGachaUrl {
   type Err = GachaUrlError;
 
   fn from_str(dirty: &str) -> Result<Self, Self::Err> {
-    if !REGEX_GACHA_URL.is_match(dirty) {
+    let query_start = dirty.find('?');
+    if query_start.is_none() || !REGEX_GACHA_URL.is_match(dirty) {
       return Err(GachaUrlErrorKind::IllegalUrl {
         url: dirty.to_owned(),
       })?;
     }
 
-    let query_start = dirty.find('?').unwrap();
+    let query_start = query_start.unwrap(); // SAFETY
     let queries_str = &dirty[query_start + 1..];
     let queries = url::form_urlencoded::parse(queries_str.as_bytes())
       .into_owned()

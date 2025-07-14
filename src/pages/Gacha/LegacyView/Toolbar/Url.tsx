@@ -482,7 +482,7 @@ const useUrlManualInputDialogStyles = makeStyles({
 })
 
 // HACK: See -> src-tauri/src/business/gacha_url.rs
-const GachaUrlRegex = /^https:\/\/.*(mihoyo.com|hoyoverse.com).*(authkey=.+).*$/i
+const GachaUrlRegex = /^https:\/\/.*(mihoyo.com|hoyoverse.com).*\?.*(authkey=.+).*$/i
 const GachaUrlExample = 'https://*.mihoyo|hoyoverse.com/xxx?authkey=yourauthkey&fullParamsGachaUrl'
 
 const UrlManualInputDialog = forwardRef<{
