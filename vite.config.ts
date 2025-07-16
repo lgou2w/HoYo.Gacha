@@ -9,6 +9,7 @@ export default defineConfig(({ command }) => {
   const isProd = command === 'build'
 
   const env = process.env
+  const beta = env.BETA === '1'
   const appName = (isDev ? '__DEV__' : '') + packageJson.displayName
 
   return {
@@ -48,6 +49,7 @@ export default defineConfig(({ command }) => {
       __APP_HOMEPAGE__: `"${packageJson.homepage}"`,
       __APP_REPOSITORY__: `"${packageJson.repository}"`,
       __APP_ISSUES__: `"${packageJson.bugs}"`,
+      __APP_BETA__: `${beta}`,
       __PATH_DELIMITER__: `"${path.delimiter}"`,
       __PATH_SEP__: JSON.stringify(path.sep),
     },
