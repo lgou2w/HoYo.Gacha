@@ -209,6 +209,45 @@ export default {
       '/Gacha/ZenlessZoneZero': '$t(Business.ZenlessZoneZero.Name)',
     },
     Pages: {
+      Home: {
+        Hero: {
+          Tag: '非官方工具 · 开源免费',
+          Title: '管理分析你的 miHoYo 抽卡记录',
+          Subtitle: '支持原神、崩坏：星穹铁道、绝区零等游戏。无需任何本地代理服务器。只需读取 Chromium 缓存文件，快速获取并分析你的抽卡记录。',
+          Feature1: {
+            Title: '快捷、方便',
+            Subtitle: '无需任何本地代理服务器，快速便捷地获取你的抽卡记录数据。',
+          },
+          Feature2: {
+            Title: '记录管理',
+            Subtitle: '本地数据库，支持游戏的多个账号。支持导入或导出 UIGF 等多种交换格式。',
+          },
+          TutorialBtn: '使用教程',
+          Visual: {
+            Grid1: {
+              Title: '总抽数',
+              Subtitle: '{{count,number}}',
+            },
+            Grid2: {
+              Title: '已出金',
+              Subtitle: '{{count}}',
+            },
+            Grid3: {
+              Title: '最近出金',
+              Subtitle: '{{count}} 抽',
+            },
+            Grid4: {
+              Title: '保底进度',
+              Subtitle: '{{count}}%',
+            },
+            PieCenter: '物品分布',
+            Legend5: '5 星',
+            Legend4: '4 星',
+            Legend3: '3 星',
+          },
+        },
+        Footer: '开源社区玩家开发。本软件不会向您索要任何关于 ©miHoYo 账户的账号密码信息，也不会收集任何用户数据。所有操作均在本地完成，以确保数据和隐私安全。',
+      },
       Gacha: {
         LegacyView: {
           GachaItem: {

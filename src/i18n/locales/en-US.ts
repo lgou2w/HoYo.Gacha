@@ -209,6 +209,45 @@ export default {
       '/Gacha/ZenlessZoneZero': '$t(Business.ZenlessZoneZero.Name)',
     },
     Pages: {
+      Home: {
+        Hero: {
+          Tag: 'Unofficial · Open source and free',
+          Title: 'Managing and analyzing your miHoYo gacha records.',
+          Subtitle: 'Supports Genshin Impact, Honkai: Star Rail and Zenless Zone Zero. No need for any local proxy server. Just read the Chromium disk cache file to quickly obtain and analyze your gacha records.',
+          Feature1: {
+            Title: 'Fast and convenient',
+            Subtitle: 'No local proxy server is required, quickly and easily obtain your gacha records.',
+          },
+          Feature2: {
+            Title: 'Record management',
+            Subtitle: 'Local database, supports multiple accounts. Importing or exporting UIGF and other exchange formats.',
+          },
+          TutorialBtn: 'Tutorial',
+          Visual: {
+            Grid1: {
+              Title: 'Pull in total',
+              Subtitle: '{{count,number}}',
+            },
+            Grid2: {
+              Title: 'Pulled gold',
+              Subtitle: '{{count}}',
+            },
+            Grid3: {
+              Title: 'Last gold',
+              Subtitle: '{{count}} pulls',
+            },
+            Grid4: {
+              Title: 'Pity progress',
+              Subtitle: '{{count}}%',
+            },
+            PieCenter: 'Distribution',
+            Legend5: '5 Star',
+            Legend4: '4 Star',
+            Legend3: '3 Star',
+          },
+        },
+        Footer: 'Open source community player development. This software will not ask you for any account password information about ©miHoYo account, nor will it collect any user data. All operations are done locally to ensure data and privacy security.',
+      },
       Gacha: {
         LegacyView: {
           GachaItem: {
