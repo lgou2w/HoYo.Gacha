@@ -517,6 +517,11 @@ export default {
               GitCommit: 'Git commit',
               AppVersion: 'Version',
             },
+            Lnk: {
+              Title: 'Shortcut lnk',
+              Subtitle: 'Create an application desktop shortcut lnk.',
+              CreateBtn: 'Create',
+            },
           },
         },
       },

@@ -17,6 +17,8 @@ export const gitCommit = declareCommand<undefined, {
   date: string
 }>('core_git_commit', true)
 
+export const createAppLnk = declareCommand<undefined>('core_create_app_lnk')
+
 export type ChangeThemeArgs = { colorScheme: ColorScheme }
 export const changeTheme = declareCommand<ChangeThemeArgs>('core_change_theme')
 
@@ -40,6 +42,7 @@ const CoreCommands = {
   webview2Version,
   tauriVersion,
   gitCommit,
+  createAppLnk,
   changeTheme,
   pickFile,
   pickFolder,

@@ -1,6 +1,7 @@
 import React from 'react'
 import Locale from '@/components/Locale'
 import SettingsOptionsGroup from '@/pages/Settings/Options/OptionsGroup'
+import SettingsOptionsAboutLnk from './Lnk'
 import SettingsOptionsAboutSpecification from './Specification'
 import SettingsOptionsAboutUpdater from './Updater'
 
@@ -11,6 +12,7 @@ export default function SettingsOptionsAbout () {
     >
       <SettingsOptionsAboutUpdater />
       <SettingsOptionsAboutSpecification />
+      <SettingsOptionsAboutLnk />
     </SettingsOptionsGroup>
   )
 }

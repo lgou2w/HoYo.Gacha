@@ -166,6 +166,7 @@ cfg_if! {if #[cfg(windows)] {
 
 pub struct Platform {
   pub user_home: PathBuf,
+  pub desktop: PathBuf,
   pub appdata_local: PathBuf,
   pub appdata_locallow_mihoyo: PathBuf,
   pub appdata_locallow_cognosphere: PathBuf,
@@ -180,11 +181,13 @@ impl Platform {
       let user_home = env::var("USERPROFILE")
         .map(PathBuf::from)
         .expect("Failed to get user home directory");
+      let desktop = user_home.join("Desktop");
       let appdata = user_home.join("AppData");
       let appdata_local = appdata.join("Local");
       let appdata_locallow = appdata.join("LocalLow");
       Self {
         user_home,
+        desktop,
         appdata_local,
         appdata_locallow_mihoyo: appdata_locallow.join(Self::FOLDER_MIHOYO),
         appdata_locallow_cognosphere: appdata_locallow.join(Self::FOLDER_COGNOSPHERE),
@@ -195,10 +198,12 @@ impl Platform {
       let user_home = env::var("HOME")
         .map(PathBuf::from)
         .expect("Failed to get user home directory");
+      let desktop = user_home.join("Desktop");
       let appdata = user_home.join("Library");
       let appdata_local = appdata.join("Caches");
       Self {
         user_home,
+        desktop,
         appdata_locallow_mihoyo: appdata_local.join(Self::FOLDER_MIHOYO),
         appdata_locallow_cognosphere: appdata_local.join(Self::FOLDER_COGNOSPHERE),
         appdata_local: appdata_local,

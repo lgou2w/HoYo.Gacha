@@ -512,6 +512,11 @@ export default {
               GitCommit: 'Git 提交',
               AppVersion: '應用版本',
             },
+            Lnk: {
+              Title: '捷徑',
+              Subtitle: '建立應用程式的桌面捷徑。',
+              CreateBtn: '建立',
+            },
           },
         },
       },

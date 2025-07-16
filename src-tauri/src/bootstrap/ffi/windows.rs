@@ -1,3 +1,4 @@
+use std::env;
 use std::mem::{self, MaybeUninit};
 
 use tauri::{Theme, WebviewWindow};
@@ -12,10 +13,14 @@ use windows::Win32::Graphics::Dwm::{
   DWMWA_USE_IMMERSIVE_DARK_MODE, DWMWINDOWATTRIBUTE, DwmExtendFrameIntoClientArea,
   DwmSetWindowAttribute,
 };
+use windows::Win32::System::Com::{
+  CLSCTX_INPROC_SERVER, CoCreateInstance, CoInitialize, CoUninitialize, IPersistFile,
+};
 use windows::Win32::System::Console::{ATTACH_PARENT_PROCESS, AttachConsole};
 use windows::Win32::UI::Controls::MARGINS;
+use windows::Win32::UI::Shell::{IShellLinkW, ShellLink};
 use windows::Win32::UI::WindowsAndMessaging::SetPropW;
-use windows::core::{BOOL, Interface, PWSTR, w};
+use windows::core::{BOOL, Interface, PCWSTR, PWSTR, w};
 
 use crate::consts;
 
@@ -183,4 +188,40 @@ pub fn apps_use_theme() -> Theme {
       theme
     }
   }
+}
+
+#[inline]
+fn to_wide(str: impl AsRef<str>) -> Vec<u16> {
+  str
+    .as_ref()
+    .encode_utf16()
+    .chain(std::iter::once(0))
+    .collect()
+}
+
+pub fn create_app_lnk() -> Result<(), windows::core::Error> {
+  let lnk_path = consts::PLATFORM
+    .desktop
+    .join(format!("{}.lnk", consts::APP_NAME));
+
+  if lnk_path.is_file() {
+    return Ok(());
+  }
+
+  let pszfile = to_wide(format!("{}", env::current_exe().unwrap().display()));
+  let lnk_pszfile = to_wide(format!("{}", lnk_path.display()));
+
+  unsafe {
+    CoInitialize(None).ok()?;
+
+    let psl = CoCreateInstance::<_, IShellLinkW>(&ShellLink, None, CLSCTX_INPROC_SERVER)?;
+    psl.SetPath(PCWSTR::from_raw(pszfile.as_ptr()))?;
+
+    let ppf = psl.cast::<IPersistFile>()?;
+    ppf.Save(PCWSTR::from_raw(lnk_pszfile.as_ptr()), true)?;
+
+    CoUninitialize();
+  }
+
+  Ok(())
 }

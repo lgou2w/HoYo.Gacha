@@ -254,6 +254,7 @@ pub async fn start(singleton: Singleton, tracing: Tracing, database: Database) {
       core_tauri_version,
       core_git_commit,
       core_change_theme,
+      core_create_app_lnk,
       core_pick_file,
       core_pick_folder,
       database::database_execute,
@@ -360,6 +361,11 @@ fn core_git_commit() -> serde_json::Value {
     "hash": consts::GIT_COMMIT_HASH,
     "date": consts::GIT_COMMIT_DATE,
   })
+}
+
+#[tauri::command]
+fn core_create_app_lnk() {
+  let _ = ffi::create_app_lnk();
 }
 
 #[tauri::command]

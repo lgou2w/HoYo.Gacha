@@ -512,6 +512,11 @@ export default {
               GitCommit: 'Git 提交',
               AppVersion: '应用版本',
             },
+            Lnk: {
+              Title: '快捷方式',
+              Subtitle: '创建应用的桌面快捷方式。',
+              CreateBtn: '创建',
+            },
           },
         },
       },
