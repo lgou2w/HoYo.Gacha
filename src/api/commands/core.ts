@@ -19,6 +19,8 @@ export const gitCommit = declareCommand<undefined, {
 
 export const createAppLnk = declareCommand<undefined>('core_create_app_lnk')
 
+export const isSupportedWindowVibrancy = declareCommand<undefined, boolean>('core_is_supported_window_vibrancy', true)
+
 export type ChangeThemeArgs = { colorScheme: ColorScheme }
 export const changeTheme = declareCommand<ChangeThemeArgs>('core_change_theme')
 
@@ -43,6 +45,7 @@ const CoreCommands = {
   tauriVersion,
   gitCommit,
   createAppLnk,
+  isSupportedWindowVibrancy,
   changeTheme,
   pickFile,
   pickFolder,

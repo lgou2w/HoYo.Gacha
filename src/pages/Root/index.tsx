@@ -5,9 +5,13 @@ import ThemeProvider from '@/components/ThemeProvider'
 import RootRoute from './route'
 
 export default function Root () {
-  const { initialThemeData, themeStore } = RootRoute.useLoaderData()
+  const { supportedWindowVibrancy, initialThemeData, themeStore } = RootRoute.useLoaderData()
   return (
-    <ThemeProvider initialData={initialThemeData} store={themeStore}>
+    <ThemeProvider
+      supportedWindowVibrancy={supportedWindowVibrancy}
+      initialData={initialThemeData}
+      store={themeStore}
+    >
       <Layout>
         <Outlet />
       </Layout>

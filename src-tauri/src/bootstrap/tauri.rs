@@ -253,6 +253,7 @@ pub async fn start(singleton: Singleton, tracing: Tracing, database: Database) {
       core_webview2_version,
       core_tauri_version,
       core_git_commit,
+      core_is_supported_window_vibrancy,
       core_change_theme,
       core_create_app_lnk,
       core_pick_file,
@@ -366,6 +367,11 @@ fn core_git_commit() -> serde_json::Value {
 #[tauri::command]
 fn core_create_app_lnk() {
   let _ = ffi::create_app_lnk();
+}
+
+#[tauri::command]
+fn core_is_supported_window_vibrancy() -> bool {
+  ffi::is_supported_window_vibrancy()
 }
 
 #[tauri::command]

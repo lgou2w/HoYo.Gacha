@@ -1,5 +1,5 @@
 import React, { PropsWithChildren, useEffect, useMemo } from 'react'
-import { FluentProvider, Theme as FluentTheme } from '@fluentui/react-components'
+import { FluentProvider, Theme as FluentTheme, tokens } from '@fluentui/react-components'
 import { produce } from 'immer'
 import { useImmer } from 'use-immer'
 import CustomStylesHooks from '@/components/CustomStyleHooks'
@@ -7,12 +7,13 @@ import ThemeContext, { ThemeState } from '@/contexts/ThemeContext'
 import { ScaleLevel, ThemeData, ThemeStore, Themes, VAR_BASE_FONT_SIZE } from '@/interfaces/Theme'
 
 interface Props {
+  supportedWindowVibrancy: boolean
   initialData: ThemeData
   store: ThemeStore
 }
 
 export default function ThemeProvider (props: PropsWithChildren<Props>) {
-  const { initialData, store, children } = props
+  const { supportedWindowVibrancy, initialData, store, children } = props
   const [data, updateData] = useImmer(initialData)
   const state = useMemo<ThemeState>(() => ({
     ...data,
@@ -39,11 +40,15 @@ export default function ThemeProvider (props: PropsWithChildren<Props>) {
     throw new Error(`Invalid theme data state: ${state.namespace}.${state.colorScheme}`)
   }
 
+  if (!supportedWindowVibrancy) {
+    console.debug('Vibrancy is not supported on this system')
+  }
+
   return (
     <ThemeContext.Provider value={state}>
       <FluentProvider
         theme={theme}
-        style={{ background: 'transparent' }}
+        style={{ background: supportedWindowVibrancy ? tokens.colorTransparentBackground : tokens.colorNeutralBackground3 }}
         customStyleHooks_unstable={CustomStylesHooks}
       >
         {children}

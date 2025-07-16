@@ -74,6 +74,11 @@ pub fn set_window_vibrancy(window: &WebviewWindow) {
   }
 }
 
+#[inline]
+pub fn is_supported_window_vibrancy() -> bool {
+  consts::WINDOWS.is_21h2_and_higher
+}
+
 pub fn set_window_theme(window: &WebviewWindow, color_scheme: Theme) {
   let hwnd = window.hwnd().unwrap();
   let dark = if matches!(color_scheme, Theme::Dark) {
