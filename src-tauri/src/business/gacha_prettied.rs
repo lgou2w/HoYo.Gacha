@@ -187,6 +187,8 @@ pub struct CategorizedMetadataGoldenRanking {
   pub limited_sum: u64,
   pub limited_percentage: f64,
   pub limited_average: f64,
+  pub limited_win_sum: u64,
+  pub limited_win_percentage: f64,
   pub next_pity: u64,
 }
 
@@ -428,7 +430,7 @@ impl PrettiedGachaRecords {
     };
 
     let golden = {
-      let mut values = Vec::with_capacity(records.len());
+      let mut values: Vec<PrettyGachaRecord> = Vec::with_capacity(records.len());
 
       let mut pity = 0;
       let mut used_pity_sum = 0;
@@ -436,6 +438,7 @@ impl PrettiedGachaRecords {
       let mut limited_sum = 0;
       let mut limited_pity = 0;
       let mut limited_used_pity_sum = 0;
+      let mut limited_win_sum = 0;
 
       for record in &records {
         let is_golden = record.is_rank_type_golden();
@@ -459,6 +462,17 @@ impl PrettiedGachaRecords {
         }
       }
 
+      let mut prev_record: Option<&PrettyGachaRecord> = None;
+      for record in &values {
+        if record.limited == Some(true)
+          && (prev_record.is_none() || prev_record.unwrap().limited == Some(true))
+        {
+          limited_win_sum += 1;
+        }
+
+        prev_record.replace(record);
+      }
+
       let sum = values.len() as u64;
 
       CategorizedMetadataGoldenRanking {
@@ -469,6 +483,8 @@ impl PrettiedGachaRecords {
         limited_sum,
         limited_percentage: percentage!(total, limited_sum),
         limited_average: average!(limited_used_pity_sum, limited_sum),
+        limited_win_sum,
+        limited_win_percentage: percentage!(sum - limited_sum + limited_win_sum, limited_win_sum),
         next_pity: pity,
       }
     };
@@ -536,7 +552,8 @@ impl PrettiedGachaRecords {
     let mut golden_limited_sum = 0;
     let mut golden_limited_pity = 0;
     let mut golden_limited_used_pity_sum = 0;
-    for golden_record in &golden_values {
+    let mut golden_limited_win_sum = 0;
+    for (index, golden_record) in golden_values.iter().enumerate() {
       let used_pity = golden_record.used_pity.unwrap_or(0);
       golden_used_pity_sum += used_pity;
       golden_limited_pity += used_pity;
@@ -545,6 +562,13 @@ impl PrettiedGachaRecords {
         golden_limited_sum += 1;
         golden_limited_used_pity_sum += golden_limited_pity;
         golden_limited_pity = 0;
+
+        if index > 0
+          && let Some(prev_golden_record) = golden_values.get(index - 1)
+          && prev_golden_record.limited == Some(true)
+        {
+          golden_limited_win_sum += 1;
+        }
       }
     }
 
@@ -569,6 +593,11 @@ impl PrettiedGachaRecords {
         limited_sum: golden_limited_sum,
         limited_percentage: percentage!(total, golden_limited_sum),
         limited_average: average!(golden_limited_used_pity_sum, golden_limited_sum),
+        limited_win_sum: golden_limited_win_sum,
+        limited_win_percentage: percentage!(
+          golden_sum - golden_limited_sum + golden_limited_win_sum,
+          golden_limited_win_sum
+        ),
         next_pity: 0,
       },
     };

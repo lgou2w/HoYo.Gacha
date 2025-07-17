@@ -475,6 +475,7 @@ export default {
               CardsEntry: {
                 Labels: {
                   AverageAndLimited: 'Average / Limited',
+                  LimitedWin: 'Limited Win',
                   Limited: 'Limited',
                   Count: 'Count',
                 },

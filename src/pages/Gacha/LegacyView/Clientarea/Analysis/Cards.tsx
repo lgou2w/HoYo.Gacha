@@ -169,6 +169,9 @@ const useCardsEntryStyles = makeStyles({
   labelGroupGoldenAverage: {
     color: tokens.colorPaletteGreenForeground1,
   },
+  labelGroupGoldenLimitedWin: {
+    color: tokens.colorPaletteRedForeground1,
+  },
   labelGroupGoldenLimited: {
     color: tokens.colorPaletteRedForeground1,
   },
@@ -265,6 +268,18 @@ function CardsEntry (props: CardsEntryProps) {
                 {metadata.rankings.golden.average} / {metadata.rankings.golden.limitedAverage}
               </Caption1>
             </div>
+            <div className={mergeClasses(styles.labelGroup, styles.labelGroupGoldenLimitedWin)}>
+              <Locale
+                component={Caption1}
+                mapping={['Pages.Gacha.LegacyView.Clientarea.Analysis.CardsEntry.Labels.LimitedWin']}
+                childrenPosition="before"
+              >
+                {RankingsPrefix[business].golden}{'\u00A0'}
+              </Locale>
+              <Caption1>
+                {metadata.rankings.golden.limitedWinSum} [{metadata.rankings.golden.limitedWinPercentage}%]
+              </Caption1>
+            </div>
             <div className={mergeClasses(styles.labelGroup, styles.labelGroupGoldenLimited)}>
               <Locale
                 component={Caption1}
@@ -281,6 +296,7 @@ function CardsEntry (props: CardsEntryProps) {
         )}
         {!hasLimited && (
           <Fragment>
+            <Caption1 aria-label="placeholder">{'\u00A0'}</Caption1>
             <Caption1 aria-label="placeholder">{'\u00A0'}</Caption1>
             <Caption1 aria-label="placeholder">{'\u00A0'}</Caption1>
           </Fragment>

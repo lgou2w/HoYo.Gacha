@@ -470,6 +470,7 @@ export default {
               CardsEntry: {
                 Labels: {
                   AverageAndLimited: '平均 / 限定',
+                  LimitedWin: '限定不歪',
                   Limited: '限定',
                   Count: '统计',
                 },

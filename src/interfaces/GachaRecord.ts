@@ -75,6 +75,8 @@ extends CategorizedMetadataPurpleRanking {
   limitedSum: number
   limitedPercentage: number
   limitedAverage: number
+  limitedWinSum: number
+  limitedWinPercentage: number
 }
 
 export interface CategorizedMetadataRankings {
