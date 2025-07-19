@@ -139,12 +139,12 @@ pub async fn start(singleton: Singleton, tracing: Tracing, database: Database) {
         if window_state.maximized {
           main_window.maximize()?;
         }
-
-        // HACK: Delay window show to avoid moving animation
-        main_window.show()?;
       } else {
         let _ = update_window_state(&mut window_state, &main_window);
       }
+
+      // HACK: Delay window show to avoid moving animation
+      main_window.show()?;
 
       #[cfg(windows)]
       ffi::webview_version(&main_window, |version| {
