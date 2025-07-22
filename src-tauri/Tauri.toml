@@ -52,5 +52,7 @@ permissions = [
   "clipboard-manager:allow-read-text",
   "clipboard-manager:allow-write-image",
   "clipboard-manager:allow-write-text",
+  "process:default",
+  "process:allow-exit",
   "shell:default",
 ]

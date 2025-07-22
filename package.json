@@ -46,6 +46,7 @@
     "@tanstack/react-router": "^1.125.6",
     "@tauri-apps/api": "^2.6.0",
     "@tauri-apps/plugin-clipboard-manager": "^2.3.0",
+    "@tauri-apps/plugin-process": "^2.3.0",
     "@tauri-apps/plugin-shell": "^2.3.0",
     "dayjs": "^1.11.13",
     "debounce": "^2.2.0",

@@ -2,6 +2,7 @@ import React from 'react'
 import { Outlet } from '@tanstack/react-router'
 import Layout from '@/components/Layout'
 import ThemeProvider from '@/components/ThemeProvider'
+import Updater from '@/components/Updater'
 import RootRoute from './route'
 
 export default function Root () {
@@ -14,6 +15,7 @@ export default function Root () {
     >
       <Layout>
         <Outlet />
+        {import.meta.env.PROD && <Updater />}
       </Layout>
     </ThemeProvider>
   )

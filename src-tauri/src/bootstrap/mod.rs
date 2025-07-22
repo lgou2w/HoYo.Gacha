@@ -6,6 +6,7 @@ mod panic_hook;
 mod singleton;
 mod tauri;
 mod tracing;
+mod updater;
 
 pub async fn start() {
   #[cfg(windows)]

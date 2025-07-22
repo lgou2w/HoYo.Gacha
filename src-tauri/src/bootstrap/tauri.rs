@@ -5,8 +5,8 @@ use std::{env, process};
 use os_info::Info as OsInfo;
 use tauri::webview::{WebviewWindow, WebviewWindowBuilder};
 use tauri::{
-  Builder as TauriBuilder, Error as TauriError, Manager, Monitor, PhysicalPosition, PhysicalSize,
-  Runtime, Theme, WebviewUrl, WindowEvent, generate_context, generate_handler,
+  Builder as TauriBuilder, Emitter, Error as TauriError, Manager, Monitor, PhysicalPosition,
+  PhysicalSize, Runtime, Theme, WebviewUrl, WindowEvent, generate_context, generate_handler,
 };
 use tracing::{debug, error, info};
 
@@ -14,6 +14,7 @@ use super::ffi;
 use super::internals;
 use super::singleton::Singleton;
 use super::tracing::Tracing;
+use super::updater::Updater;
 use crate::business::GachaMetadata;
 use crate::database::{self, Database, KvMut};
 use crate::models::{ThemeData, WindowState};
@@ -78,6 +79,7 @@ pub async fn start(singleton: Singleton, tracing: Tracing, database: Database) {
   let database_state = Arc::clone(&database);
   let app = TauriBuilder::default()
     .plugin(tauri_plugin_clipboard_manager::init())
+    .plugin(tauri_plugin_process::init())
     .plugin(tauri_plugin_shell::init())
     .setup(move |app| {
       // Database state
@@ -258,6 +260,8 @@ pub async fn start(singleton: Singleton, tracing: Tracing, database: Database) {
       core_create_app_lnk,
       core_pick_file,
       core_pick_folder,
+      core_updater_is_updating,
+      core_updater_update,
       database::database_execute,
       database::kv_questioner::database_find_kv,
       database::kv_questioner::database_create_kv,
@@ -410,4 +414,22 @@ async fn core_pick_folder(title: Option<String>, directory: Option<PathBuf>) -> 
     .pick_folder()
     .await
     .map(Into::into)
+}
+
+#[tauri::command]
+async fn core_updater_is_updating() -> bool {
+  Updater::is_updating()
+}
+
+#[tauri::command]
+async fn core_updater_update(
+  window: WebviewWindow,
+  progress_channel: String,
+) -> Result<(), String> {
+  Updater::update(Box::new(move |progress| {
+    window.emit(&progress_channel, progress)?;
+    Ok(())
+  }))
+  .await
+  .map_err(|e| e.to_string())
 }

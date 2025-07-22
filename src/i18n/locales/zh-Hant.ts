@@ -208,6 +208,19 @@ export default {
       '/Gacha/HonkaiStarRail': '$t(Business.HonkaiStarRail.Name)',
       '/Gacha/ZenlessZoneZero': '$t(Business.ZenlessZoneZero.Name)',
     },
+    Updater: {
+      Updating: {
+        Title: '應用程式更新中...',
+        Progress: '進度：{{value}} / {{max}}',
+        Progress_Indeterminate: '下載中...',
+      },
+      Success: {
+        Title: '下載成功',
+        Subtitle: '新版本下載完成，請手動重啟應用程式！',
+        ExitBtn: '確認',
+      },
+      Error: '應用程式更新失敗：',
+    },
     Pages: {
       Home: {
         Hero: {
