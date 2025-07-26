@@ -35,7 +35,7 @@ export type PickFolderArgs = Omit<PickFileArgs, 'filters'>
 export const pickFolder = declareCommand<PickFolderArgs, string | null>('core_pick_folder')
 
 export const updaterIsUpdating = declareCommand<undefined, boolean>('core_updater_is_updating')
-export const updaterUpdate = declareCommand<{ progressChannel: string }>('core_updater_update')
+export const updaterUpdate = declareCommand<{ progressChannel: string }, 'Updating' | 'UpToDate' | { Success: string }>('core_updater_update')
 
 // #endregion
 

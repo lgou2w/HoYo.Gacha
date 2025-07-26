@@ -1,4 +1,4 @@
-import React, { Fragment, MouseEventHandler, useCallback, useEffect } from 'react'
+import React, { ForwardRefRenderFunction, Fragment, MouseEventHandler, forwardRef, useCallback, useImperativeHandle } from 'react'
 import { Body1, Button, Caption1, Dialog, DialogSurface, Field, ProgressBar, makeStyles, tokens } from '@fluentui/react-components'
 import { listen } from '@tauri-apps/api/event'
 import { exit } from '@tauri-apps/plugin-process'
@@ -20,12 +20,17 @@ const useStyles = makeStyles({
   },
 })
 
-const ProgressChannel = 'updater'
 const ProgressMax = 100
 
-let completed = false
+interface UpdaterProps {
+  onCompleted?: (updatedKind: Awaited<ReturnType<typeof updaterUpdate>>) => void
+  manually?: boolean
+}
 
-export default function Updater () {
+const Updater: ForwardRefRenderFunction<{ start (): void }, UpdaterProps> = (
+  props,
+  ref,
+) => {
   const styles = useStyles()
   const [state, produce] = useImmer({
     progress: undefined as number | undefined,
@@ -35,57 +40,74 @@ export default function Updater () {
 
   const notifier = useNotifier()
   const i18n = useI18n()
-  useEffect(() => {
-    if (completed) {
-      return
+
+  const start = useCallback(async () => {
+    const progressChannel = 'APP_UPDATER_' + Math.random().toString().replace('.', '_')
+    console.debug('Updater: starting update process:', progressChannel)
+
+    if (props.manually) {
+      produce((draft) => {
+        draft.busy = true
+      })
     }
 
-    completed = true
-    ;(async () => {
-      try {
-        const unlisten = await listen<number>(ProgressChannel, (event) => {
-          const progress = event.payload
-          if (progress < 0) {
-            produce((draft) => {
-              draft.busy = true
-              draft.progress = undefined
-            })
-          } else {
-            produce((draft) => {
-              draft.progress = Math.round(progress * ProgressMax)
-            })
-          }
-        })
-
-        try {
-          await updaterUpdate({ progressChannel: ProgressChannel })
-        } finally {
-          unlisten()
+    try {
+      const unlisten = await listen<number>(progressChannel, (event) => {
+        const progress = event.payload
+        if (progress < 0) {
+          produce((draft) => {
+            draft.busy = true
+            draft.progress = undefined
+          })
+        } else {
+          produce((draft) => {
+            draft.progress = Math.round(progress * ProgressMax)
+          })
         }
-      } catch (e) {
+      })
+
+      let updatedKind: Awaited<ReturnType<typeof updaterUpdate>>
+      try {
+        updatedKind = await updaterUpdate({ progressChannel })
+      } finally {
+        unlisten()
+      }
+
+      if (updatedKind === 'UpToDate') {
         produce((draft) => {
           draft.busy = false
         })
-        notifier.error(i18n.t('Updater.ErrorTitle'), {
-          body: errorTranslation(i18n, e),
-          timeout: notifier.DefaultTimeouts.error * 2,
-          dismissible: true,
+        notifier.info(i18n.t('Updater.UpToDateTitle'))
+      } else if (typeof updatedKind === 'object') {
+        produce((draft) => {
+          draft.success = true
         })
-        throw e
       }
 
+      props.onCompleted?.(updatedKind)
+    } catch (e) {
       produce((draft) => {
-        draft.success = true
+        draft.busy = false
       })
-    })()
-  }, [i18n, notifier, produce])
+      notifier.error(i18n.t('Updater.ErrorTitle'), {
+        body: errorTranslation(i18n, e),
+        timeout: notifier.DefaultTimeouts.error * 2,
+        dismissible: true,
+      })
+      throw e
+    }
+  }, [i18n, notifier, produce, props])
 
   const handleExit = useCallback<MouseEventHandler>((evt) => {
     evt.preventDefault()
     exit(0)
   }, [])
 
-  if (!state.busy === null) {
+  useImperativeHandle(ref, () => ({
+    start,
+  }))
+
+  if (!state.busy) {
     return null
   }
 
@@ -146,3 +168,5 @@ export default function Updater () {
     </Dialog>
   )
 }
+
+export default forwardRef(Updater)

@@ -210,16 +210,17 @@ export default {
     },
     Updater: {
       Updating: {
-        Title: 'App updating...',
-        Progress: 'Progress: {{value}} / {{max}}',
-        Progress_Indeterminate: 'Downloading...',
+        Title: 'App update...',
+        Progress: 'Downloading: {{value}} / {{max}}',
+        Progress_Indeterminate: 'Fetching...',
       },
       Success: {
         Title: 'Download successfully',
         Subtitle: 'The new version has been downloaded. Please restart the application manually.',
         ExitBtn: 'OK',
       },
-      Error: 'App update failed:',
+      UpToDateTitle: 'App already up to date.',
+      ErrorTitle: 'App update failed:',
     },
     Pages: {
       Home: {
@@ -555,10 +556,6 @@ export default {
               Title: 'Application Update',
               Subtitle: 'Check for application version updates.',
               CheckBtn: 'Check Update',
-              Channel: {
-                Stable: 'Stable (Release)',
-                Insider: 'Insider (Alpha)',
-              },
             },
             Specification: {
               Title: 'Device Specifications',

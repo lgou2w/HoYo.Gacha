@@ -14,7 +14,7 @@ use super::ffi;
 use super::internals;
 use super::singleton::Singleton;
 use super::tracing::Tracing;
-use super::updater::Updater;
+use super::updater::{UpdatedKind, Updater};
 use crate::business::GachaMetadata;
 use crate::database::{self, Database, KvMut};
 use crate::models::{ThemeData, WindowState};
@@ -425,7 +425,7 @@ async fn core_updater_is_updating() -> bool {
 async fn core_updater_update(
   window: WebviewWindow,
   progress_channel: String,
-) -> Result<(), String> {
+) -> Result<UpdatedKind, String> {
   Updater::update(Box::new(move |progress| {
     window.emit(&progress_channel, progress)?;
     Ok(())

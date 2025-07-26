@@ -210,8 +210,8 @@ export default {
     },
     Updater: {
       Updating: {
-        Title: '應用程式更新中...',
-        Progress: '進度：{{value}} / {{max}}',
+        Title: '應用程式更新...',
+        Progress: '下載中：{{value}} / {{max}}',
         Progress_Indeterminate: '下載中...',
       },
       Success: {
@@ -219,7 +219,8 @@ export default {
         Subtitle: '新版本下載完成，請手動重啟應用程式！',
         ExitBtn: '確認',
       },
-      Error: '應用程式更新失敗：',
+      UpToDateTitle: '應用程式已是最新版本。',
+      ErrorTitle: '應用程式更新失敗：',
     },
     Pages: {
       Home: {
@@ -550,10 +551,6 @@ export default {
               Title: '應用程式更新',
               Subtitle: '檢查應用程式的版本更新。',
               CheckBtn: '檢查更新',
-              Channel: {
-                Stable: '穩定版 (Stable)',
-                Insider: '預覽版 (Insider)',
-              },
             },
             Specification: {
               Title: '裝置規格',

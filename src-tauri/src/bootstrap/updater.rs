@@ -6,7 +6,7 @@ use std::sync::LazyLock;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::Duration;
 
-use serde::{Deserialize, Deserializer};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use time::OffsetDateTime;
 use time::serde::rfc3339;
 use tokio::fs::{self, File};
@@ -67,6 +67,15 @@ impl<'de> Deserialize<'de> for TagName {
   }
 }
 
+impl Serialize for TagName {
+  fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+  where
+    S: Serializer,
+  {
+    self.to_string().serialize(serializer)
+  }
+}
+
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct LatestRelease {
@@ -76,6 +85,13 @@ pub struct LatestRelease {
   pub name: String,
   pub size: u64,
   pub download_url: String,
+}
+
+#[derive(Debug, Serialize)]
+pub enum UpdatedKind {
+  Updating,
+  UpToDate,
+  Success(TagName),
 }
 
 static UPDATING: AtomicBool = AtomicBool::new(false);
@@ -96,9 +112,9 @@ impl Updater {
   #[allow(clippy::type_complexity)]
   pub async fn update(
     on_progress: Box<dyn (Fn(f32) -> Result<(), Box<dyn StdError + 'static>>) + Send>,
-  ) -> Result<(), Box<dyn StdError + 'static>> {
+  ) -> Result<UpdatedKind, Box<dyn StdError + 'static>> {
     if UPDATING.swap(true, Ordering::SeqCst) {
-      return Err("Updater is already updating".into());
+      return Ok(UpdatedKind::Updating);
     }
 
     struct UpdateGuard;
@@ -146,7 +162,7 @@ impl Updater {
         Self::current_version(),
         latest_release.tag_name
       );
-      return Ok(());
+      return Ok(UpdatedKind::UpToDate);
     }
 
     // Download update
@@ -178,10 +194,10 @@ impl Updater {
       );
     }
 
-    fs::rename(&current_exe, before_exe).await?;
+    let _ = fs::rename(&current_exe, before_exe).await;
     info!("Update downloaded successfully");
 
-    Ok(())
+    Ok(UpdatedKind::Success(latest_release.tag_name))
   }
 }
 

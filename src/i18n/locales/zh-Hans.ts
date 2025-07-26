@@ -210,16 +210,17 @@ export default {
     },
     Updater: {
       Updating: {
-        Title: '应用更新中...',
-        Progress: '进度：{{value}} / {{max}}',
-        Progress_Indeterminate: '下载中...',
+        Title: '应用更新...',
+        Progress: '下载中：{{value}} / {{max}}',
+        Progress_Indeterminate: '获取中...',
       },
       Success: {
         Title: '下载成功',
         Subtitle: '新版本下载完成，请手动重启应用！',
         ExitBtn: '确认',
       },
-      Error: '应用更新失败：',
+      UpToDateTitle: '应用已是最新版本。',
+      ErrorTitle: '应用更新失败：',
     },
     Pages: {
       Home: {
@@ -550,10 +551,6 @@ export default {
               Title: '应用更新',
               Subtitle: '检查应用的版本更新。',
               CheckBtn: '检查更新',
-              Channel: {
-                Stable: '稳定版 (Stable)',
-                Insider: '预览版 (Insider)',
-              },
             },
             Specification: {
               Title: '设备规格',

@@ -1,12 +1,25 @@
-import React from 'react'
+import React, { ComponentRef, useEffect, useRef } from 'react'
 import { Outlet } from '@tanstack/react-router'
 import Layout from '@/components/Layout'
 import ThemeProvider from '@/components/ThemeProvider'
 import Updater from '@/components/Updater'
 import RootRoute from './route'
 
+let isUpdated = false
+
 export default function Root () {
   const { supportedWindowVibrancy, initialThemeData, themeStore } = RootRoute.useLoaderData()
+  const updaterRef = useRef<ComponentRef<typeof Updater>>(null)
+
+  useEffect(() => {
+    if (isUpdated || !updaterRef.current) {
+      return
+    }
+
+    isUpdated = true
+    updaterRef.current.start()
+  }, [])
+
   return (
     <ThemeProvider
       supportedWindowVibrancy={supportedWindowVibrancy}
@@ -15,7 +28,7 @@ export default function Root () {
     >
       <Layout>
         <Outlet />
-        {import.meta.env.PROD && <Updater />}
+        {import.meta.env.PROD && <Updater ref={updaterRef} />}
       </Layout>
     </ThemeProvider>
   )
