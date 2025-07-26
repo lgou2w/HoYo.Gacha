@@ -10,7 +10,7 @@
   "license": "MIT OR Apache-2.0",
   "private": "true",
   "type": "module",
-  "packageManager": "pnpm@10.13.1+sha512.37ebf1a5c7a30d5fabe0c5df44ee8da4c965ca0c5af3dbab28c3a1681b70a256218d05c81c9c0dcf767ef6b8551eb5b960042b9ed4300c59242336377e01cfad",
+  "packageManager": "pnpm@10.14.0-0+sha512.2cd47a0cbf5f1d1de7693a88307a0ede5be94e0d3b34853d800ee775efbea0650cb562b77605ec80bc8d925f5cd27c4dfe8bb04d3a0b76090784c664450d32d6",
   "engines": {
     "node": "^20.19.0 || >= 22",
     "pnpm": "^10"
@@ -39,11 +39,11 @@
   },
   "dependencies": {
     "@fluentui/react-components": "^9.67.0",
-    "@fluentui/react-icons": "^2.0.306",
+    "@fluentui/react-icons": "^2.0.307",
     "@fluentui/react-motion-components-preview": "^0.7.0",
     "@tanstack/react-query": "^5.83.0",
     "@tanstack/react-query-devtools": "^5.83.0",
-    "@tanstack/react-router": "^1.129.2",
+    "@tanstack/react-router": "^1.129.8",
     "@tauri-apps/api": "^2.7.0",
     "@tauri-apps/plugin-clipboard-manager": "^2.3.0",
     "@tauri-apps/plugin-process": "^2.3.0",
@@ -55,8 +55,8 @@
     "is-promise": "^4.0.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-hook-form": "^7.60.0",
-    "react-i18next": "^15.6.0",
+    "react-hook-form": "^7.61.1",
+    "react-i18next": "^15.6.1",
     "react-virtuoso": "^4.13.0",
     "use-immer": "^0.11.0"
   },
@@ -79,7 +79,7 @@
     "@typescript-eslint/parser": "^8.38.0",
     "@vitejs/plugin-react-swc": "^3.11.0",
     "concurrently": "^9.2.0",
-    "cross-env": "^7.0.3",
+    "cross-env": "^10.0.0",
     "eslint": "^8.57.1",
     "eslint-config-standard": "^17.1.0",
     "eslint-import-resolver-typescript": "^4.4.4",
@@ -92,14 +92,14 @@
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",
-    "eslint-plugin-testing-library": "^7.6.0",
+    "eslint-plugin-testing-library": "^7.6.1",
     "husky": "^9.1.7",
     "jest": "^30.0.5",
     "jest-environment-jsdom": "^30.0.5",
     "rimraf": "^6.0.1",
     "ts-jest": "^29.4.0",
     "typescript": "^5.8.3",
-    "vite": "^7.0.5"
+    "vite": "^7.0.6"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
