@@ -51,15 +51,12 @@ export default function TitleBar () {
         wrap={false}
         mapping={[`Routes.${location.pathname}`]}
       />
-      {(import.meta.env.DEV || __APP_BETA__) && (
+      {import.meta.env.DEV && (
         <pre style={{
           margin: '0 auto',
           pointerEvents: 'none',
           fontFamily: 'serif',
-        }}>
-          {'CONTENT UNDER DEVELOPMENT, NOT FINAL.'}
-          {__APP_BETA__ && ' (Beta)'}
-        </pre>
+        }}>CONTENT UNDER DEVELOPMENT, NOT FINAL.</pre>
       )}
       <TitleBarButtons className={styles.buttons} />
     </header>
