@@ -474,6 +474,7 @@ impl GachaMetadata {
       .timeout(API_TIMEOUT)
       .send()
       .await?
+      .error_for_status()?
       .json::<GachaMetadataIndex>()
       .await?;
 
@@ -505,6 +506,7 @@ impl GachaMetadata {
       .timeout(API_TIMEOUT)
       .send()
       .await?
+      .error_for_status()?
       .bytes()
       .await?;
 
