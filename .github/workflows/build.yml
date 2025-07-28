@@ -2,9 +2,9 @@ name: Build
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, v1 ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, v1 ]
 
 env:
   CARGO_TERM_COLOR: always
@@ -22,7 +22,7 @@ jobs:
     runs-on: ${{ matrix.platform }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Rust environment
         uses: dtolnay/rust-toolchain@stable
@@ -35,13 +35,12 @@ jobs:
           workspaces: '. -> target'
 
       - name: Install pnpm
-        uses: pnpm/action-setup@v2
+        uses: pnpm/action-setup@v4
         with:
-          version: 10
           run_install: false
 
       - name: Install Node and setup cache
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: pnpm
@@ -49,5 +48,28 @@ jobs:
       - name: Install app dependencies
         run: pnpm install
 
-      - name: Build Tauri app
-        run: pnpm tauri build
+      - name: Lint code
+        run: pnpm lint
+
+      - name: Run tests
+        run: pnpm test
+
+      - name: Build app
+        run: pnpm build
+
+      - name: Build artifact
+        run: pnpm build:artifact
+
+      - name: Get short git commit sha
+        id: short-sha
+        shell: bash
+        run: |
+          SHORT_SHA=$(git rev-parse --short HEAD)
+          echo "short_sha=$SHORT_SHA" >> $GITHUB_OUTPUT
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: HoYo.Gacha-git-${{ steps.short-sha.outputs.short_sha }}
+          path: |
+            ${{ github.workspace }}/target/release/HoYo.Gacha.exe

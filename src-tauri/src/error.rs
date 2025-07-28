@@ -1,115 +1,171 @@
-#[derive(Debug, thiserror::Error)]
-pub enum Error {
-  // Crate
-  #[error(transparent)]
-  Io(#[from] std::io::Error),
+use std::error::Error as StdError;
+use std::fmt::{self, Display};
 
-  #[error(transparent)]
-  Anyhow(#[from] anyhow::Error),
+use serde::ser::SerializeStruct;
+use serde::{Serialize, Serializer};
 
-  #[error(transparent)]
-  Reqwest(#[from] reqwest::Error),
+pub const SERIALIZATION_MARKER: &str = "__HG_ERROR__";
 
-  #[error(transparent)]
-  Db(#[from] sea_orm::error::DbErr),
-
-  #[error(transparent)]
-  Tauri(#[from] tauri::Error),
-
-  #[error(transparent)]
-  Time(#[from] time::Error),
-
-  // Specific
-  #[error("Unsupported Operation")]
-  UnsupportedOperation,
-
-  // Gacha
-  #[error("Web Caches")]
-  WebCaches,
-
-  #[error("Illegal Gacha Url")]
-  IllegalGachaUrl,
-
-  #[error("Vacant Gacha Url")]
-  VacantGachaUrl,
-
-  #[error("Timeoutd Gacha Url")]
-  TimeoutdGachaUrl,
-
-  #[error("Visit too frequently Gacha Url")]
-  VisitTooFrequentlyGachaUrl,
-
-  #[error("Gacha record response: {retcode:?} {message:?}")]
-  GachaRecordRetcode { retcode: i32, message: String },
-
-  #[allow(unused)]
-  #[error("Gacha record fetcher channel send error")]
-  GachaRecordFetcherChannelSend,
-
-  #[allow(unused)]
-  #[error("Gacha record fetcher channel join error")]
-  GachaRecordFetcherChannelJoin,
-
-  // UIGF & SRGF
-  #[error("{0}")]
-  UIGFOrSRGFSerdeJson(serde_json::Error),
-
-  #[error("UIGF or SRGF Mismatched UID: expected {expected:?}, actual {actual:?}")]
-  UIGFOrSRGFMismatchedUID { expected: String, actual: String },
-
-  #[error("UIGF or SRGF invalid field: {0:?}")]
-  UIGFOrSRGFInvalidField(String),
-
-  // Account
-  #[error("Account already exists")]
-  AccountAlreadyExists,
-
-  #[error("Account not found")]
-  AccountNotFound,
+pub trait ErrorDetails: StdError {
+  fn name(&self) -> &'static str;
+  fn details(&self) -> serde_json::Value;
 }
 
-pub type Result<T> = std::result::Result<T, Error>;
+#[derive(Debug)]
+pub struct Error<T>(T);
 
-/// Native error to JavaScript error
-macro_rules! impl_error_identifiers {
-  ($( $variant: ident => $ident: ident ),*) => {
-    impl Error {
-      pub fn identifier(&self) -> &'static str {
-        match self {
-          $(Error::$variant { .. } => stringify!($ident),)*
-          _ => "INTERNAL_CRATE",
+impl<T> Error<T> {
+  #[inline]
+  pub fn into_inner(self) -> T {
+    self.0
+  }
+
+  #[inline]
+  pub fn boxed(self) -> Box<dyn ErrorDetails + Send + 'static>
+  where
+    T: ErrorDetails + Send + 'static,
+  {
+    Box::new(self.0)
+  }
+}
+
+impl<T> AsRef<T> for Error<T> {
+  fn as_ref(&self) -> &T {
+    &self.0
+  }
+}
+
+impl<T: ErrorDetails> From<T> for Error<T> {
+  fn from(value: T) -> Self {
+    Self(value)
+  }
+}
+
+impl<T: ErrorDetails> Display for Error<T> {
+  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    write!(f, "{}", self.0)
+  }
+}
+
+impl<T: ErrorDetails + 'static> StdError for Error<T> {
+  fn source(&self) -> Option<&(dyn StdError + 'static)> {
+    Some(&self.0)
+  }
+}
+
+impl<T: ErrorDetails + Send + 'static> Serialize for Error<T> {
+  fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+  where
+    S: Serializer,
+  {
+    (&self.0 as &(dyn ErrorDetails + Send)).serialize(serializer)
+  }
+}
+
+impl Serialize for dyn ErrorDetails + Send + 'static {
+  fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+  where
+    S: Serializer,
+  {
+    let mut state = serializer.serialize_struct("Error", 4)?;
+    state.serialize_field("name", &self.name())?;
+    state.serialize_field("message", &self.to_string())?;
+    state.serialize_field("details", &self.details())?;
+    state.serialize_field(SERIALIZATION_MARKER, &true)?;
+    state.end()
+  }
+}
+
+macro_rules! declare_error_kinds {
+  (@field_detail $field:ident) => { $field };
+  (@field_detail $field:ident => $field_expr:expr) => { $field_expr };
+
+  (
+    #[$meta:meta]
+    $name:ident {
+      $(
+        #[$error:meta]
+        $kind:ident$({ $($field:ident:$field_ty:ty$(=> $field_expr:expr)?),* })?,
+      )*
+    }
+  ) => {
+    paste::paste! {
+      #[$meta]
+      pub enum [<$name Kind>] {
+        $(
+          #[$error]
+          $kind$({ $($field:$field_ty),* })?,
+        )*
+      }
+
+      impl crate::error::ErrorDetails for [<$name Kind>] {
+        fn name(&self) -> &'static str {
+          stringify!($name)
+        }
+
+        fn details(&self) -> serde_json::Value {
+          match self {
+            $(
+              Self::$kind$({ $($field),* })? => serde_json::json!({
+                "kind": stringify!($kind),
+                $(
+                  $(
+                    stringify!($field): declare_error_kinds!(
+                      @field_detail $field$(=> $field_expr)?
+                    ),
+                  )*
+                ),*
+              }),
+            )*
+          }
         }
       }
+
+      pub type $name = crate::error::Error<[<$name Kind>]>;
     }
   };
 }
 
-impl_error_identifiers! {
-  UnsupportedOperation          => UNSUPPORTED_OPERATION,
-  WebCaches                     => WEB_CACHES,
-  IllegalGachaUrl               => ILLEGAL_GACHA_URL,
-  VacantGachaUrl                => VACANT_GACHA_URL,
-  TimeoutdGachaUrl              => TIMEOUTD_GACHA_URL,
-  VisitTooFrequentlyGachaUrl    => VISIT_TOO_FREQUENTLY_GACHA_URL,
-  GachaRecordRetcode            => GACHA_RECORD_RETCODE,
-  GachaRecordFetcherChannelSend => GACHA_RECORD_FETCHER_CHANNEL_SEND,
-  GachaRecordFetcherChannelJoin => GACHA_RECORD_FETCHER_CHANNEL_JOIN,
-  UIGFOrSRGFSerdeJson           => UIGF_OR_SRGF_SERDE_JSON,
-  UIGFOrSRGFMismatchedUID       => UIGF_OR_SRGF_MISMATCHED_UID,
-  UIGFOrSRGFInvalidField        => UIGF_OR_SRGF_INVALID_FIELD,
-  AccountAlreadyExists          => ACCOUNT_ALREADY_EXISTS,
-  AccountNotFound               => ACCOUNT_NOT_FOUND
-}
+pub(super) use declare_error_kinds;
 
-impl serde::Serialize for Error {
-  fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
-  where
-    S: serde::Serializer,
-  {
-    use serde::ser::SerializeStruct;
-    let mut state = serializer.serialize_struct("Error", 2)?;
-    state.serialize_field("identifier", &self.identifier())?;
-    state.serialize_field("message", &self.to_string())?;
-    state.end()
+// Tests
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[test]
+  fn test_serialize() {
+    #[derive(Debug)]
+    struct Foo;
+
+    impl Display for Foo {
+      fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str("Foo")
+      }
+    }
+
+    impl StdError for Foo {}
+    impl ErrorDetails for Foo {
+      fn name(&self) -> &'static str {
+        "Foo"
+      }
+
+      fn details(&self) -> serde_json::Value {
+        serde_json::Value::Null
+      }
+    }
+
+    let error = Error(Foo);
+    assert_eq!(format!("{error:?}"), "Error(Foo)");
+    assert_eq!(format!("{error}"), "Foo");
+
+    let name = error.as_ref().name();
+    assert_eq!(
+      serde_json::to_string(&error).unwrap(),
+      format!(
+        r#"{{"name":"{name}","message":"Foo","details":null,"{SERIALIZATION_MARKER}":true}}"#
+      )
+    );
   }
 }

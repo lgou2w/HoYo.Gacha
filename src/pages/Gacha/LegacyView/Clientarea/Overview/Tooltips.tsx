@@ -1,0 +1,77 @@
+import React from 'react'
+import { Caption1, makeStyles, tokens } from '@fluentui/react-components'
+import BizImages from '@/components/BizImages'
+import Locale from '@/components/Locale'
+import useI18n from '@/hooks/useI18n'
+import { CompositeState } from '@/pages/Gacha/LegacyView/Clientarea/useCompositeState'
+
+const useStyles = makeStyles({
+  root: {
+    display: 'flex',
+    flexDirection: 'column',
+    rowGap: tokens.spacingVerticalSNudge,
+  },
+  total: {
+    color: tokens.colorBrandForeground1,
+  },
+  currency: {
+    color: tokens.colorPaletteMarigoldForeground1,
+  },
+  currencyIcon: {
+    width: 'auto',
+    height: tokens.lineHeightBase200,
+    verticalAlign: 'text-top',
+  },
+  secondary: {
+    color: tokens.colorPaletteGreenForeground1,
+  },
+})
+
+export default function GachaLegacyViewClientareaOverviewTooltips (props: CompositeState) {
+  const styles = useStyles()
+  const {
+    keyofBusinesses,
+    prettized: {
+      aggregated: {
+        total,
+        startTime,
+        endTime,
+      },
+    },
+  } = props
+
+  const now = new Date()
+  const i18n = useI18n()
+
+  return (
+    <div className={styles.root}>
+      <Caption1>
+        {'\u2756\u00A0'}
+        <Locale mapping={['Pages.Gacha.LegacyView.Clientarea.Overview.Tooltips.Fragment1.Token1', { keyofBusinesses }]} />
+        <Locale
+          component="span"
+          className={styles.total}
+          mapping={['Pages.Gacha.LegacyView.Clientarea.Overview.Tooltips.Fragment1.Token2', { total }]}
+        />
+        <Locale mapping={['Pages.Gacha.LegacyView.Clientarea.Overview.Tooltips.Fragment1.Token3']} />
+        <Locale
+          component="span"
+          className={styles.currency}
+          mapping={['Pages.Gacha.LegacyView.Clientarea.Overview.Tooltips.Fragment1.Token4', { value: total * 160 }]}
+        />
+        <img className={styles.currencyIcon} src={BizImages[keyofBusinesses].Material!.IconCurrency01} />
+      </Caption1>
+      <Caption1>
+        {'\u2756\u00A0'}
+        <Locale mapping={['Pages.Gacha.LegacyView.Clientarea.Overview.Tooltips.Fragment2', { keyofBusinesses }]} />
+        <span className={styles.secondary}>{i18n.dayjs(startTime || now).format('LLLL')}</span>
+        {'\u00A0\u007E\u00A0'}
+        <span className={styles.secondary}>{i18n.dayjs(endTime || now).format('LLLL')}</span>
+      </Caption1>
+      <Caption1>
+        {'\u2756\u00A0'}
+        <Locale mapping={['Pages.Gacha.LegacyView.Clientarea.Overview.Tooltips.Fragment3']} />
+      </Caption1>
+    </div>
+  )
+}

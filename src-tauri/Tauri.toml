@@ -1,0 +1,58 @@
+# Legacy ID
+# identifier = "com.lgou2w.hoyo.gacha"
+identifier = "com.lgou2w.hoyo.gacha.v1"
+product-name = "HoYo.Gacha"
+version = "1.0.0"
+
+[build]
+# See: package.json - scripts - dev & build
+# before-dev-command   = "pnpm web:dev"
+# before-build-command = "pnpm web:build"
+dev-url = "http://localhost:1420"
+frontend-dist = "../dist"
+
+[bundle]
+active = true
+long-description = "An unofficial tool for managing and analyzing your miHoYo gacha records"
+short-description = "HoYo.Gacha"
+category = "DeveloperTool"
+copyright = "Copyright (c) lgou2w <lgou2w@hotmail.com>"
+targets = ["app"]
+icon = [
+  "icons/32x32.png",
+  "icons/128x128.png",
+  "icons/128x128@2x.png",
+  "icons/icon.icns",
+  "icons/icon.ico"
+]
+
+[bundle.windows]
+digest-algorithm = "SHA-256"
+
+[bundle.windows.webview-install-mode]
+type = "skip"
+
+[app]
+with-global-tauri = true
+
+[[app.security.capabilities]]
+identifier = "main"
+description = "Capability for the main window"
+windows = ["main"]
+platforms = ["windows"]
+permissions = [
+  "core:default",
+  "core:window:default",
+  "core:window:allow-close",
+  "core:window:allow-minimize",
+  "core:window:allow-start-dragging",
+  "core:window:allow-toggle-maximize",
+  "core:window:allow-is-maximized",
+  "core:window:allow-internal-toggle-maximize",
+  "clipboard-manager:allow-read-text",
+  "clipboard-manager:allow-write-image",
+  "clipboard-manager:allow-write-text",
+  "process:default",
+  "process:allow-exit",
+  "shell:default",
+]

@@ -1,43 +1,21 @@
-import React from 'react'
-import { createBrowserRouter } from 'react-router-dom'
-import queryClient from './query-client'
-import ErrorPage from '@/ErrorPage'
-import Root from '@/routes/root'
-import Index from '@/routes/index'
-import Genshin, { loader as genshinLoader } from '@/routes/genshin'
-import StarRail, { loader as starrailLoader } from '@/routes/starrail'
-import ZenlessZoneZero, { loader as zzzLoader } from '@/routes/zzz'
-import Setting from '@/routes/setting'
+import { createRouter } from '@tanstack/react-router'
+import GachaRoute from '@/pages/Gacha/route'
+import HomeRoute from '@/pages/Home/route'
+import RootRoute from '@/pages/Root/route'
+import SettingsRoute from '@/pages/Settings/route'
 
-const router = createBrowserRouter([
-  {
-    path: '/',
-    element: <Root />,
-    errorElement: <ErrorPage />,
-    children: [
-      { index: true, element: <Index /> },
-      {
-        path: '/genshin',
-        element: <Genshin />,
-        loader: genshinLoader(queryClient)
-      },
-      {
-        path: '/starrail',
-        element: <StarRail />,
-        loader: starrailLoader(queryClient)
-      },
-      {
-        path: '/zzz',
-        element: <ZenlessZoneZero />,
-        loader: zzzLoader(queryClient)
-      },
-      {
-        path: '/setting',
-        element: <Setting />
-        // TODO: loader: settingLoader(queryClient)
-      }
-    ]
-  }
+const routeTree = RootRoute.addChildren([
+  HomeRoute,
+  SettingsRoute,
+  GachaRoute,
 ])
+
+const router = createRouter({ routeTree })
+
+declare module '@tanstack/react-router' {
+  interface Register {
+    router: typeof router
+  }
+}
 
 export default router

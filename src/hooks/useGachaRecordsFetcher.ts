@@ -1,51 +1,63 @@
-import React from 'react'
-import { event } from '@tauri-apps/api'
+import { useCallback } from 'react'
+import { listen } from '@tauri-apps/api/event'
 import { useImmer } from 'use-immer'
-import { GenshinGachaRecord, StarRailGachaRecord, ZenlessZoneZeroGachaRecord } from '@/interfaces/gacha'
-import PluginGacha from '@/utilities/plugin-gacha'
+import {
+  CreateGachaRecordsFetcherArgs,
+  GachaRecordsFetcherFragment,
+  createGachaRecordsFetcher,
+} from '@/api/commands/business'
+import { Business } from '@/interfaces/Business'
+import { Overwrite } from '@/interfaces/declares'
 
-type Fragment =
-  'sleeping' |
-  { ready: string } |
-  { pagination: number } |
-  { data: Array<GenshinGachaRecord | StarRailGachaRecord | ZenlessZoneZeroGachaRecord> } |
-  'finished'
+// eventChannel must be provided
+export type GachaRecordsFetcherFetchArgs<T extends Business> =
+  Overwrite<CreateGachaRecordsFetcherArgs<T>, { eventChannel: string }>
 
-export default function useGachaRecordsFetcher () {
-  const [{ current }, produceState] = useImmer<{
-    current: 'idle' | Fragment
+export type GachaRecordsFetcherFetchFragment<T extends Business> =
+  'Idle' | GachaRecordsFetcherFragment<T>
+
+export default function useGachaRecordsFetcher<T extends Business> () {
+  const [state, produce] = useImmer<{
+    isFetching: boolean
+    fragment: GachaRecordsFetcherFetchFragment<T>,
   }>({
-    current: 'idle'
+    isFetching: false,
+    fragment: 'Idle',
   })
 
-  const pull = React.useCallback(async (
-    ...args: Parameters<typeof PluginGacha.pullAllGachaRecords>
-  ) => {
-    // reset state
-    produceState((draft) => {
-      draft.current = 'idle'
+  const fetch: (args: GachaRecordsFetcherFetchArgs<T>) => Promise<Awaited<ReturnType<typeof createGachaRecordsFetcher<T>>> | null> = useCallback(async (args) => {
+    if (state.isFetching) {
+      return null
+    }
+
+    produce({
+      isFetching: true,
+      fragment: 'Idle',
     })
 
-    const [,, { eventChannel }] = args
     try {
-      const unlisten = await event.listen<Fragment>(eventChannel, ({ payload }) => {
-        produceState((draft) => {
-          draft.current = payload
+      const unlisten = await listen<GachaRecordsFetcherFragment<T>>(args.eventChannel, (event) => {
+        produce((draft) => {
+          (draft.fragment as GachaRecordsFetcherFetchFragment<T>) = event.payload
         })
       })
 
       try {
-        return await PluginGacha.pullAllGachaRecords(...args)
+        return await createGachaRecordsFetcher(args)
       } finally {
         unlisten()
       }
     } catch (error) {
       return Promise.reject(error)
+    } finally {
+      produce((draft) => {
+        draft.isFetching = false
+      })
     }
-  }, [produceState])
+  }, [state.isFetching, produce])
 
   return {
-    currentFragment: current,
-    pull
+    state,
+    fetch,
   }
 }
