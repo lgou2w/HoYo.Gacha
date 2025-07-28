@@ -81,7 +81,7 @@ export default function GachaLegacyViewDataConvertExportForm (props: Props) {
 
   const [{
     folder, folderError,
-    format, formatLegacyUigfVersion, formatUigfMinimized,
+    format, formatLegacyUigfVersion, formatUigfMinimized, formatPretty,
     busy,
   }, produce] = useImmer({
     folder: null as string | null,
@@ -89,6 +89,7 @@ export default function GachaLegacyViewDataConvertExportForm (props: Props) {
     format: supportedFormats[0],
     formatLegacyUigfVersion: LegacyUigfVersions[0] as LegacyUigfVersion,
     formatUigfMinimized: false,
+    formatPretty: false,
     busy: false,
   })
 
@@ -125,6 +126,7 @@ export default function GachaLegacyViewDataConvertExportForm (props: Props) {
             accounts: { [accountUid]: accountLocale },
             exportTime,
             minimized: formatUigfMinimized,
+            pretty: formatPretty,
           },
         }
         break
@@ -135,6 +137,7 @@ export default function GachaLegacyViewDataConvertExportForm (props: Props) {
             accountLocale,
             accountUid,
             exportTime,
+            pretty: formatPretty,
           },
         }
         break
@@ -145,6 +148,7 @@ export default function GachaLegacyViewDataConvertExportForm (props: Props) {
             accountLocale,
             accountUid,
             exportTime,
+            pretty: formatPretty,
           },
         }
         break
@@ -190,7 +194,7 @@ export default function GachaLegacyViewDataConvertExportForm (props: Props) {
         output: outputFile,
       }),
     })
-  }, [business, firstGachaRecord, folder, format, formatLegacyUigfVersion, formatUigfMinimized, i18n, notifier, onSuccess, produce, selectedAccount])
+  }, [business, firstGachaRecord, folder, format, formatLegacyUigfVersion, formatPretty, formatUigfMinimized, i18n, notifier, onSuccess, produce, selectedAccount])
 
   if (!firstGachaRecord) {
     // TODO: Tell the user that there are no records and cannot be exported.
@@ -297,6 +301,26 @@ export default function GachaLegacyViewDataConvertExportForm (props: Props) {
           />
         </Field>
       )}
+      {/* Pretty supports: LegacyUigf, Uigf, Srgf */}
+      <Field
+        size="large"
+        label={<Locale mapping={['Pages.Gacha.LegacyView.DataConvert.ExportForm.Pretty.Label']} />}
+        validationMessage={<Locale mapping={['Pages.Gacha.LegacyView.DataConvert.ExportForm.Pretty.Info']} />}
+        validationState="none"
+      >
+        <Switch
+          labelPosition="after"
+          label={<Locale mapping={
+            ['Pages.Gacha.LegacyView.DataConvert.ExportForm.Pretty.State',
+              { context: String(formatPretty) },
+            ]} />}
+          checked={formatPretty}
+          onChange={(_, data) => produce((draft) => {
+            draft.formatPretty = data.checked
+          })}
+          disabled={busy}
+        />
+      </Field>
       <div className={styles.actions}>
         <Locale
           component={Button}

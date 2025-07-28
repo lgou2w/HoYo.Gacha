@@ -442,6 +442,12 @@ export default {
                 State_true: '启用',
                 State_false: '禁用',
               },
+              Pretty: {
+                Label: '美化数据',
+                Info: '启用后，数据将以易于阅读的格式输出。',
+                State_true: '启用',
+                State_false: '禁用',
+              },
               CancelBtn: '取消',
               SubmitBtn: '导出',
               Success: {

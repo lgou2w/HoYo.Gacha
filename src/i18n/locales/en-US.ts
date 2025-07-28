@@ -442,6 +442,12 @@ export default {
                 State_true: 'Enable',
                 State_false: 'Disable',
               },
+              Pretty: {
+                Label: 'Pretty Data',
+                Info: 'When enabled, data will be output in an easy to read format.',
+                State_true: 'Enable',
+                State_false: 'Disable',
+              },
               CancelBtn: 'Cancel',
               SubmitBtn: 'Export',
               Success: {
