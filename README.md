@@ -1,6 +1,6 @@
 # HoYo.Gacha
 
-[![Actions](https://img.shields.io/github/actions/workflow/status/lgou2w/HoYo.Gacha/build.yml?branch=v1&logo=github&style=flat-square)](https://github.com/lgou2w/HoYo.Gacha/actions)
+[![Actions](https://img.shields.io/github/actions/workflow/status/lgou2w/HoYo.Gacha/build.yml?branch=main&logo=github&style=flat-square)](https://github.com/lgou2w/HoYo.Gacha/actions)
 [![Releases](https://img.shields.io/github/v/release/lgou2w/HoYo.Gacha?logo=github&style=flat-square&include_prereleases)](https://github.com/lgou2w/HoYo.Gacha/releases)
 
 一个非官方的工具，用于管理和分析你的 miHoYo 抽卡记录。
@@ -12,11 +12,6 @@ An unofficial tool for managing and analyzing your miHoYo gacha records.
 **No need for any local proxy server**. Just read the `Chromium` [disk cache](docs/DiskCache.md) file and request the API endpoint.
 
 ![Logo](src-tauri/icons/128x128.png)
-
-> [!WARNING]
-> **工作中** - 此分支用于未来的 `v1.0.0` 版本。
->
-> **Work In Process** - This branch is for future `v1.0.0` release.
 
 ## 功能 / Features
 
@@ -40,6 +35,11 @@ An unofficial tool for managing and analyzing your miHoYo gacha records.
 请在此仓库 [Releases](https://github.com/lgou2w/HoYo.Gacha/releases) 下载最新版。
 
 Please download the latest version from this repository [Releases](https://github.com/lgou2w/HoYo.Gacha/releases).
+
+> [!IMPORTANT]
+> 如果运行软件后出现**白屏**等情况，请尝试安装或更新 **Webview2** 运行时。
+> If you get a **white screen** after running the software, etc., try installing or updating the **Webview2** runtime.
+> https://developer.microsoft.com/microsoft-edge/webview2/
 
 ### 注意 / Notice
 
