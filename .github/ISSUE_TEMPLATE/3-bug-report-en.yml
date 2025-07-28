@@ -1,0 +1,60 @@
+name: 🐞 Bug Report
+title: '[bug] '
+description: Report bug in the program through this issue
+labels: ['bug']
+
+body:
+  - type: textarea
+    id: device-specification
+    attributes:
+      label: Device Specifications
+      description: |
+        Application - Settings - About - Device Specifications
+      placeholder: |
+        Operating system Windows 11 Professional
+        System version 10.0.26100 x86_64
+        Webview2 138.0.3351.109
+        Tauri 2.7.0
+        Git commit ac9e08baa99764c415db08ace89e2319d8488aed
+        Version v1.0.0-git-ac9e08b
+    validations:
+      required: true
+
+  - type: dropdown
+    id: user-category
+    attributes:
+      label: Category
+      description: Please set a category that you think is appropriate, which will help us locate the problem quickly.
+      options:
+        - User interface
+        - Gacha records
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: bug-description
+    attributes:
+      label: What happened?
+      description: |
+        Describe the behavior of the problem in detail. If your problem involves a program crash, please attach the crash and log file.
+        If you can't find the log, use the shortcut key `Win+R` to enter `%USERPROFILE%\AppData\Local\com.lgou2w.hoyo.gacha.v1` and press Enter to find the `Crashs` and `Logs` folders.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Expected behavior?
+      description: A clear description of what you expected to happen.
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: check-final
+    attributes:
+      label: Final Step
+      description: Review Questions
+      options:
+        - label: I think the above description is detailed enough to allow developers to reproduce the issue.
+          required: true
