@@ -587,10 +587,11 @@ function calcPityProgressVar (category: PrettyCategory, usedPity: number | undef
   let maxPity = 80
   if (category === PrettyCategory.Character ||
     category === PrettyCategory.Permanent ||
+    category === PrettyCategory.Chronicled ||
     category === PrettyCategory.CollaborationCharacter) {
     maxPity = 90
   }
 
   const progress = Math.round(usedPity / maxPity * 100)
-  return progress + '%'
+  return Math.min(progress, 100) + '%'
 }
