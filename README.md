@@ -38,7 +38,9 @@ Please download the latest version from this repository [Releases](https://githu
 
 > [!IMPORTANT]
 > 如果运行软件后出现**白屏**等情况，请尝试安装或更新 **Webview2** 运行时。
+>
 > If you get a **white screen** after running the software, etc., try installing or updating the **Webview2** runtime.
+>
 > https://developer.microsoft.com/microsoft-edge/webview2/
 
 ### 注意 / Notice
