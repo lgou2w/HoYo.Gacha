@@ -1,6 +1,6 @@
 [package]
 name = "hoyo_gacha"
-version = "1.0.0"
+version = "1.0.1"
 edition = "2024"
 rust-version = "1.85"
 authors = ["lgou2w <lgou2w@hotmail.com>"]
