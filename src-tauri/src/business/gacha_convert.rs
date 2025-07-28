@@ -734,6 +734,28 @@ declare_error_kinds! {
   }
 }
 
+fn string_or_integer_de<'de, D, T>(de: D) -> Result<T, D::Error>
+where
+  D: Deserializer<'de>,
+  T: TryFrom<u64>,
+  T::Error: Display,
+{
+  #[derive(Deserialize)]
+  #[serde(untagged)]
+  enum StringOrInteger {
+    String(String),
+    Integer(u64),
+  }
+
+  match StringOrInteger::deserialize(de)? {
+    StringOrInteger::Integer(num) => T::try_from(num).map_err(serde::de::Error::custom),
+    StringOrInteger::String(str) => {
+      let num = str.parse::<u64>().map_err(serde::de::Error::custom)?;
+      T::try_from(num).map_err(serde::de::Error::custom)
+    }
+  }
+}
+
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Uigf {
   pub info: UigfInfo,
@@ -747,7 +769,7 @@ pub struct Uigf {
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct UigfInfo {
-  #[serde(with = "serde_helper::string_number_into")]
+  #[serde(deserialize_with = "string_or_integer_de")]
   pub export_timestamp: u64,
   pub export_app: String,
   pub export_app_version: String,
@@ -756,7 +778,7 @@ pub struct UigfInfo {
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct UigfEntry<Item> {
-  #[serde(with = "serde_helper::string_number_into")]
+  #[serde(deserialize_with = "string_or_integer_de")]
   pub uid: u32,
   pub timezone: i8,
   #[serde(default = "Option::default", skip_serializing_if = "Option::is_none")]
@@ -2535,6 +2557,75 @@ mod tests {
         item_id: "1011".to_owned(),
       }
     );
+  }
+
+  #[test]
+  fn test_uigf_v4_0_reader_integer() {
+    let input = br#"{
+      "info": {
+        "export_timestamp": 1672531200,
+        "export_app": "foobar",
+        "export_app_version": "1.0.0",
+        "version": "v4.0"
+      },
+      "hk4e": [
+        {
+          "uid": 100000000,
+          "timezone": 0,
+          "list": [
+            {
+              "uigf_gacha_type": "301",
+              "gacha_type": "301",
+              "item_id": "10000002",
+              "time": "2023-01-01 00:00:00",
+              "id": "1000000000000000000"
+            }
+          ]
+        }
+      ],
+      "hkrpg": [
+        {
+          "uid": 100000001,
+          "timezone": 0,
+          "list": [
+            {
+              "gacha_id": "1",
+              "gacha_type": "11",
+              "item_id": "1001",
+              "time": "2023-01-01 00:00:00",
+              "id": "1000000000000000001"
+            }
+          ]
+        }
+      ],
+      "nap": [
+        {
+          "uid": 10000002,
+          "timezone": 0,
+          "list": [
+            {
+              "gacha_type": "1",
+              "item_id": "1011",
+              "time": "2023-01-01 00:00:00",
+              "id": "1000000000000000002"
+            }
+          ]
+        }
+      ]
+    }"#;
+
+    let records = UigfGachaRecordsReader {
+      businesses: None,
+      accounts: HashMap::from_iter([
+        (100_000_000, "en-us".to_owned()),
+        (100_000_001, "en-us".to_owned()),
+        (10_000_002, "en-us".to_owned()),
+      ]),
+    }
+    .read(GachaMetadata::current(), Cursor::new(input))
+    .unwrap();
+
+    assert_eq!(records.len(), 3);
   }
 
   #[test]
