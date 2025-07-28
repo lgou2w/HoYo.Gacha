@@ -545,18 +545,21 @@ export type ExportGachaRecordsArgs = NonNullable<{
       accountLocale: string
       accountUid: Account['uid']
       exportTime: string | Date
+      pretty?: boolean | null
     } }
     | { Uigf: {
       businesses?: Business[],
       accounts: Record<Account['uid'], string> // uid: locale
       exportTime: string | Date
       minimized?: boolean | null
+      pretty?: boolean | null
     } }
     | { Srgf: {
       srgfVersion: 'v1.0'
       accountLocale: string
       accountUid: Account['uid']
       exportTime: string | Date
+      pretty?: boolean | null
     } }
 }>
 

@@ -442,6 +442,12 @@ export default {
                 State_true: '啟用',
                 State_false: '停用',
               },
+              Pretty: {
+                Label: '美化數據',
+                Info: '啟用後，數據將以易於閱讀的格式輸出。',
+                State_true: '啟用',
+                State_false: '停用',
+              },
               CancelBtn: '取消',
               SubmitBtn: '匯出',
               Success: {

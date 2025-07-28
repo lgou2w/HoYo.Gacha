@@ -343,6 +343,7 @@ pub struct LegacyUigfGachaRecordsWriter {
   pub account_uid: u32,
   #[serde(with = "rfc3339")]
   pub export_time: OffsetDateTime,
+  pub pretty: Option<bool>,
 }
 
 impl GachaRecordsWriter for LegacyUigfGachaRecordsWriter {
@@ -362,6 +363,7 @@ impl GachaRecordsWriter for LegacyUigfGachaRecordsWriter {
       account_locale,
       account_uid,
       export_time,
+      pretty,
     } = self;
 
     let server_region = ServerRegion::from_uid(BUSINESS, *account_uid)
@@ -445,8 +447,12 @@ impl GachaRecordsWriter for LegacyUigfGachaRecordsWriter {
       }
     })?;
 
-    serde_json::to_writer(output_file, &uigf)
-      .map_err(|cause| LegacyUigfGachaRecordsWriteErrorKind::Serialize { cause })?;
+    if pretty.unwrap_or_default() {
+      serde_json::to_writer_pretty(output_file, &uigf)
+    } else {
+      serde_json::to_writer(output_file, &uigf)
+    }
+    .map_err(|cause| LegacyUigfGachaRecordsWriteErrorKind::Serialize { cause })?;
 
     Ok(output)
   }
@@ -859,6 +865,7 @@ pub struct UigfGachaRecordsWriter {
   pub export_time: OffsetDateTime,
   /// When `true`, all `Option` fields have a value of `None`.
   pub minimized: Option<bool>,
+  pub pretty: Option<bool>,
 }
 
 impl GachaRecordsWriter for UigfGachaRecordsWriter {
@@ -875,6 +882,7 @@ impl GachaRecordsWriter for UigfGachaRecordsWriter {
       accounts,
       export_time,
       minimized,
+      pretty,
     } = self;
 
     let minimized = minimized.unwrap_or_default();
@@ -1100,8 +1108,12 @@ impl GachaRecordsWriter for UigfGachaRecordsWriter {
         cause,
       })?;
 
-    serde_json::to_writer(output_file, &uigf)
-      .map_err(|cause| UigfGachaRecordsWriteErrorKind::Serialize { cause })?;
+    if pretty.unwrap_or_default() {
+      serde_json::to_writer_pretty(output_file, &uigf)
+    } else {
+      serde_json::to_writer(output_file, &uigf)
+    }
+    .map_err(|cause| UigfGachaRecordsWriteErrorKind::Serialize { cause })?;
 
     Ok(output)
   }
@@ -1450,6 +1462,7 @@ pub struct SrgfGachaRecordsWriter {
   pub account_uid: u32,
   #[serde(with = "rfc3339")]
   pub export_time: OffsetDateTime,
+  pub pretty: Option<bool>,
 }
 
 impl GachaRecordsWriter for SrgfGachaRecordsWriter {
@@ -1469,6 +1482,7 @@ impl GachaRecordsWriter for SrgfGachaRecordsWriter {
       account_locale,
       account_uid,
       export_time,
+      pretty,
     } = self;
 
     let server_region = ServerRegion::from_uid(BUSINESS, *account_uid)
@@ -1543,8 +1557,12 @@ impl GachaRecordsWriter for SrgfGachaRecordsWriter {
         cause,
       })?;
 
-    serde_json::to_writer(output_file, &srgf)
-      .map_err(|cause| SrgfGachaRecordsWriteErrorKind::Serialize { cause })?;
+    if pretty.unwrap_or_default() {
+      serde_json::to_writer_pretty(output_file, &srgf)
+    } else {
+      serde_json::to_writer(output_file, &srgf)
+    }
+    .map_err(|cause| SrgfGachaRecordsWriteErrorKind::Serialize { cause })?;
 
     Ok(output)
   }
@@ -2353,6 +2371,7 @@ mod tests {
       account_locale: "en-us".to_owned(),
       account_uid: 100_000_000,
       export_time: OffsetDateTime::now_utc().to_offset(*consts::LOCAL_OFFSET),
+      pretty: None,
     }
     .write(GachaMetadata::current(), records.clone(), &output)
     .unwrap();
@@ -2398,6 +2417,7 @@ mod tests {
       account_locale: "en-us".to_owned(),
       account_uid: correct_uid,
       export_time: OffsetDateTime::now_utc().to_offset(*consts::LOCAL_OFFSET),
+      pretty: None,
     }
     .write(
       GachaMetadata::current(),
@@ -2596,6 +2616,7 @@ mod tests {
       ]),
       export_time: OffsetDateTime::now_utc().to_offset(*consts::LOCAL_OFFSET),
       minimized: None,
+      pretty: None,
     }
     .write(GachaMetadata::current(), records.clone(), &output)
     .unwrap();
@@ -2688,6 +2709,7 @@ mod tests {
       account_locale: "en-us".to_owned(),
       account_uid: 100_000_000,
       export_time: OffsetDateTime::now_utc().to_offset(*consts::LOCAL_OFFSET),
+      pretty: None,
     }
     .write(GachaMetadata::current(), records.clone(), &output)
     .unwrap();
