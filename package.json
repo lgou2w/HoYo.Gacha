@@ -17,7 +17,7 @@
   },
   "scripts": {
     "prepare": "husky",
-    "clean": "pnpm web:clean && pnpm tauri:clean",
+    "clean": "pnpm web:clean && pnpm backend:clean",
     "dev": "concurrently --raw -k \"pnpm:web:dev\" \"pnpm:backend:dev\"",
     "dev:tools": "cross-env REACT_DEVTOOLS=1 pnpm dev",
     "build": "pnpm web:build && pnpm backend:build",
