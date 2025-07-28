@@ -637,7 +637,7 @@ export const findAndPrettyGachaRecords: FindAndPrettyGachaRecords = declareComma
 
 export const gachaMetadataIsUpdating = declareCommand<undefined, boolean>('business_gacha_metadata_is_updating')
 
-export const gachaMetadataUpdate = declareCommand<undefined, void>('business_gacha_metadata_update')
+export const gachaMetadataUpdate = declareCommand<undefined, 'Updating' | 'UpToDate' | { Success: string }>('business_gacha_metadata_update')
 
 // #endregion
 

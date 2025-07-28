@@ -1,5 +1,6 @@
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
+use std::time::Duration;
 use std::{env, process};
 
 use os_info::Info as OsInfo;
@@ -192,8 +193,22 @@ pub async fn start(singleton: Singleton, tracing: Tracing, database: Database) {
 
         // Update Gacha metadata if needed
         tokio::spawn(async move {
-          if let Err(error) = GachaMetadata::update().await {
-            tracing::error!(message = "Failed to update Gacha metadata", ?error);
+          const RETRIES: u32 = 3;
+          const MIN: Duration = Duration::from_secs(3);
+          const MAX: Duration = Duration::from_secs(10);
+
+          let backoff = exponential_backoff::Backoff::new(RETRIES, MIN, MAX);
+          for duration in backoff {
+            if let Err(error) = GachaMetadata::update().await {
+              tracing::error!(message = "Failed to update Gacha metadata, retring...", ?error);
+              if let Some(duration) = duration {
+                tokio::time::sleep(duration).await;
+              }
+              continue;
+            }
+
+            // Success
+            break;
           }
         });
       }

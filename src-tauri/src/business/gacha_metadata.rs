@@ -8,7 +8,7 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, LazyLock, OnceLock, RwLock};
 use std::time::{Duration, Instant};
 
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use sha1::{Digest, Sha1};
 use time::OffsetDateTime;
 use time::serde::rfc3339;
@@ -439,6 +439,13 @@ struct GachaMetadataIndexEntry {
   size: u64,
 }
 
+#[derive(Debug, Serialize)]
+pub enum UpdatedKind {
+  Updating,
+  UpToDate,
+  Success(String), // SHA-1
+}
+
 impl GachaMetadata {
   pub fn current() -> &'static Self {
     let guard = ACTIVATE_METADATA
@@ -452,9 +459,9 @@ impl GachaMetadata {
     ACTIVATE_METADATA_UPDATING.load(Ordering::SeqCst)
   }
 
-  pub async fn update() -> Result<(), Box<dyn StdError + 'static>> {
+  pub async fn update() -> Result<UpdatedKind, Box<dyn StdError + Send + Sync + 'static>> {
     if ACTIVATE_METADATA_UPDATING.swap(true, Ordering::SeqCst) {
-      return Err("Gacha metadata is already updating".into());
+      return Ok(UpdatedKind::Updating);
     }
 
     struct UpdateGuard;
@@ -488,7 +495,7 @@ impl GachaMetadata {
         message = "Gacha metadata is already up-to-date",
         hash = %metadata_index.latest,
       );
-      return Ok(());
+      return Ok(UpdatedKind::UpToDate);
     }
 
     let start = Instant::now();
@@ -547,7 +554,7 @@ impl GachaMetadata {
       createdAt = %latest_metadata_entry.created_at,
     );
 
-    Ok(())
+    Ok(UpdatedKind::Success(metadata_index.latest))
   }
 }
 
