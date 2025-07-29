@@ -119,7 +119,7 @@ pub const BIZ_HONKAI_STAR_RAIL_GLOBAL: BizInternals = biz!(
   "Honkai: Star Rail",
   "StarRail",
   "StarRail_Data",
-  "https://public-operation-hkrpg-sg.mihoyo.com/common/gacha_record/api/getGachaLog",
+  "https://public-operation-hkrpg-sg.hoyoverse.com/common/gacha_record/api/getGachaLog",
 );
 
 pub const BIZ_ZENLESS_ZONE_ZERO_OFFICIAL: BizInternals = biz!(
@@ -139,7 +139,7 @@ pub const BIZ_ZENLESS_ZONE_ZERO_GLOBAL: BizInternals = biz!(
   "Zenless Zone Zero",
   "ZenlessZoneZero",
   "ZenlessZoneZero_Data",
-  "https://public-operation-nap-sg.mihoyo.com/common/gacha_record/api/getGachaLog",
+  "https://public-operation-nap-sg.hoyoverse.com/common/gacha_record/api/getGachaLog",
 );
 
 static BIZ_INTERNALS: LazyLock<HashMap<(Business, BusinessRegion), &'static BizInternals>> =
@@ -190,6 +190,17 @@ impl BizInternals {
 
   pub fn is_official(&self) -> bool {
     matches!(self.region, BusinessRegion::Official)
+  }
+
+  #[inline]
+  pub fn appdata_folder_subname(&self) -> &'static str {
+    if self.business == Business::ZenlessZoneZero && self.region == BusinessRegion::Global {
+      // See: https://github.com/lgou2w/HoYo.Gacha/pull/90
+      // Thanks @lim1202
+      "ZenlessZoneZero"
+    } else {
+      self.display_name
+    }
   }
 
   #[inline]

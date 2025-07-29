@@ -75,14 +75,20 @@ impl DataFolderLocator for UnityLogDataFolderLocator {
       "Player.log"
     };
 
-    let appdata_folder = if biz.business == Business::GenshinImpact || biz.is_official() {
+    let appdata_folder = if biz.business == Business::GenshinImpact
+      || biz.business == Business::ZenlessZoneZero
+      || biz.is_official()
+    {
       &*consts::PLATFORM.appdata_locallow_mihoyo
     } else {
       &*consts::PLATFORM.appdata_locallow_cognosphere
     };
 
     let span = Span::current();
-    let log_path = appdata_folder.join(biz.display_name).join(log_filename);
+    let log_path = appdata_folder
+      .join(biz.appdata_folder_subname())
+      .join(log_filename);
+
     span.record("log_path", log_path.to_str());
 
     if !log_path.is_file() {
