@@ -1,5 +1,5 @@
 name: 🐞 问题反馈
-title: '[bug] '
+title: '[Bug] '
 description: 通过这个议题反馈程序中的问题
 labels: ['bug']
 
