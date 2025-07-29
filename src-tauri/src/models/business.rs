@@ -139,7 +139,7 @@ pub const BIZ_ZENLESS_ZONE_ZERO_GLOBAL: BizInternals = biz!(
   "ZenlessZoneZero",
   "ZenlessZoneZero",
   "ZenlessZoneZero_Data",
-  "https://public-operation-nap-sg.mihoyo.com/common/gacha_record/api/getGachaLog",
+  "https://public-operation-nap-sg.hoyoverse.com/common/gacha_record/api/getGachaLog",
 );
 
 static BIZ_INTERNALS: LazyLock<HashMap<(Business, BusinessRegion), &'static BizInternals>> =
