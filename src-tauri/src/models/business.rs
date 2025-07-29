@@ -194,7 +194,7 @@ impl BizInternals {
 
   #[inline]
   pub fn appdata_folder_subname(&self) -> &'static str {
-    if self.business == Business::ZenlessZoneZero {
+    if self.business == Business::ZenlessZoneZero && self.region == BusinessRegion::Global {
       // See: https://github.com/lgou2w/HoYo.Gacha/pull/90
       // Thanks @lim1202
       "ZenlessZoneZero"
