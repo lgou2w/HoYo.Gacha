@@ -24,10 +24,11 @@ const ProgressMax = 100
 
 interface UpdaterProps {
   onCompleted?: (updatedKind: Awaited<ReturnType<typeof updaterUpdate>>) => void
+  onError?: (error: unknown) => void
   manually?: boolean
 }
 
-const Updater: ForwardRefRenderFunction<{ start (): void }, UpdaterProps> = (
+const Updater: ForwardRefRenderFunction<{ start (silent?: boolean): void }, UpdaterProps> = (
   props,
   ref,
 ) => {
@@ -41,7 +42,7 @@ const Updater: ForwardRefRenderFunction<{ start (): void }, UpdaterProps> = (
   const notifier = useNotifier()
   const i18n = useI18n()
 
-  const start = useCallback(async () => {
+  const start = useCallback(async (silent?: boolean) => {
     const progressChannel = 'APP_UPDATER_' + Math.random().toString().replace('.', '_')
     console.debug('Updater: starting update process:', progressChannel)
 
@@ -77,7 +78,10 @@ const Updater: ForwardRefRenderFunction<{ start (): void }, UpdaterProps> = (
         produce((draft) => {
           draft.busy = false
         })
-        notifier.info(i18n.t('Updater.UpToDateTitle'))
+
+        if (!silent) {
+          notifier.info(i18n.t('Updater.UpToDateTitle'))
+        }
       } else if (typeof updatedKind === 'object') {
         produce((draft) => {
           draft.success = true
@@ -94,6 +98,7 @@ const Updater: ForwardRefRenderFunction<{ start (): void }, UpdaterProps> = (
         timeout: notifier.DefaultTimeouts.error * 2,
         dismissible: true,
       })
+      props.onError?.(e)
       throw e
     }
   }, [i18n, notifier, produce, props])

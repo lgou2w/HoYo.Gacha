@@ -167,7 +167,7 @@ impl Updater {
 
     // Download update
     on_progress(-1.)?; // Set progress to -1 to indicate download start
-    let out_path = current_dir.join(latest_release.name);
+    let out_path = current_dir.join(format!("{}.temp", latest_release.name));
     let mut res = consts::REQWEST
       .get(format!("{API_RELEASE}/download"))
       .timeout(API_TIMEOUT)
@@ -194,9 +194,10 @@ impl Updater {
       );
     }
 
-    let _ = fs::rename(&current_exe, before_exe).await;
-    info!("Update downloaded successfully");
+    fs::rename(&current_exe, before_exe).await?;
+    fs::rename(out_path, current_exe).await?;
 
+    info!("Update downloaded successfully");
     Ok(UpdatedKind::Success(latest_release.tag_name))
   }
 }
