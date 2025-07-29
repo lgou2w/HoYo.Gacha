@@ -136,7 +136,7 @@ pub const BIZ_ZENLESS_ZONE_ZERO_GLOBAL: BizInternals = biz!(
   ZenlessZoneZero,
   Global,
   "nap_global",
-  "ZenlessZoneZero",
+  "Zenless Zone Zero",
   "ZenlessZoneZero",
   "ZenlessZoneZero_Data",
   "https://public-operation-nap-sg.hoyoverse.com/common/gacha_record/api/getGachaLog",
