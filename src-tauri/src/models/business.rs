@@ -193,6 +193,17 @@ impl BizInternals {
   }
 
   #[inline]
+  pub fn appdata_folder_subname(&self) -> &'static str {
+    if self.business == Business::ZenlessZoneZero {
+      // See: https://github.com/lgou2w/HoYo.Gacha/pull/90
+      // Thanks @lim1202
+      "ZenlessZoneZero"
+    } else {
+      self.display_name
+    }
+  }
+
+  #[inline]
   pub fn join_executable_file(&self, folder: impl AsRef<Path>) -> PathBuf {
     let mut executable = folder.as_ref().join(self.executable_name);
     executable.set_extension(env::consts::EXE_EXTENSION);
