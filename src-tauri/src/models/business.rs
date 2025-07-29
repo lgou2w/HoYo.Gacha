@@ -119,7 +119,7 @@ pub const BIZ_HONKAI_STAR_RAIL_GLOBAL: BizInternals = biz!(
   "Honkai: Star Rail",
   "StarRail",
   "StarRail_Data",
-  "https://public-operation-hkrpg-sg.mihoyo.com/common/gacha_record/api/getGachaLog",
+  "https://public-operation-hkrpg-sg.hoyoverse.com/common/gacha_record/api/getGachaLog",
 );
 
 pub const BIZ_ZENLESS_ZONE_ZERO_OFFICIAL: BizInternals = biz!(
