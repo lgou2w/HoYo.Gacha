@@ -75,7 +75,7 @@ impl DataFolderLocator for UnityLogDataFolderLocator {
       "Player.log"
     };
 
-    let appdata_folder = if biz.business == Business::GenshinImpact || biz.is_official() {
+    let appdata_folder = if biz.business == Business::GenshinImpact || biz.business == Business::ZenlessZoneZero || biz.is_official() {
       &*consts::PLATFORM.appdata_locallow_mihoyo
     } else {
       &*consts::PLATFORM.appdata_locallow_cognosphere
