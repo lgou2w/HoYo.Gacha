@@ -17,7 +17,7 @@ export default function Root () {
     }
 
     isUpdated = true
-    updaterRef.current.start()
+    updaterRef.current.start(true)
   }, [])
 
   return (

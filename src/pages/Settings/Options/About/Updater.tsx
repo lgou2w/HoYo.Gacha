@@ -35,6 +35,7 @@ export default function SettingsOptionsAboutUpdater () {
           <Updater
             ref={updaterRef}
             onCompleted={() => setBusy(false)}
+            onError={() => setBusy(false)}
             manually
           />
         </Fragment>
