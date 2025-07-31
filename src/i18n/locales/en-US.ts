@@ -222,6 +222,10 @@ export default {
       UpToDateTitle: 'App already up to date.',
       ErrorTitle: 'App update failed:',
     },
+    Webview2Alert: {
+      Title: 'Webview2 Runtime:',
+      Subtitle: 'If your system\'s Webview2 runtime is lower than version {{min}}, your app\'s icon image assets may not load. Please update here:',
+    },
     Pages: {
       Home: {
         Hero: {
