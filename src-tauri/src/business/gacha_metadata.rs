@@ -272,6 +272,13 @@ fn raw_categorizations_into_locales(
       },
     ) in i18n
     {
+      // See: https://github.com/lgou2w/HoYo.Gacha/issues/92
+      debug_assert_eq!(
+        entries_len,
+        names.len(),
+        "Entries and names length mismatch for category '{category}' in locale '{locale}'"
+      );
+
       let new_entries = entries.clone().into_iter().zip(names).fold(
         HashMap::with_capacity(entries_len),
         |mut acc, (entry, name)| {
