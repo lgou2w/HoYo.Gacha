@@ -222,6 +222,10 @@ export default {
       UpToDateTitle: '应用已是最新版本。',
       ErrorTitle: '应用更新失败：',
     },
+    Webview2Alert: {
+      Title: 'Webview2 运行时：',
+      Subtitle: '如果您系统的 Webview2 运行时版本低于 {{min}}，则应用的图标图片资源可能无法加载。请在此处更新：',
+    },
     Pages: {
       Home: {
         Hero: {

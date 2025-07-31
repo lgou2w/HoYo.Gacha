@@ -3,6 +3,7 @@ import { Outlet } from '@tanstack/react-router'
 import Layout from '@/components/Layout'
 import ThemeProvider from '@/components/ThemeProvider'
 import Updater from '@/components/Updater'
+import Webview2Alert from '@/components/Webview2Alert'
 import RootRoute from './route'
 
 let isUpdated = false
@@ -29,6 +30,7 @@ export default function Root () {
       <Layout>
         <Outlet />
         {import.meta.env.PROD && <Updater ref={updaterRef} />}
+        <Webview2Alert />
       </Layout>
     </ThemeProvider>
   )
