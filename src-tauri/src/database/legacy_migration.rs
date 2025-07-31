@@ -325,17 +325,21 @@ pub async fn migration_with(
           .transpose()?
       };
 
-      let rank_type = row.try_get::<String, _>("rank_type")?.parse()?;
-      let count = row.try_get::<String, _>("count")?.parse()?;
       let locale: String = row.try_get("lang")?;
-
       let time = row.try_get::<String, _>("time")?;
       let time = PrimitiveDateTime::parse(&time, GACHA_TIME_FORMAT)
         .unwrap()
         .assume_offset(server_region.time_zone());
 
+      let count = row.try_get::<String, _>("count")?.parse().unwrap_or(1);
       let mut name = row.try_get::<String, _>("name")?;
-      let item_type = row.try_get("item_type")?;
+      let mut rank_type = row
+        .try_get::<String, _>("rank_type")?
+        .parse::<u32>()
+        .map(Option::Some)
+        .unwrap_or_default();
+
+      let mut item_type = row.try_get::<String, _>("item_type")?;
       let mut item_id = row.try_get::<String, _>("item_id")?;
 
       let metadata_locale = metadata.obtain(business, &locale).ok_or(
@@ -345,7 +349,7 @@ pub async fn migration_with(
         },
       )?;
 
-      match item_id.trim() {
+      let metadata_entry = match item_id.trim() {
         "" => {
           // Genshin Impact only
           let metadata_entry = metadata_locale.entry_from_name_first(&name).ok_or(
@@ -358,6 +362,8 @@ pub async fn migration_with(
           )?;
 
           item_id = metadata_entry.id.to_owned();
+
+          metadata_entry
         }
         other => {
           // Honkai: Star Rail & Zenless Zone Zero
@@ -371,10 +377,21 @@ pub async fn migration_with(
           )?;
 
           // Prefer metadata item name
-          if name != metadata_entry.name {
+          if name.is_empty() || name != metadata_entry.name {
             name = metadata_entry.name.to_owned();
           }
+
+          metadata_entry
         }
+      };
+
+      // Automatically fix incorrect data
+      // See: https://github.com/lgou2w/HoYo.Gacha/issues/95
+      if rank_type.is_none() {
+        rank_type.replace(metadata_entry.rank as _);
+      }
+      if item_type.is_empty() || item_type != metadata_entry.category_name {
+        item_type = metadata_entry.category_name.to_owned();
       }
 
       let query = GachaRecordQuestioner::sql_create_gacha_record(
@@ -384,7 +401,7 @@ pub async fn migration_with(
           id,
           gacha_type,
           gacha_id,
-          rank_type,
+          rank_type: rank_type.unwrap(), // SAFETY
           count,
           lang: locale,
           time,
