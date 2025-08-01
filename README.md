@@ -57,6 +57,18 @@ The program will automatically create a database file named `HoYo.Gacha.v1.db` i
 
 Open the new version of the tool app. Click the gear-shaped `Settings` button in the lower left corner of the app, find the `Database Migration` bar at the top, and click the `Migrate` button on the right. Select and open the old version database `HoYo.Gacha.db` file and wait for the migration to complete automatically.
 
+## 赞助商 / Sponsorship
+
+HoYo.Gacha is currently using sponsored software from the following service providers:
+
+<a href="https://www.netlify.com">
+  <img src="https://www.netlify.com/assets/badges/netlify-badge-color-accent.svg" alt="Deploys by Netlify" />
+</a>
+<br />
+<br />
+
+* [Netlify](https://www.netlify.com/) provides document and home page hosting service for HoYo.Gacha
+
 ## 协议 / License
 
 > [!NOTE]
