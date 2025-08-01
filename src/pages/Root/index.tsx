@@ -1,5 +1,6 @@
 import React, { ComponentRef, useEffect, useRef } from 'react'
 import { Outlet } from '@tanstack/react-router'
+import AuthorOnly from '@/components/AuthorOnly'
 import Layout from '@/components/Layout'
 import ThemeProvider from '@/components/ThemeProvider'
 import Updater from '@/components/Updater'
@@ -29,7 +30,11 @@ export default function Root () {
     >
       <Layout>
         <Outlet />
-        {import.meta.env.PROD && <Updater ref={updaterRef} />}
+        {import.meta.env.PROD && (
+          <AuthorOnly>
+            <Updater ref={updaterRef} />
+          </AuthorOnly>
+        )}
         <Webview2Alert />
       </Layout>
     </ThemeProvider>

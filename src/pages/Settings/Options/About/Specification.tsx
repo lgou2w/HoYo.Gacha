@@ -4,7 +4,7 @@ import { InfoRegular } from '@fluentui/react-icons'
 import { Await } from '@tanstack/react-router'
 import { writeText } from '@tauri-apps/plugin-clipboard-manager'
 import isPromise from 'is-promise'
-import { gitCommit, osInfo, tauriVersion, webview2Version } from '@/api/commands/core'
+import { gitInfo, osInfo, tauriVersion, webview2Version } from '@/api/commands/core'
 import Locale from '@/components/Locale'
 import useI18n from '@/hooks/useI18n'
 import { stringifyOsInfoVersion } from '@/interfaces/Os'
@@ -39,11 +39,11 @@ export default function SettingsOptionsAboutSpecification () {
       }),
       Webview2: webview2Version(),
       Tauri: tauriVersion(),
-      GitCommit: gitCommit().then((commit) => commit.hash),
-      AppVersion: gitCommit().then((commit) => {
+      GitCommit: gitInfo().then((info) => info.commitHash),
+      AppVersion: gitInfo().then((info) => {
         return {
-          value: `v${__APP_VERSION__}-git-${commit.hash.substring(0, 7)} (${i18n.dayjs(commit.date).fromNow()})`,
-          link: `${__APP_REPOSITORY__}/commit/${commit.hash}`,
+          value: `v${__APP_VERSION__}-git-${info.commitHash.substring(0, 7)} (${i18n.dayjs(info.commitDate).fromNow()})`,
+          link: `${__APP_REPOSITORY__}/commit/${info.commitHash}`,
         }
       }),
     }

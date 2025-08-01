@@ -1,4 +1,5 @@
 import React from 'react'
+import AuthorOnly from '@/components/AuthorOnly'
 import Locale from '@/components/Locale'
 import SettingsOptionsGroup from '@/pages/Settings/Options/OptionsGroup'
 import SettingsOptionsAboutLnk from './Lnk'
@@ -10,7 +11,9 @@ export default function SettingsOptionsAbout () {
     <SettingsOptionsGroup
       title={<Locale mapping={['Pages.Settings.Options.About.Title']} />}
     >
-      <SettingsOptionsAboutUpdater />
+      <AuthorOnly>
+        <SettingsOptionsAboutUpdater />
+      </AuthorOnly>
       <SettingsOptionsAboutSpecification />
       <SettingsOptionsAboutLnk />
     </SettingsOptionsGroup>

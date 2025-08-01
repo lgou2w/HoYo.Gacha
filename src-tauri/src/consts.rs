@@ -42,6 +42,7 @@ pub const REPOSITORY: &str = env!("CARGO_PKG_REPOSITORY");
 // See: src-tauri/build.rs
 pub const GIT_COMMIT_HASH: &str = env!("GIT_COMMIT_HASH");
 pub const GIT_COMMIT_DATE: &str = env!("GIT_COMMIT_DATE");
+pub const GIT_REMOTE_URL: &str = env!("GIT_REMOTE_URL");
 
 // Crashs
 

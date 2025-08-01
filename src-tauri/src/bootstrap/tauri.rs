@@ -269,7 +269,7 @@ pub async fn start(singleton: Singleton, tracing: Tracing, database: Database) {
       core_locale,
       core_webview2_version,
       core_tauri_version,
-      core_git_commit,
+      core_git_info,
       core_is_supported_window_vibrancy,
       core_change_theme,
       core_create_app_lnk,
@@ -376,10 +376,11 @@ fn core_tauri_version() -> &'static str {
 }
 
 #[tauri::command]
-fn core_git_commit() -> serde_json::Value {
+fn core_git_info() -> serde_json::Value {
   serde_json::json!({
-    "hash": consts::GIT_COMMIT_HASH,
-    "date": consts::GIT_COMMIT_DATE,
+    "commitHash": consts::GIT_COMMIT_HASH,
+    "commitDate": consts::GIT_COMMIT_DATE,
+    "remoteUrl": consts::GIT_REMOTE_URL,
   })
 }
 
