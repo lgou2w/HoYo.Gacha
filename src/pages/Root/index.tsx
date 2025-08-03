@@ -1,4 +1,4 @@
-import React, { ComponentRef, useEffect, useRef } from 'react'
+import React, { ComponentRef, useCallback } from 'react'
 import { Outlet } from '@tanstack/react-router'
 import AuthorOnly from '@/components/AuthorOnly'
 import Layout from '@/components/Layout'
@@ -11,15 +11,14 @@ let isUpdated = false
 
 export default function Root () {
   const { supportedWindowVibrancy, initialThemeData, themeStore } = RootRoute.useLoaderData()
-  const updaterRef = useRef<ComponentRef<typeof Updater>>(null)
 
-  useEffect(() => {
-    if (isUpdated || !updaterRef.current) {
+  const handleUpdater = useCallback((ref: ComponentRef<typeof Updater> | null) => {
+    if (isUpdated || !ref) {
       return
     }
 
     isUpdated = true
-    updaterRef.current.start(true)
+    ref.start(true)
   }, [])
 
   return (
@@ -32,7 +31,7 @@ export default function Root () {
         <Outlet />
         {import.meta.env.PROD && (
           <AuthorOnly>
-            <Updater ref={updaterRef} />
+            <Updater ref={(ref) => handleUpdater(ref)} />
           </AuthorOnly>
         )}
         <Webview2Alert />
