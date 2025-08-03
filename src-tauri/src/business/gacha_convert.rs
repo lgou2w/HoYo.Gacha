@@ -808,6 +808,8 @@ pub struct UigfHk4eItem {
   #[serde(with = "gacha_time_format")]
   pub time: PrimitiveDateTime,
   #[serde(default = "Option::default", skip_serializing_if = "Option::is_none")]
+  pub name: Option<String>,
+  #[serde(default = "Option::default", skip_serializing_if = "Option::is_none")]
   pub item_type: Option<String>,
   #[serde(
     with = "serde_helper::string_number_into::option",
@@ -833,6 +835,8 @@ pub struct UigfHkrpgItem {
   pub count: Option<u32>,
   #[serde(with = "gacha_time_format")]
   pub time: PrimitiveDateTime,
+  #[serde(default = "Option::default", skip_serializing_if = "Option::is_none")]
+  pub name: Option<String>,
   #[serde(default = "Option::default", skip_serializing_if = "Option::is_none")]
   pub item_type: Option<String>,
   #[serde(
@@ -863,6 +867,8 @@ pub struct UigfNapItem {
   pub count: Option<u32>,
   #[serde(with = "gacha_time_format")]
   pub time: PrimitiveDateTime,
+  #[serde(default = "Option::default", skip_serializing_if = "Option::is_none")]
+  pub name: Option<String>,
   #[serde(default = "Option::default", skip_serializing_if = "Option::is_none")]
   pub item_type: Option<String>,
   #[serde(
@@ -1037,6 +1043,11 @@ impl GachaRecordsWriter for UigfGachaRecordsWriter {
             count: if minimized { None } else { Some(record.count) },
             // HACK: No need offset, because `timezone` is already there.
             time: record.time_to_primitive(),
+            name: if minimized {
+              None
+            } else {
+              Some(metadata_entry.name.to_owned())
+            },
             item_type: if minimized {
               None
             } else {
@@ -1075,6 +1086,11 @@ impl GachaRecordsWriter for UigfGachaRecordsWriter {
             count: if minimized { None } else { Some(record.count) },
             // HACK: No need offset, because `timezone` is already there.
             time: record.time_to_primitive(),
+            name: if minimized {
+              None
+            } else {
+              Some(metadata_entry.name.to_owned())
+            },
             item_type: if minimized {
               None
             } else {
@@ -1106,6 +1122,11 @@ impl GachaRecordsWriter for UigfGachaRecordsWriter {
             count: if minimized { None } else { Some(record.count) },
             // HACK: No need offset, because `timezone` is already there.
             time: record.time_to_primitive(),
+            name: if minimized {
+              None
+            } else {
+              Some(metadata_entry.name.to_owned())
+            },
             item_type: if minimized {
               None
             } else {
