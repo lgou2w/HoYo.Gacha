@@ -61,7 +61,9 @@ pub async fn start(singleton: Singleton, tracing: Tracing, database: Database) {
   fn update_window_state(state: &mut WindowState, window: &WebviewWindow) -> tauri::Result<()> {
     state.maximized = window.is_maximized()?;
 
-    if !state.maximized {
+    let minimized = window.is_minimized()?;
+
+    if !state.maximized && !minimized {
       let size = window.inner_size()?;
       if size.width > 0 && size.height > 0 {
         state.width = size.width;
@@ -91,9 +93,9 @@ pub async fn start(singleton: Singleton, tracing: Tracing, database: Database) {
       info!("Creating the Main window...");
       let main_window = create_main_window(app, color_scheme)?;
 
-      info!("Restoring window state...");
       let window_state_cache = app.state::<WindowStateCache>();
       let mut window_state = window_state_cache.inner().0.lock().unwrap();
+      info!(message = "Restoring window state...", ?window_state);
 
       if is_some_window_state {
         fn intersects(monitor: &Monitor, position: PhysicalPosition<i32>, size: PhysicalSize<u32>) -> bool {
@@ -148,6 +150,7 @@ pub async fn start(singleton: Singleton, tracing: Tracing, database: Database) {
 
       // HACK: Delay window show to avoid moving animation
       main_window.show()?;
+      main_window.set_focus()?;
 
       #[cfg(windows)]
       ffi::webview_version(&main_window, |version| {
