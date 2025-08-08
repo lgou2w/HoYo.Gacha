@@ -10,7 +10,7 @@ use futures_util::FutureExt;
 use futures_util::future::BoxFuture;
 use regex::Regex;
 use serde::ser::SerializeStruct;
-use serde::{Deserialize, Deserializer, Serialize};
+use serde::{Deserialize, Serialize};
 use time::format_description::well_known::Rfc3339;
 use time::{OffsetDateTime, PrimitiveDateTime};
 use tracing::{error, info, warn};
@@ -641,23 +641,6 @@ struct GachaRecordsResponse {
   data: Option<GachaRecordsPagination>,
 }
 
-fn gacha_id_de<'de, D>(de: D) -> Result<Option<u32>, D::Error>
-where
-  D: Deserializer<'de>,
-{
-  use serde::de::IntoDeserializer;
-
-  let opt: Option<String> = serde_helper::de::empty_string_as_none(de)?;
-  match opt.as_deref() {
-    None => Ok(None),
-    Some(str) => {
-      let num: u64 = serde_helper::string_number_into::deserialize(str.into_deserializer())?;
-      let res = u32::try_from(num).map_err(serde::de::Error::custom)?;
-      Ok(Some(res))
-    }
-  }
-}
-
 #[derive(Deserialize)]
 struct GachaRecordsPaginationItem {
   id: String,
@@ -666,7 +649,10 @@ struct GachaRecordsPaginationItem {
   #[serde(with = "serde_helper::string_number_into")]
   gacha_type: u32,
   // `Honkai: Star Rail`, `Zenless Zone Zero` only
-  #[serde(deserialize_with = "gacha_id_de", default = "Option::default")]
+  #[serde(
+    with = "serde_helper::gacha_id_or_item_id_option",
+    default = "Option::default"
+  )]
   gacha_id: Option<u32>,
   #[serde(with = "serde_helper::string_number_into")]
   rank_type: u32,
@@ -679,10 +665,10 @@ struct GachaRecordsPaginationItem {
   item_type: String,
   // `Honkai: Star Rail`, `Zenless Zone Zero` only
   #[serde(
-    deserialize_with = "serde_helper::de::empty_string_as_none",
+    with = "serde_helper::gacha_id_or_item_id_option",
     default = "Option::default"
   )]
-  item_id: Option<String>,
+  item_id: Option<u32>,
 }
 
 #[derive(Deserialize)]
@@ -815,7 +801,7 @@ pub async fn fetch_gacha_records(
       //   Mandatory mapping of item ids.
       //   If metadata is outdated, this error will be thrown.
       None => metadata
-        .obtain(business, &item.lang)
+        .locale(business, &item.lang)
         .and_then(|map| map.entry_from_name_first(&item.name))
         .ok_or_else(|| GachaUrlErrorKind::MissingMetadataEntry {
           business,

@@ -526,10 +526,13 @@ function CardsEntryRecord (props: CardsEntryRecordProps) {
     category === PrettyCategory.CollaborationCharacter ||
     category === PrettyCategory.CollaborationWeapon
 
-  let isHardPity = false
-  if (prevRecord && !prevRecord.limited && record.limited) {
-    isHardPity = true
-  }
+  const isHardPity = prevRecord && !prevRecord.limited && record.limited
+
+  // FIXME: debug test
+  let title = record.name
+  title += record.version ? '\n版本：' + record.version : ''
+  title += record.genshinCharacter2 ? '\n角色活动祈愿-2' : ''
+  title += '\n' + i18n.dayjs(record.time).format('LLLL')
 
   return (
     <div
@@ -540,7 +543,7 @@ function CardsEntryRecord (props: CardsEntryRecordProps) {
         '--progress':
           calcPityProgressVar(category, record.usedPity),
       }}
-      title={i18n.dayjs(record.time).format('LLLL')}
+      title={title}
     >
       <GachaItemImage
         className={styles.icon}

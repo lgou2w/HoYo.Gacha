@@ -5,7 +5,7 @@ use serde::Serialize;
 use time::OffsetDateTime;
 use time::serde::rfc3339;
 
-use crate::business::{GachaMetadata, GachaMetadataEntryLimited, GachaMetadataEntryRef};
+use crate::business::{GachaMetadata, GameVersion};
 use crate::error::declare_error_kinds;
 use crate::models::{Business, GachaRecord};
 
@@ -35,6 +35,8 @@ pub enum PrettyCategory {
 }
 
 // See: models/gacha_record.rs
+const GENSHIN_IMPACT_CHARACTER2: u32 = 400;
+
 static KNOWN_CATEGORIZEDS: LazyLock<HashMap<Business, HashMap<u32, PrettyCategory>>> =
   LazyLock::new(|| {
     HashMap::from_iter([
@@ -44,7 +46,7 @@ static KNOWN_CATEGORIZEDS: LazyLock<HashMap<Business, HashMap<u32, PrettyCategor
           (100, PrettyCategory::Beginner),
           (200, PrettyCategory::Permanent),
           (301, PrettyCategory::Character),
-          (400, PrettyCategory::Character),
+          (GENSHIN_IMPACT_CHARACTER2, PrettyCategory::Character),
           (302, PrettyCategory::Weapon),
           (500, PrettyCategory::Chronicled),
         ]),
@@ -95,14 +97,19 @@ pub struct PrettyGachaRecord {
   pub id: String,
   // See: models/gacha_metadata.rs::GachaMetadata::KNOWN_CATEGORIES
   pub item_category: &'static str,
-  pub item_id: String,
+  pub item_id: u32,
   pub name: String,
   #[serde(with = "rfc3339")]
   pub time: OffsetDateTime,
   #[serde(skip_serializing_if = "Option::is_none")]
   pub used_pity: Option<u64>, // Purple and Golden only
   #[serde(skip_serializing_if = "Option::is_none")]
-  pub limited: Option<bool>, // Golden only
+  pub limited: Option<bool>, // Purple and Golden only
+  #[serde(skip_serializing_if = "Option::is_none")]
+  pub version: Option<GameVersion>,
+  // 'Genshin Impact' Character only, Distinguish Character and Character-2
+  #[serde(skip_serializing_if = "Option::is_none")]
+  pub genshin_character2: Option<bool>,
 }
 
 impl PrettyGachaRecord {
@@ -110,37 +117,38 @@ impl PrettyGachaRecord {
     metadata: &GachaMetadata,
     record: &GachaRecord,
     used_pity: Option<u64>,
-    is_golden: bool,
     custom_locale: Option<&str>,
   ) -> Result<Self, PrettyGachaRecordsError> {
-    #[inline]
-    fn lookup<'a>(
-      metadata: &'a GachaMetadata,
-      record: &'a GachaRecord,
-      locale: &str,
-    ) -> Option<GachaMetadataEntryRef<'a>> {
-      metadata
-        .obtain(record.business, locale)
-        .and_then(|map| map.entry_from_id(&record.item_id))
-    }
-
     // Use custom locale first, otherwise use record lang
     let entry = custom_locale
-      .and_then(|locale| lookup(metadata, record, locale))
-      .or(lookup(metadata, record, &record.lang))
+      .and_then(|locale| metadata.locale(record.business, locale))
+      .or(metadata.locale(record.business, &record.lang))
+      .and_then(|locale| locale.entry_from_id(record.item_id))
       .ok_or_else(|| PrettyGachaRecordsErrorKind::MissingMetadataEntry {
         business: record.business,
         locale: custom_locale.unwrap_or(&record.lang).to_owned(),
         name: record.name.clone(),
-        item_id: record.item_id.clone(),
+        item_id: record.item_id.to_string(),
       })?;
 
-    let limited = if is_golden {
-      Some(match entry.limited {
-        GachaMetadataEntryLimited::No => false,
-        GachaMetadataEntryLimited::Yes => true,
-        GachaMetadataEntryLimited::Deadline(deadline) => record.time <= *deadline,
-      })
+    let (limited, version) = if let Some(banner) = metadata.banner_from_record(record) {
+      let limited = if (record.is_rank_type_golden() && banner.in_up_golden(record.item_id))
+        || (record.is_rank_type_purple() && banner.in_up_purple(record.item_id))
+      {
+        Some(true)
+      } else {
+        None
+      };
+
+      (limited, banner.version.clone())
+    } else {
+      (None, None)
+    };
+
+    let genshin_character2 = if record.business == Business::GenshinImpact
+      && record.gacha_type == GENSHIN_IMPACT_CHARACTER2
+    {
+      Some(true)
     } else {
       None
     };
@@ -149,11 +157,13 @@ impl PrettyGachaRecord {
       id: record.id.clone(),
       item_category: entry.category,
       // HACK: Always use item_id and name from Metadata
-      item_id: entry.id.to_owned(),
+      item_id: entry.id,
       name: entry.name.to_owned(),
       time: record.time,
       used_pity,
       limited,
+      version,
+      genshin_character2,
     })
   }
 }
@@ -328,14 +338,19 @@ impl PrettiedGachaRecords {
 
     for (gacha_type, category) in gacha_type_categories
       .iter() // See below
-      .filter(|(gacha_type, _)| !(business == Business::GenshinImpact && **gacha_type == 400))
+      .filter(|(gacha_type, _)| {
+        !(business == Business::GenshinImpact && **gacha_type == GENSHIN_IMPACT_CHARACTER2)
+      })
     {
       let records = {
         let mut result = gacha_type_records.remove(gacha_type).unwrap_or_default();
 
         // HACK: Genshin Impact: 301 and 400 are the character gacha type
         if business == Business::GenshinImpact && category == &PrettyCategory::Character {
-          let character2 = gacha_type_records.remove(&400).unwrap_or_default();
+          let character2 = gacha_type_records
+            .remove(&GENSHIN_IMPACT_CHARACTER2)
+            .unwrap_or_default();
+
           result.extend(character2);
           result.sort_by(|a, b| a.id.cmp(&b.id));
         }
@@ -407,7 +422,6 @@ impl PrettiedGachaRecords {
             metadata,
             record,
             Some(pity),
-            false,
             custom_locale,
           )?);
         }
@@ -447,8 +461,7 @@ impl PrettiedGachaRecords {
         limited_pity += 1;
 
         if is_golden {
-          let pretty =
-            PrettyGachaRecord::mapping(metadata, record, Some(pity), true, custom_locale)?;
+          let pretty = PrettyGachaRecord::mapping(metadata, record, Some(pity), custom_locale)?;
 
           if pretty.limited == Some(true) {
             limited_sum += 1;
@@ -501,7 +514,7 @@ impl PrettiedGachaRecords {
     records: &[GachaRecord],
     categorizeds: &HashMap<PrettyCategory, CategorizedMetadata>,
   ) -> AggregatedMetadata {
-    // HACK: Bangboo is a completely separate gacha pool
+    // HACK: Bangboo is a completely separate gacha banner
     //   and doesn't count towards the aggregated.
     let records: Vec<&GachaRecord> = if business == Business::ZenlessZoneZero {
       records
@@ -636,9 +649,9 @@ impl PrettiedGachaRecords {
         .values
         .iter()
         .fold(
-          HashMap::<&str, (&PrettyGachaRecord, u64)>::with_capacity(golden.values.len()),
+          HashMap::<u32, (&PrettyGachaRecord, u64)>::with_capacity(golden.values.len()),
           |mut acc, record| {
-            match acc.entry(&record.item_id) {
+            match acc.entry(record.item_id) {
               hash_map::Entry::Occupied(mut o) => {
                 o.get_mut().1 += 1;
               }

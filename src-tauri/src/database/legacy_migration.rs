@@ -340,17 +340,21 @@ pub async fn migration_with(
         .unwrap_or_default();
 
       let mut item_type = row.try_get::<String, _>("item_type")?;
-      let mut item_id = row.try_get::<String, _>("item_id")?;
+      let mut item_id = row
+        .try_get::<String, _>("item_id")?
+        .parse::<u32>()
+        .map(Option::Some)
+        .unwrap_or_default();
 
-      let metadata_locale = metadata.obtain(business, &locale).ok_or(
+      let metadata_locale = metadata.locale(business, &locale).ok_or(
         LegacyMigrationErrorKind::MissingMetadataLocale {
           business,
           locale: locale.clone(),
         },
       )?;
 
-      let metadata_entry = match item_id.trim() {
-        "" => {
+      let metadata_entry = match item_id {
+        None => {
           // Genshin Impact only
           let metadata_entry = metadata_locale.entry_from_name_first(&name).ok_or(
             LegacyMigrationErrorKind::MissingMetadataEntry {
@@ -361,18 +365,18 @@ pub async fn migration_with(
             },
           )?;
 
-          item_id = metadata_entry.id.to_owned();
+          item_id.replace(metadata_entry.id);
 
           metadata_entry
         }
-        other => {
+        Some(other) => {
           // Honkai: Star Rail & Zenless Zone Zero
           let metadata_entry = metadata_locale.entry_from_id(other).ok_or(
             LegacyMigrationErrorKind::MissingMetadataEntry {
               business,
               locale: locale.clone(),
               key: "item_id",
-              val: other.to_owned(),
+              val: other.to_string(),
             },
           )?;
 
@@ -407,7 +411,7 @@ pub async fn migration_with(
           time,
           name,
           item_type,
-          item_id,
+          item_id: item_id.unwrap(), // SAFETY
         },
         GachaRecordSaveOnConflict::Nothing,
       );

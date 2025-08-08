@@ -90,6 +90,8 @@ export default function GachaItem (props: GachaItemProps) {
       time,
       usedPity,
       limited,
+      version,
+      genshinCharacter2,
     },
     small,
     noLimitedBadge,
@@ -98,7 +100,11 @@ export default function GachaItem (props: GachaItemProps) {
   } = props
 
   const i18n = useI18n()
-  const title = name + '\n' + i18n.dayjs(time).format('LLLL')
+    // FIXME: debug test
+  let title = name
+  title += version ? `\n版本：${version}` : ''
+  title += genshinCharacter2 ? '\n角色活动祈愿-2' : ''
+  title += `\n${i18n.dayjs(time).format('LLLL')}`
 
   return (
     <div

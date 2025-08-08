@@ -319,10 +319,10 @@ pub struct LegacyUigfItem {
   // UIGF v2.2: is null or empty string
   // UIGF v2.3: required
   #[serde(
-    deserialize_with = "serde_helper::de::empty_string_as_none",
+    with = "serde_helper::gacha_id_or_item_id_option",
     default = "Option::default"
   )]
-  pub item_id: Option<String>,
+  pub item_id: Option<u32>,
   // UIGF v2.2: required
   // UIGF v2.3: nullable
   pub item_type: Option<String>,
@@ -575,25 +575,23 @@ impl GachaRecordsReader for LegacyUigfGachaRecordsReader {
         })?;
       }
 
-      let name = item.name.clone();
-      let item_id = item.item_id.clone();
-
       let locale = item
         .lang
         .or(uigf.info.lang.clone())
         .unwrap_or(expected_locale.clone());
 
-      let metadata_locale = metadata.obtain(BUSINESS, &locale).ok_or_else(|| {
+      let metadata_locale = metadata.locale(BUSINESS, &locale).ok_or_else(|| {
         LegacyUigfGachaRecordsReadErrorKind::MissingMetadataLocale {
           locale: locale.clone(),
           cursor,
         }
       })?;
 
+      let name = item.name.clone();
       let metadata_entry = if is_v2_0_to_v2_2 {
         metadata_locale.entry_from_name_first(name.as_ref().unwrap())
       } else {
-        metadata_locale.entry_from_id(item_id.as_ref().unwrap())
+        metadata_locale.entry_from_id(item.item_id.unwrap())
       }
       .ok_or_else(
         || LegacyUigfGachaRecordsReadErrorKind::MissingMetadataEntry {
@@ -604,9 +602,9 @@ impl GachaRecordsReader for LegacyUigfGachaRecordsReader {
             FIELD_ITEM_ID
           },
           val: if is_v2_0_to_v2_2 {
-            name.clone().unwrap()
+            item.name.clone().unwrap()
           } else {
-            item_id.clone().unwrap()
+            item.item_id.unwrap().to_string()
           },
           cursor,
         },
@@ -798,7 +796,8 @@ pub struct UigfHk4eItem {
   pub uigf_gacha_type: u32,
   #[serde(with = "serde_helper::string_number_into")]
   pub gacha_type: u32,
-  pub item_id: String,
+  #[serde(with = "serde_helper::string_number_into")]
+  pub item_id: u32,
   #[serde(
     with = "serde_helper::string_number_into::option",
     default = "Option::default",
@@ -826,7 +825,8 @@ pub struct UigfHkrpgItem {
   pub gacha_id: u32,
   #[serde(with = "serde_helper::string_number_into")]
   pub gacha_type: u32,
-  pub item_id: String,
+  #[serde(with = "serde_helper::string_number_into")]
+  pub item_id: u32,
   #[serde(
     with = "serde_helper::string_number_into::option",
     default = "Option::default",
@@ -858,7 +858,8 @@ pub struct UigfNapItem {
   pub gacha_id: Option<u32>,
   #[serde(with = "serde_helper::string_number_into")]
   pub gacha_type: u32,
-  pub item_id: String,
+  #[serde(with = "serde_helper::string_number_into")]
+  pub item_id: u32,
   #[serde(
     with = "serde_helper::string_number_into::option",
     default = "Option::default",
@@ -998,13 +999,13 @@ impl GachaRecordsWriter for UigfGachaRecordsWriter {
 
             let item_id = record.item_id.clone();
             let metadata_entry = metadata
-              .obtain(Business::$business, &record.lang)
-              .and_then(|map| map.entry_from_id(&item_id))
+              .locale(Business::$business, &record.lang)
+              .and_then(|map| map.entry_from_id(item_id))
               .ok_or_else(|| UigfGachaRecordsWriteErrorKind::MissingMetadataEntry {
                 business: Business::$business,
                 locale: record.lang.clone(),
                 key: FIELD_ITEM_ID,
-                val: item_id.clone(),
+                val: item_id.to_string(),
                 cursor,
               })?;
 
@@ -1273,13 +1274,13 @@ impl GachaRecordsReader for UigfGachaRecordsReader {
             let cursor = cursor + 1;
 
             let metadata_entry = metadata
-              .obtain(Business::$business, &locale)
-              .and_then(|map| map.entry_from_id(&item.item_id))
+              .locale(Business::$business, &locale)
+              .and_then(|map| map.entry_from_id(item.item_id))
               .ok_or_else(|| UigfGachaRecordsReadErrorKind::MissingMetadataEntry {
                 business: Business::$business,
                 locale: locale.clone(),
                 key: FIELD_ITEM_ID,
-                val: item.item_id.clone(),
+                val: item.item_id.to_string(),
                 cursor,
               })?;
 
@@ -1482,7 +1483,8 @@ pub struct SrgfItem {
   pub time: PrimitiveDateTime,
   pub name: Option<String>,
   pub lang: Option<String>,
-  pub item_id: String,
+  #[serde(with = "serde_helper::string_number_into")]
+  pub item_id: u32,
   pub item_type: Option<String>,
   #[serde(
     with = "serde_helper::string_number_into::option",
@@ -1694,21 +1696,21 @@ impl GachaRecordsReader for SrgfGachaRecordsReader {
 
       let locale = item.lang.unwrap_or(srgf.info.lang.clone());
 
-      let metadata_locale = metadata.obtain(BUSINESS, &locale).ok_or_else(|| {
+      let metadata_locale = metadata.locale(BUSINESS, &locale).ok_or_else(|| {
         SrgfGachaRecordsReadErrorKind::MissingMetadataLocale {
           locale: locale.clone(),
           cursor,
         }
       })?;
 
-      let metadata_entry = metadata_locale
-        .entry_from_id(&item.item_id)
-        .ok_or_else(|| SrgfGachaRecordsReadErrorKind::MissingMetadataEntry {
+      let metadata_entry = metadata_locale.entry_from_id(item.item_id).ok_or_else(|| {
+        SrgfGachaRecordsReadErrorKind::MissingMetadataEntry {
           locale: locale.clone(),
           key: FIELD_ITEM_ID,
-          val: item.item_id.clone(),
+          val: item.item_id.to_string(),
           cursor,
-        })?;
+        }
+      })?;
 
       records.push(GachaRecord {
         business: BUSINESS,
@@ -2013,7 +2015,7 @@ impl GachaRecordsReader for ZenlessRngMoeGachaRecordsReader {
     let server_region = ServerRegion::from_uid(BUSINESS, *expected_uid)
       .ok_or(ZenlessRngMoeGachaRecordsReadErrorKind::InvalidUid { uid: *expected_uid })?;
 
-    let metadata_locale = metadata.obtain(BUSINESS, expected_locale).ok_or(
+    let metadata_locale = metadata.locale(BUSINESS, expected_locale).ok_or(
       ZenlessRngMoeGachaRecordsReadErrorKind::MissingMetadataLocale {
         locale: expected_locale.to_owned(),
       },
@@ -2046,14 +2048,13 @@ impl GachaRecordsReader for ZenlessRngMoeGachaRecordsReader {
           )?;
         }
 
-        let item_id = item.id.to_string();
-        let entry = metadata_locale.entry_from_id(&item_id).ok_or({
+        let entry = metadata_locale.entry_from_id(item.id).ok_or({
           ZenlessRngMoeGachaRecordsReadErrorKind::MissingMetadataEntry {
             locale: expected_locale.to_owned(),
             gacha_type,
             rng_moe_gacha_type,
             key: FIELD_ITEM_ID,
-            val: item_id.clone(),
+            val: item.id.to_string(),
             cursor,
           }
         })?;
@@ -2081,7 +2082,7 @@ impl GachaRecordsReader for ZenlessRngMoeGachaRecordsReader {
           time: time.to_offset(server_region.time_zone()),
           name: entry.name.to_owned(),
           item_type: entry.category_name.to_owned(),
-          item_id,
+          item_id: item.id,
         });
       }
     }
@@ -2266,7 +2267,7 @@ mod tests {
         time: datetime!(2023-01-01 00:00:00 +8),
         name: "Kamisato Ayaka".to_owned(),
         item_type: "Character".to_owned(),
-        item_id: "10000002".to_owned(),
+        item_id: 10000002,
       }
     );
   }
@@ -2350,7 +2351,7 @@ mod tests {
         time: datetime!(2023-01-01 00:00:00 +8), // Because the server time zone of this uid is +8
         name: "Kamisato Ayaka".to_owned(),
         item_type: "Character".to_owned(),
-        item_id: "10000002".to_owned(),
+        item_id: 10000002,
       }
     );
   }
@@ -2403,7 +2404,7 @@ mod tests {
       time: datetime!(2023-01-01 00:00:00 +8), // Because the server time zone of this uid is +8
       name: "Kamisato Ayaka".to_owned(),
       item_type: "Character".to_owned(),
-      item_id: "10000002".to_owned(),
+      item_id: 10000002,
     }];
 
     let temp_dir = tempfile::tempdir().unwrap();
@@ -2449,7 +2450,7 @@ mod tests {
       time: datetime!(2023-01-01 00:00:00 +8), // Because the server time zone of this uid is +8
       name: "Kamisato Ayaka".to_owned(),
       item_type: "Character".to_owned(),
-      item_id: "10000002".to_owned(),
+      item_id: 10000002,
     };
 
     let mut incorrect = correct.clone();
@@ -2559,7 +2560,7 @@ mod tests {
         time: datetime!(2023-01-01 00:00:00 +0),
         name: "Kamisato Ayaka".to_owned(),
         item_type: "Character".to_owned(),
-        item_id: "10000002".to_owned(),
+        item_id: 10000002,
       }
     );
 
@@ -2577,7 +2578,7 @@ mod tests {
         time: datetime!(2023-01-01 00:00:00 +0),
         name: "March 7th".to_owned(),
         item_type: "Character".to_owned(),
-        item_id: "1001".to_owned(),
+        item_id: 1001,
       }
     );
 
@@ -2595,7 +2596,7 @@ mod tests {
         time: datetime!(2023-01-01 00:00:00 +0),
         name: "Anby".to_owned(),
         item_type: "Agents".to_owned(),
-        item_id: "1011".to_owned(),
+        item_id: 1011,
       }
     );
   }
@@ -2684,7 +2685,7 @@ mod tests {
         time: datetime!(2023-01-01 00:00:00 +8), // Because the server time zone of this uid is +8
         name: "Kamisato Ayaka".to_owned(),
         item_type: "Character".to_owned(),
-        item_id: "10000002".to_owned(),
+        item_id: 10000002,
       },
       GachaRecord {
         business: Business::HonkaiStarRail,
@@ -2698,7 +2699,7 @@ mod tests {
         time: datetime!(2023-01-01 00:00:00 +8), // Because the server time zone of this uid is +8
         name: "March 7th".to_owned(),
         item_type: "Character".to_owned(),
-        item_id: "1001".to_owned(),
+        item_id: 1001,
       },
       GachaRecord {
         business: Business::ZenlessZoneZero,
@@ -2712,7 +2713,7 @@ mod tests {
         time: datetime!(2023-01-01 00:00:00 +8), // Because the server time zone of this uid is +8
         name: "Anby".to_owned(),
         item_type: "Agents".to_owned(),
-        item_id: "1011".to_owned(),
+        item_id: 1011,
       },
     ];
 
@@ -2791,7 +2792,7 @@ mod tests {
         time: datetime!(2023-01-01 00:00:00 +8),
         name: "March 7th".to_owned(),
         item_type: "Character".to_owned(),
-        item_id: "1001".to_owned(),
+        item_id: 1001,
       }
     );
   }
@@ -2810,7 +2811,7 @@ mod tests {
       time: datetime!(2023-01-01 00:00:00 +8), // Because the server time zone of this uid is +8
       name: "March 7th".to_owned(),
       item_type: "Character".to_owned(),
-      item_id: "1001".to_owned(),
+      item_id: 1001,
     }];
 
     let temp_dir = tempfile::tempdir().unwrap();
@@ -3010,7 +3011,7 @@ mod tests {
         time: datetime!(2023-01-01 00:00:00 +8),
         name: "Anby".to_owned(),
         item_type: "Agents".to_owned(),
-        item_id: "1011".to_owned(),
+        item_id: 1011,
       }
     );
   }

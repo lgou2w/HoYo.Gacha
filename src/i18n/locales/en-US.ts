@@ -492,7 +492,7 @@ export default {
                   Token4: '{{value, number}}',
                 },
                 Fragment2: ' $t(Business.{{keyofBusinesses}}.Gacha.Name) records date coverage: ',
-                Fragment3: ' Due to official settings, the latest data is subject to a delay of approximately one hour. During peak periods for new pools, this delay may be extended. For precise timing, please refer to the in-game data.',
+                Fragment3: ' Due to official settings, the latest data is subject to a delay of approximately one hour. During peak periods for new banners, this delay may be extended. For precise timing, please refer to the in-game data.',
               },
             },
             Analysis: {
