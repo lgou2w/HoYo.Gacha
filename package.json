@@ -38,12 +38,12 @@
     "backend:lint": "cargo check"
   },
   "dependencies": {
-    "@fluentui/react-components": "^9.68.2",
+    "@fluentui/react-components": "^9.68.3",
     "@fluentui/react-icons": "^2.0.307",
-    "@fluentui/react-motion-components-preview": "^0.8.1",
-    "@tanstack/react-query": "^5.84.1",
-    "@tanstack/react-query-devtools": "^5.84.1",
-    "@tanstack/react-router": "^1.130.12",
+    "@fluentui/react-motion-components-preview": "^0.8.2",
+    "@tanstack/react-query": "^5.84.2",
+    "@tanstack/react-query-devtools": "^5.84.2",
+    "@tanstack/react-router": "^1.131.2",
     "@tauri-apps/api": "^2.7.0",
     "@tauri-apps/plugin-clipboard-manager": "^2.3.0",
     "@tauri-apps/plugin-process": "^2.3.0",
@@ -71,13 +71,13 @@
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^14.6.1",
     "@types/jest": "^30.0.0",
-    "@types/node": "^20.19.9",
+    "@types/node": "^20.19.10",
     "@types/react": "^18.3.23",
     "@types/react-dom": "^18.3.7",
     "@types/react-window": "^1.8.8",
-    "@typescript-eslint/eslint-plugin": "^8.38.0",
-    "@typescript-eslint/parser": "^8.38.0",
-    "@vitejs/plugin-react-swc": "^3.11.0",
+    "@typescript-eslint/eslint-plugin": "^8.39.0",
+    "@typescript-eslint/parser": "^8.39.0",
+    "@vitejs/plugin-react-swc": "^4.0.0",
     "concurrently": "^9.2.0",
     "cross-env": "^10.0.0",
     "eslint": "^8.57.1",
@@ -99,7 +99,7 @@
     "rimraf": "^6.0.1",
     "ts-jest": "^29.4.1",
     "typescript": "^5.9.2",
-    "vite": "^7.0.6"
+    "vite": "^7.1.1"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
