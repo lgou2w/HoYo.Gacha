@@ -528,10 +528,9 @@ function CardsEntryRecord (props: CardsEntryRecordProps) {
 
   const isHardPity = prevRecord && !prevRecord.limited && record.limited
 
-  // FIXME: debug test
   let title = record.name
-  title += record.version ? '\n版本：' + record.version : ''
-  title += record.genshinCharacter2 ? '\n角色活动祈愿-2' : ''
+  title += record.version ? '\n' + i18n.t('Pages.Gacha.LegacyView.GachaItem.Title.Version', { version: record.version }) : ''
+  title += record.genshinCharacter2 ? '\n' + i18n.t('Pages.Gacha.LegacyView.GachaItem.Title.GenshinImpactCharacter2') : ''
   title += '\n' + i18n.dayjs(record.time).format('LLLL')
 
   return (

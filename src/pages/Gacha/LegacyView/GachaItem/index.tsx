@@ -100,11 +100,11 @@ export default function GachaItem (props: GachaItemProps) {
   } = props
 
   const i18n = useI18n()
-    // FIXME: debug test
+
   let title = name
-  title += version ? `\n版本：${version}` : ''
-  title += genshinCharacter2 ? '\n角色活动祈愿-2' : ''
-  title += `\n${i18n.dayjs(time).format('LLLL')}`
+  title += version ? '\n' + i18n.t('Pages.Gacha.LegacyView.GachaItem.Title.Version', { version }) : ''
+  title += genshinCharacter2 ? '\n' + i18n.t('Pages.Gacha.LegacyView.GachaItem.Title.GenshinImpactCharacter2') : ''
+  title += '\n' + i18n.dayjs(time).format('LLLL')
 
   return (
     <div

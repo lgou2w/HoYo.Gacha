@@ -17,16 +17,14 @@ mod data_folder_locator;
 mod disk_cache;
 mod gacha_convert;
 mod gacha_fetcher;
-// mod gacha_metadata;
-mod gacha_metadata_v2;
+mod gacha_metadata;
 mod gacha_prettied;
 mod gacha_url;
 
 pub use data_folder_locator::*;
 pub use gacha_convert::*;
 pub use gacha_fetcher::*;
-// pub use gacha_metadata::*;
-pub use gacha_metadata_v2::*;
+pub use gacha_metadata::*;
 pub use gacha_prettied::*;
 pub use gacha_url::*;
 
@@ -292,16 +290,13 @@ pub async fn business_find_and_pretty_gacha_records(
 #[tauri::command]
 #[tracing::instrument(skip_all)]
 pub async fn business_gacha_metadata_is_updating() -> bool {
-  // GachaMetadata::is_updating()
-  false
+  GachaMetadata::is_updating()
 }
 
 #[tauri::command]
 #[tracing::instrument(skip_all)]
-// pub async fn business_gacha_metadata_update() -> Result<gacha_metadata::UpdatedKind, String> {
-pub async fn business_gacha_metadata_update() -> Result<(), String> {
-  // GachaMetadata::update().await.map_err(|e| e.to_string())
-  Err("todo".into())
+pub async fn business_gacha_metadata_update() -> Result<GachaMetadataUpdatedKind, String> {
+  GachaMetadata::update().await.map_err(|e| e.to_string())
 }
 
 // endregion

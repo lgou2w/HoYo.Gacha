@@ -1,60 +1,133 @@
-use std::collections::hash_map::{Entry as MapEntry, Keys};
-use std::collections::{HashMap, HashSet};
+use std::collections::{HashMap, HashSet, hash_map};
 use std::error::Error as StdError;
-use std::fmt::{self, Debug};
-use std::fs;
 use std::path::PathBuf;
+use std::str::FromStr;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, LazyLock, OnceLock, RwLock};
 use std::time::{Duration, Instant};
+use std::{fmt, fs};
 
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Deserializer, Serialize};
 use sha1::{Digest, Sha1};
 use time::OffsetDateTime;
 use time::serde::rfc3339;
-use tracing::{error, info};
+use tracing::info;
 
 use crate::consts;
+use crate::models::{Business, GachaRecord};
 
-use super::Business;
+// region: Raw Json Metadata
 
-// Raw Json Metadata
+type RawGachaMetadata = Vec<RawGachaMetadataBusiness>;
 
-type RawGachaMetadata = HashMap<Business, Vec<RawGachaMetadataCategorization>>;
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "PascalCase")]
+struct RawGachaMetadataBusiness {
+  pub business: Business,
+  pub categories: Vec<RawGachaMetadataCategorization>,
+  pub banners: Vec<RawGachaMetadataBanner>,
+}
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 struct RawGachaMetadataCategorization {
   pub category: String,
-  pub entries: Vec<RawGachaMetadataEntry>,
+  pub entries: Vec<(u32, u8)>,
   pub i18n: HashMap<String, RawGachaMetadataI18n>,
 }
 
-#[derive(Clone, Deserialize)]
-#[serde(untagged)]
-enum RawGachaMetadataEntry {
-  Limited(String, u8),
-  LimitedDeadline(String, u8, #[serde(with = "rfc3339")] OffsetDateTime),
-  Permanent(String, u8, bool),
-}
-
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 struct RawGachaMetadataI18n {
   pub category: String,
   pub entries: Vec<String>,
 }
 
-// Wrapped
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "PascalCase")]
+struct RawGachaMetadataBanner {
+  pub gacha_type: u32,
+  pub gacha_id: Option<u32>, // 'Honkai: Star Rail' only
+  #[serde(with = "rfc3339")]
+  pub start_time: OffsetDateTime,
+  #[serde(with = "rfc3339")]
+  pub end_time: OffsetDateTime,
+  pub up_golden: HashSet<u32>,
+  pub up_purple: HashSet<u32>,
+  pub version: Option<GameVersion>,
+}
 
-#[derive(Debug, PartialEq, Eq, Hash)]
-pub enum GachaMetadataEntryLimited {
-  // Permanent
-  No,
-  // Limited
-  Yes,
-  // Before the deadline, it was limited.
-  Deadline(OffsetDateTime),
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct GameVersion {
+  pub major: u16,
+  pub minor: u16,
+}
+
+impl FromStr for GameVersion {
+  type Err = String;
+
+  fn from_str(s: &str) -> Result<Self, Self::Err> {
+    let parts: Vec<&str> = s.split('.').collect();
+    if parts.len() != 2 {
+      return Err("Invalid game version format".into());
+    }
+
+    let major = parts[0]
+      .parse()
+      .map_err(|_| "Invalid major game version".to_owned())?;
+    let minor = parts[1]
+      .parse()
+      .map_err(|_| "Invalid minor game version".to_owned())?;
+
+    Ok(GameVersion { major, minor })
+  }
+}
+
+impl fmt::Display for GameVersion {
+  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    write!(f, "{}.{}", self.major, self.minor)
+  }
+}
+
+impl Serialize for GameVersion {
+  fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+  where
+    S: serde::Serializer,
+  {
+    self.to_string().serialize(serializer)
+  }
+}
+
+impl<'de> Deserialize<'de> for GameVersion {
+  fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+  where
+    D: Deserializer<'de>,
+  {
+    let s = String::deserialize(deserializer)?;
+    GameVersion::from_str(&s).map_err(serde::de::Error::custom)
+  }
+}
+
+// endregion
+
+#[derive(Debug)]
+pub struct GachaMetadata {
+  pub metadata: HashMap<Business, GachaMetadataBusiness>,
+  pub hash: String, // SHA-1
+}
+
+#[derive(Debug)]
+pub struct GachaMetadataBusiness {
+  pub locales: HashMap<String, GachaMetadataLocale>,
+  pub banners: HashMap<u32, GachaMetadataBanners>, // GachaType: Banners
+}
+
+#[derive(Debug)]
+pub struct GachaMetadataLocale {
+  pub locale: String,                        // Locale: en-us, zh-cn, etc...
+  categories: HashMap<&'static str, String>, // Category: Category Name
+  entries: HashMap<u32, GachaMetadataEntry>, // Id: Entry
+  reverses: OnceLock<HashMap<String, GachaMetadataEntryNameId>>, // Name: Id (Lazy init)
 }
 
 #[derive(Debug)]
@@ -62,21 +135,12 @@ pub struct GachaMetadataEntry {
   pub category: &'static str, // Avoid too many String allocations
   pub name: String,
   pub rank: u8,
-  pub limited: GachaMetadataEntryLimited,
 }
 
 #[derive(Debug)]
 pub enum GachaMetadataEntryNameId {
-  Unique(String),
-  Multiple(HashSet<String>),
-}
-
-#[derive(Debug)]
-pub struct GachaMetadataLocale {
-  pub locale: String,                           // Locale: en-us, zh-cn, etc...
-  categories: HashMap<&'static str, String>,    // Category: Category Name
-  entries: HashMap<String, GachaMetadataEntry>, // Id: Entry
-  reverses: OnceLock<HashMap<String, GachaMetadataEntryNameId>>, // Name: Id (Lazy init)
+  Unique(u32),
+  Many(HashSet<u32>),
 }
 
 #[derive(Debug, PartialEq, Eq, Hash)]
@@ -84,99 +148,28 @@ pub struct GachaMetadataEntryRef<'a> {
   pub locale: &'a str,
   pub category: &'static str, // Category type name
   pub category_name: &'a str, // Category locale name
-  pub id: &'a str,
+  pub id: u32,
   pub name: &'a str, // Entry locale name
   pub rank: u8,
-  pub limited: &'a GachaMetadataEntryLimited,
 }
 
-impl GachaMetadataLocale {
-  pub fn ids(&self) -> Keys<String, GachaMetadataEntry> {
-    self.entries.keys()
-  }
-
-  pub fn names(&self) -> Keys<String, GachaMetadataEntryNameId> {
-    self.reverses().keys()
-  }
-
-  pub fn entry_from_id<'a, 'id: 'a>(&'a self, id: &'id str) -> Option<GachaMetadataEntryRef<'a>> {
-    self.entries.get(id).map(|entry| self.entry_ref(entry, id))
-  }
-
-  pub fn entry_from_name<'a, 'name: 'a>(
-    &'a self,
-    name: &'name str,
-  ) -> Option<HashSet<GachaMetadataEntryRef<'a>>> {
-    match self.reverses().get(name)? {
-      GachaMetadataEntryNameId::Unique(id) => Some(HashSet::from_iter([
-        self.entry_ref(self.entries.get(id)?, id)
-      ])),
-      GachaMetadataEntryNameId::Multiple(ids) => Some(
-        ids
-          .iter()
-          .filter_map(|id| self.entries.get(id).map(|entry| self.entry_ref(entry, id)))
-          .collect(),
-      ),
-    }
-  }
-
-  pub fn entry_from_name_first<'a, 'name: 'a>(
-    &'a self,
-    name: &'name str,
-  ) -> Option<GachaMetadataEntryRef<'a>> {
-    match self.reverses().get(name)? {
-      GachaMetadataEntryNameId::Unique(id) => Some(self.entry_ref(self.entries.get(id)?, id)),
-      GachaMetadataEntryNameId::Multiple(ids) => ids
-        .iter()
-        .next()
-        .and_then(|id| self.entries.get(id).map(|entry| self.entry_ref(entry, id))),
-    }
-  }
-
-  fn reverses(&self) -> &HashMap<String, GachaMetadataEntryNameId> {
-    self.reverses.get_or_init(|| {
-      let mut name_ids = HashMap::with_capacity(self.entries.len());
-      for (id, entry) in &self.entries {
-        name_ids
-          .entry(entry.name.clone())
-          .and_modify(|name_id| match name_id {
-            GachaMetadataEntryNameId::Unique(prev_id) => {
-              *name_id = GachaMetadataEntryNameId::Multiple(HashSet::from_iter([
-                prev_id.clone(),
-                id.clone(),
-              ]));
-            }
-            GachaMetadataEntryNameId::Multiple(ids) => {
-              ids.insert(id.clone());
-            }
-          })
-          .or_insert(GachaMetadataEntryNameId::Unique(id.clone()));
-      }
-      name_ids
-    })
-  }
-
-  #[inline]
-  fn entry_ref<'a, 'id: 'a>(
-    &'a self,
-    entry: &'a GachaMetadataEntry,
-    id: &'id str,
-  ) -> GachaMetadataEntryRef<'a> {
-    GachaMetadataEntryRef {
-      locale: &self.locale,
-      category: entry.category,
-      category_name: self.categories.get(entry.category).unwrap(), // SAFETY
-      id,
-      name: &entry.name,
-      rank: entry.rank,
-      limited: &entry.limited,
-    }
-  }
+#[derive(Debug)]
+pub enum GachaMetadataBanners {
+  // 'Genshin Impact' and 'Zenless Zone Zero'
+  Purely(Vec<GachaMetadataBanner>),
+  // 'Honkai: Star Rail' -> GachaId: Banner
+  ByGachaId(HashMap<u32, GachaMetadataBanner>),
 }
 
-pub struct GachaMetadata {
-  pub metadata: HashMap<Business, HashMap<String, GachaMetadataLocale>>,
-  pub hash: String, // SHA-1
+#[derive(Debug)]
+pub struct GachaMetadataBanner {
+  pub gacha_type: u32,
+  pub gacha_id: Option<u32>, // 'Honkai: Star Rail' only
+  pub start_time: OffsetDateTime,
+  pub end_time: OffsetDateTime,
+  pub up_golden: HashSet<u32>,
+  pub up_purple: HashSet<u32>,
+  pub version: Option<GameVersion>,
 }
 
 impl GachaMetadata {
@@ -188,25 +181,24 @@ impl GachaMetadata {
     Self::CATEGORY_WEAPON,
     Self::CATEGORY_BANGBOO,
   ];
-}
 
-impl GachaMetadata {
-  pub fn obtain(
-    &self,
-    business: Business,
-    locale: impl AsRef<str>,
-  ) -> Option<&GachaMetadataLocale> {
-    self.metadata.get(&business)?.get(locale.as_ref())
-  }
-
-  pub fn businesses(&self) -> Keys<'_, Business, HashMap<String, GachaMetadataLocale>> {
+  #[cfg(test)]
+  pub fn businesses(&self) -> hash_map::Keys<'_, Business, GachaMetadataBusiness> {
     self.metadata.keys()
   }
 
-  pub fn locales(&self, business: Business) -> Option<Keys<'_, String, GachaMetadataLocale>> {
-    self.metadata.get(&business).map(|locales| locales.keys())
+  #[cfg(test)]
+  pub fn locales(
+    &self,
+    business: Business,
+  ) -> Option<hash_map::Keys<'_, String, GachaMetadataLocale>> {
+    self
+      .metadata
+      .get(&business)
+      .map(|business| business.locales.keys())
   }
 
+  #[cfg(test)]
   pub fn categories(
     &self,
     business: Business,
@@ -215,6 +207,7 @@ impl GachaMetadata {
     self
       .metadata
       .get(&business)?
+      .locales
       .get(locale.as_ref())
       .map(|locale| {
         locale
@@ -224,34 +217,159 @@ impl GachaMetadata {
           .collect()
       })
   }
-}
 
-impl Debug for GachaMetadata {
-  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-    f.debug_struct("GachaMetadata")
-      .field("metadata", &self.metadata)
-      .field("hash", &self.hash)
-      .finish()
+  pub fn locale(
+    &self,
+    business: Business,
+    locale: impl AsRef<str>,
+  ) -> Option<&GachaMetadataLocale> {
+    self.metadata.get(&business)?.locales.get(locale.as_ref())
+  }
+
+  pub fn banners(&self, business: Business, gacha_type: u32) -> Option<&GachaMetadataBanners> {
+    self.metadata.get(&business)?.banners.get(&gacha_type)
+  }
+
+  pub fn banner_from_record(&self, record: &GachaRecord) -> Option<&GachaMetadataBanner> {
+    match self.banners(record.business, record.gacha_type)? {
+      GachaMetadataBanners::Purely(vec) => vec
+        .iter()
+        .find(|banner| record.time >= banner.start_time && record.time <= banner.end_time),
+      GachaMetadataBanners::ByGachaId(map) => record
+        .gacha_id
+        .and_then(|k| map.get(&k))
+        .filter(|banner| record.time >= banner.start_time && record.time <= banner.end_time),
+    }
   }
 }
 
-// From Raw Json
+impl GachaMetadataLocale {
+  #[cfg(test)]
+  pub fn ids(&self) -> hash_map::Keys<u32, GachaMetadataEntry> {
+    self.entries.keys()
+  }
 
-// Convert multiple categorizations into (Locale: GachaMetadataLocale) hashmap
-fn raw_categorizations_into_locales(
-  categorizations: Vec<RawGachaMetadataCategorization>,
+  #[cfg(test)]
+  pub fn names(&self) -> hash_map::Keys<String, GachaMetadataEntryNameId> {
+    self.reverses().keys()
+  }
+
+  pub fn entry_from_id<'a>(&'a self, id: u32) -> Option<GachaMetadataEntryRef<'a>> {
+    self.entries.get(&id).map(|entry| self.entry_ref(entry, id))
+  }
+
+  pub fn entry_from_name<'a, 'name: 'a>(
+    &'a self,
+    name: &'name str,
+  ) -> Option<HashSet<GachaMetadataEntryRef<'a>>> {
+    match self.reverses().get(name)? {
+      GachaMetadataEntryNameId::Unique(id) => Some(HashSet::from_iter([
+        self.entry_ref(self.entries.get(id)?, *id)
+      ])),
+      GachaMetadataEntryNameId::Many(ids) => Some(
+        ids
+          .iter()
+          .filter_map(|id| self.entries.get(id).map(|entry| self.entry_ref(entry, *id)))
+          .collect(),
+      ),
+    }
+  }
+
+  pub fn entry_from_name_first<'a, 'name: 'a>(
+    &'a self,
+    name: &'name str,
+  ) -> Option<GachaMetadataEntryRef<'a>> {
+    match self.reverses().get(name)? {
+      GachaMetadataEntryNameId::Unique(id) => Some(self.entry_ref(self.entries.get(id)?, *id)),
+      GachaMetadataEntryNameId::Many(ids) => ids
+        .iter()
+        .next()
+        .and_then(|id| self.entries.get(id).map(|entry| self.entry_ref(entry, *id))),
+    }
+  }
+
+  #[inline]
+  fn entry_ref<'a>(&'a self, entry: &'a GachaMetadataEntry, id: u32) -> GachaMetadataEntryRef<'a> {
+    GachaMetadataEntryRef {
+      locale: &self.locale,
+      category: entry.category,
+      category_name: self.categories.get(entry.category).unwrap(), // SAFETY
+      id,
+      name: &entry.name,
+      rank: entry.rank,
+    }
+  }
+
+  fn reverses(&self) -> &HashMap<String, GachaMetadataEntryNameId> {
+    self.reverses.get_or_init(|| {
+      let mut name_ids = HashMap::with_capacity(self.entries.len());
+      for (id, entry) in &self.entries {
+        name_ids
+          .entry(entry.name.clone())
+          .and_modify(|name_id| match name_id {
+            GachaMetadataEntryNameId::Unique(prev_id) => {
+              *name_id = GachaMetadataEntryNameId::Many(HashSet::from_iter([*prev_id, *id]));
+            }
+            GachaMetadataEntryNameId::Many(ids) => {
+              ids.insert(*id);
+            }
+          })
+          .or_insert(GachaMetadataEntryNameId::Unique(*id));
+      }
+      name_ids
+    })
+  }
+}
+
+impl GachaMetadataBanner {
+  #[inline]
+  pub fn in_up_golden(&self, id: u32) -> bool {
+    self.up_golden.contains(&id)
+  }
+
+  #[inline]
+  pub fn in_up_purple(&self, id: u32) -> bool {
+    self.up_purple.contains(&id)
+  }
+}
+
+// RawGachaMetadata -> GachaMetadata.metadata
+fn from_raw_gacha_metadata(raw: RawGachaMetadata) -> HashMap<Business, GachaMetadataBusiness> {
+  let businesses = raw.len();
+
+  raw.into_iter().fold(
+    HashMap::with_capacity(businesses),
+    |mut acc, raw_business| {
+      let RawGachaMetadataBusiness {
+        business,
+        categories,
+        banners,
+      } = raw_business;
+
+      let locales = raw_categories_into_locales(business, categories);
+      let banners = raw_banners_into_banner_groups(business, banners);
+
+      acc.insert(business, GachaMetadataBusiness { locales, banners });
+      acc
+    },
+  )
+}
+
+fn raw_categories_into_locales(
+  business: Business,
+  categories: Vec<RawGachaMetadataCategorization>,
 ) -> HashMap<String, GachaMetadataLocale> {
-  let sum_i18n = categorizations
+  let sum_i18n = categories
     .iter()
     .map(|categorization| categorization.i18n.len())
     .sum();
 
-  let mut locales: HashMap<String, GachaMetadataLocale> = HashMap::with_capacity(sum_i18n);
+  let mut result: HashMap<String, GachaMetadataLocale> = HashMap::with_capacity(sum_i18n);
   for RawGachaMetadataCategorization {
     category,
     entries,
     i18n,
-  } in categorizations
+  } in categories
   {
     let entries_len = entries.len();
     let category: &'static str = match category.as_str() {
@@ -273,51 +391,34 @@ fn raw_categorizations_into_locales(
     ) in i18n
     {
       // See: https://github.com/lgou2w/HoYo.Gacha/issues/92
-      debug_assert_eq!(
+      assert_eq!(
         entries_len,
         names.len(),
-        "Entries and names length mismatch for category '{category}' in locale '{locale}'"
+        "Entries and names length mismatch for category '{category}' in locale '{locale}' ({business})"
       );
 
       let new_entries = entries.clone().into_iter().zip(names).fold(
         HashMap::with_capacity(entries_len),
-        |mut acc, (entry, name)| {
-          let (id, rank, limited) = match entry {
-            RawGachaMetadataEntry::Limited(id, rank) => (id, rank, GachaMetadataEntryLimited::Yes),
-            RawGachaMetadataEntry::LimitedDeadline(id, rank, deadline) => {
-              (id, rank, GachaMetadataEntryLimited::Deadline(deadline))
-            }
-            RawGachaMetadataEntry::Permanent(id, rank, permanently) => (
-              id,
-              rank,
-              // FIXME: Permanently always true
-              match permanently {
-                true => GachaMetadataEntryLimited::No,
-                false => GachaMetadataEntryLimited::Yes,
-              },
-            ),
-          };
-
+        |mut acc, ((id, rank), name)| {
           acc.insert(
             id,
             GachaMetadataEntry {
               category,
               name,
               rank,
-              limited,
             },
           );
           acc
         },
       );
 
-      match locales.entry(locale.clone()) {
-        MapEntry::Occupied(mut o) => {
+      match result.entry(locale.clone()) {
+        hash_map::Entry::Occupied(mut o) => {
           let locale = o.get_mut();
           locale.entries.extend(new_entries);
           locale.categories.insert(category, category_name.clone());
         }
-        MapEntry::Vacant(o) => {
+        hash_map::Entry::Vacant(o) => {
           o.insert(GachaMetadataLocale {
             locale,
             categories: HashMap::from_iter([(category, category_name.clone())]),
@@ -329,7 +430,52 @@ fn raw_categorizations_into_locales(
     }
   }
 
-  locales
+  result
+}
+
+fn raw_banners_into_banner_groups(
+  business: Business,
+  banners: Vec<RawGachaMetadataBanner>,
+) -> HashMap<u32, GachaMetadataBanners> {
+  let mut result: HashMap<u32, GachaMetadataBanners> = HashMap::new();
+  for raw in banners {
+    let banner = GachaMetadataBanner {
+      gacha_type: raw.gacha_type,
+      gacha_id: raw.gacha_id,
+      start_time: raw.start_time,
+      end_time: raw.end_time,
+      up_golden: raw.up_golden,
+      up_purple: raw.up_purple,
+      version: raw.version,
+    };
+
+    match result.entry(banner.gacha_type) {
+      hash_map::Entry::Vacant(o) => match business {
+        Business::GenshinImpact | Business::ZenlessZoneZero => {
+          o.insert(GachaMetadataBanners::Purely(vec![banner]));
+        }
+        Business::HonkaiStarRail => {
+          assert!(
+            banner.gacha_id.is_some(),
+            "Honkai: Star Rail banners must have a GachaId"
+          );
+
+          let map = HashMap::from_iter([(banner.gacha_id.unwrap(), banner)]);
+          o.insert(GachaMetadataBanners::ByGachaId(map));
+        }
+      },
+      hash_map::Entry::Occupied(mut o) => match o.get_mut() {
+        GachaMetadataBanners::Purely(vec) => {
+          vec.push(banner);
+        }
+        GachaMetadataBanners::ByGachaId(map) => {
+          map.insert(banner.gacha_id.unwrap(), banner);
+        }
+      },
+    }
+  }
+
+  result
 }
 
 fn sha1sum(slice: impl AsRef<[u8]>) -> String {
@@ -344,12 +490,8 @@ fn sha1sum(slice: impl AsRef<[u8]>) -> String {
 
 impl GachaMetadata {
   pub fn from_bytes(slice: impl AsRef<[u8]>) -> serde_json::Result<Self> {
-    let metadata = serde_json::from_slice::<RawGachaMetadata>(slice.as_ref())?
-      .into_iter()
-      .map(|(business, categorizations)| {
-        (business, raw_categorizations_into_locales(categorizations))
-      })
-      .collect();
+    let raw = serde_json::from_slice::<RawGachaMetadata>(slice.as_ref())?;
+    let metadata = from_raw_gacha_metadata(raw);
 
     Ok(Self {
       metadata,
@@ -376,7 +518,7 @@ static ACTIVATE_METADATA: LazyLock<RwLock<Arc<GachaMetadata>>> = LazyLock::new(|
 
   #[cfg(not(test))]
   match load_latest_metadata() {
-    Err(error) => error!(
+    Err(error) => tracing::error!(
       message = "Failed to load the latest locale gacha metadata",
       ?error
     ),
@@ -394,7 +536,7 @@ static ACTIVATE_METADATA: LazyLock<RwLock<Arc<GachaMetadata>>> = LazyLock::new(|
 });
 
 const GACHA_METADATA_DIRECTORY: &str = "GachaMetadata";
-const GACHA_METADATA_LATEST: &str = "Latest.json";
+const GACHA_METADATA_LATEST: &str = "LatestV2.json";
 
 fn latest_metadata_file() -> PathBuf {
   let gacha_metadata_dir = consts::PLATFORM
@@ -433,21 +575,13 @@ fn load_latest_metadata() -> Result<Option<GachaMetadata>, Box<dyn StdError + 's
 }
 
 #[derive(Debug, Deserialize)]
+#[serde(rename_all = "PascalCase")]
 struct GachaMetadataIndex {
   latest: String, // SHA-1
-  entries: HashMap<String, GachaMetadataIndexEntry>,
-}
-
-#[derive(Debug, Deserialize)]
-struct GachaMetadataIndexEntry {
-  #[serde(rename = "createdAt", with = "rfc3339")]
-  created_at: OffsetDateTime,
-  file: String,
-  size: u64,
 }
 
 #[derive(Debug, Serialize)]
-pub enum UpdatedKind {
+pub enum GachaMetadataUpdatedKind {
   Updating,
   UpToDate,
   Success(String), // SHA-1
@@ -466,9 +600,10 @@ impl GachaMetadata {
     ACTIVATE_METADATA_UPDATING.load(Ordering::SeqCst)
   }
 
-  pub async fn update() -> Result<UpdatedKind, Box<dyn StdError + Send + Sync + 'static>> {
+  pub async fn update()
+  -> Result<GachaMetadataUpdatedKind, Box<dyn StdError + Send + Sync + 'static>> {
     if ACTIVATE_METADATA_UPDATING.swap(true, Ordering::SeqCst) {
-      return Ok(UpdatedKind::Updating);
+      return Ok(GachaMetadataUpdatedKind::Updating);
     }
 
     struct UpdateGuard;
@@ -479,12 +614,12 @@ impl GachaMetadata {
     }
     let _update_guard = UpdateGuard;
 
-    const API_BASE_URL: &str = "https://hoyo-gacha-v1.lgou2w.com/GachaMetadata";
+    const API_BASE_URL: &str = "https://hoyo-gacha-v1.lgou2w.com/GachaMetadata/v2";
     const API_TIMEOUT: Duration = Duration::from_secs(15);
 
     info!("Checking for latest gacha metadata...");
     let metadata_index = consts::REQWEST
-      .get(format!("{API_BASE_URL}/{}", "index.json"))
+      .get(format!("{API_BASE_URL}/index.json"))
       .timeout(API_TIMEOUT)
       .send()
       .await?
@@ -502,21 +637,12 @@ impl GachaMetadata {
         message = "Gacha metadata is already up-to-date",
         hash = %metadata_index.latest,
       );
-      return Ok(UpdatedKind::UpToDate);
+      return Ok(GachaMetadataUpdatedKind::UpToDate);
     }
 
     let start = Instant::now();
-    let latest_metadata_entry =
-      metadata_index
-        .entries
-        .get(&metadata_index.latest)
-        .ok_or(format!(
-          "Latest gacha metadata entry not found in index: {}",
-          metadata_index.latest
-        ))?;
-
     let latest_metadata_res = consts::REQWEST
-      .get(format!("{API_BASE_URL}/{}", latest_metadata_entry.file))
+      .get(format!("{API_BASE_URL}/{}.json", metadata_index.latest))
       .timeout(API_TIMEOUT)
       .send()
       .await?
@@ -547,7 +673,7 @@ impl GachaMetadata {
 
     let latest_metadata_path = latest_metadata_file();
     if let Err(error) = fs::write(&latest_metadata_path, &latest_metadata_res) {
-      error!(
+      tracing::error!(
         message = "Failed to save latest gacha metadata",
         path = ?latest_metadata_path,
         ?error
@@ -558,10 +684,9 @@ impl GachaMetadata {
       message = "Gacha metadata updated successfully",
       elapsed = ?start.elapsed(),
       hash = %metadata_index.latest,
-      createdAt = %latest_metadata_entry.created_at,
     );
 
-    Ok(UpdatedKind::Success(metadata_index.latest))
+    Ok(GachaMetadataUpdatedKind::Success(metadata_index.latest))
   }
 }
 
@@ -570,61 +695,70 @@ mod tests {
   use super::*;
 
   #[test]
+  fn test_embedded_metadata() {
+    let _ = GachaMetadata::current();
+  }
+
+  #[test]
   fn test_example() {
     let json = r#"
-      {
-        "0": [
-          {
-            "Category": "Character",
-            "Entries": [
-              ["10000002", 5],
-              ["10000003", 5, true],
-              ["10000005", 5, true],
-              ["10000007", 5, true]
-            ],
-            "I18n": {
-              "en-us": {
-                "Category": "Character",
-                "Entries": [
-                  "Kamisato Ayaka",
-                  "Jean",
-                  "Traveler",
-                  "Traveler"
-                ]
-              },
-              "zh-cn": {
-                "Category": "角色",
-                "Entries": [
-                  "神里绫华",
-                  "琴",
-                  "旅行者",
-                  "旅行者"
-                ]
+      [
+        {
+          "Business": 0,
+          "Categories": [
+            {
+              "Category": "Character",
+              "Entries": [
+                [10000002, 5],
+                [10000003, 5],
+                [10000005, 5],
+                [10000007, 5]
+              ],
+              "I18n": {
+                "en-us": {
+                  "Category": "Character",
+                  "Entries": [
+                    "Kamisato Ayaka",
+                    "Jean",
+                    "Traveler",
+                    "Traveler"
+                  ]
+                },
+                "zh-cn": {
+                  "Category": "角色",
+                  "Entries": [
+                    "神里绫华",
+                    "琴",
+                    "旅行者",
+                    "旅行者"
+                  ]
+                }
+              }
+            },
+            {
+              "Category": "Weapon",
+              "Entries": [
+                [11509, 5]
+              ],
+              "I18n": {
+                "en-us": {
+                  "Category": "Weapon",
+                  "Entries": [
+                    "Mistsplitter Reforged"
+                  ]
+                },
+                "zh-cn": {
+                  "Category": "武器",
+                  "Entries": [
+                    "雾切之回光"
+                  ]
+                }
               }
             }
-          },
-          {
-            "Category": "Weapon",
-            "Entries": [
-              ["11509", 5]
-            ],
-            "I18n": {
-              "en-us": {
-                "Category": "Weapon",
-                "Entries": [
-                  "Mistsplitter Reforged"
-                ]
-              },
-              "zh-cn": {
-                "Category": "武器",
-                "Entries": [
-                  "雾切之回光"
-                ]
-              }
-            }
-          }
-        ]
-      }"#;
+          ],
+          "Banners": []
+        }
+      ]"#;
 
     let metadata = GachaMetadata::from_bytes(json.as_bytes()).unwrap();
 
@@ -660,13 +794,13 @@ mod tests {
         })
     );
 
-    let mut s = metadata.obtain(Business::GenshinImpact, "en-us").unwrap();
+    let mut s = metadata.locale(Business::GenshinImpact, "en-us").unwrap();
 
-    assert!(s.ids().any(|id| id == "10000002"
-      || id == "10000003"
-      || id == "10000005"
-      || id == "10000007"
-      || id == "11509"));
+    assert!(s.ids().any(|id| *id == 10000002
+      || *id == 10000003
+      || *id == 10000005
+      || *id == 10000007
+      || *id == 11509));
 
     assert!(s.names().any(|name| name == "Kamisato Ayaka"
       || name == "Jean"
@@ -674,15 +808,14 @@ mod tests {
       || name == "Mistsplitter Reforged"));
 
     assert_eq!(
-      s.entry_from_id("10000002"),
+      s.entry_from_id(10000002),
       Some(GachaMetadataEntryRef {
         locale: "en-us",
         category: GachaMetadata::CATEGORY_CHARACTER,
         category_name: "Character",
-        id: "10000002",
+        id: 10000002,
         name: "Kamisato Ayaka",
         rank: 5,
-        limited: &GachaMetadataEntryLimited::Yes,
       })
     );
 
@@ -692,10 +825,9 @@ mod tests {
         locale: "en-us",
         category: GachaMetadata::CATEGORY_CHARACTER,
         category_name: "Character",
-        id: "10000003",
+        id: 10000003,
         name: "Jean",
         rank: 5,
-        limited: &GachaMetadataEntryLimited::No,
       })
     );
 
@@ -706,19 +838,17 @@ mod tests {
           locale: "en-us",
           category: GachaMetadata::CATEGORY_CHARACTER,
           category_name: "Character",
-          id: "10000005",
+          id: 10000005,
           name: "Traveler",
           rank: 5,
-          limited: &GachaMetadataEntryLimited::No,
         },
         GachaMetadataEntryRef {
           locale: "en-us",
           category: GachaMetadata::CATEGORY_CHARACTER,
           category_name: "Character",
-          id: "10000007",
+          id: 10000007,
           name: "Traveler",
           rank: 5,
-          limited: &GachaMetadataEntryLimited::No,
         }
       ]))
     );
@@ -729,37 +859,36 @@ mod tests {
         locale: "en-us",
         category: GachaMetadata::CATEGORY_WEAPON,
         category_name: "Weapon",
-        id: "11509",
+        id: 11509,
         name: "Mistsplitter Reforged",
         rank: 5,
-        limited: &GachaMetadataEntryLimited::Yes,
       })
     );
 
     assert_eq!(
       s.entry_from_name_first("Kamisato Ayaka"),
-      s.entry_from_id("10000002")
+      s.entry_from_id(10000002)
     );
-    assert_eq!(s.entry_from_name_first("Jean"), s.entry_from_id("10000003"));
+    assert_eq!(s.entry_from_name_first("Jean"), s.entry_from_id(10000003));
     assert_eq!(
       s.entry_from_name("Traveler"),
       Some(HashSet::from_iter([
-        s.entry_from_id("10000005").unwrap(),
-        s.entry_from_id("10000007").unwrap()
+        s.entry_from_id(10000005).unwrap(),
+        s.entry_from_id(10000007).unwrap()
       ]))
     );
     assert_eq!(
       s.entry_from_name_first("Mistsplitter Reforged"),
-      s.entry_from_id("11509")
+      s.entry_from_id(11509)
     );
 
-    s = metadata.obtain(Business::GenshinImpact, "zh-cn").unwrap();
+    s = metadata.locale(Business::GenshinImpact, "zh-cn").unwrap();
 
-    assert!(s.ids().any(|id| id == "10000002"
-      || id == "10000003"
-      || id == "10000005"
-      || id == "10000007"
-      || id == "11509"));
+    assert!(s.ids().any(|id| *id == 10000002
+      || *id == 10000003
+      || *id == 10000005
+      || *id == 10000007
+      || *id == 11509));
 
     assert!(
       s.names()
@@ -772,23 +901,21 @@ mod tests {
         locale: "zh-cn",
         category: GachaMetadata::CATEGORY_CHARACTER,
         category_name: "角色",
-        id: "10000002",
+        id: 10000002,
         name: "神里绫华",
         rank: 5,
-        limited: &GachaMetadataEntryLimited::Yes,
       })
     );
 
     assert_eq!(
-      s.entry_from_id("10000003"),
+      s.entry_from_id(10000003),
       Some(GachaMetadataEntryRef {
         locale: "zh-cn",
         category: GachaMetadata::CATEGORY_CHARACTER,
         category_name: "角色",
-        id: "10000003",
+        id: 10000003,
         name: "琴",
         rank: 5,
-        limited: &GachaMetadataEntryLimited::No,
       })
     );
 
@@ -799,56 +926,48 @@ mod tests {
           locale: "zh-cn",
           category: GachaMetadata::CATEGORY_CHARACTER,
           category_name: "角色",
-          id: "10000005",
+          id: 10000005,
           name: "旅行者",
           rank: 5,
-          limited: &GachaMetadataEntryLimited::No,
         },
         GachaMetadataEntryRef {
           locale: "zh-cn",
           category: GachaMetadata::CATEGORY_CHARACTER,
           category_name: "角色",
-          id: "10000007",
+          id: 10000007,
           name: "旅行者",
           rank: 5,
-          limited: &GachaMetadataEntryLimited::No,
         }
       ]))
     );
 
     assert_eq!(
-      s.entry_from_id("11509"),
+      s.entry_from_id(11509),
       Some(GachaMetadataEntryRef {
         locale: "zh-cn",
         category: GachaMetadata::CATEGORY_WEAPON,
         category_name: "武器",
-        id: "11509",
+        id: 11509,
         name: "雾切之回光",
         rank: 5,
-        limited: &GachaMetadataEntryLimited::Yes,
       })
     );
 
     assert_eq!(
       s.entry_from_name_first("神里绫华"),
-      s.entry_from_id("10000002")
+      s.entry_from_id(10000002)
     );
-    assert_eq!(s.entry_from_name_first("琴"), s.entry_from_id("10000003"));
+    assert_eq!(s.entry_from_name_first("琴"), s.entry_from_id(10000003));
     assert_eq!(
       s.entry_from_name("旅行者"),
       Some(HashSet::from_iter([
-        s.entry_from_id("10000005").unwrap(),
-        s.entry_from_id("10000007").unwrap()
+        s.entry_from_id(10000005).unwrap(),
+        s.entry_from_id(10000007).unwrap()
       ]))
     );
     assert_eq!(
       s.entry_from_name_first("雾切之回光"),
-      s.entry_from_id("11509")
+      s.entry_from_id(11509)
     );
-  }
-
-  #[test]
-  fn test_embedded_metadata() {
-    let _ = GachaMetadata::current();
   }
 }
