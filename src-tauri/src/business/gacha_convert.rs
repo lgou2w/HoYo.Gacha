@@ -67,6 +67,7 @@ impl UigfVersion {
   pub const V2_4: Self = Self::new(2, 4);
   pub const V3_0: Self = Self::new(3, 0);
   pub const V4_0: Self = Self::new(4, 0);
+  pub const V4_1: Self = Self::new(4, 1);
   pub const fn new(major: u8, minor: u8) -> Self {
     Self { major, minor }
   }
@@ -881,12 +882,13 @@ pub struct UigfNapItem {
 }
 
 impl Uigf {
-  pub const SUPPORTED_VERSIONS: [UigfVersion; 1] = [UigfVersion::V4_0];
+  pub const SUPPORTED_VERSIONS: [UigfVersion; 2] = [UigfVersion::V4_0, UigfVersion::V4_1];
 }
 
 #[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct UigfGachaRecordsWriter {
+  pub uigf_version: UigfVersion,             // Uigf version: v4.0, v4.1
   pub businesses: Option<HashSet<Business>>, // None for all businesses
   pub accounts: HashMap<u32, String>,        // uid -> (timezone, locale)
   #[serde(with = "rfc3339")]
@@ -906,6 +908,7 @@ impl GachaRecordsWriter for UigfGachaRecordsWriter {
     output: impl AsRef<Path>,
   ) -> Result<PathBuf, Self::Error> {
     let Self {
+      uigf_version,
       businesses,
       accounts,
       export_time,
@@ -920,7 +923,7 @@ impl GachaRecordsWriter for UigfGachaRecordsWriter {
         export_timestamp: export_time.unix_timestamp() as _,
         export_app: consts::ID.to_owned(),
         export_app_version: consts::VERSION_WITH_PREFIX.to_owned(),
-        version: UigfVersion::V4_0.to_string(),
+        version: uigf_version.to_string(),
       },
       hk4e: None,
       hkrpg: None,
@@ -2720,6 +2723,7 @@ mod tests {
     let output = temp_dir.path().join("test_uigf_v4_0_gacha_records_writer");
 
     UigfGachaRecordsWriter {
+      uigf_version: UigfVersion::V4_0,
       businesses: None,
       accounts: HashMap::from_iter([
         (100_000_000, "en-us".to_owned()),

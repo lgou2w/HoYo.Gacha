@@ -548,6 +548,7 @@ export type ExportGachaRecordsArgs = NonNullable<{
       pretty?: boolean | null
     } }
     | { Uigf: {
+      uigfVersion: 'v4.0' | 'v4.1'
       businesses?: Business[],
       accounts: Record<Account['uid'], string> // uid: locale
       exportTime: string | Date

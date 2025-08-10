@@ -390,7 +390,7 @@ export default {
             Format: {
               Uigf: {
                 Text: 'UIGF',
-                Info: '統一可交換抽卡記錄標準 (UIGF) v4.0',
+                Info: '統一可交換抽卡記錄標準 (UIGF) v4.0, v4.1',
               },
               LegacyUigf: {
                 Text: 'UIGF (Legacy)',
@@ -437,7 +437,7 @@ export default {
               Format: {
                 Label: '格式',
               },
-              LegacyUigfVersion: {
+              UigfVersion: {
                 Label: '版本',
               },
               UigfMinimized: {

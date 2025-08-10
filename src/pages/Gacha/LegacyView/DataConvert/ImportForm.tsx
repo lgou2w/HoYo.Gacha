@@ -104,7 +104,7 @@ export default function GachaLegacyViewDataConvertImportForm (props: Props) {
   const i18n = useI18n()
   const notifier = useNotifier()
 
-  const [{ file, fileError, format, formatUigfLocale, saveOnConflict, progress, busy }, produce] = useImmer({
+  const [state, produce] = useImmer({
     file: null as string | null,
     fileError: null as string | null,
     format: supportedFormats[0],
@@ -140,31 +140,31 @@ export default function GachaLegacyViewDataConvertImportForm (props: Props) {
   }, [produce])
 
   const onSubmit = useCallback(async () => {
-    if (!selectedAccount || !file) {
+    if (!selectedAccount || !state.file) {
       return
     }
 
     let importer: ImportGachaRecordsArgs['importer']
-    switch (format) {
+    switch (state.format) {
       case 'Uigf':
         importer = {
-          [format]: {
+          [state.format]: {
             businesses: [selectedAccount.business],
-            accounts: { [selectedAccount.uid]: formatUigfLocale },
+            accounts: { [selectedAccount.uid]: state.formatUigfLocale },
           },
         }
         break
       case 'LegacyUigf':
         importer = {
-          [format]: {
+          [state.format]: {
             expectedUid: selectedAccount.uid,
-            expectedLocale: formatUigfLocale,
+            expectedLocale: state.formatUigfLocale,
           },
         }
         break
       case 'Srgf':
         importer = {
-          [format]: { expectedUid: selectedAccount.uid },
+          [state.format]: { expectedUid: selectedAccount.uid },
         }
         break
       default:
@@ -188,9 +188,9 @@ export default function GachaLegacyViewDataConvertImportForm (props: Props) {
 
       try {
         changes = await importGachaRecords({
-          input: file,
+          input: state.file,
           importer,
-          saveOnConflict,
+          saveOnConflict: state.saveOnConflict,
           progressChannel,
         })
       } finally {
@@ -223,15 +223,15 @@ export default function GachaLegacyViewDataConvertImportForm (props: Props) {
       invalidatePrettizedGachaRecordsQuery(selectedAccount.business, selectedAccount.uid, i18n.constants.gacha)
       invalidateFirstGachaRecordQuery(selectedAccount.business, selectedAccount.uid)
     }
-  }, [file, format, formatUigfLocale, i18n, notifier, onSuccess, produce, saveOnConflict, selectedAccount])
+  }, [i18n, notifier, onSuccess, produce, selectedAccount, state])
 
   return (
     <div className={styles.root}>
       <Field
         size="large"
         label={<Locale mapping={['Pages.Gacha.LegacyView.DataConvert.ImportForm.File.Label']} />}
-        validationState={fileError ? 'error' : 'none'}
-        validationMessage={fileError}
+        validationState={state.fileError ? 'error' : 'none'}
+        validationMessage={state.fileError}
         required
       >
         <div className={styles.fileContainer}>
@@ -242,15 +242,15 @@ export default function GachaLegacyViewDataConvertImportForm (props: Props) {
             placeholder={i18n.t('Pages.Gacha.LegacyView.DataConvert.ImportForm.File.Placeholder')}
             appearance="filled-darker"
             autoComplete="off"
-            value={file ?? ''}
-            disabled={busy}
+            value={state.file ?? ''}
+            disabled={state.busy}
             readOnly
           />
           <Locale
             component={Button}
             size="large"
             onClick={onSelectFile}
-            disabled={busy}
+            disabled={state.busy}
             mapping={['Pages.Gacha.LegacyView.DataConvert.ImportForm.File.SelectBtn']}
           />
         </div>
@@ -260,7 +260,7 @@ export default function GachaLegacyViewDataConvertImportForm (props: Props) {
         label={<Locale mapping={['Pages.Gacha.LegacyView.DataConvert.ImportForm.Format.Label']} />}
         validationState="success"
         validationMessage={<Locale
-          mapping={[`Pages.Gacha.LegacyView.DataConvert.Format.${format}.Info`]}
+          mapping={[`Pages.Gacha.LegacyView.DataConvert.Format.${state.format}.Info`]}
         />}
         required
       >
@@ -270,9 +270,9 @@ export default function GachaLegacyViewDataConvertImportForm (props: Props) {
               key={value}
               value={value}
               className={styles.formatButton}
-              aria-checked={value === format}
+              aria-checked={value === state.format}
               onClick={onFormatChange}
-              disabled={busy}
+              disabled={state.busy}
               appearance="outline"
             >
               <Locale mapping={[`Pages.Gacha.LegacyView.DataConvert.Format.${value}.Text`]} />
@@ -280,7 +280,7 @@ export default function GachaLegacyViewDataConvertImportForm (props: Props) {
           ))}
         </div>
       </Field>
-      {!firstGachaRecord && (format === 'Uigf' || format === 'LegacyUigf') && (
+      {!firstGachaRecord && (state.format === 'Uigf' || state.format === 'LegacyUigf') && (
         <Field
           size="large"
           label={<Locale mapping={['Pages.Gacha.LegacyView.DataConvert.ImportForm.UigfLocale.Label']} />}
@@ -292,11 +292,11 @@ export default function GachaLegacyViewDataConvertImportForm (props: Props) {
         >
           <Select
             appearance="filled-darker"
-            value={formatUigfLocale}
+            value={state.formatUigfLocale}
             onChange={(_, data) => produce((draft) => {
               draft.formatUigfLocale = data.value as SupportedGachaLocale
             })}
-            disabled={busy}
+            disabled={state.busy}
           >
             {GachaLocales.map((locale) => (
               <option key={locale} value={locale}>
@@ -312,9 +312,9 @@ export default function GachaLegacyViewDataConvertImportForm (props: Props) {
       >
         <RadioGroup
           layout="horizontal"
-          value={saveOnConflict}
+          value={state.saveOnConflict}
           onChange={onSaveOnConflictChange}
-          disabled={busy}
+          disabled={state.busy}
         >
           {SaveOnConflicts.map((value) => (
             <Radio
@@ -329,8 +329,8 @@ export default function GachaLegacyViewDataConvertImportForm (props: Props) {
       </Field>
       <div className={styles.bottom}>
         <div className={styles.progress}>
-          {busy && (
-            <ProgressBar thickness="large" value={progress} max={1} />
+          {state.busy && (
+            <ProgressBar thickness="large" value={state.progress} max={1} />
           )}
         </div>
         <div className={styles.actions}>
@@ -338,14 +338,14 @@ export default function GachaLegacyViewDataConvertImportForm (props: Props) {
             component={Button}
             onClick={onCancel}
             mapping={['Pages.Gacha.LegacyView.DataConvert.ImportForm.CancelBtn']}
-            disabled={busy}
+            disabled={state.busy}
           />
           <Locale
             component={Button}
             appearance="primary"
             onClick={onSubmit}
             mapping={['Pages.Gacha.LegacyView.DataConvert.ImportForm.SubmitBtn']}
-            disabled={busy || !file}
+            disabled={state.busy || !state.file}
           />
         </div>
       </div>
