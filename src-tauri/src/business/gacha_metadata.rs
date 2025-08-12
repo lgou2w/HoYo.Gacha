@@ -245,12 +245,12 @@ impl GachaMetadata {
 
 impl GachaMetadataLocale {
   #[cfg(test)]
-  pub fn ids(&self) -> hash_map::Keys<u32, GachaMetadataEntry> {
+  pub fn ids(&self) -> hash_map::Keys<'_, u32, GachaMetadataEntry> {
     self.entries.keys()
   }
 
   #[cfg(test)]
-  pub fn names(&self) -> hash_map::Keys<String, GachaMetadataEntryNameId> {
+  pub fn names(&self) -> hash_map::Keys<'_, String, GachaMetadataEntryNameId> {
     self.reverses().keys()
   }
 
@@ -279,13 +279,7 @@ impl GachaMetadataLocale {
     &'a self,
     name: &'name str,
   ) -> Option<GachaMetadataEntryRef<'a>> {
-    match self.reverses().get(name)? {
-      GachaMetadataEntryNameId::Unique(id) => Some(self.entry_ref(self.entries.get(id)?, *id)),
-      GachaMetadataEntryNameId::Many(ids) => ids
-        .iter()
-        .next()
-        .and_then(|id| self.entries.get(id).map(|entry| self.entry_ref(entry, *id))),
-    }
+    self.entry_from_name(name)?.into_iter().next()
   }
 
   #[inline]
