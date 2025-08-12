@@ -394,7 +394,7 @@ export default {
             Format: {
               Uigf: {
                 Text: 'UIGF',
-                Info: 'Uniformed Interchangeable GachaLog Format standard (UIGF) v4.0',
+                Info: 'Uniformed Interchangeable GachaLog Format standard (UIGF) v4.0, v4.1',
               },
               LegacyUigf: {
                 Text: 'UIGF (Legacy)',
@@ -441,7 +441,7 @@ export default {
               Format: {
                 Label: 'Format',
               },
-              LegacyUigfVersion: {
+              UigfVersion: {
                 Label: 'Version',
               },
               UigfMinimized: {

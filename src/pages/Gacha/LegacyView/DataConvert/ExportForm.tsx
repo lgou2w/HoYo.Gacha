@@ -64,9 +64,16 @@ type LegacyUigfVersion = Extract<
   { LegacyUigf: unknown }
 >['LegacyUigf']['uigfVersion']
 
-const LegacyUigfVersions: LegacyUigfVersion[] = [
-  'v2.0', 'v2.1', 'v2.2', 'v2.3', 'v2.4', 'v3.0',
-]
+type UigfVersion = Extract<
+  ExportGachaRecordsArgs['exporter'],
+  { Uigf: unknown }
+>['Uigf']['uigfVersion']
+
+const UigfVersions: { LegacyUigf: LegacyUigfVersion[], Uigf: UigfVersion[], Srgf: [] } = {
+  LegacyUigf: ['v2.0', 'v2.1', 'v2.2', 'v2.3', 'v2.4', 'v3.0'],
+  Uigf: ['v4.0', 'v4.1'],
+  Srgf: [],
+}
 
 export default function GachaLegacyViewDataConvertExportForm (props: Props) {
   const styles = useStyles()
@@ -79,15 +86,11 @@ export default function GachaLegacyViewDataConvertExportForm (props: Props) {
   const i18n = useI18n()
   const notifier = useNotifier()
 
-  const [{
-    folder, folderError,
-    format, formatLegacyUigfVersion, formatUigfMinimized, formatPretty,
-    busy,
-  }, produce] = useImmer({
+  const [state, produce] = useImmer({
     folder: null as string | null,
     folderError: null as string | null,
     format: supportedFormats[0],
-    formatLegacyUigfVersion: LegacyUigfVersions[0] as LegacyUigfVersion,
+    formatUigfVersion: UigfVersions[supportedFormats[0]][0],
     formatUigfMinimized: false,
     formatPretty: false,
     busy: false,
@@ -109,7 +112,7 @@ export default function GachaLegacyViewDataConvertExportForm (props: Props) {
   }, [produce])
 
   const onSubmit = useCallback(async () => {
-    if (!selectedAccount || !firstGachaRecord || !folder) {
+    if (!selectedAccount || !firstGachaRecord || !state.folder) {
       return
     }
 
@@ -118,37 +121,38 @@ export default function GachaLegacyViewDataConvertExportForm (props: Props) {
     const exportTime = new Date()
 
     let exporter: ExportGachaRecordsArgs['exporter']
-    switch (format) {
+    switch (state.format) {
       case 'Uigf':
         exporter = {
-          [format]: {
+          [state.format]: {
+            uigfVersion: state.formatUigfVersion as UigfVersion,
             businesses: [business],
             accounts: { [accountUid]: accountLocale },
             exportTime,
-            minimized: formatUigfMinimized,
-            pretty: formatPretty,
+            minimized: state.formatUigfMinimized,
+            pretty: state.formatPretty,
           },
         }
         break
       case 'LegacyUigf':
         exporter = {
-          [format]: {
-            uigfVersion: formatLegacyUigfVersion,
+          [state.format]: {
+            uigfVersion: state.formatUigfVersion as LegacyUigfVersion,
             accountLocale,
             accountUid,
             exportTime,
-            pretty: formatPretty,
+            pretty: state.formatPretty,
           },
         }
         break
       case 'Srgf':
         exporter = {
-          [format]: {
+          [state.format]: {
             srgfVersion: 'v1.0',
             accountLocale,
             accountUid,
             exportTime,
-            pretty: formatPretty,
+            pretty: state.formatPretty,
           },
         }
         break
@@ -161,12 +165,12 @@ export default function GachaLegacyViewDataConvertExportForm (props: Props) {
 
     const filename = [
       __APP_NAME__,
-      format,
+      state.format,
       accountUid,
       i18n.dayjs(exportTime).format('YYYYMMDD_HHmmss'),
     ].join('_')
 
-    const output = folder + __PATH_SEP__ + filename
+    const output = state.folder + __PATH_SEP__ + filename
 
     let outputFile: string
     try {
@@ -194,7 +198,7 @@ export default function GachaLegacyViewDataConvertExportForm (props: Props) {
         output: outputFile,
       }),
     })
-  }, [business, firstGachaRecord, folder, format, formatLegacyUigfVersion, formatPretty, formatUigfMinimized, i18n, notifier, onSuccess, produce, selectedAccount])
+  }, [business, firstGachaRecord, i18n, notifier, onSuccess, produce, selectedAccount, state])
 
   // See: ../Toolbar/Convert.tsx
   if (!firstGachaRecord) {
@@ -208,8 +212,8 @@ export default function GachaLegacyViewDataConvertExportForm (props: Props) {
       <Field
         size="large"
         label={<Locale mapping={['Pages.Gacha.LegacyView.DataConvert.ExportForm.Folder.Label']} />}
-        validationState={folderError ? 'error' : 'none'}
-        validationMessage={folderError}
+        validationState={state.folderError ? 'error' : 'none'}
+        validationMessage={state.folderError}
         required
       >
         <div className={styles.folderContainer}>
@@ -220,15 +224,15 @@ export default function GachaLegacyViewDataConvertExportForm (props: Props) {
             placeholder={i18n.t('Pages.Gacha.LegacyView.DataConvert.ExportForm.Folder.Placeholder')}
             appearance="filled-darker"
             autoComplete="off"
-            value={folder ?? ''}
-            disabled={busy}
+            value={state.folder ?? ''}
+            disabled={state.busy}
             readOnly
           />
           <Locale
             component={Button}
             size="large"
             onClick={onSelectFolder}
-            disabled={busy}
+            disabled={state.busy}
             mapping={['Pages.Gacha.LegacyView.DataConvert.ExportForm.Folder.SelectBtn']}
           />
         </div>
@@ -238,7 +242,7 @@ export default function GachaLegacyViewDataConvertExportForm (props: Props) {
         label={<Locale mapping={['Pages.Gacha.LegacyView.DataConvert.ExportForm.Format.Label']} />}
         validationState="success"
         validationMessage={<Locale
-          mapping={[`Pages.Gacha.LegacyView.DataConvert.Format.${format}.Info`]}
+          mapping={[`Pages.Gacha.LegacyView.DataConvert.Format.${state.format}.Info`]}
         />}
         required
       >
@@ -248,9 +252,9 @@ export default function GachaLegacyViewDataConvertExportForm (props: Props) {
               key={value}
               value={value}
               className={styles.formatButton}
-              aria-checked={value === format}
+              aria-checked={value === state.format}
               onClick={onFormatChange}
-              disabled={busy}
+              disabled={state.busy}
               appearance="outline"
             >
               <Locale mapping={[`Pages.Gacha.LegacyView.DataConvert.Format.${value}.Text`]} />
@@ -258,20 +262,20 @@ export default function GachaLegacyViewDataConvertExportForm (props: Props) {
           ))}
         </div>
       </Field>
-      {format === 'LegacyUigf' && (
+      {(state.format === 'LegacyUigf' || state.format === 'Uigf') && (
         <Field
           size="large"
-          label={<Locale mapping={['Pages.Gacha.LegacyView.DataConvert.ExportForm.LegacyUigfVersion.Label']} />}
+          label={<Locale mapping={['Pages.Gacha.LegacyView.DataConvert.ExportForm.UigfVersion.Label']} />}
         >
           <RadioGroup
             layout="horizontal"
-            value={formatLegacyUigfVersion}
+            value={state.formatUigfVersion}
             onChange={(_, data) => produce((draft) => {
-              draft.formatLegacyUigfVersion = data.value as LegacyUigfVersion
+              draft.formatUigfVersion = data.value as LegacyUigfVersion | UigfVersion
             })}
-            disabled={busy}
+            disabled={state.busy}
           >
-            {LegacyUigfVersions.map((value) => (
+            {UigfVersions[state.format].map((value) => (
               <Radio
                 key={value}
                 value={value}
@@ -281,7 +285,7 @@ export default function GachaLegacyViewDataConvertExportForm (props: Props) {
           </RadioGroup>
         </Field>
       )}
-      {format === 'Uigf' && (
+      {state.format === 'Uigf' && (
         <Field
           size="large"
           label={<Locale mapping={['Pages.Gacha.LegacyView.DataConvert.ExportForm.UigfMinimized.Label']} />}
@@ -292,13 +296,13 @@ export default function GachaLegacyViewDataConvertExportForm (props: Props) {
             labelPosition="after"
             label={<Locale mapping={
               ['Pages.Gacha.LegacyView.DataConvert.ExportForm.UigfMinimized.State',
-                { context: String(formatUigfMinimized) },
+                { context: String(state.formatUigfMinimized) },
               ]} />}
-            checked={formatUigfMinimized}
+            checked={state.formatUigfMinimized}
             onChange={(_, data) => produce((draft) => {
               draft.formatUigfMinimized = data.checked
             })}
-            disabled={busy}
+            disabled={state.busy}
           />
         </Field>
       )}
@@ -313,13 +317,13 @@ export default function GachaLegacyViewDataConvertExportForm (props: Props) {
           labelPosition="after"
           label={<Locale mapping={
             ['Pages.Gacha.LegacyView.DataConvert.ExportForm.Pretty.State',
-              { context: String(formatPretty) },
+              { context: String(state.formatPretty) },
             ]} />}
-          checked={formatPretty}
+          checked={state.formatPretty}
           onChange={(_, data) => produce((draft) => {
             draft.formatPretty = data.checked
           })}
-          disabled={busy}
+          disabled={state.busy}
         />
       </Field>
       <div className={styles.actions}>
@@ -327,14 +331,14 @@ export default function GachaLegacyViewDataConvertExportForm (props: Props) {
           component={Button}
           onClick={onCancel}
           mapping={['Pages.Gacha.LegacyView.DataConvert.ExportForm.CancelBtn']}
-          disabled={busy}
+          disabled={state.busy}
         />
         <Locale
           component={Button}
           appearance="primary"
           onClick={onSubmit}
           mapping={['Pages.Gacha.LegacyView.DataConvert.ExportForm.SubmitBtn']}
-          disabled={busy || !folder}
+          disabled={state.busy || !state.folder}
         />
       </div>
     </div>
