@@ -13,24 +13,24 @@ An unofficial tool for managing and analyzing your miHoYo gacha records.
 
 ![Logo](src-tauri/icons/128x128.png)
 
-## 功能 / Features
+## ✨ 功能 / Features
 
-- [x] 支持 `原神 Genshin Impact`、`崩坏：星穹铁道 Honkai: Star Rail` 和 `绝区零 Zenless Zone Zero`.
-- [x] 支持游戏的多个账号。获取游戏的抽卡链接。 Support multiple accounts for the game. Get the gacha url.
-- [x] 支持获取抽卡数据并保存到本地数据库。 Support fetch gacha data and saving it to the local database.
-- [x] 支持导入或导出的数据交换文件格式。 Support data exchange file formats for import or export.
-  - [x] [`UIGF`](https://uigf.org/zh/standards/uigf.html) 统一可交换抽卡记录标准：v2.0, v2.1, v2.2, v2.3, v2.4, v3.0, v4.0
+- [x] 🎮 支持 `原神 Genshin Impact`、`崩坏：星穹铁道 Honkai: Star Rail` 和 `绝区零 Zenless Zone Zero`.
+- [x] 📁 支持游戏的多个账号。获取游戏的抽卡链接。 Support multiple accounts for the game. Get the gacha url.
+- [x] 📦 支持获取抽卡数据并保存到本地数据库。 Support fetch gacha data and saving it to the local database.
+- [x] 🔄 支持导入或导出的数据交换文件格式。 Support data exchange file formats for import or export.
+  - [x] [`UIGF`](https://uigf.org/zh/standards/uigf.html) 统一可交换抽卡记录标准：v2.0, v2.1, v2.2, v2.3, v2.4, v3.0, v4.0, v4.1
   - [x] [`SRGF`](https://uigf.org/zh/standards/srgf.html) 星穹铁道抽卡记录标准：v1.0
   - [ ] `CSV` 逗号分隔文件格式。
   - [ ] `XLSX` Excel 表格文件格式。
   - [ ] [`zzz.rng.moe`](https://zzz.rng.moe) 绝区零工具箱。
 
-## 重要变化 / Important changes
+## ⚡️ 重要变化 / Important changes
 
 - 应用标识符 (App Identifier): `com.lgou2w.hoyo.gacha` -> `com.lgou2w.hoyo.gacha.v1`。
 - 数据库文件 (Database File ): `HoYo.Gacha.db`         -> `HoYo.Gacha.v1.db`。
 
-## 下载 / Download
+## 📥 下载 / Download
 
 请在此仓库 [Releases](https://github.com/lgou2w/HoYo.Gacha/releases) 下载最新版。
 
@@ -43,13 +43,13 @@ Please download the latest version from this repository [Releases](https://githu
 >
 > https://developer.microsoft.com/microsoft-edge/webview2/
 
-### 注意 / Notice
+### ‼️ 注意 / Notice
 
 程序会在 `运行目录` 自动创建名为 `HoYo.Gacha.v1.db` 的数据库文件。此文件中包含了 `您的所有本地账号` 和 `全部的抽卡记录` 数据。请确保在 `移动程序本体文件` 或 `迁移操作系统` 时不要遗漏此数据库文件！
 
 The program will automatically create a database file named `HoYo.Gacha.v1.db` in the `Run Directory`. This file contains `all your local accounts` and `all gacha records` data. Please make sure not to miss this database file when `moving the program` or `migrating the operating system`!
 
-## 迁移 / Migration
+## 🚀 迁移 / Migration
 
 ### 从 v0 迁移 / Migrating from v0
 
@@ -57,7 +57,7 @@ The program will automatically create a database file named `HoYo.Gacha.v1.db` i
 
 Open the new version of the tool app. Click the gear-shaped `Settings` button in the lower left corner of the app, find the `Database Migration` bar at the top, and click the `Migrate` button on the right. Select and open the old version database `HoYo.Gacha.db` file and wait for the migration to complete automatically.
 
-## 赞助商 / Sponsorship
+## 💞 赞助商 / Sponsorship
 
 HoYo.Gacha is currently using sponsored software from the following service providers:
 
@@ -69,7 +69,7 @@ HoYo.Gacha is currently using sponsored software from the following service prov
 
 * [Netlify](https://www.netlify.com/) provides document and home page hosting service for HoYo.Gacha
 
-## 协议 / License
+## 📜 协议 / License
 
 > [!NOTE]
 > MIT OR Apache-2.0 | **仅供个人学习交流使用。请勿用于任何商业或违法违规用途。**
@@ -80,7 +80,7 @@ HoYo.Gacha is currently using sponsored software from the following service prov
 >
 > **This software will not ask you for any account password information about ©miHoYo account, nor will it collect any user data.** The generated data (including but not limited to usage data, Gacha data, UID information, etc.) are all stored locally by the user.
 
-## 部分资源 / Some assets
+## 🗃 部分资源 / Some assets
 
 ©miHoYo | 上海米哈游影铁科技有限公司 版权所有
 
