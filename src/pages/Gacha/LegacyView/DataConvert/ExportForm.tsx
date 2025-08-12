@@ -196,6 +196,7 @@ export default function GachaLegacyViewDataConvertExportForm (props: Props) {
     })
   }, [business, firstGachaRecord, folder, format, formatLegacyUigfVersion, formatPretty, formatUigfMinimized, i18n, notifier, onSuccess, produce, selectedAccount])
 
+  // See: ../Toolbar/Convert.tsx
   if (!firstGachaRecord) {
     // TODO: Tell the user that there are no records and cannot be exported.
     //   It is best to prohibit opening this component in the parent component.

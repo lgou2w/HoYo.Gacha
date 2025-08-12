@@ -2,6 +2,7 @@ import React, { ComponentProps, ElementRef, Fragment, MouseEventHandler, PropsWi
 import { Button, Caption1, makeStyles, tokens } from '@fluentui/react-components'
 import { ArrowDownloadRegular, ArrowUploadRegular } from '@fluentui/react-icons'
 import { useSelectedAccountSuspenseQueryData } from '@/api/queries/accounts'
+import { useFirstGachaRecordSuspenseQueryData } from '@/api/queries/business'
 import Locale from '@/components/Locale'
 import useBusinessContext from '@/hooks/useBusinessContext'
 import DataConvertDialog from '@/pages/Gacha/LegacyView/DataConvert/Dialog'
@@ -45,8 +46,10 @@ export default function GachaLegacyViewToolbarConvert () {
 
 function DataConvertPreset (props: PropsWithoutRef<ComponentProps<typeof DataConvertDialog>>) {
   const { preset } = props
-  const { keyofBusinesses } = useBusinessContext()
+  const { business, keyofBusinesses } = useBusinessContext()
   const selectedAccount = useSelectedAccountSuspenseQueryData(keyofBusinesses)
+  const firstGachaRecord = useFirstGachaRecordSuspenseQueryData(business, selectedAccount?.uid)
+  const disabled = !selectedAccount || (preset === 'Export' && !firstGachaRecord)
 
   const dialogRef = useRef<ElementRef<typeof DataConvertDialog>>(null)
   const handleClick = useCallback<MouseEventHandler>(() => {
@@ -61,7 +64,7 @@ function DataConvertPreset (props: PropsWithoutRef<ComponentProps<typeof DataCon
         shape="circular"
         size="large"
         onClick={handleClick}
-        disabled={!selectedAccount}
+        disabled={disabled}
       />
       <DataConvertDialog
         ref={dialogRef}
