@@ -41,7 +41,7 @@ const LEGACY_FACETS = {
 function resolveRemoteImageSrc (
   keyofBusinesses: KeyofBusinesses,
   itemCategory: PrettyGachaRecord['itemCategory'],
-  itemId: string,
+  itemId: PrettyGachaRecord['itemId'],
   legacy?: boolean,
 ) {
   if (legacy) {

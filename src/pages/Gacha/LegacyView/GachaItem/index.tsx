@@ -90,6 +90,8 @@ export default function GachaItem (props: GachaItemProps) {
       time,
       usedPity,
       limited,
+      version,
+      genshinCharacter2,
     },
     small,
     noLimitedBadge,
@@ -98,7 +100,11 @@ export default function GachaItem (props: GachaItemProps) {
   } = props
 
   const i18n = useI18n()
-  const title = name + '\n' + i18n.dayjs(time).format('LLLL')
+
+  let title = name
+  title += version ? '\n' + i18n.t('Pages.Gacha.LegacyView.GachaItem.Title.Version', { version }) : ''
+  title += genshinCharacter2 ? '\n' + i18n.t('Pages.Gacha.LegacyView.GachaItem.Title.GenshinImpactCharacter2') : ''
+  title += '\n' + i18n.dayjs(time).format('LLLL')
 
   return (
     <div

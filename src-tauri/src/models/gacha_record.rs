@@ -3,6 +3,7 @@ use time::serde::rfc3339;
 use time::{OffsetDateTime, PrimitiveDateTime};
 
 use super::Business;
+use crate::utilities::serde_helper;
 
 // HACK: Known gacha record data structures.
 //
@@ -44,7 +45,10 @@ pub struct GachaRecord {
   pub time: OffsetDateTime,
   pub name: String,
   pub item_type: String,
-  pub item_id: String,
+  // HACK: Must read from string and write as string,
+  // But in the program, parse is u32 type.
+  #[serde(with = "serde_helper::string_number_into")]
+  pub item_id: u32,
 }
 
 impl GachaRecord {

@@ -563,7 +563,10 @@ impl<'r> FromRow<'r, SqliteRow> for GachaRecord {
       time: row.try_get("time")?,
       name: row.try_get("name")?,
       item_type: row.try_get("item_type")?,
-      item_id: row.try_get("item_id")?,
+      item_id: row
+        .try_get::<String, _>("item_id")?
+        .parse::<u32>()
+        .map_err(|e| sqlx::Error::Decode(Box::new(e)))?,
     })
   }
 }

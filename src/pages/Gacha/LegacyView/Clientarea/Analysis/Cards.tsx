@@ -526,10 +526,12 @@ function CardsEntryRecord (props: CardsEntryRecordProps) {
     category === PrettyCategory.CollaborationCharacter ||
     category === PrettyCategory.CollaborationWeapon
 
-  let isHardPity = false
-  if (prevRecord && !prevRecord.limited && record.limited) {
-    isHardPity = true
-  }
+  const isHardPity = prevRecord && !prevRecord.limited && record.limited
+
+  let title = record.name
+  title += record.version ? '\n' + i18n.t('Pages.Gacha.LegacyView.GachaItem.Title.Version', { version: record.version }) : ''
+  title += record.genshinCharacter2 ? '\n' + i18n.t('Pages.Gacha.LegacyView.GachaItem.Title.GenshinImpactCharacter2') : ''
+  title += '\n' + i18n.dayjs(record.time).format('LLLL')
 
   return (
     <div
@@ -540,7 +542,7 @@ function CardsEntryRecord (props: CardsEntryRecordProps) {
         '--progress':
           calcPityProgressVar(category, record.usedPity),
       }}
-      title={i18n.dayjs(record.time).format('LLLL')}
+      title={title}
     >
       <GachaItemImage
         className={styles.icon}

@@ -270,6 +270,10 @@ export default {
         LegacyView: {
           GachaItem: {
             Limited: '限定',
+            Title: {
+              Version: '版本：{{version}}',
+              GenshinImpactCharacter2: '$t(Business.GenshinImpact.Gacha.Category.Character)-2',
+            },
           },
           Toolbar: {
             Account: {

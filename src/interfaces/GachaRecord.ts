@@ -25,7 +25,7 @@ export type GachaRecord<T extends Business> = {
   lang: string
   name: string
   itemType: string
-  itemId: string | null
+  itemId: number
 }
 
 export type GenshinImpactGachaRecord = GachaRecord<GenshinImpact>
@@ -38,11 +38,14 @@ export interface PrettyGachaRecord {
   id: GachaRecord<Business>['id']
   // See: src-tauri/src/models/gacha_metadata.rs::GachaMetadata::KNOWN_CATEGORIES
   itemCategory: 'Character' | 'Weapon' | 'Bangboo'
-  itemId: NonNullable<GachaRecord<Business>['itemId']>
+  itemId: GachaRecord<Business>['itemId']
   name: GachaRecord<Business>['name']
   time: GachaRecord<Business>['time']
   usedPity: number | undefined // Purple and Golden only
-  limited: boolean | undefined // Golden only
+  limited: boolean | undefined // Purple and Golden only
+  version: string | undefined
+  // 'Genshin Impact' Character only, Distinguish Character and Character-2
+  genshinCharacter2: boolean | undefined
 }
 
 export enum PrettyCategory {
@@ -141,8 +144,8 @@ export function computeGachaTypeAndLastEndIdMappings<T extends Business = Busine
     const isBeginner = categorized.category === PrettyCategory.Beginner
     if (isBeginner && excludeBeginner) {
       // HACK:
-      //   Genshin Impact    : Beginner Gacha Pool = 20 times
-      //   Honkai: Star Rail :                     = 50 times
+      //   Genshin Impact    : Beginner Gacha Banner = 20 times
+      //   Honkai: Star Rail :                       = 50 times
       //   Zenless Zone Zero : Useless
       const exclude =
         (business === Businesses.GenshinImpact && categorized.total >= 20) ||

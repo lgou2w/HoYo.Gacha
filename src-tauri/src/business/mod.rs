@@ -295,7 +295,7 @@ pub async fn business_gacha_metadata_is_updating() -> bool {
 
 #[tauri::command]
 #[tracing::instrument(skip_all)]
-pub async fn business_gacha_metadata_update() -> Result<gacha_metadata::UpdatedKind, String> {
+pub async fn business_gacha_metadata_update() -> Result<GachaMetadataUpdatedKind, String> {
   GachaMetadata::update().await.map_err(|e| e.to_string())
 }
 

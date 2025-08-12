@@ -203,9 +203,11 @@ pub async fn start(singleton: Singleton, tracing: Tracing, database: Database) {
           let backoff = exponential_backoff::Backoff::new(RETRIES, MIN, MAX);
           for duration in backoff {
             if let Err(error) = GachaMetadata::update().await {
-              tracing::error!(message = "Failed to update Gacha metadata, retring...", ?error);
               if let Some(duration) = duration {
+                tracing::warn!(message = "Failed to update Gacha metadata, retring...", ?duration, ?error);
                 tokio::time::sleep(duration).await;
+              } else {
+                tracing::error!(message = "Failed to update Gacha metadata, no more retries left", ?error);
               }
               continue;
             }
