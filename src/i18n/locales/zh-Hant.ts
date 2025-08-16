@@ -541,6 +541,10 @@ export default {
               Title: '語言',
               Subtitle: '變更應用程式的主要語言。',
             },
+            NavbarBusinessVisible: {
+              Title: '導覽列業務項目可見性',
+              Subtitle: '控制導覽列中業務相關項目的顯示與隱藏狀態。',
+            },
           },
           Appearance: {
             Title: '外觀',
