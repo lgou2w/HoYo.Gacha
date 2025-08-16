@@ -541,6 +541,10 @@ export default {
               Title: '语言',
               Subtitle: '更改应用使用的主要语言。',
             },
+            NavbarBusinessVisible: {
+              Title: '导航栏业务项可见性',
+              Subtitle: '控制导航栏中业务相关条目的显示与隐藏状态。',
+            },
           },
           Appearance: {
             Title: '外观',

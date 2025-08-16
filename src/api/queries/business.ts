@@ -1,8 +1,8 @@
-import { queryOptions, useQuery, useSuspenseQuery } from '@tanstack/react-query'
+import { queryOptions, useMutation, useQuery, useSuspenseQuery } from '@tanstack/react-query'
 import { FindAndPrettyGachaRecordsArgs, PrettyGachaRecordsError, findAndPrettyGachaRecords } from '@/api/commands/business'
-import { SqlxDatabaseError, SqlxError, findGachaRecordsByBusinessAndUidWithLimit } from '@/api/commands/database'
+import { SqlxDatabaseError, SqlxError, deleteKv, findGachaRecordsByBusinessAndUidWithLimit, findKv, upsertKv } from '@/api/commands/database'
 import { Account } from '@/interfaces/Account'
-import { Business, ReversedBusinesses } from '@/interfaces/Business'
+import { Business, Businesses, ReversedBusinesses } from '@/interfaces/Business'
 import { GachaRecord, PrettizedGachaRecords } from '@/interfaces/GachaRecord'
 import queryClient from '@/queryClient'
 
@@ -186,6 +186,115 @@ export function removeFirstGachaRecordQuery (
 ) {
   queryClient.removeQueries({
     queryKey: firstGachaRecordQueryKey(business, uid),
+  })
+}
+
+// #endregion
+
+// #region: Navbar business
+
+const KeyNavbarBusinessVisible = 'NavbarBusinessVisible'
+const DatabaseKeyNavbarBusinessVisible = `Query:${KeyNavbarBusinessVisible}`
+
+// true | null -> visible
+// false       -> invisible
+export type NavbarBusinessVisible = Record<Business, boolean | null>
+
+const DefaultNavbarBusinessVisible: NavbarBusinessVisible = {
+  [Businesses.GenshinImpact]: null,
+  [Businesses.HonkaiStarRail]: null,
+  [Businesses.ZenlessZoneZero]: null,
+}
+
+export function navbarBusinessVisibleQueryOptions () {
+  return queryOptions<
+    NavbarBusinessVisible,
+    SqlxError | SqlxDatabaseError | Error,
+    NavbarBusinessVisible,
+    [typeof KeyNavbarBusinessVisible]
+  >({
+    staleTime: Infinity,
+    queryKey: [KeyNavbarBusinessVisible],
+    queryFn: async function navbarBusinessVisibleQueryFn () {
+      const kv = await findKv({ key: DatabaseKeyNavbarBusinessVisible })
+      const data = Object.assign({}, DefaultNavbarBusinessVisible)
+
+      if (!kv) {
+        return data
+      }
+
+      let parsed: NavbarBusinessVisible
+      try {
+        parsed = JSON.parse(kv.val)
+      } catch (e) {
+        console.error('Failed to parse NavbarBusinessVisible from database:', e)
+        await deleteKv({ key: DatabaseKeyNavbarBusinessVisible })
+        return data
+      }
+
+      for (const business of Object.values(Businesses)) {
+        const visible = parsed[business]
+        if (typeof visible === 'boolean' || visible === null) {
+          data[business] = visible
+        }
+      }
+
+      return data
+    },
+  })
+}
+
+export function useNavbarBusinessVisibleQuery () {
+  return useQuery(navbarBusinessVisibleQueryOptions())
+}
+
+export function useNavbarBusinessVisibleSuspenseQuery () {
+  return useSuspenseQuery(navbarBusinessVisibleQueryOptions())
+}
+
+export function useNavbarBusinessVisibleSuspenseQueryData () {
+  return useNavbarBusinessVisibleSuspenseQuery().data
+}
+
+export function ensureNavbarBusinessVisibleQueryData () {
+  return queryClient.ensureQueryData(navbarBusinessVisibleQueryOptions())
+}
+
+// Mutation
+
+const UpdateNavbarBusinessVisibleQueryKey = [KeyNavbarBusinessVisible, 'Update']
+
+export function useUpdateNavbarBusinessVisibleMutation () {
+  return useMutation<
+    NavbarBusinessVisible,
+    SqlxError | SqlxDatabaseError | Error,
+    Partial<NavbarBusinessVisible>
+  >({
+    mutationKey: UpdateNavbarBusinessVisibleQueryKey,
+    async mutationFn (args) {
+      let visible = queryClient.getQueryData<NavbarBusinessVisible>([KeyNavbarBusinessVisible])
+
+      if (!visible) {
+        visible = Object.assign({}, DefaultNavbarBusinessVisible)
+      }
+
+      for (const business of Object.values(Businesses)) {
+        const value = args[business]
+        if (typeof value !== 'undefined' && visible[business] !== value) {
+          visible[business] = value
+        }
+      }
+
+      await upsertKv({
+        key: DatabaseKeyNavbarBusinessVisible,
+        val: JSON.stringify(visible),
+      })
+
+      return visible
+    },
+    async onSuccess () {
+      await queryClient.resetQueries({ queryKey: [KeyNavbarBusinessVisible] })
+    },
   })
 }
 
