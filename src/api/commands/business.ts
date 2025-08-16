@@ -643,6 +643,15 @@ export const gachaMetadataIsUpdating = declareCommand<undefined, boolean>('busin
 
 export const gachaMetadataUpdate = declareCommand<undefined, 'Updating' | 'UpToDate' | { Success: string }>('business_gacha_metadata_update')
 
+export type GachaMetadataItemNameFromIdArgs<T extends Business> = NonNullable<{
+  business: T
+  itemId: GachaRecord<T>['itemId']
+  locale: string
+}>
+
+export type GachaMetadataItemNameFromId = <T extends Business>(args: GachaMetadataItemNameFromIdArgs<T>) => Promise<string | null>
+export const gachaMetadataItemNameFromId: GachaMetadataItemNameFromId = declareCommand('business_gacha_metadata_item_name_from_id')
+
 // #endregion
 
 // Export
@@ -657,6 +666,7 @@ const BusinessCommands = {
   findAndPrettyGachaRecords,
   gachaMetadataIsUpdating,
   gachaMetadataUpdate,
+  gachaMetadataItemNameFromId,
 } as const
 
 Object.freeze(BusinessCommands)

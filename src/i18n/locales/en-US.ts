@@ -284,6 +284,7 @@ export default {
               Options: {
                 Title: 'More options',
                 Edit: 'Edit account',
+                ChooseAvatar: 'Change avatar',
                 Delete: 'Delete account',
               },
               DeleteAccountDialog: {
@@ -379,6 +380,10 @@ export default {
               ManualFindTitle: 'Please choice the game data folder for $t(Business.{{keyofBusinesses}}.Name)',
               EmptyFind: 'A valid game data folder was not found. Please check that the game is installed and running.',
             },
+          },
+          ChooseAvatarDialog: {
+            Title: 'Change avatar: {{identify}}',
+            Confirm: 'Use',
           },
           UpsertAccountDialog: {
             AddTitle: 'Add new account: $t(Business.{{keyofBusinesses}}.Name)',

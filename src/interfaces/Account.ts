@@ -8,6 +8,7 @@ export interface KnownAccountProperties {
   gachaUrl?: string | null
   gachaUrlCreationTime?: string | null
   lastGachaRecordsUpdated?: string | null
+  avatarId?: string | null
 }
 
 export interface Account<T extends Business = Business> {
