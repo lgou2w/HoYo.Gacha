@@ -384,6 +384,7 @@ export default {
           ChooseAvatarDialog: {
             Title: 'Change avatar: {{identify}}',
             Confirm: 'Use',
+            Success: 'Successfully changed the avatar.',
           },
           UpsertAccountDialog: {
             AddTitle: 'Add new account: $t(Business.{{keyofBusinesses}}.Name)',

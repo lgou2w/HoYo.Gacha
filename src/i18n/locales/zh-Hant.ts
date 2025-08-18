@@ -384,6 +384,7 @@ export default {
           ChooseAvatarDialog: {
             Title: '修改頭像：{{identify}}',
             Confirm: '使用',
+            Success: '成功修改頭像。',
           },
           UpsertAccountDialog: {
             AddTitle: '新增帳號：$t(Business.{{keyofBusinesses}}.Name)',

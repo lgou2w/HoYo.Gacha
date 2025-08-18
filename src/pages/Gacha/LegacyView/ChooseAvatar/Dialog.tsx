@@ -9,6 +9,7 @@ import BizImages from '@/components/BizImages'
 import Locale from '@/components/Locale'
 import useBusinessContext from '@/hooks/useBusinessContext'
 import useI18n from '@/hooks/useI18n'
+import useNotifier from '@/hooks/useNotifier'
 import { Account } from '@/interfaces/Account'
 import { Business, Businesses, ReversedBusinesses } from '@/interfaces/Business'
 
@@ -150,6 +151,7 @@ function ChooseAvatarContent (props: { account: Account, onSuccess?: (avatarId: 
   const { keyofBusinesses } = useBusinessContext()
   const avatars = useMemo(() => BizImages[keyofBusinesses].Character!, [keyofBusinesses])
   const [avatarId, setAvatarId] = useState(account.properties?.avatarId)
+  const notifier = useNotifier()
   const i18n = useI18n()
 
   const handleSelect = useCallback<MouseEventHandler>((evt) => {
@@ -172,8 +174,9 @@ function ChooseAvatarContent (props: { account: Account, onSuccess?: (avatarId: 
       })
 
       onSuccess?.(avatarId)
+      notifier.success(i18n.t(['Pages.Gacha.LegacyView.ChooseAvatarDialog.Success']))
     }
-  }, [account, avatarId, onSuccess, updateAccountPropertiesMutation])
+  }, [account, avatarId, i18n, notifier, onSuccess, updateAccountPropertiesMutation])
 
   return (
     <DialogContent className={styles.root}>
