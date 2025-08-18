@@ -1,5 +1,6 @@
 export enum Tabs {
   Overview = 'Overview',
   Analysis = 'Analysis',
-  Chart = 'Chart'
+  // TODO: Gacha Clientarea : Chart
+  // Chart = 'Chart'
 }
