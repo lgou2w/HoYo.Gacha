@@ -541,6 +541,10 @@ export default {
               Title: '语言',
               Subtitle: '更改应用使用的主要语言。',
             },
+            GachaClientareaTab: {
+              Title: '业务启动标签页',
+              Subtitle: '选择您的默认业务客户区域的启动标签页。',
+            },
           },
           Appearance: {
             Title: '外观',

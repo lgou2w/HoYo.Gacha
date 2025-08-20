@@ -1,9 +1,10 @@
-import { queryOptions, useQuery, useSuspenseQuery } from '@tanstack/react-query'
+import { queryOptions, useMutation, useQuery, useSuspenseQuery } from '@tanstack/react-query'
 import { FindAndPrettyGachaRecordsArgs, PrettyGachaRecordsError, findAndPrettyGachaRecords } from '@/api/commands/business'
-import { SqlxDatabaseError, SqlxError, findGachaRecordsByBusinessAndUidWithLimit } from '@/api/commands/database'
+import { SqlxDatabaseError, SqlxError, deleteKv, findGachaRecordsByBusinessAndUidWithLimit, findKv, upsertKv } from '@/api/commands/database'
 import { Account } from '@/interfaces/Account'
 import { Business, ReversedBusinesses } from '@/interfaces/Business'
 import { GachaRecord, PrettizedGachaRecords } from '@/interfaces/GachaRecord'
+import { Tabs as GachaClientareaTab } from '@/pages/Gacha/LegacyView/declares'
 import queryClient from '@/queryClient'
 
 // #region: Prettized Gacha Records
@@ -186,6 +187,90 @@ export function removeFirstGachaRecordQuery (
 ) {
   queryClient.removeQueries({
     queryKey: firstGachaRecordQueryKey(business, uid),
+  })
+}
+
+// #endregion
+
+// #region: Gacha Clientarea Tab
+
+const KeyGachaClientareaTab = 'GachaClientareaTab'
+const DatabaseKeyGachaClientareaTab = `Query:${KeyGachaClientareaTab}`
+const DefaultGachaClientareaTab = GachaClientareaTab.Overview
+
+function gachaClientareaTabQueryOptions () {
+  return queryOptions<
+    GachaClientareaTab,
+    SqlxError | SqlxDatabaseError | Error,
+    GachaClientareaTab
+  >({
+    staleTime: Infinity,
+    queryKey: [KeyGachaClientareaTab],
+    queryFn: async function gachaClientareaTabQueryFn () {
+      const kv = await findKv({ key: DatabaseKeyGachaClientareaTab })
+
+      if (!kv) {
+        return DefaultGachaClientareaTab
+      }
+
+      switch (kv.val) {
+        case GachaClientareaTab.Overview:
+          return GachaClientareaTab.Overview
+        case GachaClientareaTab.Analysis:
+          return GachaClientareaTab.Analysis
+        default:
+          break
+      }
+
+      console.error(`Unexpected Gacha Clientarea Tab value: ${kv.val}, using default tab: ${DefaultGachaClientareaTab}`)
+      await deleteKv({ key: DatabaseKeyGachaClientareaTab })
+      return DefaultGachaClientareaTab
+    },
+  })
+}
+
+export function useGachaClientareaTabQuery () {
+  return useQuery(gachaClientareaTabQueryOptions())
+}
+
+export function useGachaClientareaTabSuspenseQuery () {
+  return useSuspenseQuery(gachaClientareaTabQueryOptions())
+}
+
+export function useGachaClientareaTabSuspenseQueryData () {
+  return useGachaClientareaTabSuspenseQuery().data
+}
+
+export function ensureGachaClientareaTabQuery () {
+  return queryClient.ensureQueryData(gachaClientareaTabQueryOptions())
+}
+
+export function invalidateGachaClientareaTabQuery () {
+  return queryClient.invalidateQueries({ queryKey: [KeyGachaClientareaTab] })
+}
+
+// Mutation
+
+const UpdateGachaClientareaTabQueryKey = [KeyGachaClientareaTab, 'Update']
+
+export function useUpdateGachaClientareaTabMutation () {
+  return useMutation<
+    GachaClientareaTab,
+    SqlxError | SqlxDatabaseError | Error,
+    GachaClientareaTab
+  >({
+    mutationKey: UpdateGachaClientareaTabQueryKey,
+    async mutationFn (newValue) {
+      await upsertKv({
+        key: DatabaseKeyGachaClientareaTab,
+        val: newValue,
+      })
+
+      return newValue
+    },
+    onSuccess () {
+      invalidateGachaClientareaTabQuery()
+    },
   })
 }
 

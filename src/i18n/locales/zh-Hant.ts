@@ -541,6 +541,10 @@ export default {
               Title: '語言',
               Subtitle: '變更應用程式的主要語言。',
             },
+            GachaClientareaTab: {
+              Title: '業務起始標籤頁',
+              Subtitle: '選擇您預設的業務客戶區域的起始標籤頁。',
+            },
           },
           Appearance: {
             Title: '外觀',

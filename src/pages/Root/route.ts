@@ -1,5 +1,6 @@
 import { createRootRoute } from '@tanstack/react-router'
 import { isSupportedWindowVibrancy } from '@/api/commands/core'
+import { ensureGachaClientareaTabQuery } from '@/api/queries/business'
 import { DatabaseThemeStore, ThemeStore } from '@/interfaces/Theme.store'
 import Root from '.'
 
@@ -11,6 +12,7 @@ const RootRoute = createRootRoute({
   async loader () {
     const supportedWindowVibrancy = await isSupportedWindowVibrancy()
     const initialThemeData = await themeStore.load()
+    await ensureGachaClientareaTabQuery()
     return {
       supportedWindowVibrancy,
       initialThemeData,

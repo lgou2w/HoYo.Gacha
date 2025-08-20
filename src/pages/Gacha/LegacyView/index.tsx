@@ -1,9 +1,8 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { makeStyles, tokens } from '@fluentui/react-components'
-import { useImmer } from 'use-immer'
+import { useGachaClientareaTabSuspenseQueryData } from '@/api/queries/business'
 import GachaLegacyViewClientarea from './Clientarea'
 import GachaLegacyViewToolbar from './Toolbar'
-import { Tabs } from './declares'
 
 // HACK:
 //  This is a UI legacy for the v0 version.
@@ -22,18 +21,15 @@ const useStyles = makeStyles({
 
 export default function GachaLegacyView () {
   const styles = useStyles()
-  const [{ tab }, produceState] = useImmer({
-    tab: Tabs.Overview,
-  })
+  const gachaClientareaTab = useGachaClientareaTabSuspenseQueryData()
+  const [tab, setTab] = useState(gachaClientareaTab)
 
   return (
     <div className={styles.root}>
       <GachaLegacyViewToolbar
         className={styles.toolbar}
+        onTabChange={(newValue) => setTab(newValue)}
         tab={tab}
-        onTabChange={(newValue) => produceState((draft) => {
-          draft.tab = newValue
-        })}
       />
       <GachaLegacyViewClientarea
         className={styles.clientarea}

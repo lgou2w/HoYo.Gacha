@@ -546,6 +546,10 @@ export default {
               Title: 'Language',
               Subtitle: 'Change the primary language used by the application.',
             },
+            GachaClientareaTab: {
+              Title: 'Business Startup Tab',
+              Subtitle: 'Select the Startup tab for your default business client area.',
+            },
           },
           Appearance: {
             Title: 'Appearance',
