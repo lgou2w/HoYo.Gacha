@@ -8,13 +8,17 @@ use webview2_com::Microsoft::Web::WebView2::Win32::{
 };
 use webview2_com::Microsoft::Web::WebView2::Win32::{ICoreWebView2_2, ICoreWebView2_13};
 use windows::Win32::Foundation::{FALSE, HANDLE, TRUE};
+use windows::Win32::Graphics::DirectWrite::{
+  DWRITE_FACTORY_TYPE_SHARED, DWriteCreateFactory, IDWriteFactory,
+};
 use windows::Win32::Graphics::Dwm::{
   DWM_SYSTEMBACKDROP_TYPE, DWMSBT_MAINWINDOW, DWMWA_SYSTEMBACKDROP_TYPE,
   DWMWA_USE_IMMERSIVE_DARK_MODE, DWMWINDOWATTRIBUTE, DwmExtendFrameIntoClientArea,
   DwmSetWindowAttribute,
 };
 use windows::Win32::System::Com::{
-  CLSCTX_INPROC_SERVER, CoCreateInstance, CoInitialize, CoUninitialize, IPersistFile,
+  CLSCTX_INPROC_SERVER, COINIT_APARTMENTTHREADED, COINIT_DISABLE_OLE1DDE, CoCreateInstance,
+  CoInitialize, CoInitializeEx, CoUninitialize, IPersistFile,
 };
 use windows::Win32::System::Console::{ATTACH_PARENT_PROCESS, AttachConsole};
 use windows::Win32::UI::Controls::MARGINS;
@@ -229,4 +233,57 @@ pub fn create_app_lnk() -> Result<(), windows::core::Error> {
   }
 
   Ok(())
+}
+
+pub fn system_fonts() -> Result<Vec<String>, windows::core::Error> {
+  let locale = consts::LOCALE.value.as_deref().unwrap_or("en-US");
+  let pszlocale = to_wide(locale);
+  let lplocale = PCWSTR::from_raw(pszlocale.as_ptr());
+
+  unsafe {
+    CoInitializeEx(None, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE).ok()?;
+
+    let factory = DWriteCreateFactory::<IDWriteFactory>(DWRITE_FACTORY_TYPE_SHARED)?;
+    let mut font_collection = None;
+    factory.GetSystemFontCollection(&mut font_collection, false)?;
+
+    let fonts = if let Some(font_collection) = font_collection {
+      let family_count = font_collection.GetFontFamilyCount();
+      let mut fonts = Vec::with_capacity(family_count as usize);
+
+      for i in 0..family_count {
+        let font_family = font_collection.GetFontFamily(i)?;
+        let family_names = font_family.GetFamilyNames()?;
+        let names_count = family_names.GetCount();
+
+        let mut index = 0;
+        let mut exists = BOOL::default();
+        family_names.FindLocaleName(lplocale, &mut index, &mut exists)?;
+
+        let j = if exists.as_bool() {
+          index
+        } else if names_count > 0 {
+          0
+        } else {
+          continue;
+        };
+
+        let str_len = family_names.GetStringLength(j)?;
+        let mut buffer = vec![0u16; str_len as usize + 1];
+        family_names.GetString(j, &mut buffer)?;
+
+        let font_name = String::from_utf16_lossy(&buffer);
+        let font_name = font_name.trim_end_matches('\0').to_owned();
+        fonts.push(font_name);
+      }
+
+      fonts.sort();
+      fonts
+    } else {
+      vec![]
+    };
+
+    CoUninitialize();
+    Ok(fonts)
+  }
 }

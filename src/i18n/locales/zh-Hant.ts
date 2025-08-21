@@ -562,6 +562,11 @@ export default {
               Title: '介面縮放',
               Subtitle: '變更應用程式介面的縮放等級。',
             },
+            Font: {
+              Title: '介面字型',
+              Subtitle: '變更應用程式介面的字型。',
+              None: '無',
+            },
           },
           About: {
             Title: '關於',

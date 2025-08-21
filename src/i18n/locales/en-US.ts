@@ -567,6 +567,11 @@ export default {
               Title: 'Interface Scaling',
               Subtitle: 'Change the scale level of the interface in the application.',
             },
+            Font: {
+              Title: 'Interface Font',
+              Subtitle: 'Change the font of the interface in the application.',
+              None: 'None',
+            },
           },
           About: {
             Title: 'About',

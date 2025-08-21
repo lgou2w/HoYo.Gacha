@@ -562,6 +562,11 @@ export default {
               Title: '界面缩放',
               Subtitle: '更改应用中界面的缩放等级。',
             },
+            Font: {
+              Title: '界面字体',
+              Subtitle: '更改应用中界面的字体。',
+              None: '无',
+            },
           },
           About: {
             Title: '关于',
