@@ -284,6 +284,7 @@ export default {
               Options: {
                 Title: '更多選項',
                 Edit: '編輯帳號',
+                ChooseAvatar: '修改頭像',
                 Delete: '刪除帳號',
               },
               DeleteAccountDialog: {
@@ -379,6 +380,11 @@ export default {
               ManualFindTitle: '請選擇$t(Business.{{keyofBusinesses}}.Name)的遊戲資料目錄',
               EmptyFind: '未找到有效的遊戲資料目錄。請檢查遊戲是否安裝並執行。',
             },
+          },
+          ChooseAvatarDialog: {
+            Title: '修改頭像：{{identify}}',
+            Confirm: '使用',
+            Success: '成功修改頭像。',
           },
           UpsertAccountDialog: {
             AddTitle: '新增帳號：$t(Business.{{keyofBusinesses}}.Name)',
@@ -540,6 +546,10 @@ export default {
             Language: {
               Title: '語言',
               Subtitle: '變更應用程式的主要語言。',
+            },
+            NavbarBusinessVisible: {
+              Title: '導覽列業務項目可見性',
+              Subtitle: '控制導覽列中業務相關項目的顯示與隱藏狀態。',
             },
             GachaClientareaTab: {
               Title: '業務起始標籤頁',
