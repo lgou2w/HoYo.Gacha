@@ -1,5 +1,5 @@
 import React, { ElementRef, Fragment, MouseEventHandler, forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react'
-import { Body1Strong, Button, Caption1, Dialog, DialogActions, DialogBody, DialogContent, DialogSurface, DialogTitle, Field, Input, Menu, MenuButton, MenuDivider, MenuGroup, MenuGroupHeader, MenuItem, MenuItemRadio, MenuList, MenuListProps, MenuPopover, MenuSplitGroup, MenuTrigger, Switch, makeStyles, menuItemClassNames, tokens } from '@fluentui/react-components'
+import { Body1, Button, Caption1, Dialog, DialogActions, DialogBody, DialogContent, DialogSurface, DialogTitle, Field, Input, Menu, MenuButton, MenuDivider, MenuGroup, MenuGroupHeader, MenuItem, MenuItemRadio, MenuList, MenuListProps, MenuPopover, MenuSplitGroup, MenuTrigger, Switch, makeStyles, menuItemClassNames, tokens } from '@fluentui/react-components'
 import { PeopleListRegular, PersonAddRegular, PersonDeleteRegular, PersonEditRegular } from '@fluentui/react-icons'
 import { useImmer } from 'use-immer'
 import { deleteGachaRecordsByBusinessAndUid } from '@/api/commands/database'
@@ -467,7 +467,7 @@ function AccountItem (props: AccountItemProps) {
       </div>
       <div className={styles.information}>
         <Locale
-          component={Body1Strong}
+          component={Body1}
           wrap={false}
           truncate
           mapping={account

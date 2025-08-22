@@ -1,5 +1,5 @@
 import React, { ReactNode } from 'react'
-import { Body1Strong, Caption1, makeStyles, mergeClasses, tokens } from '@fluentui/react-components'
+import { Body1, Caption1, makeStyles, mergeClasses, tokens } from '@fluentui/react-components'
 
 const useStyles = makeStyles({
   root: {
@@ -54,7 +54,7 @@ export default function SettingsOptionsItem (props: Props) {
     <div className={rootClasses}>
       <div className={styles.icon}>{icon}</div>
       <div className={styles.header}>
-        <Body1Strong>{title}</Body1Strong>
+        <Body1>{title}</Body1>
         {subtitle && <Caption1>{subtitle}</Caption1>}
       </div>
       <div className={styles.actions}>{action}</div>

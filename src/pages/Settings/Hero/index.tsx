@@ -1,5 +1,5 @@
 import React from 'react'
-import { Button, Caption1, Caption1Strong, Caption2, Image, makeStyles, mergeClasses, tokens } from '@fluentui/react-components'
+import { Button, Caption1, Caption2, Image, makeStyles, mergeClasses, tokens } from '@fluentui/react-components'
 import { ChatBubblesQuestionFilled, HomeFilled } from '@fluentui/react-icons'
 import Locale from '@/components/Locale'
 
@@ -43,7 +43,7 @@ export default function SettingsHero (props: React.JSX.IntrinsicElements['div'])
       <div className={styles.hero}>
         <div className={styles.brand}>
           <Image src="/Logo.avif" />
-          <Caption1Strong align="center">{__APP_NAME__}</Caption1Strong>
+          <Caption1 align="center">{__APP_NAME__}</Caption1>
           <Caption2 align="center">v{__APP_VERSION__}</Caption2>
         </div>
         <div className={styles.actions}>
