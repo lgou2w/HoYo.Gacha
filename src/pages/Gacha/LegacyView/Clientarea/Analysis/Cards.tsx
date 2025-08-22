@@ -1,6 +1,6 @@
 import React, { ComponentProps, Fragment, ReactNode, WheelEventHandler, useCallback, useMemo } from 'react'
 import { Virtuoso } from 'react-virtuoso'
-import { Caption1, Divider, Subtitle2, Title1, caption1ClassNames, makeStyles, mergeClasses, title1ClassNames, tokens } from '@fluentui/react-components'
+import { Caption1, Divider, Subtitle2, Title1, makeStyles, mergeClasses, title1ClassNames, tokens } from '@fluentui/react-components'
 import ImagesNone from '@/assets/images/None.avif'
 import BizImages from '@/components/BizImages'
 import Locale from '@/components/Locale'
@@ -162,9 +162,9 @@ const useCardsEntryStyles = makeStyles({
   labelGroup: {
     display: 'flex',
     justifyContent: 'space-between',
-    [`> .${caption1ClassNames.root}`]: {
-      fontFamily: tokens.fontFamilyNumeric,
-    },
+  },
+  labelGroupNumeric: {
+    fontFamily: tokens.fontFamilyNumeric,
   },
   labelGroupGoldenAverage: {
     color: tokens.colorPaletteGreenForeground1,
@@ -264,7 +264,7 @@ function CardsEntry (props: CardsEntryProps) {
               >
                 {RankingsPrefix[business].golden}{'\u00A0'}
               </Locale>
-              <Caption1>
+              <Caption1 className={styles.labelGroupNumeric}>
                 {metadata.rankings.golden.average} / {metadata.rankings.golden.limitedAverage}
               </Caption1>
             </div>
@@ -276,7 +276,7 @@ function CardsEntry (props: CardsEntryProps) {
               >
                 {RankingsPrefix[business].golden}{'\u00A0'}
               </Locale>
-              <Caption1>
+              <Caption1 className={styles.labelGroupNumeric}>
                 {metadata.rankings.golden.limitedWinSum} [{metadata.rankings.golden.limitedWinPercentage}%]
               </Caption1>
             </div>
@@ -288,7 +288,7 @@ function CardsEntry (props: CardsEntryProps) {
               >
                 {RankingsPrefix[business].golden}{'\u00A0'}
               </Locale>
-              <Caption1>
+              <Caption1 className={styles.labelGroupNumeric}>
                 {metadata.rankings.golden.limitedSum} [{metadata.rankings.golden.limitedPercentage}%]
               </Caption1>
             </div>
@@ -309,7 +309,7 @@ function CardsEntry (props: CardsEntryProps) {
           >
             {RankingsPrefix[business].golden}{'\u00A0'}
           </Locale>
-          <Caption1>
+          <Caption1 className={styles.labelGroupNumeric}>
             {metadata.rankings.golden.sum} [{metadata.rankings.golden.percentage}%]
           </Caption1>
         </div>
@@ -321,7 +321,7 @@ function CardsEntry (props: CardsEntryProps) {
           >
             {RankingsPrefix[business].purple}{'\u00A0'}
           </Locale>
-          <Caption1>
+          <Caption1 className={styles.labelGroupNumeric}>
             {metadata.rankings.purple.sum} [{metadata.rankings.purple.percentage}%]
           </Caption1>
         </div>
@@ -333,7 +333,7 @@ function CardsEntry (props: CardsEntryProps) {
           >
             {RankingsPrefix[business].blue}{'\u00A0'}
           </Locale>
-          <Caption1>
+          <Caption1 className={styles.labelGroupNumeric}>
             {metadata.rankings.blue.sum} [{metadata.rankings.blue.percentage}%]
           </Caption1>
         </div>
