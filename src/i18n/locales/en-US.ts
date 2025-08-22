@@ -546,6 +546,10 @@ export default {
               Title: 'Language',
               Subtitle: 'Change the primary language used by the application.',
             },
+            NavbarBusinessVisible: {
+              Title: 'Navbar Business Item Visibility',
+              Subtitle: 'Control display status of business-related entries in the navigation bar.',
+            },
           },
           Appearance: {
             Title: 'Appearance',

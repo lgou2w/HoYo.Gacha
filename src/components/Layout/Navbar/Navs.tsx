@@ -2,6 +2,7 @@ import React, { ReactNode, createRef, useEffect } from 'react'
 import { Divider, Image, Tab, TabList, Tooltip, imageClassNames, makeStyles, tabClassNames, tokens } from '@fluentui/react-components'
 import { SettingsFilled, SettingsRegular } from '@fluentui/react-icons'
 import { useLocation, useNavigate } from '@tanstack/react-router'
+import { useNavbarBusinessVisibleSuspenseQueryData } from '@/api/queries/business'
 import BizImages from '@/components/BizImages'
 import Locale from '@/components/Locale'
 import { Businesses, KeyofBusinesses } from '@/interfaces/Business'
@@ -9,37 +10,12 @@ import Routes from '@/routes'
 
 const useStyles = makeStyles({
   root: { height: '100%' },
-  tab: {
-    display: 'flex',
-    justifyContent: 'center',
-    borderRadius: tokens.borderRadiusSmall,
-    padding: `${tokens.spacingVerticalMNudge} ${tokens.spacingHorizontalMNudge}`,
-    [`& .${tabClassNames.icon}`]: {
-      width: tokens.fontSizeHero900,
-      height: tokens.fontSizeHero900,
-      fontSize: tokens.fontSizeHero900,
-      color: tokens.colorCompoundBrandForeground1,
-      borderRadius: tokens.borderRadiusLarge,
-      [`& .${imageClassNames.root}`]: {
-        width: '100%',
-        height: '100%',
-        borderRadius: tokens.borderRadiusLarge,
-        border: `${tokens.strokeWidthThick} solid transparent`,
-      },
-    },
-    ':enabled:hover': { [`& .${tabClassNames.icon}`]: { color: tokens.colorBrandForeground1 } },
-    ':enabled:active': { [`& .${tabClassNames.icon}`]: { color: tokens.colorCompoundBrandForeground1Pressed } },
-    [`[aria-selected=true] .${tabClassNames.icon} .${imageClassNames.root}`]: {
-      border: `${tokens.strokeWidthThick} solid ${tokens.colorBrandStroke2Hover}`,
-    },
-  },
-  spacing: { flexGrow: 1 },
-  divider: { flexGrow: 0.025 },
 })
 
 type NavIcon = { normal: ReactNode, selected?: ReactNode }
+type NavItemPath = { path: string, icon: NavIcon | string, keyofBusinesses?: KeyofBusinesses }
 type NavItem =
-  | { path: string, icon: NavIcon | string }
+  | NavItemPath
   | { spacing: true }
   | { divider: true }
 
@@ -52,6 +28,7 @@ const Navs: NavItem[] = [
       return {
         path: Routes.Gacha.replace('$keyofBusinesses', keyofBusinesses),
         icon: BizImages[keyofBusinesses as KeyofBusinesses].Material!.Icon,
+        keyofBusinesses,
       } as NavItem
     }),
   { divider: true },
@@ -130,38 +107,89 @@ export default function NavbarNavs () {
       size="large"
       vertical
     >
-      {Navs.map((item, index) => {
-        if ('path' in item && 'icon' in item) {
-          return (
-            <Tooltip
-              key={index}
-              content={<Locale mapping={[`Routes.${item.path}`]} />}
-              relationship="label"
-              positioning="after"
-              withArrow
-            >
-              <Tab
-                value={item.path}
-                className={styles.tab}
-                tabIndex={-1}
-                icon={{
-                  children: typeof item.icon === 'string'
-                    ? <Image src={item.icon} />
-                    : location.pathname === item.path
-                      ? item.icon.selected || item.icon.normal
-                      : item.icon.normal,
-                }}
-              />
-            </Tooltip>
-          )
-        } else if ('divider' in item) {
-          return <Divider key={index} className={styles.divider} inset />
-        } else if ('spacing' in item) {
-          return <div key={index} className={styles.spacing} />
-        } else {
-          return null
-        }
-      })}
+      <NavbarNavItems />
     </TabList>
+  )
+}
+
+const useNavItemsStyles = makeStyles({
+  tab: {
+    display: 'flex',
+    justifyContent: 'center',
+    borderRadius: tokens.borderRadiusSmall,
+    padding: `${tokens.spacingVerticalMNudge} ${tokens.spacingHorizontalMNudge}`,
+    [`& .${tabClassNames.icon}`]: {
+      width: tokens.fontSizeHero900,
+      height: tokens.fontSizeHero900,
+      fontSize: tokens.fontSizeHero900,
+      color: tokens.colorCompoundBrandForeground1,
+      borderRadius: tokens.borderRadiusLarge,
+      [`& .${imageClassNames.root}`]: {
+        width: '100%',
+        height: '100%',
+        borderRadius: tokens.borderRadiusLarge,
+        border: `${tokens.strokeWidthThick} solid transparent`,
+      },
+    },
+    ':enabled:hover': { [`& .${tabClassNames.icon}`]: { color: tokens.colorBrandForeground1 } },
+    ':enabled:active': { [`& .${tabClassNames.icon}`]: { color: tokens.colorCompoundBrandForeground1Pressed } },
+    [`[aria-selected=true] .${tabClassNames.icon} .${imageClassNames.root}`]: {
+      border: `${tokens.strokeWidthThick} solid ${tokens.colorBrandStroke2Hover}`,
+    },
+  },
+  spacing: { flexGrow: 1 },
+  divider: { flexGrow: 0.025 },
+})
+
+function NavbarNavItems () {
+  const styles = useNavItemsStyles()
+  const visible = useNavbarBusinessVisibleSuspenseQueryData()
+
+  return Navs.map((item, index) => {
+    if ('path' in item && 'icon' in item) {
+      if (item.keyofBusinesses && visible[Businesses[item.keyofBusinesses]] === false) {
+        return null
+      }
+
+      return <NavbarNavItemPath key={index} tabClassName={styles.tab} item={item} />
+    } else if ('divider' in item) {
+      return <Divider key={index} className={styles.divider} inset />
+    } else if ('spacing' in item) {
+      return <div key={index} className={styles.spacing} />
+    } else {
+      return null
+    }
+  })
+}
+
+interface NavbarNavItemPathProps {
+  tabClassName: string
+  item: NavItemPath
+}
+
+function NavbarNavItemPath (props: NavbarNavItemPathProps) {
+  const { tabClassName, item } = props
+  const location = useLocation()
+
+  return (
+    <Tooltip
+      content={<Locale mapping={[`Routes.${item.path}`]} />}
+      relationship="label"
+      positioning="after"
+      withArrow
+    >
+      <Tab
+        value={item.path}
+        className={tabClassName}
+        tabIndex={-1}
+        icon={{
+          children: typeof item.icon === 'string'
+            ? <Image src={item.icon} />
+            : location.pathname === item.path
+              ? item.icon.selected || item.icon.normal
+              : item.icon.normal,
+        }}
+      />
+    </Tooltip>
   )
 }
