@@ -58,8 +58,8 @@ async function loadAndEvaluateThemeData (engine: {
     return data
   }
 
-  const { namespace, colorScheme, scale } = parsed
-  const invalid = !namespace || !colorScheme || !Themes[namespace]?.[colorScheme]
+  const { namespace, colorScheme, scale, font } = parsed
+  const invalid = !namespace || !colorScheme || !Themes[namespace]?.includes(colorScheme)
   if (invalid) {
     console.error(
       `Invalid ${engine.name} theme namespace or color scheme: namespace=%s, colorScheme=%s`,
@@ -74,6 +74,7 @@ async function loadAndEvaluateThemeData (engine: {
   data.namespace = namespace
   data.colorScheme = colorScheme
   data.scale = scale || data.scale
+  data.font = font || data.font
 
   console.debug(`Loaded ${engine.name} theme data:`, data)
   return data

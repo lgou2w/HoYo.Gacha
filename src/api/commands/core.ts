@@ -20,6 +20,8 @@ export const gitInfo = declareCommand<undefined, {
 
 export const createAppLnk = declareCommand<undefined>('core_create_app_lnk')
 
+export const systemFonts = declareCommand<undefined, string[]>('core_system_fonts', true)
+
 export const isSupportedWindowVibrancy = declareCommand<undefined, boolean>('core_is_supported_window_vibrancy', true)
 
 export type ChangeThemeArgs = { colorScheme: ColorScheme }
@@ -49,6 +51,7 @@ const CoreCommands = {
   tauriVersion,
   gitInfo,
   createAppLnk,
+  systemFonts,
   isSupportedWindowVibrancy,
   changeTheme,
   pickFile,

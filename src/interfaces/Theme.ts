@@ -12,22 +12,44 @@ export const Dark = 'dark'
 export const KnownColorSchemes = [Light, Dark] as const
 export type ColorScheme = typeof Light | typeof Dark
 
-export function createColorSchemeTheme (
+function createColorSchemeTheme (
   [light, dark]: [FluentTheme, FluentTheme],
+  font: string | null,
 ): Record<ColorScheme, FluentTheme> {
+  if (font) {
+    // Wrap font in quotes to avoid issues with spaces
+    font = `'${font}', `
+  }
+
   return {
-    [Light]: { ...light, ...OverridedFluentTheme },
-    [Dark]: { ...dark, ...OverridedFluentTheme },
+    [Light]: {
+      ...light,
+      ...OverridedFluentTheme,
+      ...(font ? { fontFamilyBase: font + light.fontFamilyBase } : {}),
+    },
+    [Dark]: {
+      ...dark,
+      ...OverridedFluentTheme,
+      ...(font ? { fontFamilyBase: font + dark.fontFamilyBase } : {}),
+    },
   }
 }
 
 export const Themes = {
-  teams: createColorSchemeTheme([teamsLightTheme, teamsDarkTheme]),
-  web: createColorSchemeTheme([webLightTheme, webDarkTheme]),
+  teams: [Light, Dark],
+  web: [Light, Dark],
 } as const
 
 export type Namespace = keyof typeof Themes
 export const KnownNamespaces = Object.keys(Themes) as Namespace[]
+
+export type FluentThemes = Record<Namespace, ReturnType<typeof createColorSchemeTheme>>
+export function createFluentThemes (font: string | null): FluentThemes {
+  return {
+    teams: createColorSchemeTheme([teamsLightTheme, teamsDarkTheme], font),
+    web: createColorSchemeTheme([webLightTheme, webDarkTheme], font),
+  }
+}
 
 // Scale level: 1.0x, 1.2x, 1.5x, 1.8x, 2.0x
 // Suitable for default system scaling at high resolution
@@ -38,6 +60,7 @@ export interface ThemeData {
   namespace: Namespace
   colorScheme: ColorScheme
   scale: ScaleLevel
+  font: string | null
 }
 
 export const DefaultThemeData = {
@@ -45,6 +68,7 @@ export const DefaultThemeData = {
   // If in the absence of a custom color scheme, keep it the same as the back-end setting
   colorScheme: window.matchMedia('(prefers-color-scheme: light)').matches ? Light : Dark,
   scale: 16,
+  font: null,
 } as const satisfies ThemeData
 
 export interface ThemeStore {

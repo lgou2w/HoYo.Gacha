@@ -551,6 +551,10 @@ export default {
               Title: '導覽列業務項目可見性',
               Subtitle: '控制導覽列中業務相關項目的顯示與隱藏狀態。',
             },
+            GachaClientareaTab: {
+              Title: '業務起始標籤頁',
+              Subtitle: '選擇您預設的業務客戶區域的起始標籤頁。',
+            },
           },
           Appearance: {
             Title: '外觀',
@@ -567,6 +571,11 @@ export default {
             ScaleLevel: {
               Title: '介面縮放',
               Subtitle: '變更應用程式介面的縮放等級。',
+            },
+            Font: {
+              Title: '介面字型',
+              Subtitle: '變更應用程式介面的字型。',
+              None: '無',
             },
           },
           About: {

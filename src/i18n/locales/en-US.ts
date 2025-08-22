@@ -552,6 +552,10 @@ export default {
               Title: 'Language',
               Subtitle: 'Change the primary language used by the application.',
             },
+            GachaClientareaTab: {
+              Title: 'Business Startup Tab',
+              Subtitle: 'Select the Startup tab for your default business client area.',
+            },
             NavbarBusinessVisible: {
               Title: 'Navbar Business Item Visibility',
               Subtitle: 'Control display status of business-related entries in the navigation bar.',
@@ -572,6 +576,11 @@ export default {
             ScaleLevel: {
               Title: 'Interface Scaling',
               Subtitle: 'Change the scale level of the interface in the application.',
+            },
+            Font: {
+              Title: 'Interface Font',
+              Subtitle: 'Change the font of the interface in the application.',
+              None: 'None',
             },
           },
           About: {

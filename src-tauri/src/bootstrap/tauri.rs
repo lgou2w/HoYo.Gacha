@@ -278,6 +278,7 @@ pub async fn start(singleton: Singleton, tracing: Tracing, database: Database) {
       core_is_supported_window_vibrancy,
       core_change_theme,
       core_create_app_lnk,
+      core_system_fonts,
       core_pick_file,
       core_pick_folder,
       core_updater_is_updating,
@@ -393,6 +394,11 @@ fn core_git_info() -> serde_json::Value {
 #[tauri::command]
 fn core_create_app_lnk() {
   let _ = ffi::create_app_lnk();
+}
+
+#[tauri::command]
+fn core_system_fonts() -> Result<Vec<String>, String> {
+  ffi::system_fonts().map_err(|e| e.message())
 }
 
 #[tauri::command]

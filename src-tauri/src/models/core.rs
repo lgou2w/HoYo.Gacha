@@ -7,6 +7,7 @@ pub struct ThemeData {
   pub namespace: Option<String>,
   pub color_scheme: Option<Theme>,
   pub scale: Option<u32>,
+  pub font: Option<String>,
 }
 
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]

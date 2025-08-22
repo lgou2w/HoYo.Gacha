@@ -1,6 +1,7 @@
 import React from 'react'
 import Locale from '@/components/Locale'
 import SettingsOptionsGroup from '@/pages/Settings/Options/OptionsGroup'
+import SettingsOptionsGeneralGachaClientareaTab from './GachaClientareaTab'
 import SettingsOptionsGeneralLanguage from './Language'
 import SettingsOptionsGeneralNavbarBusinessVisible from './NavbarBusinessVisible'
 
@@ -11,6 +12,7 @@ export default function SettingsOptionsGeneral () {
     >
       <SettingsOptionsGeneralLanguage />
       <SettingsOptionsGeneralNavbarBusinessVisible />
+      <SettingsOptionsGeneralGachaClientareaTab />
     </SettingsOptionsGroup>
   )
 }

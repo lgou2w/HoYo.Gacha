@@ -551,6 +551,10 @@ export default {
               Title: '导航栏业务项可见性',
               Subtitle: '控制导航栏中业务相关条目的显示与隐藏状态。',
             },
+            GachaClientareaTab: {
+              Title: '业务启动标签页',
+              Subtitle: '选择您的默认业务客户区域的启动标签页。',
+            },
           },
           Appearance: {
             Title: '外观',
@@ -567,6 +571,11 @@ export default {
             ScaleLevel: {
               Title: '界面缩放',
               Subtitle: '更改应用中界面的缩放等级。',
+            },
+            Font: {
+              Title: '界面字体',
+              Subtitle: '更改应用中界面的字体。',
+              None: '无',
             },
           },
           About: {

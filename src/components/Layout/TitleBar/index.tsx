@@ -1,5 +1,5 @@
 import React from 'react'
-import { Subtitle2Stronger, makeStyles, tokens } from '@fluentui/react-components'
+import { Subtitle2, makeStyles, tokens } from '@fluentui/react-components'
 import { useLocation } from '@tanstack/react-router'
 import { NavbarWidth, TitleBarHeight } from '@/components/Layout/declares'
 import Locale from '@/components/Locale'
@@ -45,7 +45,7 @@ export default function TitleBar () {
       data-tauri-drag-region
     >
       <Locale
-        component={Subtitle2Stronger}
+        component={Subtitle2}
         className={styles.title}
         as="h1"
         wrap={false}
