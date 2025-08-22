@@ -299,4 +299,17 @@ pub async fn business_gacha_metadata_update() -> Result<GachaMetadataUpdatedKind
   GachaMetadata::update().await.map_err(|e| e.to_string())
 }
 
+#[tauri::command]
+#[tracing::instrument(skip_all)]
+pub async fn business_gacha_metadata_item_name_from_id(
+  business: Business,
+  item_id: u32,
+  locale: String,
+) -> Option<String> {
+  GachaMetadata::current()
+    .locale(business, locale)?
+    .entry_from_id(item_id)
+    .map(|entry| entry.name.to_owned())
+}
+
 // endregion

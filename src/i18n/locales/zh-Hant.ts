@@ -284,6 +284,7 @@ export default {
               Options: {
                 Title: '更多選項',
                 Edit: '編輯帳號',
+                ChooseAvatar: '修改頭像',
                 Delete: '刪除帳號',
               },
               DeleteAccountDialog: {
@@ -379,6 +380,11 @@ export default {
               ManualFindTitle: '請選擇$t(Business.{{keyofBusinesses}}.Name)的遊戲資料目錄',
               EmptyFind: '未找到有效的遊戲資料目錄。請檢查遊戲是否安裝並執行。',
             },
+          },
+          ChooseAvatarDialog: {
+            Title: '修改頭像：{{identify}}',
+            Confirm: '使用',
+            Success: '成功修改頭像。',
           },
           UpsertAccountDialog: {
             AddTitle: '新增帳號：$t(Business.{{keyofBusinesses}}.Name)',

@@ -1,6 +1,6 @@
 import React, { ElementRef, Fragment, MouseEventHandler, forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react'
 import { Body1Strong, Button, Caption1, Dialog, DialogActions, DialogBody, DialogContent, DialogSurface, DialogTitle, Field, Input, Menu, MenuButton, MenuDivider, MenuGroup, MenuGroupHeader, MenuItem, MenuItemRadio, MenuList, MenuListProps, MenuPopover, MenuSplitGroup, MenuTrigger, Switch, makeStyles, menuItemClassNames, tokens } from '@fluentui/react-components'
-import { PeopleListRegular, PersonAddRegular, PersonDeleteRegular, PersonEditRegular } from '@fluentui/react-icons'
+import { PeopleListRegular, PersonAddRegular, PersonCircleRegular, PersonDeleteRegular, PersonEditRegular } from '@fluentui/react-icons'
 import { useImmer } from 'use-immer'
 import { deleteGachaRecordsByBusinessAndUid } from '@/api/commands/database'
 import { useAccountsSuspenseQueryData, useDeleteAccountMutation, useSelectedAccountSuspenseQueryData, useUpdateSelectedAccountUidMutation } from '@/api/queries/accounts'
@@ -11,6 +11,7 @@ import useBusinessContext from '@/hooks/useBusinessContext'
 import useI18n from '@/hooks/useI18n'
 import type { Account } from '@/interfaces/Account'
 import { Business, KeyofBusinesses, ReversedBusinesses } from '@/interfaces/Business'
+import ChooseAvatarDialog from '@/pages/Gacha/LegacyView/ChooseAvatar/Dialog'
 import UpsertAccountDialog from '@/pages/Gacha/LegacyView/UpsertAccount/Dialog'
 
 const useStyles = makeStyles({
@@ -124,6 +125,7 @@ function AccountList (props: AccountListProps) {
   }, [accounts, business, selectedAccount?.uid, updateSelectedAccountUidMutation])
 
   const editAccountDialogRef = useRef<ElementRef<typeof UpsertAccountDialog>>(null)
+  const chooseAvatarDialogRef = useRef<ElementRef<typeof ChooseAvatarDialog>>(null)
   const deleteAccountDialogRef = useRef<ElementRef<typeof DeleteAccountDialog>>(null)
   const [activeAccount, setActiveAccount] = useState<Account | null>(null)
   const handleActiveAccountClick = useCallback<MouseEventHandler>((evt) => {
@@ -135,6 +137,9 @@ function AccountList (props: AccountListProps) {
       switch (operation) {
         case 'edit':
           editAccountDialogRef.current?.setOpen(true)
+          break
+        case 'choose-avatar':
+          chooseAvatarDialogRef.current?.setOpen(true)
           break
         case 'delete':
           deleteAccountDialogRef.current?.setOpen(true)
@@ -198,6 +203,14 @@ function AccountList (props: AccountListProps) {
                               data-operation="edit"
                               mapping={['Pages.Gacha.LegacyView.Toolbar.Account.Options.Edit']}
                             />
+                            <Locale
+                              component={MenuItem}
+                              icon={<PersonCircleRegular />}
+                              onClick={handleActiveAccountClick}
+                              data-account={String(account.uid)}
+                              data-operation="choose-avatar"
+                              mapping={['Pages.Gacha.LegacyView.Toolbar.Account.Options.ChooseAvatar']}
+                            />
                             <MenuDivider />
                             <Locale
                               component={MenuItem}
@@ -235,6 +248,10 @@ function AccountList (props: AccountListProps) {
         keyofBusinesses={keyofBusinesses}
         accounts={accounts}
         edit={activeAccount}
+      />
+      <ChooseAvatarDialog
+        ref={chooseAvatarDialogRef}
+        account={activeAccount}
       />
       <DeleteAccountDialog
         ref={deleteAccountDialogRef}
@@ -457,13 +474,13 @@ function AccountItem (props: AccountItemProps) {
   const styles = useAccountItemStyles()
   const { keyofBusinesses, account } = props
 
-  // TODO: Custom avatar
-  const avatarSrc = BizImages[keyofBusinesses].Material!.Icon!
+  const avatarId = account?.properties?.avatarId
+  const avatarSrc = avatarId && BizImages[keyofBusinesses].Character![avatarId]
 
   return (
     <div className={styles.root}>
       <div className={styles.avatar}>
-        <img src={avatarSrc} />
+        <img src={avatarSrc || BizImages[keyofBusinesses].Material!.Icon!} />
       </div>
       <div className={styles.information}>
         <Locale

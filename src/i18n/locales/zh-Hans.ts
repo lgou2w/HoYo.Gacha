@@ -284,6 +284,7 @@ export default {
               Options: {
                 Title: '更多选项',
                 Edit: '编辑账号',
+                ChooseAvatar: '修改头像',
                 Delete: '删除账号',
               },
               DeleteAccountDialog: {
@@ -379,6 +380,11 @@ export default {
               ManualFindTitle: '请选择$t(Business.{{keyofBusinesses}}.Name)的游戏数据目录',
               EmptyFind: '未找到有效的游戏数据目录。请检查游戏是否安装并运行。',
             },
+          },
+          ChooseAvatarDialog: {
+            Title: '修改头像：{{identify}}',
+            Confirm: '使用',
+            Success: '成功修改头像。',
           },
           UpsertAccountDialog: {
             AddTitle: '添加新账号：$t(Business.{{keyofBusinesses}}.Name)',
