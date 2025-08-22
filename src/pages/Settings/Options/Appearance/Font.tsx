@@ -19,7 +19,7 @@ export default function SettingsOptionsAppearanceFont () {
   const { font, update } = useThemeContext()
   const handleFontSelect = useCallback<Required<ComponentProps<typeof Dropdown>>['onOptionSelect']>((_, data) => {
     const newValue = data.optionValue
-    update({ font: newValue ?? undefined })
+    update({ font: newValue || null })
   }, [update])
 
   const i18n = useI18n()
