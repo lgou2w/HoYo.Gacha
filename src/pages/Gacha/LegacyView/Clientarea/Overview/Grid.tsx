@@ -75,11 +75,12 @@ export default function GachaLegacyViewClientareaOverviewGrid (props: CompositeS
     items.push(createGridItem(styles.half, PrettyCategory.Chronicled, business, Chronicled))
   }
 
+  items.push(createGridItem(styles.half, PrettyCategory.Permanent, business, Permanent))
+
   if (state.hasBangboo) {
     items.push(createGridItem(styles.half, PrettyCategory.Bangboo, business, Bangboo))
   }
 
-  items.push(createGridItem(styles.half, PrettyCategory.Permanent, business, Permanent))
   items.push(createGridItem(
     items.length % 2 === 0 ? styles.full : styles.half,
     'Aggregated',
