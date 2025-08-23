@@ -225,7 +225,7 @@ function AvatarName ({ account, avatarId, locale }: {
   avatarId: string | null | undefined
   locale: string
 }) {
-  if (account.business === Businesses.HonkaiStarRail && avatarId && isTrailblazer(avatarId)) {
+  if (avatarId && isPlayerAvatar(account.business, avatarId)) {
     return (
       <Locale
         mapping={account.properties?.displayName || [`Business.${ReversedBusinesses[account.business]}.Player.Name`]}
@@ -242,9 +242,26 @@ function AvatarName ({ account, avatarId, locale }: {
   }
 }
 
-function isTrailblazer (avatarId: string) {
-  // HACK: Current -> 8001 ~ 8008
-  return +avatarId / 8000 >= 1
+function isPlayerAvatar (business: Business, avatarIdStr: string) {
+  const avatarId = +avatarIdStr
+  if (!Number.isSafeInteger(avatarId)) {
+    return false
+  }
+
+  switch (business) {
+    case Businesses.GenshinImpact:
+      // Traveler: Aether | Lumine
+      return avatarId === 10000005 || avatarId === 10000007
+    case Businesses.HonkaiStarRail:
+      // Trailblazer -> 8001 ~ 8008
+      return avatarId / 8000 >= 1
+    case Businesses.ZenlessZoneZero:
+      // Proxy: Wise | Belle
+      return avatarId === 2011 || avatarId === 2021
+    default:
+      // HACK: should never reach here
+      throw new Error('unreachable')
+  }
 }
 
 const MappingAvatarNameCaches: Record<Business, Record<string, Record<string, string | null>>> = {
