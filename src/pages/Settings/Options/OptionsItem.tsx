@@ -24,6 +24,10 @@ const useStyles = makeStyles({
     flexDirection: 'column',
     flexGrow: 1,
   },
+  title: {},
+  subtitle: {
+    opacity: 0.8,
+  },
   actions: {
     display: 'flex',
     flexDirection: 'row',
@@ -54,8 +58,8 @@ export default function SettingsOptionsItem (props: Props) {
     <div className={rootClasses}>
       <div className={styles.icon}>{icon}</div>
       <div className={styles.header}>
-        <Body1>{title}</Body1>
-        {subtitle && <Caption1>{subtitle}</Caption1>}
+        <Body1 className={styles.title}>{title}</Body1>
+        {subtitle && <Caption1 className={styles.subtitle}>{subtitle}</Caption1>}
       </div>
       <div className={styles.actions}>{action}</div>
     </div>
