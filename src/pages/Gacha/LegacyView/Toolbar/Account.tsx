@@ -356,7 +356,7 @@ const DeleteAccountDialog = forwardRef<{
     removeFirstGachaRecordQuery(args.business, args.uid)
   }, [account, deleteAccountMutation, i18n.constants.gacha, produce])
 
-  if (!account || !state.open) {
+  if (!account) {
     return null
   }
 
