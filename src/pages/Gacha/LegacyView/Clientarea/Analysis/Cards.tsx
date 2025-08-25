@@ -411,6 +411,7 @@ const useCardsEntryRecordStyles = makeStyles({
     position: 'relative',
     paddingRight: tokens.spacingHorizontalS,
     borderRadius: tokens.borderRadiusMedium,
+    zIndex: 0,
     '::before,::after': {
       content: '""',
       position: 'absolute',
@@ -425,7 +426,7 @@ const useCardsEntryRecordStyles = makeStyles({
     '::before': {
       borderRadius: tokens.borderRadiusMedium,
       width: '100%',
-      opacity: 0.3,
+      opacity: 0.25,
     },
     '::after': {
       borderTopLeftRadius: tokens.borderRadiusMedium,
@@ -433,18 +434,12 @@ const useCardsEntryRecordStyles = makeStyles({
       borderTopRightRadius: tokens.borderRadiusSmall,
       borderBottomRightRadius: tokens.borderRadiusSmall,
       width: 'var(--progress)',
-      opacity: 0.65,
+      opacity: 0.3,
     },
   },
   rootNextPity: {
     '::before,::after': {
       backgroundColor: tokens.colorPaletteDarkOrangeBackground3,
-    },
-    '::before': {
-      opacity: 0.3,
-    },
-    '::after': {
-      opacity: 0.85,
     },
   },
   icon: {
