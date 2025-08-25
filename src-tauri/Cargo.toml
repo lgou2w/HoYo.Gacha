@@ -33,7 +33,7 @@ num_enum = "0.7.4"
 os_info = "3.12.0"
 paste = "1.0.15"
 raw-window-handle = "0.6.2"
-regex = "1.11.1"
+regex = "1.11.2"
 reqwest = { version = "0.12.23", features = ["json"] }
 rfd = { version = "0.15.4", default-features = false }
 sha1 = "0.10.6"
@@ -41,7 +41,7 @@ serde = { version = "1.0.219", features = ["derive"] }
 serde_json = "1.0.143"
 serde_repr = "0.1.20"
 sys-locale = "0.3.2"
-tauri-plugin-shell = "2.3.0"
+tauri-plugin-shell = "2.3.1"
 tauri-plugin-clipboard-manager = "2.3.0"
 tauri-plugin-process = "2.3.0"
 thiserror = "2.0.16"
@@ -50,7 +50,7 @@ tokio = { version = "1.47.1", features = ["macros", "rt-multi-thread"] }
 tracing = "0.1.41"
 tracing-appender = "0.2.3"
 tracing-subscriber = { version = "0.3.19", features = ["env-filter", "local-time"] }
-url = "2.5.6"
+url = "2.5.7"
 
 [dependencies.sqlx]
 version = "0.8.6"
@@ -64,7 +64,7 @@ features = [
 
 # https://github.com/tauri-apps/tauri/blob/dev/crates/tauri/Cargo.toml
 [dependencies.tauri]
-version = "2.8.2"
+version = "2.8.4"
 default-features = false
 features = [
   "wry",
