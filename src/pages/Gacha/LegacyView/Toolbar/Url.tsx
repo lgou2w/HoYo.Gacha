@@ -522,7 +522,7 @@ const UrlManualInputDialog = forwardRef<{
     setOpen(false)
   }, [resetField])
 
-  const onSubmit = useCallback<SubmitHandler<FormData>>(async (data) => {
+  const handleSubmitInner = useCallback<SubmitHandler<FormData>>(async (data) => {
     // HACK: When unavailable, the parent component is disabled
     if (!selectedAccount) {
       return
@@ -570,7 +570,7 @@ const UrlManualInputDialog = forwardRef<{
           <DialogContent>
             <form
               className={styles.form}
-              onSubmit={handleSubmit(onSubmit)}
+              onSubmit={handleSubmit(handleSubmitInner)}
               noValidate
             >
               <Field

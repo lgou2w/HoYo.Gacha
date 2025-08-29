@@ -114,7 +114,7 @@ export default function GachaLegacyViewDataConvertImportForm (props: Props) {
     busy: false,
   })
 
-  const onSelectFile = useCallback(async () => {
+  const handleSelectFile = useCallback(async () => {
     const file = await pickFile({
       filters: [
         ['JSON', ['json']],
@@ -126,20 +126,20 @@ export default function GachaLegacyViewDataConvertImportForm (props: Props) {
     })
   }, [produce])
 
-  const onFormatChange = useCallback<MouseEventHandler<HTMLButtonElement>>((evt) => {
+  const handleFormatChange = useCallback<MouseEventHandler<HTMLButtonElement>>((evt) => {
     const newFormat = evt.currentTarget.value as SupportedFormat
     produce((draft) => {
       draft.format = newFormat
     })
   }, [produce])
 
-  const onSaveOnConflictChange = useCallback<Required<ComponentProps<typeof RadioGroup>>['onChange']>((_, data) => {
+  const handleSaveOnConflictChange = useCallback<Required<ComponentProps<typeof RadioGroup>>['onChange']>((_, data) => {
     produce((draft) => {
       draft.saveOnConflict = data.value as SaveOnConflict
     })
   }, [produce])
 
-  const onSubmit = useCallback(async () => {
+  const handleSubmit = useCallback(async () => {
     if (!selectedAccount || !state.file) {
       return
     }
@@ -249,7 +249,7 @@ export default function GachaLegacyViewDataConvertImportForm (props: Props) {
           <Locale
             component={Button}
             size="large"
-            onClick={onSelectFile}
+            onClick={handleSelectFile}
             disabled={state.busy}
             mapping={['Pages.Gacha.LegacyView.DataConvert.ImportForm.File.SelectBtn']}
           />
@@ -271,7 +271,7 @@ export default function GachaLegacyViewDataConvertImportForm (props: Props) {
               value={value}
               className={styles.formatButton}
               aria-checked={value === state.format}
-              onClick={onFormatChange}
+              onClick={handleFormatChange}
               disabled={state.busy}
               appearance="outline"
             >
@@ -313,7 +313,7 @@ export default function GachaLegacyViewDataConvertImportForm (props: Props) {
         <RadioGroup
           layout="horizontal"
           value={state.saveOnConflict}
-          onChange={onSaveOnConflictChange}
+          onChange={handleSaveOnConflictChange}
           disabled={state.busy}
         >
           {SaveOnConflicts.map((value) => (
@@ -343,7 +343,7 @@ export default function GachaLegacyViewDataConvertImportForm (props: Props) {
           <Locale
             component={Button}
             appearance="primary"
-            onClick={onSubmit}
+            onClick={handleSubmit}
             mapping={['Pages.Gacha.LegacyView.DataConvert.ImportForm.SubmitBtn']}
             disabled={state.busy || !state.file}
           />

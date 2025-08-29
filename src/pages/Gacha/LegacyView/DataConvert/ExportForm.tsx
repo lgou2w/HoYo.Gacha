@@ -96,7 +96,7 @@ export default function GachaLegacyViewDataConvertExportForm (props: Props) {
     busy: false,
   })
 
-  const onSelectFolder = useCallback(async () => {
+  const handleSelectFolder = useCallback(async () => {
     const folder = await pickFolder({})
 
     folder && produce((draft) => {
@@ -104,14 +104,14 @@ export default function GachaLegacyViewDataConvertExportForm (props: Props) {
     })
   }, [produce])
 
-  const onFormatChange = useCallback<MouseEventHandler<HTMLButtonElement>>((evt) => {
+  const handleFormatChange = useCallback<MouseEventHandler<HTMLButtonElement>>((evt) => {
     const newFormat = evt.currentTarget.value as SupportedFormat
     produce((draft) => {
       draft.format = newFormat
     })
   }, [produce])
 
-  const onSubmit = useCallback(async () => {
+  const handleSubmit = useCallback(async () => {
     if (!selectedAccount || !firstGachaRecord || !state.folder) {
       return
     }
@@ -231,7 +231,7 @@ export default function GachaLegacyViewDataConvertExportForm (props: Props) {
           <Locale
             component={Button}
             size="large"
-            onClick={onSelectFolder}
+            onClick={handleSelectFolder}
             disabled={state.busy}
             mapping={['Pages.Gacha.LegacyView.DataConvert.ExportForm.Folder.SelectBtn']}
           />
@@ -253,7 +253,7 @@ export default function GachaLegacyViewDataConvertExportForm (props: Props) {
               value={value}
               className={styles.formatButton}
               aria-checked={value === state.format}
-              onClick={onFormatChange}
+              onClick={handleFormatChange}
               disabled={state.busy}
               appearance="outline"
             >
@@ -336,7 +336,7 @@ export default function GachaLegacyViewDataConvertExportForm (props: Props) {
         <Locale
           component={Button}
           appearance="primary"
-          onClick={onSubmit}
+          onClick={handleSubmit}
           mapping={['Pages.Gacha.LegacyView.DataConvert.ExportForm.SubmitBtn']}
           disabled={state.busy || !state.folder}
         />
