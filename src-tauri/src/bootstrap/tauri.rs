@@ -392,8 +392,8 @@ fn core_git_info() -> serde_json::Value {
 }
 
 #[tauri::command]
-fn core_create_app_lnk() {
-  let _ = ffi::create_app_lnk();
+fn core_create_app_lnk() -> Result<(), String> {
+  ffi::create_app_lnk().map_err(|e| e.message())
 }
 
 #[tauri::command]

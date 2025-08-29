@@ -596,9 +596,12 @@ export default {
               AppVersion: '應用版本',
             },
             Lnk: {
-              Title: '捷徑',
+              Title: '桌面捷徑',
               Subtitle: '建立應用程式的桌面捷徑。',
               CreateBtn: '建立',
+              Loading: '建立捷徑中...',
+              Success: '建立成功。',
+              Error: '建立失敗：',
             },
           },
         },
