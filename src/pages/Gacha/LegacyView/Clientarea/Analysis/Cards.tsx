@@ -26,7 +26,7 @@ const useStyles = makeStyles({
     padding: '2px',
   },
   card: {
-    flexGrow: 1,
+    flex: 1,
     minWidth: '12.75rem',
     boxShadow: tokens.shadow2,
   },
@@ -243,6 +243,8 @@ function CardsEntry (props: CardsEntryProps) {
       <div className={styles.header}>
         <Locale
           component={Subtitle2}
+          truncate
+          wrap={false}
           mapping={[`Business.${keyofBusinesses}.Gacha.Category.${metadata.category}`, { context: 'Title' }]}
         />
         <div className={styles.headerTotal}>
