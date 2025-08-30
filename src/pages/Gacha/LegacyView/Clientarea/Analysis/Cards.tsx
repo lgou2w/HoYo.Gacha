@@ -1,6 +1,6 @@
-import React, { ComponentProps, Fragment, ReactNode, WheelEventHandler, useCallback, useMemo } from 'react'
+import React, { ComponentProps, Fragment, ReactNode, WheelEventHandler, useCallback, useMemo, useState } from 'react'
 import { Virtuoso } from 'react-virtuoso'
-import { Caption1, Divider, Subtitle2, Title1, makeStyles, mergeClasses, title1ClassNames, tokens } from '@fluentui/react-components'
+import { Caption1, Divider, Subtitle2, Tab, TabList, Title1, makeStyles, mergeClasses, tabClassNames, title1ClassNames, tokens } from '@fluentui/react-components'
 import ImagesNone from '@/assets/images/None.avif'
 import BizImages from '@/components/BizImages'
 import Locale from '@/components/Locale'
@@ -339,10 +339,107 @@ function CardsEntry (props: CardsEntryProps) {
         </div>
       </div>
       <Divider style={{ flexGrow: 0, padding: '0.25rem 0' }} />
-      <CardsEntryRecords
+      <CardsEntryRecordsTabList
+        business={business}
         keyofBusinesses={keyofBusinesses}
         metadata={metadata}
       />
+    </div>
+  )
+}
+
+const useCardsEntryRecordsTabListStyles = makeStyles({
+  root: {
+    display: 'flex',
+    flexDirection: 'column',
+    rowGap: tokens.spacingVerticalS,
+    height: '100%',
+  },
+  tabList: {
+    border: `${tokens.strokeWidthThin} solid ${tokens.colorNeutralStroke2}`,
+    borderRadius: tokens.borderRadiusMedium,
+  },
+  tab: {
+    flexGrow: 1,
+  },
+  tabGolden: {
+    '&:enabled:hover': {
+      [`& .${tabClassNames.content}`]: {
+        color: tokens.colorPaletteMarigoldForeground1,
+      },
+    },
+    [`& .${tabClassNames.content}`]: {
+      color: tokens.colorPaletteMarigoldForeground1,
+    },
+  },
+  tabPurple: {
+    '&:enabled:hover': {
+      [`& .${tabClassNames.content}`]: {
+        color: tokens.colorPaletteBerryForeground1,
+      },
+    },
+    [`& .${tabClassNames.content}`]: {
+      color: tokens.colorPaletteBerryForeground1,
+    },
+  },
+  tabDivider: {
+    flexGrow: 0,
+  },
+})
+
+interface CardsEntryRecordsTabListProps {
+  business: Business
+  keyofBusinesses: KeyofBusinesses
+  metadata: CategorizedMetadata<Business>
+}
+
+function CardsEntryRecordsTabList (props: CardsEntryRecordsTabListProps) {
+  const styles = useCardsEntryRecordsTabListStyles()
+  const { business, keyofBusinesses, metadata } = props
+  const [ranking, setRanking] = useState<keyof Omit<CategorizedMetadataRankings, 'blue'>>('golden')
+  const handleSelect = useCallback<Required<ComponentProps<typeof TabList>>['onTabSelect']>((_, data) => {
+    setRanking(data.value as typeof ranking)
+  }, [])
+
+  const Golden = React.memo(function CardsEntryGoldenRecords () {
+    return (
+      <CardsEntryRecords
+        keyofBusinesses={keyofBusinesses}
+        metadata={metadata}
+        ranking="golden"
+      />
+    )
+  })
+
+  const Purple = React.memo(function CardsEntryPurpleRecords () {
+    return (
+      <CardsEntryRecords
+        keyofBusinesses={keyofBusinesses}
+        metadata={metadata}
+        ranking="purple"
+      />
+    )
+  })
+
+  return (
+    <div className={styles.root}>
+      <TabList
+        className={styles.tabList}
+        selectedValue={ranking}
+        onTabSelect={handleSelect}
+        appearance="subtle"
+        size="small"
+      >
+        <Tab className={mergeClasses(styles.tab, styles.tabGolden)} value="golden">
+          {RankingsPrefix[business].golden}
+        </Tab>
+        <Divider className={styles.tabDivider} vertical />
+        <Tab className={mergeClasses(styles.tab, styles.tabPurple)} value="purple">
+          {RankingsPrefix[business].purple}
+        </Tab>
+      </TabList>
+      {ranking === 'golden' && <Golden />}
+      {ranking === 'purple' && <Purple />}
     </div>
   )
 }
@@ -364,27 +461,29 @@ const useCardsEntryRecordsStyles = makeStyles({
 interface CardsEntryRecordsProps {
   keyofBusinesses: KeyofBusinesses
   metadata: CategorizedMetadata<Business>
+  ranking: keyof Omit<CategorizedMetadataRankings, 'blue'>
 }
 
 function CardsEntryRecords (props: CardsEntryRecordsProps) {
   const styles = useCardsEntryRecordsStyles()
-  const { keyofBusinesses, metadata } = props
+  const { keyofBusinesses, metadata, ranking } = props
 
   const data = useMemo(() => {
     const data: ComponentProps<typeof CardsEntryRecord>[] = metadata
-      .rankings
-      .golden
+      .rankings[ranking]
       .values
       .map((record, index, arrRef) => ({
         keyofBusinesses,
         category: metadata.category,
+        ranking,
         dataRef: [record, arrRef[index - 1]],
       }))
 
-    const { nextPity, nextPityProgress } = metadata.rankings.golden
+    const { nextPity, nextPityProgress } = metadata.rankings[ranking]
     data.push({
       keyofBusinesses,
       category: metadata.category,
+      ranking,
       dataRef: {
         value: nextPity,
         progress: nextPityProgress,
@@ -393,7 +492,7 @@ function CardsEntryRecords (props: CardsEntryRecordsProps) {
 
     data.reverse()
     return data
-  }, [keyofBusinesses, metadata.category, metadata.rankings.golden])
+  }, [keyofBusinesses, metadata.category, metadata.rankings, ranking])
 
   return (
     <Virtuoso
@@ -477,6 +576,7 @@ const useCardsEntryRecordStyles = makeStyles({
 interface CardsEntryRecordProps {
   keyofBusinesses: KeyofBusinesses
   category: PrettyCategory
+  ranking: keyof Omit<CategorizedMetadataRankings, 'blue'>
   dataRef:
     // [Curr Record, Prev Record | null]
     | [PrettyGachaRecord, PrettyGachaRecord | null]
@@ -492,6 +592,7 @@ function CardsEntryRecord (props: CardsEntryRecordProps) {
   const {
     keyofBusinesses,
     category,
+    ranking,
     dataRef,
   } = props
 
@@ -526,7 +627,7 @@ function CardsEntryRecord (props: CardsEntryRecordProps) {
 
   // Record
   const [record, prevRecord] = dataRef
-  const isHardPity = prevRecord && !prevRecord.up && record.up
+  const isHardPity = ranking === 'golden' && prevRecord && !prevRecord.up && record.up
   const showUpLabels = category === PrettyCategory.Character ||
     category === PrettyCategory.Weapon ||
     category === PrettyCategory.CollaborationCharacter ||

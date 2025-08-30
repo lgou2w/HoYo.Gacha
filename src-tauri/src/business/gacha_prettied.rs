@@ -35,16 +35,27 @@ pub enum PrettyCategory {
 }
 
 impl PrettyCategory {
-  pub const fn max_pity(&self) -> u8 {
-    match *self {
-      Self::Character | Self::Permanent | Self::Chronicled | Self::CollaborationCharacter => 90,
-      _ => 80,
+  pub const fn max_pity(&self, is_golden: bool) -> u8 {
+    if is_golden {
+      match *self {
+        Self::Character | Self::Permanent | Self::Chronicled | Self::CollaborationCharacter => 90,
+        _ => 80,
+      }
+    } else {
+      // HACK: Purple maximum pity is always 10
+      10
     }
   }
 
   // 0 - 100
-  pub fn calc_pity_progress(&self, used_pity: u64) -> u8 {
-    (used_pity as f32 / self.max_pity() as f32 * 100.)
+  pub fn calc_pity_progress(&self, is_golden: bool, used_pity: u64) -> u8 {
+    let max_pity = self.max_pity(is_golden);
+
+    if used_pity == 0 || max_pity == 0 {
+      return 0;
+    }
+
+    (used_pity as f32 / max_pity as f32 * 100.)
       .round()
       .min(100.) as u8
   }
@@ -150,7 +161,8 @@ impl PrettyGachaRecord {
         item_id: record.item_id.to_string(),
       })?;
 
-    let used_pity_progress = used_pity.map(|n| category.calc_pity_progress(n));
+    let used_pity_progress =
+      used_pity.map(|n| category.calc_pity_progress(record.is_rank_type_golden(), n));
 
     let (up, version) = if let Some(banner) = metadata.banner_from_record(record) {
       let up = if (record.is_rank_type_golden() && banner.in_up_golden(record.item_id))
@@ -456,7 +468,7 @@ impl PrettiedGachaRecords {
       }
 
       let sum = values.len() as u64;
-      let pity_progress = category.calc_pity_progress(pity);
+      let pity_progress = category.calc_pity_progress(false, pity);
 
       CategorizedMetadataPurpleRanking {
         values,
@@ -513,7 +525,7 @@ impl PrettiedGachaRecords {
       }
 
       let sum = values.len() as u64;
-      let pity_progress = category.calc_pity_progress(pity);
+      let pity_progress = category.calc_pity_progress(true, pity);
 
       CategorizedMetadataGoldenRanking {
         values,
