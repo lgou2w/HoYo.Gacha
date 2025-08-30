@@ -378,13 +378,17 @@ function CardsEntryRecords (props: CardsEntryRecordsProps) {
       .map((record, index, arrRef) => ({
         keyofBusinesses,
         category: metadata.category,
-        value: [record, arrRef[index - 1]],
+        dataRef: [record, arrRef[index - 1]],
       }))
 
+    const { nextPity, nextPityProgress } = metadata.rankings.golden
     data.push({
       keyofBusinesses,
       category: metadata.category,
-      value: metadata.rankings.golden.nextPity,
+      dataRef: {
+        value: nextPity,
+        progress: nextPityProgress,
+      },
     })
 
     data.reverse()
@@ -473,8 +477,14 @@ const useCardsEntryRecordStyles = makeStyles({
 interface CardsEntryRecordProps {
   keyofBusinesses: KeyofBusinesses
   category: PrettyCategory
-  // [Curr Record, Prev Record | null] | Next Pity
-  value: [PrettyGachaRecord, PrettyGachaRecord | null] | number
+  dataRef:
+    // [Curr Record, Prev Record | null]
+    | [PrettyGachaRecord, PrettyGachaRecord | null]
+    // Next Pity
+    | {
+        value: number
+        progress: number
+      }
 }
 
 function CardsEntryRecord (props: CardsEntryRecordProps) {
@@ -482,13 +492,13 @@ function CardsEntryRecord (props: CardsEntryRecordProps) {
   const {
     keyofBusinesses,
     category,
-    value,
+    dataRef,
   } = props
 
   const i18n = useI18n()
 
   // Next pity
-  if (typeof value === 'number') {
+  if (!Array.isArray(dataRef)) {
     return (
       <div
         className={mergeClasses(styles.root, styles.rootNextPity)}
@@ -496,7 +506,7 @@ function CardsEntryRecord (props: CardsEntryRecordProps) {
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore
           '--progress':
-            calcPityProgressVar(category, value),
+            dataRef.progress + '%',
         }}
       >
         <img className={styles.icon} src={ImagesNone} />
@@ -507,7 +517,7 @@ function CardsEntryRecord (props: CardsEntryRecordProps) {
         />
         <div className={styles.labels}>
           <Caption1 className={styles.label}>
-            {value}
+            {dataRef.value}
           </Caption1>
         </div>
       </div>
@@ -515,7 +525,7 @@ function CardsEntryRecord (props: CardsEntryRecordProps) {
   }
 
   // Record
-  const [record, prevRecord] = value
+  const [record, prevRecord] = dataRef
   const isHardPity = prevRecord && !prevRecord.up && record.up
   const showUpLabels = category === PrettyCategory.Character ||
     category === PrettyCategory.Weapon ||
@@ -534,7 +544,7 @@ function CardsEntryRecord (props: CardsEntryRecordProps) {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         '--progress':
-          calcPityProgressVar(category, record.usedPity),
+          (record.usedPityProgress || 0) + '%',
       }}
       title={title}
     >
@@ -573,21 +583,4 @@ function CardsEntryRecord (props: CardsEntryRecordProps) {
       </div>
     </div>
   )
-}
-
-function calcPityProgressVar (category: PrettyCategory, usedPity: number | undefined) {
-  if (!usedPity || usedPity === 0) {
-    return 0
-  }
-
-  let maxPity = 80
-  if (category === PrettyCategory.Character ||
-    category === PrettyCategory.Permanent ||
-    category === PrettyCategory.Chronicled ||
-    category === PrettyCategory.CollaborationCharacter) {
-    maxPity = 90
-  }
-
-  const progress = Math.round(usedPity / maxPity * 100)
-  return Math.min(progress, 100) + '%'
 }

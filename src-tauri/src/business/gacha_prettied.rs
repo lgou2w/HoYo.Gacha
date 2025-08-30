@@ -34,6 +34,22 @@ pub enum PrettyCategory {
   CollaborationWeapon,    // 'Honkai: Star Rail' only
 }
 
+impl PrettyCategory {
+  pub const fn max_pity(&self) -> u8 {
+    match *self {
+      Self::Character | Self::Permanent | Self::Chronicled | Self::CollaborationCharacter => 90,
+      _ => 80,
+    }
+  }
+
+  // 0 - 100
+  pub fn calc_pity_progress(&self, used_pity: u64) -> u8 {
+    (used_pity as f32 / self.max_pity() as f32 * 100.)
+      .round()
+      .min(100.) as u8
+  }
+}
+
 // See: models/gacha_record.rs
 const GENSHIN_IMPACT_CHARACTER2: u32 = 400;
 
@@ -104,6 +120,8 @@ pub struct PrettyGachaRecord {
   #[serde(skip_serializing_if = "Option::is_none")]
   pub used_pity: Option<u64>, // Purple and Golden only
   #[serde(skip_serializing_if = "Option::is_none")]
+  pub used_pity_progress: Option<u8>, // Purple and Golden only (0 - 100)
+  #[serde(skip_serializing_if = "Option::is_none")]
   pub up: Option<bool>, // Purple and Golden only
   #[serde(skip_serializing_if = "Option::is_none")]
   pub version: Option<GameVersion>,
@@ -115,6 +133,7 @@ pub struct PrettyGachaRecord {
 impl PrettyGachaRecord {
   fn mapping(
     metadata: &GachaMetadata,
+    category: &PrettyCategory,
     record: &GachaRecord,
     used_pity: Option<u64>,
     custom_locale: Option<&str>,
@@ -130,6 +149,8 @@ impl PrettyGachaRecord {
         name: record.name.clone(),
         item_id: record.item_id.to_string(),
       })?;
+
+    let used_pity_progress = used_pity.map(|n| category.calc_pity_progress(n));
 
     let (up, version) = if let Some(banner) = metadata.banner_from_record(record) {
       let up = if (record.is_rank_type_golden() && banner.in_up_golden(record.item_id))
@@ -161,6 +182,7 @@ impl PrettyGachaRecord {
       name: entry.name.to_owned(),
       time: record.time,
       used_pity,
+      used_pity_progress,
       up,
       version,
       genshin_character2,
@@ -185,6 +207,7 @@ pub struct CategorizedMetadataPurpleRanking {
   pub percentage: f64,
   pub average: f64,
   pub next_pity: u64,
+  pub next_pity_progress: u8, // 0 - 100
 }
 
 #[derive(Clone, Debug, Serialize)]
@@ -200,6 +223,7 @@ pub struct CategorizedMetadataGoldenRanking {
   pub up_win_sum: u64,
   pub up_win_percentage: f64,
   pub next_pity: u64,
+  pub next_pity_progress: u8, // 0 - 100
 }
 
 #[derive(Clone, Debug, Serialize)]
@@ -362,7 +386,8 @@ impl PrettiedGachaRecords {
       let start_time = records.first().map(|record| record.time);
       let end_time = records.last().map(|record| record.time);
       let last_end_id = records.last().map(|record| record.id.clone());
-      let rankings = Self::compute_categorized_rankings(metadata, records, custom_locale)?;
+      let rankings =
+        Self::compute_categorized_rankings(metadata, category, records, custom_locale)?;
 
       categorizeds.insert(
         *category,
@@ -383,6 +408,7 @@ impl PrettiedGachaRecords {
 
   fn compute_categorized_rankings(
     metadata: &GachaMetadata,
+    category: &PrettyCategory,
     records: Vec<&GachaRecord>,
     custom_locale: Option<&str>,
   ) -> Result<CategorizedMetadataRankings, PrettyGachaRecordsError> {
@@ -418,12 +444,9 @@ impl PrettiedGachaRecords {
         pity += 1;
 
         if is_purple {
-          values.push(PrettyGachaRecord::mapping(
-            metadata,
-            record,
-            Some(pity),
-            custom_locale,
-          )?);
+          let precord =
+            PrettyGachaRecord::mapping(metadata, category, record, Some(pity), custom_locale)?;
+          values.push(precord);
         }
 
         if is_purple || is_golden {
@@ -433,6 +456,7 @@ impl PrettiedGachaRecords {
       }
 
       let sum = values.len() as u64;
+      let pity_progress = category.calc_pity_progress(pity);
 
       CategorizedMetadataPurpleRanking {
         values,
@@ -440,6 +464,7 @@ impl PrettiedGachaRecords {
         percentage: percentage!(total, sum),
         average: average!(used_pity_sum, sum),
         next_pity: pity,
+        next_pity_progress: pity_progress,
       }
     };
 
@@ -461,7 +486,8 @@ impl PrettiedGachaRecords {
         up_pity += 1;
 
         if is_golden {
-          let precord = PrettyGachaRecord::mapping(metadata, record, Some(pity), custom_locale)?;
+          let precord =
+            PrettyGachaRecord::mapping(metadata, category, record, Some(pity), custom_locale)?;
 
           if precord.up == Some(true) {
             up_sum += 1;
@@ -487,6 +513,7 @@ impl PrettiedGachaRecords {
       }
 
       let sum = values.len() as u64;
+      let pity_progress = category.calc_pity_progress(pity);
 
       CategorizedMetadataGoldenRanking {
         values,
@@ -499,6 +526,7 @@ impl PrettiedGachaRecords {
         up_win_sum,
         up_win_percentage: percentage!(sum - up_sum + up_win_sum, up_win_sum),
         next_pity: pity,
+        next_pity_progress: pity_progress,
       }
     };
 
@@ -597,6 +625,7 @@ impl PrettiedGachaRecords {
         percentage: percentage!(total, purple_sum),
         average: average!(purple_used_pity_sum, purple_sum),
         next_pity: 0,
+        next_pity_progress: 0,
       },
       golden: CategorizedMetadataGoldenRanking {
         values: golden_values,
@@ -612,6 +641,7 @@ impl PrettiedGachaRecords {
           golden_up_win_sum
         ),
         next_pity: 0,
+        next_pity_progress: 0,
       },
     };
 
