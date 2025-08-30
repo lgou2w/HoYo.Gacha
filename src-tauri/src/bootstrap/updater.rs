@@ -137,17 +137,63 @@ impl Updater {
     }
 
     const API_RELEASE: &str = "https://hoyo-gacha-v1.lgou2w.com/release";
-    const API_TIMEOUT: Duration = Duration::from_secs(15);
+    const API_TIMEOUT: Duration = Duration::from_secs(30);
+
+    #[inline]
+    async fn fetch_latest_release() -> Result<LatestRelease, reqwest::Error> {
+      consts::REQWEST
+        .get(format!("{API_RELEASE}/latest"))
+        .timeout(API_TIMEOUT)
+        .send()
+        .await?
+        .error_for_status()?
+        .json::<LatestRelease>()
+        .await
+    }
+
+    #[inline]
+    async fn fetch_latest_release_with_retry() -> Result<LatestRelease, Box<dyn StdError + 'static>>
+    {
+      const RETRIES: u32 = 3;
+      const MIN: Duration = Duration::from_secs(3);
+      const MAX: Duration = Duration::from_secs(10);
+
+      let backoff = exponential_backoff::Backoff::new(RETRIES, MIN, MAX);
+      for duration in backoff {
+        match fetch_latest_release().await {
+          Ok(res) => return Ok(res),
+          Err(error) => {
+            let need_retry = error.is_connect()
+              || error.is_decode()
+              || error.is_timeout()
+              || error
+                .status()
+                .is_some_and(|status| status.is_server_error());
+
+            if need_retry {
+              tracing::warn!(
+                message = "Failed to fetch latest release, retrying...",
+                ?error
+              );
+
+              if let Some(duration) = duration {
+                tokio::time::sleep(duration).await;
+              }
+
+              continue;
+            } else {
+              tracing::error!(message = "Failed to fetch latest release", ?error);
+              return Err(error.into());
+            }
+          }
+        }
+      }
+
+      Err("Exceeded maximum retries to fetch latest release".into())
+    }
 
     info!("Checking for updates...");
-    let latest_release = consts::REQWEST
-      .get(format!("{API_RELEASE}/latest"))
-      .timeout(API_TIMEOUT)
-      .send()
-      .await?
-      .error_for_status()?
-      .json::<LatestRelease>()
-      .await?;
+    let latest_release = fetch_latest_release_with_retry().await?;
 
     info!(
       message = "Latest release found",
