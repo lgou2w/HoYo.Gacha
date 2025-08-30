@@ -104,7 +104,7 @@ pub struct PrettyGachaRecord {
   #[serde(skip_serializing_if = "Option::is_none")]
   pub used_pity: Option<u64>, // Purple and Golden only
   #[serde(skip_serializing_if = "Option::is_none")]
-  pub limited: Option<bool>, // Purple and Golden only
+  pub up: Option<bool>, // Purple and Golden only
   #[serde(skip_serializing_if = "Option::is_none")]
   pub version: Option<GameVersion>,
   // 'Genshin Impact' Character only, Distinguish Character and Character-2
@@ -131,8 +131,8 @@ impl PrettyGachaRecord {
         item_id: record.item_id.to_string(),
       })?;
 
-    let (limited, version) = if let Some(banner) = metadata.banner_from_record(record) {
-      let limited = if (record.is_rank_type_golden() && banner.in_up_golden(record.item_id))
+    let (up, version) = if let Some(banner) = metadata.banner_from_record(record) {
+      let up = if (record.is_rank_type_golden() && banner.in_up_golden(record.item_id))
         || (record.is_rank_type_purple() && banner.in_up_purple(record.item_id))
       {
         Some(true)
@@ -140,7 +140,7 @@ impl PrettyGachaRecord {
         None
       };
 
-      (limited, banner.version.clone())
+      (up, banner.version.clone())
     } else {
       (None, None)
     };
@@ -161,7 +161,7 @@ impl PrettyGachaRecord {
       name: entry.name.to_owned(),
       time: record.time,
       used_pity,
-      limited,
+      up,
       version,
       genshin_character2,
     })
@@ -194,11 +194,11 @@ pub struct CategorizedMetadataGoldenRanking {
   pub sum: u64,
   pub percentage: f64,
   pub average: f64,
-  pub limited_sum: u64,
-  pub limited_percentage: f64,
-  pub limited_average: f64,
-  pub limited_win_sum: u64,
-  pub limited_win_percentage: f64,
+  pub up_sum: u64,
+  pub up_percentage: f64,
+  pub up_average: f64,
+  pub up_win_sum: u64,
+  pub up_win_percentage: f64,
   pub next_pity: u64,
 }
 
@@ -449,27 +449,27 @@ impl PrettiedGachaRecords {
       let mut pity = 0;
       let mut used_pity_sum = 0;
 
-      let mut limited_sum = 0;
-      let mut limited_pity = 0;
-      let mut limited_used_pity_sum = 0;
-      let mut limited_win_sum = 0;
+      let mut up_sum = 0;
+      let mut up_pity = 0;
+      let mut up_used_pity_sum = 0;
+      let mut up_win_sum = 0;
 
       for record in &records {
         let is_golden = record.is_rank_type_golden();
 
         pity += 1;
-        limited_pity += 1;
+        up_pity += 1;
 
         if is_golden {
-          let pretty = PrettyGachaRecord::mapping(metadata, record, Some(pity), custom_locale)?;
+          let precord = PrettyGachaRecord::mapping(metadata, record, Some(pity), custom_locale)?;
 
-          if pretty.limited == Some(true) {
-            limited_sum += 1;
-            limited_used_pity_sum += limited_pity;
-            limited_pity = 0;
+          if precord.up == Some(true) {
+            up_sum += 1;
+            up_used_pity_sum += up_pity;
+            up_pity = 0;
           }
 
-          values.push(pretty);
+          values.push(precord);
           used_pity_sum += pity;
           pity = 0;
         }
@@ -477,10 +477,10 @@ impl PrettiedGachaRecords {
 
       let mut prev_record: Option<&PrettyGachaRecord> = None;
       for record in &values {
-        if record.limited == Some(true)
-          && (prev_record.is_none() || prev_record.unwrap().limited == Some(true))
+        if record.up == Some(true)
+          && (prev_record.is_none() || prev_record.unwrap().up == Some(true))
         {
-          limited_win_sum += 1;
+          up_win_sum += 1;
         }
 
         prev_record.replace(record);
@@ -493,11 +493,11 @@ impl PrettiedGachaRecords {
         sum,
         percentage: percentage!(total, sum),
         average: average!(used_pity_sum, sum),
-        limited_sum,
-        limited_percentage: percentage!(total, limited_sum),
-        limited_average: average!(limited_used_pity_sum, limited_sum),
-        limited_win_sum,
-        limited_win_percentage: percentage!(sum - limited_sum + limited_win_sum, limited_win_sum),
+        up_sum,
+        up_percentage: percentage!(total, up_sum),
+        up_average: average!(up_used_pity_sum, up_sum),
+        up_win_sum,
+        up_win_percentage: percentage!(sum - up_sum + up_win_sum, up_win_sum),
         next_pity: pity,
       }
     };
@@ -562,25 +562,25 @@ impl PrettiedGachaRecords {
     }
 
     let mut golden_used_pity_sum = 0;
-    let mut golden_limited_sum = 0;
-    let mut golden_limited_pity = 0;
-    let mut golden_limited_used_pity_sum = 0;
-    let mut golden_limited_win_sum = 0;
+    let mut golden_up_sum = 0;
+    let mut golden_up_pity = 0;
+    let mut golden_up_used_pity_sum = 0;
+    let mut golden_up_win_sum = 0;
     for (index, golden_record) in golden_values.iter().enumerate() {
       let used_pity = golden_record.used_pity.unwrap_or(0);
       golden_used_pity_sum += used_pity;
-      golden_limited_pity += used_pity;
+      golden_up_pity += used_pity;
 
-      if golden_record.limited == Some(true) {
-        golden_limited_sum += 1;
-        golden_limited_used_pity_sum += golden_limited_pity;
-        golden_limited_pity = 0;
+      if golden_record.up == Some(true) {
+        golden_up_sum += 1;
+        golden_up_used_pity_sum += golden_up_pity;
+        golden_up_pity = 0;
 
         if index > 0
           && let Some(prev_golden_record) = golden_values.get(index - 1)
-          && prev_golden_record.limited == Some(true)
+          && prev_golden_record.up == Some(true)
         {
-          golden_limited_win_sum += 1;
+          golden_up_win_sum += 1;
         }
       }
     }
@@ -603,13 +603,13 @@ impl PrettiedGachaRecords {
         sum: golden_sum,
         percentage: percentage!(total, golden_sum),
         average: average!(golden_used_pity_sum, golden_sum),
-        limited_sum: golden_limited_sum,
-        limited_percentage: percentage!(total, golden_limited_sum),
-        limited_average: average!(golden_limited_used_pity_sum, golden_limited_sum),
-        limited_win_sum: golden_limited_win_sum,
-        limited_win_percentage: percentage!(
-          golden_sum - golden_limited_sum + golden_limited_win_sum,
-          golden_limited_win_sum
+        up_sum: golden_up_sum,
+        up_percentage: percentage!(total, golden_up_sum),
+        up_average: average!(golden_up_used_pity_sum, golden_up_sum),
+        up_win_sum: golden_up_win_sum,
+        up_win_percentage: percentage!(
+          golden_sum - golden_up_sum + golden_up_win_sum,
+          golden_up_win_sum
         ),
         next_pity: 0,
       },

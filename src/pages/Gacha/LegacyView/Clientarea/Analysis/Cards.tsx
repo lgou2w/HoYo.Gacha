@@ -169,10 +169,10 @@ const useCardsEntryStyles = makeStyles({
   labelGroupGoldenAverage: {
     color: tokens.colorPaletteGreenForeground1,
   },
-  labelGroupGoldenLimitedWin: {
+  labelGroupGoldenUpWin: {
     color: tokens.colorPaletteRedForeground1,
   },
-  labelGroupGoldenLimited: {
+  labelGroupGoldenUp: {
     color: tokens.colorPaletteRedForeground1,
   },
   labelGroupGolden: {
@@ -217,7 +217,7 @@ function CardsEntry (props: CardsEntryProps) {
   const isPermanent = metadata.category === PrettyCategory.Permanent
   const isChronicled = metadata.category === PrettyCategory.Chronicled
   const isBangboo = metadata.category === PrettyCategory.Bangboo
-  const hasLimited = !isPermanent && !isChronicled && !isBangboo
+  const hasUp = !isPermanent && !isChronicled && !isBangboo
 
   let timeRange: ReactNode
   if (metadata.startTime && metadata.endTime) {
@@ -254,47 +254,47 @@ function CardsEntry (props: CardsEntryProps) {
         {timeRange}
       </Divider>
       <div className={styles.labels}>
-        {hasLimited && (
+        {hasUp && (
           <Fragment>
             <div className={mergeClasses(styles.labelGroup, styles.labelGroupGoldenAverage)}>
               <Locale
                 component={Caption1}
-                mapping={['Pages.Gacha.LegacyView.Clientarea.Analysis.CardsEntry.Labels.AverageAndLimited']}
+                mapping={['Pages.Gacha.LegacyView.Clientarea.Analysis.CardsEntry.Labels.AverageAndUp']}
                 childrenPosition="before"
               >
                 {RankingsPrefix[business].golden}{'\u00A0'}
               </Locale>
               <Caption1 className={styles.labelGroupNumeric}>
-                {metadata.rankings.golden.average} / {metadata.rankings.golden.limitedAverage}
+                {metadata.rankings.golden.average} / {metadata.rankings.golden.upAverage}
               </Caption1>
             </div>
-            <div className={mergeClasses(styles.labelGroup, styles.labelGroupGoldenLimitedWin)}>
+            <div className={mergeClasses(styles.labelGroup, styles.labelGroupGoldenUpWin)}>
               <Locale
                 component={Caption1}
-                mapping={['Pages.Gacha.LegacyView.Clientarea.Analysis.CardsEntry.Labels.LimitedWin']}
+                mapping={['Pages.Gacha.LegacyView.Clientarea.Analysis.CardsEntry.Labels.UpWin']}
                 childrenPosition="before"
               >
                 {RankingsPrefix[business].golden}{'\u00A0'}
               </Locale>
               <Caption1 className={styles.labelGroupNumeric}>
-                {metadata.rankings.golden.limitedWinSum} [{metadata.rankings.golden.limitedWinPercentage}%]
+                {metadata.rankings.golden.upWinSum} [{metadata.rankings.golden.upWinPercentage}%]
               </Caption1>
             </div>
-            <div className={mergeClasses(styles.labelGroup, styles.labelGroupGoldenLimited)}>
+            <div className={mergeClasses(styles.labelGroup, styles.labelGroupGoldenUp)}>
               <Locale
                 component={Caption1}
-                mapping={['Pages.Gacha.LegacyView.Clientarea.Analysis.CardsEntry.Labels.Limited']}
+                mapping={['Pages.Gacha.LegacyView.Clientarea.Analysis.CardsEntry.Labels.Up']}
                 childrenPosition="before"
               >
                 {RankingsPrefix[business].golden}{'\u00A0'}
               </Locale>
               <Caption1 className={styles.labelGroupNumeric}>
-                {metadata.rankings.golden.limitedSum} [{metadata.rankings.golden.limitedPercentage}%]
+                {metadata.rankings.golden.upSum} [{metadata.rankings.golden.upPercentage}%]
               </Caption1>
             </div>
           </Fragment>
         )}
-        {!hasLimited && (
+        {!hasUp && (
           <Fragment>
             <Caption1 aria-label="placeholder">{'\u00A0'}</Caption1>
             <Caption1 aria-label="placeholder">{'\u00A0'}</Caption1>
@@ -465,7 +465,7 @@ const useCardsEntryRecordStyles = makeStyles({
   labelHardPity: {
     color: tokens.colorPaletteGreenForeground1,
   },
-  labelLimited: {
+  labelUp: {
     color: tokens.colorPaletteMarigoldForeground1,
   },
 })
@@ -516,12 +516,11 @@ function CardsEntryRecord (props: CardsEntryRecordProps) {
 
   // Record
   const [record, prevRecord] = value
-  const showLimitedLabels = category === PrettyCategory.Character ||
+  const isHardPity = prevRecord && !prevRecord.up && record.up
+  const showUpLabels = category === PrettyCategory.Character ||
     category === PrettyCategory.Weapon ||
     category === PrettyCategory.CollaborationCharacter ||
     category === PrettyCategory.CollaborationWeapon
-
-  const isHardPity = prevRecord && !prevRecord.limited && record.limited
 
   let title = record.name
   title += record.version ? '\n' + i18n.t('Pages.Gacha.LegacyView.GachaItem.Title.Version', { version: record.version }) : ''
@@ -548,7 +547,7 @@ function CardsEntryRecord (props: CardsEntryRecordProps) {
         {record.name}
       </Caption1>
       <div className={styles.labels}>
-        {showLimitedLabels && (
+        {showUpLabels && (
           <Fragment>
             {isHardPity && (
               <Locale
@@ -558,12 +557,12 @@ function CardsEntryRecord (props: CardsEntryRecordProps) {
                 mapping={['Pages.Gacha.LegacyView.Clientarea.Analysis.CardsEntryRecord.HardPity']}
               />
             )}
-            {record.limited && (
+            {record.up && (
               <Locale
                 component={Caption1}
-                className={mergeClasses(styles.label, styles.labelLimited)}
+                className={mergeClasses(styles.label, styles.labelUp)}
                 wrap={false}
-                mapping={['Pages.Gacha.LegacyView.Clientarea.Analysis.CardsEntryRecord.Limited']}
+                mapping={['Pages.Gacha.LegacyView.Clientarea.Analysis.CardsEntryRecord.Up']}
               />
             )}
           </Fragment>

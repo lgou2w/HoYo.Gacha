@@ -269,7 +269,7 @@ export default {
       Gacha: {
         LegacyView: {
           GachaItem: {
-            Limited: 'Limited',
+            Up: 'UP',
             Title: {
               Version: 'Version: {{version}}',
               GenshinImpactCharacter2: '$t(Business.GenshinImpact.Gacha.Category.Character)-2',
@@ -485,8 +485,8 @@ export default {
                   Beginner: 'Beginner: {{name}}',
                   Average: 'Average rate per gold: {{count}}',
                   Percentage: 'Gold rate: {{count}}%',
-                  LimitedAverage: 'Average limited gold: {{count}}',
-                  LimitedPercentage: 'Limited gold rate: {{count}}%',
+                  UpAverage: 'Average UP gold: {{count}}',
+                  UpPercentage: 'UP gold rate: {{count}}%',
                   LastGolden: 'Last gold: {{name}} ({{usedPity}})',
                   LastGoldenNone: 'Last gold: None',
                 },
@@ -508,16 +508,16 @@ export default {
             Analysis: {
               CardsEntry: {
                 Labels: {
-                  AverageAndLimited: 'Average / Limited',
-                  LimitedWin: 'Limited Win',
-                  Limited: 'Limited',
+                  AverageAndUp: 'Average / UP',
+                  UpWin: 'UP Win',
+                  Up: 'UP',
                   Count: 'Count',
                 },
               },
               CardsEntryRecord: {
                 NextPity: 'Pity Count',
                 HardPity: 'Hard!',
-                Limited: 'UP',
+                Up: 'UP',
               },
             },
           },

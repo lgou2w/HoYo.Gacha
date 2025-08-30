@@ -225,9 +225,9 @@ function GridCard (props: GridCardProps) {
         nextPity: goldenRanking.nextPity,
         percentage: goldenRanking.percentage,
         average: goldenRanking.average,
-        limitedSum: goldenRanking.limitedSum,
-        limitedPercentage: goldenRanking.limitedPercentage,
-        limitedAverage: goldenRanking.limitedAverage,
+        upSum: goldenRanking.upSum,
+        upPercentage: goldenRanking.upPercentage,
+        upAverage: goldenRanking.upAverage,
         sum: goldenRanking.sum,
         showcase,
       },
@@ -320,8 +320,8 @@ function GridCard (props: GridCardProps) {
           <div className={styles.labelsGroup}>
             <GridCardLabelBadge
               mapping={[
-                'Pages.Gacha.LegacyView.Clientarea.Overview.GridCard.Labels.LimitedAverage',
-                { count: state.goldenRanking.limitedAverage },
+                'Pages.Gacha.LegacyView.Clientarea.Overview.GridCard.Labels.UpAverage',
+                { count: state.goldenRanking.upAverage },
               ]}
             >
               <i aria-label="placeholder">{'\u00A0'}</i>
@@ -329,8 +329,8 @@ function GridCard (props: GridCardProps) {
             </GridCardLabelBadge>
             <GridCardLabelBadge
               mapping={[
-                'Pages.Gacha.LegacyView.Clientarea.Overview.GridCard.Labels.LimitedPercentage',
-                { count: state.goldenRanking.limitedPercentage },
+                'Pages.Gacha.LegacyView.Clientarea.Overview.GridCard.Labels.UpPercentage',
+                { count: state.goldenRanking.upPercentage },
               ]}
             />
           </div>
@@ -352,7 +352,7 @@ function GridCard (props: GridCardProps) {
           <GachaItem
             keyofBusinesses={keyofBusinesses}
             record={state.goldenRanking.showcase}
-            noLimitedBadge={state.isChronicled || state.isBangboo}
+            noUpBadge={state.isPermanent || state.isChronicled || state.isBangboo}
             ranking="Golden"
             small
           />
