@@ -1505,7 +1505,7 @@ dependencies = [
 
 [[package]]
 name = "hoyo_gacha"
-version = "1.1.2"
+version = "1.1.3"
 dependencies = [
  "async-trait",
  "backtrace",
