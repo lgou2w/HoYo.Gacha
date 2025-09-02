@@ -29,7 +29,7 @@ function SettingsOptionsMigrationAction () {
   const notifier = useNotifier()
   const i18n = useI18n()
 
-  const onMigrate = useCallback<MouseEventHandler>(async () => {
+  const handleMigrate = useCallback<MouseEventHandler>(async () => {
     const legacyDatabase = await pickFile({
       filters: [
         ['HoYo.Gacha.db', ['db']],
@@ -75,7 +75,7 @@ function SettingsOptionsMigrationAction () {
       component={Button}
       appearance="primary"
       mapping={['Pages.Settings.Options.Migration.Migrate.Btn']}
-      onClick={onMigrate}
+      onClick={handleMigrate}
       disabled={busy}
     />
   )

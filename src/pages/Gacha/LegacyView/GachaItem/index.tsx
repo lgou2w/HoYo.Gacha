@@ -59,7 +59,7 @@ const useStyles = makeStyles({
     color: tokens.colorPaletteRedBackground1,
     backgroundColor: tokens.colorPaletteRedForeground1,
   },
-  labelLimited: {
+  labelUp: {
     top: 0,
     left: 0,
     color: tokens.colorPaletteLightGreenBackground1,
@@ -72,7 +72,7 @@ export type GachaItemProps = Omit<React.JSX.IntrinsicElements['div'], 'title'> &
   ranking: Capitalize<keyof CategorizedMetadataRankings>
   record: PrettyGachaRecord
   small?: boolean
-  noLimitedBadge?: boolean
+  noUpBadge?: boolean
   noUsedPityBadge?: boolean
 }
 
@@ -89,12 +89,12 @@ export default function GachaItem (props: GachaItemProps) {
       name,
       time,
       usedPity,
-      limited,
+      up,
       version,
       genshinCharacter2,
     },
     small,
-    noLimitedBadge,
+    noUpBadge,
     noUsedPityBadge,
     ...rest
   } = props
@@ -137,11 +137,11 @@ export default function GachaItem (props: GachaItemProps) {
           {usedPity}
         </span>
       )}
-      {!noLimitedBadge && limited && (
+      {!noUpBadge && up && (
         <Locale
           component="span"
-          className={mergeClasses(styles.label, styles.labelLimited)}
-          mapping={['Pages.Gacha.LegacyView.GachaItem.Limited']}
+          className={mergeClasses(styles.label, styles.labelUp)}
+          mapping={['Pages.Gacha.LegacyView.GachaItem.Up']}
         />
       )}
     </div>

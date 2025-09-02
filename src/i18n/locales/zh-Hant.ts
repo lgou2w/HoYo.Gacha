@@ -269,7 +269,7 @@ export default {
       Gacha: {
         LegacyView: {
           GachaItem: {
-            Limited: '限定',
+            Up: 'UP',
             Title: {
               Version: '版本：{{version}}',
               GenshinImpactCharacter2: '$t(Business.GenshinImpact.Gacha.Category.Character)-2',
@@ -480,8 +480,8 @@ export default {
                   Beginner: '新手：{{name}}',
                   Average: '平均每金：{{count}}',
                   Percentage: '出金率：{{count}}%',
-                  LimitedAverage: '限定平均每金：{{count}}',
-                  LimitedPercentage: '限定出金率：{{count}}%',
+                  UpAverage: 'UP平均每金：{{count}}',
+                  UpPercentage: 'UP出金率：{{count}}%',
                   LastGolden: '最近出金：{{name}} ({{usedPity}})',
                   LastGoldenNone: '最近出金：無',
                 },
@@ -503,16 +503,16 @@ export default {
             Analysis: {
               CardsEntry: {
                 Labels: {
-                  AverageAndLimited: '平均 / 限定',
-                  LimitedWin: '限定不歪',
-                  Limited: '限定',
+                  AverageAndUp: '平均 / UP',
+                  UpWin: 'UP不歪',
+                  Up: 'UP',
                   Count: '統計',
                 },
               },
               CardsEntryRecord: {
                 NextPity: '已墊',
                 HardPity: '保底!',
-                Limited: 'UP',
+                Up: 'UP',
               },
             },
           },
@@ -596,9 +596,12 @@ export default {
               AppVersion: '應用版本',
             },
             Lnk: {
-              Title: '捷徑',
+              Title: '桌面捷徑',
               Subtitle: '建立應用程式的桌面捷徑。',
               CreateBtn: '建立',
+              Loading: '建立捷徑中...',
+              Success: '建立成功。',
+              Error: '建立失敗：',
             },
           },
         },

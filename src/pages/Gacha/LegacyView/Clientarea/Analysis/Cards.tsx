@@ -1,6 +1,6 @@
-import React, { ComponentProps, Fragment, ReactNode, WheelEventHandler, useCallback, useMemo } from 'react'
+import React, { ComponentProps, Fragment, ReactNode, WheelEventHandler, useCallback, useMemo, useState } from 'react'
 import { Virtuoso } from 'react-virtuoso'
-import { Caption1, Divider, Subtitle2, Title1, makeStyles, mergeClasses, title1ClassNames, tokens } from '@fluentui/react-components'
+import { Caption1, Divider, Subtitle2, Tab, TabList, Title1, makeStyles, mergeClasses, tabClassNames, title1ClassNames, tokens } from '@fluentui/react-components'
 import ImagesNone from '@/assets/images/None.avif'
 import BizImages from '@/components/BizImages'
 import Locale from '@/components/Locale'
@@ -26,7 +26,7 @@ const useStyles = makeStyles({
     padding: '2px',
   },
   card: {
-    flexGrow: 1,
+    flex: 1,
     minWidth: '12.75rem',
     boxShadow: tokens.shadow2,
   },
@@ -169,10 +169,10 @@ const useCardsEntryStyles = makeStyles({
   labelGroupGoldenAverage: {
     color: tokens.colorPaletteGreenForeground1,
   },
-  labelGroupGoldenLimitedWin: {
+  labelGroupGoldenUpWin: {
     color: tokens.colorPaletteRedForeground1,
   },
-  labelGroupGoldenLimited: {
+  labelGroupGoldenUp: {
     color: tokens.colorPaletteRedForeground1,
   },
   labelGroupGolden: {
@@ -217,7 +217,7 @@ function CardsEntry (props: CardsEntryProps) {
   const isPermanent = metadata.category === PrettyCategory.Permanent
   const isChronicled = metadata.category === PrettyCategory.Chronicled
   const isBangboo = metadata.category === PrettyCategory.Bangboo
-  const hasLimited = !isPermanent && !isChronicled && !isBangboo
+  const hasUp = !isPermanent && !isChronicled && !isBangboo
 
   let timeRange: ReactNode
   if (metadata.startTime && metadata.endTime) {
@@ -243,6 +243,8 @@ function CardsEntry (props: CardsEntryProps) {
       <div className={styles.header}>
         <Locale
           component={Subtitle2}
+          truncate
+          wrap={false}
           mapping={[`Business.${keyofBusinesses}.Gacha.Category.${metadata.category}`, { context: 'Title' }]}
         />
         <div className={styles.headerTotal}>
@@ -254,47 +256,47 @@ function CardsEntry (props: CardsEntryProps) {
         {timeRange}
       </Divider>
       <div className={styles.labels}>
-        {hasLimited && (
+        {hasUp && (
           <Fragment>
             <div className={mergeClasses(styles.labelGroup, styles.labelGroupGoldenAverage)}>
               <Locale
                 component={Caption1}
-                mapping={['Pages.Gacha.LegacyView.Clientarea.Analysis.CardsEntry.Labels.AverageAndLimited']}
+                mapping={['Pages.Gacha.LegacyView.Clientarea.Analysis.CardsEntry.Labels.AverageAndUp']}
                 childrenPosition="before"
               >
                 {RankingsPrefix[business].golden}{'\u00A0'}
               </Locale>
               <Caption1 className={styles.labelGroupNumeric}>
-                {metadata.rankings.golden.average} / {metadata.rankings.golden.limitedAverage}
+                {metadata.rankings.golden.average} / {metadata.rankings.golden.upAverage}
               </Caption1>
             </div>
-            <div className={mergeClasses(styles.labelGroup, styles.labelGroupGoldenLimitedWin)}>
+            <div className={mergeClasses(styles.labelGroup, styles.labelGroupGoldenUpWin)}>
               <Locale
                 component={Caption1}
-                mapping={['Pages.Gacha.LegacyView.Clientarea.Analysis.CardsEntry.Labels.LimitedWin']}
+                mapping={['Pages.Gacha.LegacyView.Clientarea.Analysis.CardsEntry.Labels.UpWin']}
                 childrenPosition="before"
               >
                 {RankingsPrefix[business].golden}{'\u00A0'}
               </Locale>
               <Caption1 className={styles.labelGroupNumeric}>
-                {metadata.rankings.golden.limitedWinSum} [{metadata.rankings.golden.limitedWinPercentage}%]
+                {metadata.rankings.golden.upWinSum} [{metadata.rankings.golden.upWinPercentage}%]
               </Caption1>
             </div>
-            <div className={mergeClasses(styles.labelGroup, styles.labelGroupGoldenLimited)}>
+            <div className={mergeClasses(styles.labelGroup, styles.labelGroupGoldenUp)}>
               <Locale
                 component={Caption1}
-                mapping={['Pages.Gacha.LegacyView.Clientarea.Analysis.CardsEntry.Labels.Limited']}
+                mapping={['Pages.Gacha.LegacyView.Clientarea.Analysis.CardsEntry.Labels.Up']}
                 childrenPosition="before"
               >
                 {RankingsPrefix[business].golden}{'\u00A0'}
               </Locale>
               <Caption1 className={styles.labelGroupNumeric}>
-                {metadata.rankings.golden.limitedSum} [{metadata.rankings.golden.limitedPercentage}%]
+                {metadata.rankings.golden.upSum} [{metadata.rankings.golden.upPercentage}%]
               </Caption1>
             </div>
           </Fragment>
         )}
-        {!hasLimited && (
+        {!hasUp && (
           <Fragment>
             <Caption1 aria-label="placeholder">{'\u00A0'}</Caption1>
             <Caption1 aria-label="placeholder">{'\u00A0'}</Caption1>
@@ -339,10 +341,107 @@ function CardsEntry (props: CardsEntryProps) {
         </div>
       </div>
       <Divider style={{ flexGrow: 0, padding: '0.25rem 0' }} />
-      <CardsEntryRecords
+      <CardsEntryRecordsTabList
+        business={business}
         keyofBusinesses={keyofBusinesses}
         metadata={metadata}
       />
+    </div>
+  )
+}
+
+const useCardsEntryRecordsTabListStyles = makeStyles({
+  root: {
+    display: 'flex',
+    flexDirection: 'column',
+    rowGap: tokens.spacingVerticalS,
+    height: '100%',
+  },
+  tabList: {
+    border: `${tokens.strokeWidthThin} solid ${tokens.colorNeutralStroke2}`,
+    borderRadius: tokens.borderRadiusMedium,
+  },
+  tab: {
+    flexGrow: 1,
+  },
+  tabGolden: {
+    '&:enabled:hover': {
+      [`& .${tabClassNames.content}`]: {
+        color: tokens.colorPaletteMarigoldForeground1,
+      },
+    },
+    [`& .${tabClassNames.content}`]: {
+      color: tokens.colorPaletteMarigoldForeground1,
+    },
+  },
+  tabPurple: {
+    '&:enabled:hover': {
+      [`& .${tabClassNames.content}`]: {
+        color: tokens.colorPaletteBerryForeground1,
+      },
+    },
+    [`& .${tabClassNames.content}`]: {
+      color: tokens.colorPaletteBerryForeground1,
+    },
+  },
+  tabDivider: {
+    flexGrow: 0,
+  },
+})
+
+interface CardsEntryRecordsTabListProps {
+  business: Business
+  keyofBusinesses: KeyofBusinesses
+  metadata: CategorizedMetadata<Business>
+}
+
+function CardsEntryRecordsTabList (props: CardsEntryRecordsTabListProps) {
+  const styles = useCardsEntryRecordsTabListStyles()
+  const { business, keyofBusinesses, metadata } = props
+  const [ranking, setRanking] = useState<keyof Omit<CategorizedMetadataRankings, 'blue'>>('golden')
+  const handleSelect = useCallback<Required<ComponentProps<typeof TabList>>['onTabSelect']>((_, data) => {
+    setRanking(data.value as typeof ranking)
+  }, [])
+
+  const Golden = React.memo(function CardsEntryGoldenRecords () {
+    return (
+      <CardsEntryRecords
+        keyofBusinesses={keyofBusinesses}
+        metadata={metadata}
+        ranking="golden"
+      />
+    )
+  })
+
+  const Purple = React.memo(function CardsEntryPurpleRecords () {
+    return (
+      <CardsEntryRecords
+        keyofBusinesses={keyofBusinesses}
+        metadata={metadata}
+        ranking="purple"
+      />
+    )
+  })
+
+  return (
+    <div className={styles.root}>
+      <TabList
+        className={styles.tabList}
+        selectedValue={ranking}
+        onTabSelect={handleSelect}
+        appearance="subtle"
+        size="small"
+      >
+        <Tab className={mergeClasses(styles.tab, styles.tabGolden)} value="golden">
+          {RankingsPrefix[business].golden}
+        </Tab>
+        <Divider className={styles.tabDivider} vertical />
+        <Tab className={mergeClasses(styles.tab, styles.tabPurple)} value="purple">
+          {RankingsPrefix[business].purple}
+        </Tab>
+      </TabList>
+      {ranking === 'golden' && <Golden />}
+      {ranking === 'purple' && <Purple />}
     </div>
   )
 }
@@ -364,32 +463,38 @@ const useCardsEntryRecordsStyles = makeStyles({
 interface CardsEntryRecordsProps {
   keyofBusinesses: KeyofBusinesses
   metadata: CategorizedMetadata<Business>
+  ranking: keyof Omit<CategorizedMetadataRankings, 'blue'>
 }
 
 function CardsEntryRecords (props: CardsEntryRecordsProps) {
   const styles = useCardsEntryRecordsStyles()
-  const { keyofBusinesses, metadata } = props
+  const { keyofBusinesses, metadata, ranking } = props
 
   const data = useMemo(() => {
     const data: ComponentProps<typeof CardsEntryRecord>[] = metadata
-      .rankings
-      .golden
+      .rankings[ranking]
       .values
       .map((record, index, arrRef) => ({
         keyofBusinesses,
         category: metadata.category,
-        value: [record, arrRef[index - 1]],
+        ranking,
+        dataRef: [record, arrRef[index - 1]],
       }))
 
+    const { nextPity, nextPityProgress } = metadata.rankings[ranking]
     data.push({
       keyofBusinesses,
       category: metadata.category,
-      value: metadata.rankings.golden.nextPity,
+      ranking,
+      dataRef: {
+        value: nextPity,
+        progress: nextPityProgress,
+      },
     })
 
     data.reverse()
     return data
-  }, [keyofBusinesses, metadata.category, metadata.rankings.golden])
+  }, [keyofBusinesses, metadata.category, metadata.rankings, ranking])
 
   return (
     <Virtuoso
@@ -465,7 +570,7 @@ const useCardsEntryRecordStyles = makeStyles({
   labelHardPity: {
     color: tokens.colorPaletteGreenForeground1,
   },
-  labelLimited: {
+  labelUp: {
     color: tokens.colorPaletteMarigoldForeground1,
   },
 })
@@ -473,8 +578,15 @@ const useCardsEntryRecordStyles = makeStyles({
 interface CardsEntryRecordProps {
   keyofBusinesses: KeyofBusinesses
   category: PrettyCategory
-  // [Curr Record, Prev Record | null] | Next Pity
-  value: [PrettyGachaRecord, PrettyGachaRecord | null] | number
+  ranking: keyof Omit<CategorizedMetadataRankings, 'blue'>
+  dataRef:
+    // [Curr Record, Prev Record | null]
+    | [PrettyGachaRecord, PrettyGachaRecord | null]
+    // Next Pity
+    | {
+        value: number
+        progress: number
+      }
 }
 
 function CardsEntryRecord (props: CardsEntryRecordProps) {
@@ -482,13 +594,14 @@ function CardsEntryRecord (props: CardsEntryRecordProps) {
   const {
     keyofBusinesses,
     category,
-    value,
+    ranking,
+    dataRef,
   } = props
 
   const i18n = useI18n()
 
   // Next pity
-  if (typeof value === 'number') {
+  if (!Array.isArray(dataRef)) {
     return (
       <div
         className={mergeClasses(styles.root, styles.rootNextPity)}
@@ -496,7 +609,7 @@ function CardsEntryRecord (props: CardsEntryRecordProps) {
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore
           '--progress':
-            calcPityProgressVar(category, value),
+            dataRef.progress + '%',
         }}
       >
         <img className={styles.icon} src={ImagesNone} />
@@ -507,7 +620,7 @@ function CardsEntryRecord (props: CardsEntryRecordProps) {
         />
         <div className={styles.labels}>
           <Caption1 className={styles.label}>
-            {value}
+            {dataRef.value}
           </Caption1>
         </div>
       </div>
@@ -515,13 +628,12 @@ function CardsEntryRecord (props: CardsEntryRecordProps) {
   }
 
   // Record
-  const [record, prevRecord] = value
-  const showLimitedLabels = category === PrettyCategory.Character ||
+  const [record, prevRecord] = dataRef
+  const isHardPity = ranking === 'golden' && prevRecord && !prevRecord.up && record.up
+  const showUpLabels = category === PrettyCategory.Character ||
     category === PrettyCategory.Weapon ||
     category === PrettyCategory.CollaborationCharacter ||
     category === PrettyCategory.CollaborationWeapon
-
-  const isHardPity = prevRecord && !prevRecord.limited && record.limited
 
   let title = record.name
   title += record.version ? '\n' + i18n.t('Pages.Gacha.LegacyView.GachaItem.Title.Version', { version: record.version }) : ''
@@ -535,7 +647,7 @@ function CardsEntryRecord (props: CardsEntryRecordProps) {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         '--progress':
-          calcPityProgressVar(category, record.usedPity),
+          (record.usedPityProgress || 0) + '%',
       }}
       title={title}
     >
@@ -548,7 +660,7 @@ function CardsEntryRecord (props: CardsEntryRecordProps) {
         {record.name}
       </Caption1>
       <div className={styles.labels}>
-        {showLimitedLabels && (
+        {showUpLabels && (
           <Fragment>
             {isHardPity && (
               <Locale
@@ -558,12 +670,12 @@ function CardsEntryRecord (props: CardsEntryRecordProps) {
                 mapping={['Pages.Gacha.LegacyView.Clientarea.Analysis.CardsEntryRecord.HardPity']}
               />
             )}
-            {record.limited && (
+            {record.up && (
               <Locale
                 component={Caption1}
-                className={mergeClasses(styles.label, styles.labelLimited)}
+                className={mergeClasses(styles.label, styles.labelUp)}
                 wrap={false}
-                mapping={['Pages.Gacha.LegacyView.Clientarea.Analysis.CardsEntryRecord.Limited']}
+                mapping={['Pages.Gacha.LegacyView.Clientarea.Analysis.CardsEntryRecord.Up']}
               />
             )}
           </Fragment>
@@ -574,21 +686,4 @@ function CardsEntryRecord (props: CardsEntryRecordProps) {
       </div>
     </div>
   )
-}
-
-function calcPityProgressVar (category: PrettyCategory, usedPity: number | undefined) {
-  if (!usedPity || usedPity === 0) {
-    return 0
-  }
-
-  let maxPity = 80
-  if (category === PrettyCategory.Character ||
-    category === PrettyCategory.Permanent ||
-    category === PrettyCategory.Chronicled ||
-    category === PrettyCategory.CollaborationCharacter) {
-    maxPity = 90
-  }
-
-  const progress = Math.round(usedPity / maxPity * 100)
-  return Math.min(progress, 100) + '%'
 }

@@ -42,7 +42,8 @@ export interface PrettyGachaRecord {
   name: GachaRecord<Business>['name']
   time: GachaRecord<Business>['time']
   usedPity: number | undefined // Purple and Golden only
-  limited: boolean | undefined // Purple and Golden only
+  usedPityProgress: number | undefined // Purple and Golden only (0 - 100)
+  up: boolean | undefined // Purple and Golden only
   version: string | undefined
   // 'Genshin Impact' Character only, Distinguish Character and Character-2
   genshinCharacter2: boolean | undefined
@@ -71,15 +72,16 @@ extends CategorizedMetadataBlueRanking {
   values: PrettyGachaRecord[]
   average: number
   nextPity: number
+  nextPityProgress: number // 0 - 100
 }
 
 export interface CategorizedMetadataGoldenRanking
 extends CategorizedMetadataPurpleRanking {
-  limitedSum: number
-  limitedPercentage: number
-  limitedAverage: number
-  limitedWinSum: number
-  limitedWinPercentage: number
+  upSum: number
+  upPercentage: number
+  upAverage: number
+  upWinSum: number
+  upWinPercentage: number
 }
 
 export interface CategorizedMetadataRankings {

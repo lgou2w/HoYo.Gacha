@@ -140,7 +140,7 @@ export default function GachaLegacyViewUpsertAccountForm (props: Props) {
   const createAccountMutation = useCreateAccountMutation()
   const updateAccountDataFolderAndPropertiesMutation = useUpdateAccountDataFolderAndPropertiesMutation()
 
-  const onSubmit = useCallback<SubmitHandler<UpsertAccountFormData>>(async (data) => {
+  const handleSubmitInner = useCallback<SubmitHandler<UpsertAccountFormData>>(async (data) => {
     const { uid, dataFolder, displayName } = data
     const args = !isEditMode
       ? {
@@ -179,7 +179,7 @@ export default function GachaLegacyViewUpsertAccountForm (props: Props) {
   return (
     <form
       className={styles.root}
-      onSubmit={handleSubmit(onSubmit)}
+      onSubmit={handleSubmit(handleSubmitInner)}
       noValidate
     >
       <UpsertAccountFormField

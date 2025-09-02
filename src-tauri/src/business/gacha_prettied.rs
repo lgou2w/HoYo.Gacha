@@ -34,6 +34,33 @@ pub enum PrettyCategory {
   CollaborationWeapon,    // 'Honkai: Star Rail' only
 }
 
+impl PrettyCategory {
+  pub const fn max_pity(&self, is_golden: bool) -> u8 {
+    if is_golden {
+      match *self {
+        Self::Character | Self::Permanent | Self::Chronicled | Self::CollaborationCharacter => 90,
+        _ => 80,
+      }
+    } else {
+      // HACK: Purple maximum pity is always 10
+      10
+    }
+  }
+
+  // 0 - 100
+  pub fn calc_pity_progress(&self, is_golden: bool, used_pity: u64) -> u8 {
+    let max_pity = self.max_pity(is_golden);
+
+    if used_pity == 0 || max_pity == 0 {
+      return 0;
+    }
+
+    (used_pity as f32 / max_pity as f32 * 100.)
+      .round()
+      .min(100.) as u8
+  }
+}
+
 // See: models/gacha_record.rs
 const GENSHIN_IMPACT_CHARACTER2: u32 = 400;
 
@@ -104,7 +131,9 @@ pub struct PrettyGachaRecord {
   #[serde(skip_serializing_if = "Option::is_none")]
   pub used_pity: Option<u64>, // Purple and Golden only
   #[serde(skip_serializing_if = "Option::is_none")]
-  pub limited: Option<bool>, // Purple and Golden only
+  pub used_pity_progress: Option<u8>, // Purple and Golden only (0 - 100)
+  #[serde(skip_serializing_if = "Option::is_none")]
+  pub up: Option<bool>, // Purple and Golden only
   #[serde(skip_serializing_if = "Option::is_none")]
   pub version: Option<GameVersion>,
   // 'Genshin Impact' Character only, Distinguish Character and Character-2
@@ -115,6 +144,7 @@ pub struct PrettyGachaRecord {
 impl PrettyGachaRecord {
   fn mapping(
     metadata: &GachaMetadata,
+    category: &PrettyCategory,
     record: &GachaRecord,
     used_pity: Option<u64>,
     custom_locale: Option<&str>,
@@ -131,8 +161,11 @@ impl PrettyGachaRecord {
         item_id: record.item_id.to_string(),
       })?;
 
-    let (limited, version) = if let Some(banner) = metadata.banner_from_record(record) {
-      let limited = if (record.is_rank_type_golden() && banner.in_up_golden(record.item_id))
+    let used_pity_progress =
+      used_pity.map(|n| category.calc_pity_progress(record.is_rank_type_golden(), n));
+
+    let (up, version) = if let Some(banner) = metadata.banner_from_record(record) {
+      let up = if (record.is_rank_type_golden() && banner.in_up_golden(record.item_id))
         || (record.is_rank_type_purple() && banner.in_up_purple(record.item_id))
       {
         Some(true)
@@ -140,7 +173,7 @@ impl PrettyGachaRecord {
         None
       };
 
-      (limited, banner.version.clone())
+      (up, banner.version.clone())
     } else {
       (None, None)
     };
@@ -161,7 +194,8 @@ impl PrettyGachaRecord {
       name: entry.name.to_owned(),
       time: record.time,
       used_pity,
-      limited,
+      used_pity_progress,
+      up,
       version,
       genshin_character2,
     })
@@ -185,6 +219,7 @@ pub struct CategorizedMetadataPurpleRanking {
   pub percentage: f64,
   pub average: f64,
   pub next_pity: u64,
+  pub next_pity_progress: u8, // 0 - 100
 }
 
 #[derive(Clone, Debug, Serialize)]
@@ -194,12 +229,13 @@ pub struct CategorizedMetadataGoldenRanking {
   pub sum: u64,
   pub percentage: f64,
   pub average: f64,
-  pub limited_sum: u64,
-  pub limited_percentage: f64,
-  pub limited_average: f64,
-  pub limited_win_sum: u64,
-  pub limited_win_percentage: f64,
+  pub up_sum: u64,
+  pub up_percentage: f64,
+  pub up_average: f64,
+  pub up_win_sum: u64,
+  pub up_win_percentage: f64,
   pub next_pity: u64,
+  pub next_pity_progress: u8, // 0 - 100
 }
 
 #[derive(Clone, Debug, Serialize)]
@@ -362,7 +398,8 @@ impl PrettiedGachaRecords {
       let start_time = records.first().map(|record| record.time);
       let end_time = records.last().map(|record| record.time);
       let last_end_id = records.last().map(|record| record.id.clone());
-      let rankings = Self::compute_categorized_rankings(metadata, records, custom_locale)?;
+      let rankings =
+        Self::compute_categorized_rankings(metadata, category, records, custom_locale)?;
 
       categorizeds.insert(
         *category,
@@ -383,6 +420,7 @@ impl PrettiedGachaRecords {
 
   fn compute_categorized_rankings(
     metadata: &GachaMetadata,
+    category: &PrettyCategory,
     records: Vec<&GachaRecord>,
     custom_locale: Option<&str>,
   ) -> Result<CategorizedMetadataRankings, PrettyGachaRecordsError> {
@@ -418,12 +456,9 @@ impl PrettiedGachaRecords {
         pity += 1;
 
         if is_purple {
-          values.push(PrettyGachaRecord::mapping(
-            metadata,
-            record,
-            Some(pity),
-            custom_locale,
-          )?);
+          let precord =
+            PrettyGachaRecord::mapping(metadata, category, record, Some(pity), custom_locale)?;
+          values.push(precord);
         }
 
         if is_purple || is_golden {
@@ -433,6 +468,7 @@ impl PrettiedGachaRecords {
       }
 
       let sum = values.len() as u64;
+      let pity_progress = category.calc_pity_progress(false, pity);
 
       CategorizedMetadataPurpleRanking {
         values,
@@ -440,6 +476,7 @@ impl PrettiedGachaRecords {
         percentage: percentage!(total, sum),
         average: average!(used_pity_sum, sum),
         next_pity: pity,
+        next_pity_progress: pity_progress,
       }
     };
 
@@ -449,27 +486,28 @@ impl PrettiedGachaRecords {
       let mut pity = 0;
       let mut used_pity_sum = 0;
 
-      let mut limited_sum = 0;
-      let mut limited_pity = 0;
-      let mut limited_used_pity_sum = 0;
-      let mut limited_win_sum = 0;
+      let mut up_sum = 0;
+      let mut up_pity = 0;
+      let mut up_used_pity_sum = 0;
+      let mut up_win_sum = 0;
 
       for record in &records {
         let is_golden = record.is_rank_type_golden();
 
         pity += 1;
-        limited_pity += 1;
+        up_pity += 1;
 
         if is_golden {
-          let pretty = PrettyGachaRecord::mapping(metadata, record, Some(pity), custom_locale)?;
+          let precord =
+            PrettyGachaRecord::mapping(metadata, category, record, Some(pity), custom_locale)?;
 
-          if pretty.limited == Some(true) {
-            limited_sum += 1;
-            limited_used_pity_sum += limited_pity;
-            limited_pity = 0;
+          if precord.up == Some(true) {
+            up_sum += 1;
+            up_used_pity_sum += up_pity;
+            up_pity = 0;
           }
 
-          values.push(pretty);
+          values.push(precord);
           used_pity_sum += pity;
           pity = 0;
         }
@@ -477,28 +515,30 @@ impl PrettiedGachaRecords {
 
       let mut prev_record: Option<&PrettyGachaRecord> = None;
       for record in &values {
-        if record.limited == Some(true)
-          && (prev_record.is_none() || prev_record.unwrap().limited == Some(true))
+        if record.up == Some(true)
+          && (prev_record.is_none() || prev_record.unwrap().up == Some(true))
         {
-          limited_win_sum += 1;
+          up_win_sum += 1;
         }
 
         prev_record.replace(record);
       }
 
       let sum = values.len() as u64;
+      let pity_progress = category.calc_pity_progress(true, pity);
 
       CategorizedMetadataGoldenRanking {
         values,
         sum,
         percentage: percentage!(total, sum),
         average: average!(used_pity_sum, sum),
-        limited_sum,
-        limited_percentage: percentage!(total, limited_sum),
-        limited_average: average!(limited_used_pity_sum, limited_sum),
-        limited_win_sum,
-        limited_win_percentage: percentage!(sum - limited_sum + limited_win_sum, limited_win_sum),
+        up_sum,
+        up_percentage: percentage!(total, up_sum),
+        up_average: average!(up_used_pity_sum, up_sum),
+        up_win_sum,
+        up_win_percentage: percentage!(sum - up_sum + up_win_sum, up_win_sum),
         next_pity: pity,
+        next_pity_progress: pity_progress,
       }
     };
 
@@ -562,25 +602,25 @@ impl PrettiedGachaRecords {
     }
 
     let mut golden_used_pity_sum = 0;
-    let mut golden_limited_sum = 0;
-    let mut golden_limited_pity = 0;
-    let mut golden_limited_used_pity_sum = 0;
-    let mut golden_limited_win_sum = 0;
+    let mut golden_up_sum = 0;
+    let mut golden_up_pity = 0;
+    let mut golden_up_used_pity_sum = 0;
+    let mut golden_up_win_sum = 0;
     for (index, golden_record) in golden_values.iter().enumerate() {
       let used_pity = golden_record.used_pity.unwrap_or(0);
       golden_used_pity_sum += used_pity;
-      golden_limited_pity += used_pity;
+      golden_up_pity += used_pity;
 
-      if golden_record.limited == Some(true) {
-        golden_limited_sum += 1;
-        golden_limited_used_pity_sum += golden_limited_pity;
-        golden_limited_pity = 0;
+      if golden_record.up == Some(true) {
+        golden_up_sum += 1;
+        golden_up_used_pity_sum += golden_up_pity;
+        golden_up_pity = 0;
 
         if index > 0
           && let Some(prev_golden_record) = golden_values.get(index - 1)
-          && prev_golden_record.limited == Some(true)
+          && prev_golden_record.up == Some(true)
         {
-          golden_limited_win_sum += 1;
+          golden_up_win_sum += 1;
         }
       }
     }
@@ -597,21 +637,23 @@ impl PrettiedGachaRecords {
         percentage: percentage!(total, purple_sum),
         average: average!(purple_used_pity_sum, purple_sum),
         next_pity: 0,
+        next_pity_progress: 0,
       },
       golden: CategorizedMetadataGoldenRanking {
         values: golden_values,
         sum: golden_sum,
         percentage: percentage!(total, golden_sum),
         average: average!(golden_used_pity_sum, golden_sum),
-        limited_sum: golden_limited_sum,
-        limited_percentage: percentage!(total, golden_limited_sum),
-        limited_average: average!(golden_limited_used_pity_sum, golden_limited_sum),
-        limited_win_sum: golden_limited_win_sum,
-        limited_win_percentage: percentage!(
-          golden_sum - golden_limited_sum + golden_limited_win_sum,
-          golden_limited_win_sum
+        up_sum: golden_up_sum,
+        up_percentage: percentage!(total, golden_up_sum),
+        up_average: average!(golden_up_used_pity_sum, golden_up_sum),
+        up_win_sum: golden_up_win_sum,
+        up_win_percentage: percentage!(
+          golden_sum - golden_up_sum + golden_up_win_sum,
+          golden_up_win_sum
         ),
         next_pity: 0,
+        next_pity_progress: 0,
       },
     };
 
