@@ -45,7 +45,7 @@ tauri-plugin-shell = "2.3.1"
 tauri-plugin-clipboard-manager = "2.3.0"
 tauri-plugin-process = "2.3.0"
 thiserror = "2.0.16"
-time = { version = "0.3.42", features = ["local-offset", "macros", "serde-human-readable"] }
+time = { version = "0.3.43", features = ["local-offset", "macros", "serde-human-readable"] }
 tokio = { version = "1.47.1", features = ["macros", "rt-multi-thread"] }
 tracing = "0.1.41"
 tracing-appender = "0.2.3"
@@ -75,8 +75,8 @@ features = [
 # Ensure that some dependencies are version-consistent with tauri to avoid type conflicts
 
 [target.'cfg(windows)'.dependencies]
-windows-registry = "0.5.3"
-windows-version = "0.1.4"
+windows-registry = "0.6.0"
+windows-version = "0.1.5"
 webview2-com = "0.38.0"
 
 [target.'cfg(windows)'.dependencies.windows]
