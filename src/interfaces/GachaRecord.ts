@@ -71,15 +71,15 @@ export interface CategorizedMetadataPurpleRanking
 extends CategorizedMetadataBlueRanking {
   values: PrettyGachaRecord[]
   average: number
+  upSum: number
+  upPercentage: number
+  upAverage: number
   nextPity: number
   nextPityProgress: number // 0 - 100
 }
 
 export interface CategorizedMetadataGoldenRanking
 extends CategorizedMetadataPurpleRanking {
-  upSum: number
-  upPercentage: number
-  upAverage: number
   upWinSum: number
   upWinPercentage: number
 }
