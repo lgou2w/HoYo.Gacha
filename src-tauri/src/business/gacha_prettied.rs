@@ -475,12 +475,10 @@ impl PrettiedGachaRecords {
         //   https://www.bilibili.com/opus/493346460748792677
         //   https://www.miyoushe.com/zzz/article/55348297
 
-        if is_purple {
+        if is_purple
+          || (record.business == Business::ZenlessZoneZero && record.is_rank_type_golden())
+        {
           used_pity_sum += pity;
-          pity = 0;
-        }
-
-        if record.business == Business::ZenlessZoneZero && record.is_rank_type_golden() {
           pity = 0;
         }
       }
