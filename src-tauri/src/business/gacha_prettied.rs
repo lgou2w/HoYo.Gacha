@@ -450,19 +450,37 @@ impl PrettiedGachaRecords {
       let mut used_pity_sum = 0;
 
       for record in &records {
-        let is_purple = record.is_rank_type_purple();
-        let is_golden = record.is_rank_type_golden();
-
         pity += 1;
 
+        let is_purple = record.is_rank_type_purple();
         if is_purple {
-          let precord =
-            PrettyGachaRecord::mapping(metadata, category, record, Some(pity), custom_locale)?;
-          values.push(precord);
+          values.push(PrettyGachaRecord::mapping(
+            metadata,
+            category,
+            record,
+            Some(pity),
+            custom_locale,
+          )?);
         }
 
-        if is_purple || is_golden {
+        // HACK: Regarding the guaranteed pity,
+        //   will the 4-star item be pushed to the next pity or replaced by the 5-star item?
+        // Genshin Impact or Honkai: Star Rail:
+        //   4-star pushed to the next pity : 11 pity Hit.
+        //   No 12 pity or more has been encountered yet!
+        // Zenless Zone Zero:
+        //   4-star replaced by the 5-star item : 20 pity Hit.
+        // See:
+        //   https://github.com/lgou2w/HoYo.Gacha/issues/114
+        //   https://www.bilibili.com/opus/493346460748792677
+        //   https://www.miyoushe.com/zzz/article/55348297
+
+        if is_purple {
           used_pity_sum += pity;
+          pity = 0;
+        }
+
+        if record.business == Business::ZenlessZoneZero && record.is_rank_type_golden() {
           pity = 0;
         }
       }
@@ -492,11 +510,10 @@ impl PrettiedGachaRecords {
       let mut up_win_sum = 0;
 
       for record in &records {
-        let is_golden = record.is_rank_type_golden();
-
         pity += 1;
         up_pity += 1;
 
+        let is_golden = record.is_rank_type_golden();
         if is_golden {
           let precord =
             PrettyGachaRecord::mapping(metadata, category, record, Some(pity), custom_locale)?;
