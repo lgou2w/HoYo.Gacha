@@ -102,6 +102,11 @@ export default {
         DataFolder: {
           Example: 'X:/ZenlessZoneZero Game/ZenlessZoneZero_Data',
         },
+        Ranking: {
+          Golden: 'S级',
+          Purple: 'A级',
+          Blue: 'B级',
+        },
       },
     },
     Errors: {
@@ -513,6 +518,18 @@ export default {
                 NextPity: '已垫',
                 HardPity: '保底!',
                 Up: 'UP',
+              },
+              Switcher: {
+                Label: '使用旧版',
+              },
+              LegacyTable: {
+                Title: '数据占比',
+              },
+              LegacyHistory: {
+                Title: '$t(Business.{{keyofBusinesses}}.Gacha.Name)历史',
+                Title_ZenlessZoneZero: '信号$t(Business.ZenlessZoneZero.Gacha.Name)历史',
+                ListTitle_Up: '{{upSum}} UP',
+                ListTitle_Total: '{{sum}} 总',
               },
             },
           },
