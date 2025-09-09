@@ -5,7 +5,7 @@ import ImagesNone from '@/assets/images/None.avif'
 import BizImages from '@/components/BizImages'
 import Locale from '@/components/Locale'
 import useI18n from '@/hooks/useI18n'
-import { Business, Businesses, KeyofBusinesses, ReversedBusinesses } from '@/interfaces/Business'
+import { Business, KeyofBusinesses, ReversedBusinesses } from '@/interfaces/Business'
 import { CategorizedMetadata, CategorizedMetadataRankings, PrettyCategory, PrettyGachaRecord } from '@/interfaces/GachaRecord'
 import { CompositeState } from '@/pages/Gacha/LegacyView/Clientarea/useCompositeState'
 import GachaItemImage from '@/pages/Gacha/LegacyView/GachaItem/Image'
@@ -186,24 +186,6 @@ const useCardsEntryStyles = makeStyles({
   },
 })
 
-const RankingsPrefix: Record<Business, Record<keyof CategorizedMetadataRankings, string>> = {
-  [Businesses.GenshinImpact]: {
-    golden: '5★',
-    purple: '4★',
-    blue: '3★',
-  },
-  [Businesses.HonkaiStarRail]: {
-    golden: '5★',
-    purple: '4★',
-    blue: '3★',
-  },
-  [Businesses.ZenlessZoneZero]: {
-    golden: 'S',
-    purple: 'A',
-    blue: 'B',
-  },
-}
-
 function CardsEntry (props: CardsEntryProps) {
   const styles = useCardsEntryStyles()
   const { business, metadata } = props
@@ -264,7 +246,7 @@ function CardsEntry (props: CardsEntryProps) {
                 mapping={['Pages.Gacha.LegacyView.Clientarea.Analysis.CardsEntry.Labels.AverageAndUp']}
                 childrenPosition="before"
               >
-                {RankingsPrefix[business].golden}{'\u00A0'}
+                <Locale mapping={[`Business.${keyofBusinesses}.Ranking.Golden`]} />{'\u00A0'}
               </Locale>
               <Caption1 className={styles.labelGroupNumeric}>
                 {metadata.rankings.golden.average} / {metadata.rankings.golden.upAverage}
@@ -276,7 +258,7 @@ function CardsEntry (props: CardsEntryProps) {
                 mapping={['Pages.Gacha.LegacyView.Clientarea.Analysis.CardsEntry.Labels.UpWin']}
                 childrenPosition="before"
               >
-                {RankingsPrefix[business].golden}{'\u00A0'}
+                <Locale mapping={[`Business.${keyofBusinesses}.Ranking.Golden`]} />{'\u00A0'}
               </Locale>
               <Caption1 className={styles.labelGroupNumeric}>
                 {metadata.rankings.golden.upWinSum} [{metadata.rankings.golden.upWinPercentage}%]
@@ -288,7 +270,7 @@ function CardsEntry (props: CardsEntryProps) {
                 mapping={['Pages.Gacha.LegacyView.Clientarea.Analysis.CardsEntry.Labels.Up']}
                 childrenPosition="before"
               >
-                {RankingsPrefix[business].golden}{'\u00A0'}
+                <Locale mapping={[`Business.${keyofBusinesses}.Ranking.Golden`]} />{'\u00A0'}
               </Locale>
               <Caption1 className={styles.labelGroupNumeric}>
                 {metadata.rankings.golden.upSum} [{metadata.rankings.golden.upPercentage}%]
@@ -309,7 +291,7 @@ function CardsEntry (props: CardsEntryProps) {
             mapping={['Pages.Gacha.LegacyView.Clientarea.Analysis.CardsEntry.Labels.Count']}
             childrenPosition="before"
           >
-            {RankingsPrefix[business].golden}{'\u00A0'}
+            <Locale mapping={[`Business.${keyofBusinesses}.Ranking.Golden`]} />{'\u00A0'}
           </Locale>
           <Caption1 className={styles.labelGroupNumeric}>
             {metadata.rankings.golden.sum} [{metadata.rankings.golden.percentage}%]
@@ -321,7 +303,7 @@ function CardsEntry (props: CardsEntryProps) {
             mapping={['Pages.Gacha.LegacyView.Clientarea.Analysis.CardsEntry.Labels.Count']}
             childrenPosition="before"
           >
-            {RankingsPrefix[business].purple}{'\u00A0'}
+            <Locale mapping={[`Business.${keyofBusinesses}.Ranking.Purple`]} />{'\u00A0'}
           </Locale>
           <Caption1 className={styles.labelGroupNumeric}>
             {metadata.rankings.purple.sum} [{metadata.rankings.purple.percentage}%]
@@ -333,7 +315,7 @@ function CardsEntry (props: CardsEntryProps) {
             mapping={['Pages.Gacha.LegacyView.Clientarea.Analysis.CardsEntry.Labels.Count']}
             childrenPosition="before"
           >
-            {RankingsPrefix[business].blue}{'\u00A0'}
+            <Locale mapping={[`Business.${keyofBusinesses}.Ranking.Blue`]} />{'\u00A0'}
           </Locale>
           <Caption1 className={styles.labelGroupNumeric}>
             {metadata.rankings.blue.sum} [{metadata.rankings.blue.percentage}%]
@@ -397,7 +379,7 @@ interface CardsEntryRecordsTabListProps {
 
 function CardsEntryRecordsTabList (props: CardsEntryRecordsTabListProps) {
   const styles = useCardsEntryRecordsTabListStyles()
-  const { business, keyofBusinesses, metadata } = props
+  const { keyofBusinesses, metadata } = props
   const [ranking, setRanking] = useState<keyof Omit<CategorizedMetadataRankings, 'blue'>>('golden')
   const handleSelect = useCallback<Required<ComponentProps<typeof TabList>>['onTabSelect']>((_, data) => {
     setRanking(data.value as typeof ranking)
@@ -433,11 +415,11 @@ function CardsEntryRecordsTabList (props: CardsEntryRecordsTabListProps) {
         size="small"
       >
         <Tab className={mergeClasses(styles.tab, styles.tabGolden)} value="golden">
-          {RankingsPrefix[business].golden}
+          <Locale mapping={[`Business.${keyofBusinesses}.Ranking.Golden`]} />
         </Tab>
         <Divider className={styles.tabDivider} vertical />
         <Tab className={mergeClasses(styles.tab, styles.tabPurple)} value="purple">
-          {RankingsPrefix[business].purple}
+          <Locale mapping={[`Business.${keyofBusinesses}.Ranking.Purple`]} />
         </Tab>
       </TabList>
       {ranking === 'golden' && <Golden />}

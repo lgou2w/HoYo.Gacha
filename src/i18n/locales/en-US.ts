@@ -40,6 +40,11 @@ export default {
         DataFolder: {
           Example: 'X:/Genshin Impact/Genshin Impact Game/GenshinImpact_Data',
         },
+        Ranking: {
+          Golden: '5★',
+          Purple: '4★',
+          Blue: '3★',
+        },
       },
       HonkaiStarRail: {
         Name: 'Honkai: Star Rail',
@@ -71,6 +76,11 @@ export default {
         DataFolder: {
           Example: 'X:/Star Rail/Game/StarRail_Data',
         },
+        Ranking: {
+          Golden: '5★',
+          Purple: '4★',
+          Blue: '3★',
+        },
       },
       ZenlessZoneZero: {
         Name: 'Zenless Zone Zero',
@@ -101,6 +111,11 @@ export default {
         },
         DataFolder: {
           Example: 'X:/ZenlessZoneZero Game/ZenlessZoneZero_Data',
+        },
+        Ranking: {
+          Golden: 'S-Rank',
+          Purple: 'A-Rank',
+          Blue: 'B-Rank',
         },
       },
     },
@@ -518,6 +533,17 @@ export default {
                 NextPity: 'Pity Count',
                 HardPity: 'Hard!',
                 Up: 'UP',
+              },
+              Switcher: {
+                Label: 'Use the legacy version',
+              },
+              LegacyTable: {
+                Title: 'Proportion of Data',
+              },
+              LegacyHistory: {
+                Title: '$t(Business.{{keyofBusinesses}}.Gacha.Name) History',
+                ListTitle_Up: '{{upSum}} UP',
+                ListTitle_Total: '{{sum}} total',
               },
             },
           },

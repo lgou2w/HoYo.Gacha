@@ -13,6 +13,7 @@ const useStyles = makeStyles({
     width: '4.5rem',
     height: '4.5rem',
     border: `${tokens.strokeWidthThin} solid ${tokens.colorNeutralStroke1}`,
+    borderRadius: tokens.borderRadiusMedium,
   },
   rootSmall: {
     width: '4rem',
@@ -21,6 +22,7 @@ const useStyles = makeStyles({
   image: {
     width: '100%',
     height: '100%',
+    borderRadius: tokens.borderRadiusMedium,
   },
   rankingBlue: { background: 'linear-gradient(#434e7e, #4d80c8)' },
   rankingPurple: { background: 'linear-gradient(#4e4976, #9061d2)' },
@@ -58,12 +60,14 @@ const useStyles = makeStyles({
     right: 0,
     color: tokens.colorPaletteRedBackground1,
     backgroundColor: tokens.colorPaletteRedForeground1,
+    borderBottomRightRadius: tokens.borderRadiusMedium,
   },
   labelUp: {
     top: 0,
     left: 0,
     color: tokens.colorPaletteLightGreenBackground1,
     backgroundColor: tokens.colorPaletteLightGreenForeground1,
+    borderTopLeftRadius: tokens.borderRadiusMedium,
   },
 })
 

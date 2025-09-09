@@ -218,6 +218,9 @@ pub struct CategorizedMetadataPurpleRanking {
   pub sum: u64,
   pub percentage: f64,
   pub average: f64,
+  pub up_sum: u64,
+  pub up_percentage: f64,
+  pub up_average: f64,
   pub next_pity: u64,
   pub next_pity_progress: u8, // 0 - 100
 }
@@ -449,19 +452,43 @@ impl PrettiedGachaRecords {
       let mut pity = 0;
       let mut used_pity_sum = 0;
 
+      let mut up_sum = 0;
+      let mut up_pity = 0;
+      let mut up_used_pity_sum = 0;
+
       for record in &records {
-        let is_purple = record.is_rank_type_purple();
-        let is_golden = record.is_rank_type_golden();
-
         pity += 1;
+        up_pity += 1;
 
+        let is_purple = record.is_rank_type_purple();
         if is_purple {
           let precord =
             PrettyGachaRecord::mapping(metadata, category, record, Some(pity), custom_locale)?;
+
+          if precord.up == Some(true) {
+            up_sum += 1;
+            up_used_pity_sum += up_pity;
+            up_pity = 0;
+          }
+
           values.push(precord);
         }
 
-        if is_purple || is_golden {
+        // HACK: Regarding the guaranteed pity,
+        //   will the 4-star item be pushed to the next pity or replaced by the 5-star item?
+        // Genshin Impact or Honkai: Star Rail:
+        //   4-star pushed to the next pity : 11 pity Hit.
+        //   No 12 pity or more has been encountered yet!
+        // Zenless Zone Zero:
+        //   4-star replaced by the 5-star item : 20 pity Hit.
+        // See:
+        //   https://github.com/lgou2w/HoYo.Gacha/issues/114
+        //   https://www.bilibili.com/opus/493346460748792677
+        //   https://www.miyoushe.com/zzz/article/55348297
+
+        if is_purple
+          || (record.business == Business::ZenlessZoneZero && record.is_rank_type_golden())
+        {
           used_pity_sum += pity;
           pity = 0;
         }
@@ -475,6 +502,9 @@ impl PrettiedGachaRecords {
         sum,
         percentage: percentage!(total, sum),
         average: average!(used_pity_sum, sum),
+        up_sum,
+        up_percentage: percentage!(total, up_sum),
+        up_average: average!(up_used_pity_sum, up_sum),
         next_pity: pity,
         next_pity_progress: pity_progress,
       }
@@ -492,11 +522,10 @@ impl PrettiedGachaRecords {
       let mut up_win_sum = 0;
 
       for record in &records {
-        let is_golden = record.is_rank_type_golden();
-
         pity += 1;
         up_pity += 1;
 
+        let is_golden = record.is_rank_type_golden();
         if is_golden {
           let precord =
             PrettyGachaRecord::mapping(metadata, category, record, Some(pity), custom_locale)?;
@@ -576,6 +605,7 @@ impl PrettiedGachaRecords {
     let mut purple_values = Vec::new();
 
     let mut golden_sum = 0;
+    let mut golden_up_win_sum = 0;
     let mut golden_values = Vec::new();
 
     for categorized in categorizeds
@@ -589,6 +619,7 @@ impl PrettiedGachaRecords {
       purple_values.extend_from_slice(&categorized.rankings.purple.values);
 
       golden_sum += categorized.rankings.golden.sum;
+      golden_up_win_sum += categorized.rankings.golden.up_win_sum;
       golden_values.extend_from_slice(&categorized.rankings.golden.values);
     }
 
@@ -597,16 +628,26 @@ impl PrettiedGachaRecords {
     golden_values.sort_by(|a, b| a.id.cmp(&b.id));
 
     let mut purple_used_pity_sum = 0;
+    let mut purple_up_sum = 0;
+    let mut purple_up_pity = 0;
+    let mut purple_up_used_pity_sum = 0;
     for purple_record in &purple_values {
-      purple_used_pity_sum += purple_record.used_pity.unwrap_or(0);
+      let used_pity = purple_record.used_pity.unwrap_or(0);
+      purple_used_pity_sum += used_pity;
+      purple_up_pity += used_pity;
+
+      if purple_record.up == Some(true) {
+        purple_up_sum += 1;
+        purple_up_used_pity_sum += purple_up_pity;
+        purple_up_pity = 0;
+      }
     }
 
     let mut golden_used_pity_sum = 0;
     let mut golden_up_sum = 0;
     let mut golden_up_pity = 0;
     let mut golden_up_used_pity_sum = 0;
-    let mut golden_up_win_sum = 0;
-    for (index, golden_record) in golden_values.iter().enumerate() {
+    for golden_record in &golden_values {
       let used_pity = golden_record.used_pity.unwrap_or(0);
       golden_used_pity_sum += used_pity;
       golden_up_pity += used_pity;
@@ -615,13 +656,6 @@ impl PrettiedGachaRecords {
         golden_up_sum += 1;
         golden_up_used_pity_sum += golden_up_pity;
         golden_up_pity = 0;
-
-        if index > 0
-          && let Some(prev_golden_record) = golden_values.get(index - 1)
-          && prev_golden_record.up == Some(true)
-        {
-          golden_up_win_sum += 1;
-        }
       }
     }
 
@@ -636,6 +670,9 @@ impl PrettiedGachaRecords {
         sum: purple_sum,
         percentage: percentage!(total, purple_sum),
         average: average!(purple_used_pity_sum, purple_sum),
+        up_sum: purple_up_sum,
+        up_percentage: percentage!(total, purple_up_sum),
+        up_average: average!(purple_up_used_pity_sum, purple_up_sum),
         next_pity: 0,
         next_pity_progress: 0,
       },

@@ -6,6 +6,7 @@ import useButtonStyles from './useButtonStyles'
 import useDialogBodyStyles from './useDialogBodyStyles'
 import useDialogContentStyles from './useDialogContentStyles'
 import useDialogSurfaceStyles from './useDialogSurfaceStyles'
+import useDividerStyles from './useDividerStyles'
 import useDropdownStyles from './useDropdownStyles'
 import useFieldStyles from './useFieldStyles'
 import useInputStyles from './useInputStyles'
@@ -23,6 +24,8 @@ import useSpinnerStyles from './useSpinnerStyles'
 import useSplitButtonStyles from './useSplitButtonStyles'
 import useSwitchStyles from './useSwitchStyles'
 import useTabStyles from './useTabStyles'
+import useTableCellStyles from './useTableCellStyles'
+import useTableHeaderCellStyles from './useTableHeaderCellStyles'
 import useTextareaStyles from './useTextareaStyles'
 import useToastBodyStyles from './useToastBodyStyles'
 import useToastStyles from './useToastStyles'
@@ -41,6 +44,7 @@ const CustomStylesHooks: FluentProviderCustomStyleHooks = {
   useDialogContentStyles_unstable: useDialogContentStyles as CustomStyleHook,
   useDialogBodyStyles_unstable: useDialogBodyStyles as CustomStyleHook,
   useDialogSurfaceStyles_unstable: useDialogSurfaceStyles as CustomStyleHook,
+  useDividerStyles_unstable: useDividerStyles as CustomStyleHook,
   useDropdownStyles_unstable: useDropdownStyles as CustomStyleHook,
   useFieldStyles_unstable: useFieldStyles as CustomStyleHook,
   useInputStyles_unstable: useInputStyles as CustomStyleHook,
@@ -58,6 +62,8 @@ const CustomStylesHooks: FluentProviderCustomStyleHooks = {
   useSplitButtonStyles_unstable: useSplitButtonStyles as CustomStyleHook,
   useSwitchStyles_unstable: useSwitchStyles as CustomStyleHook,
   useTabStyles_unstable: useTabStyles as CustomStyleHook,
+  useTableCellStyles_unstable: useTableCellStyles as CustomStyleHook,
+  useTableHeaderCellStyles_unstable: useTableHeaderCellStyles as CustomStyleHook,
   useTextareaStyles_unstable: useTextareaStyles as CustomStyleHook,
   useToastBodyStyles_unstable: useToastBodyStyles as CustomStyleHook,
   useToasterStyles_unstable: useToasterStyles as CustomStyleHook,
