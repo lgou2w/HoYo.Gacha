@@ -605,6 +605,7 @@ impl PrettiedGachaRecords {
     let mut purple_values = Vec::new();
 
     let mut golden_sum = 0;
+    let mut golden_up_win_sum = 0;
     let mut golden_values = Vec::new();
 
     for categorized in categorizeds
@@ -618,6 +619,7 @@ impl PrettiedGachaRecords {
       purple_values.extend_from_slice(&categorized.rankings.purple.values);
 
       golden_sum += categorized.rankings.golden.sum;
+      golden_up_win_sum += categorized.rankings.golden.up_win_sum;
       golden_values.extend_from_slice(&categorized.rankings.golden.values);
     }
 
@@ -645,8 +647,7 @@ impl PrettiedGachaRecords {
     let mut golden_up_sum = 0;
     let mut golden_up_pity = 0;
     let mut golden_up_used_pity_sum = 0;
-    let mut golden_up_win_sum = 0;
-    for (index, golden_record) in golden_values.iter().enumerate() {
+    for golden_record in &golden_values {
       let used_pity = golden_record.used_pity.unwrap_or(0);
       golden_used_pity_sum += used_pity;
       golden_up_pity += used_pity;
@@ -655,13 +656,6 @@ impl PrettiedGachaRecords {
         golden_up_sum += 1;
         golden_up_used_pity_sum += golden_up_pity;
         golden_up_pity = 0;
-
-        if index > 0
-          && let Some(prev_golden_record) = golden_values.get(index - 1)
-          && prev_golden_record.up == Some(true)
-        {
-          golden_up_win_sum += 1;
-        }
       }
     }
 
