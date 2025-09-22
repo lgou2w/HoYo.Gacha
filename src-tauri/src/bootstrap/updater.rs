@@ -77,7 +77,7 @@ impl Serialize for TagName {
 }
 
 #[derive(Debug, Deserialize)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "PascalCase")]
 pub struct LatestRelease {
   pub tag_name: TagName,
   #[serde(with = "rfc3339")]
@@ -136,13 +136,13 @@ impl Updater {
       fs::remove_file(&before_exe).await?;
     }
 
-    const API_RELEASE: &str = "https://hoyo-gacha-v1.lgou2w.com/release";
+    const API_LATEST_RELEASE: &str = "https://hoyo-gacha-v1.lgou2w.com/Version/Latest.json";
     const API_TIMEOUT: Duration = Duration::from_secs(30);
 
     #[inline]
     async fn fetch_latest_release() -> Result<LatestRelease, reqwest::Error> {
       consts::REQWEST
-        .get(format!("{API_RELEASE}/latest"))
+        .get(API_LATEST_RELEASE)
         .timeout(API_TIMEOUT)
         .send()
         .await?
@@ -215,7 +215,7 @@ impl Updater {
     on_progress(-1.)?; // Set progress to -1 to indicate download start
     let out_path = current_dir.join(format!("{}.temp", latest_release.name));
     let mut res = consts::REQWEST
-      .get(format!("{API_RELEASE}/download"))
+      .get(latest_release.download_url)
       .timeout(API_TIMEOUT)
       .send()
       .await?
