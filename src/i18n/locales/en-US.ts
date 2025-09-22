@@ -202,6 +202,13 @@ export default {
         MissingMetadataLocale: '$t(Errors.LegacyUigfGachaRecordsReadError.MissingMetadataLocale)',
         MissingMetadataEntry: '$t(Errors.LegacyUigfGachaRecordsReadError.OpenInMissingMetadataEntryput)',
       },
+      CsvGachaRecordsWriteError: {
+        InvalidUid: '$t(Errors.LegacyUigfGachaRecordsWriteError.InvalidUid)',
+        IncompatibleRecordBusiness: '$t(Errors.LegacyUigfGachaRecordsWriteError.IncompatibleRecordBusiness)',
+        IncompatibleRecordOwner: '$t(Errors.LegacyUigfGachaRecordsWriteError.IncompatibleRecordOwner)',
+        CreateOutput: '$t(Errors.LegacyUigfGachaRecordsWriteError.CreateOutput)',
+        WriteOutput: 'Failed to write output: {{cause.message}}: {{path}}',
+      },
       PrettyGachaRecordsError: {
         MissingMetadataEntry: 'Missing metadata entry: {{business}}, locale: {{locale}}, name: {{name}}, item id: {{itemId}}',
       },
@@ -425,6 +432,10 @@ export default {
                 Text: 'SRGF',
                 Info: 'Star Rail GachaLog Format standard (SRGF) v1.0',
               },
+              Csv: {
+                Text: 'CSV',
+                Info: 'Comma-Separated Values (Official JSON Schema)',
+              },
             },
             ImportForm: {
               File: {
@@ -474,6 +485,12 @@ export default {
               Pretty: {
                 Label: 'Pretty Data',
                 Info: 'When enabled, data will be output in an easy to read format.',
+                State_true: 'Enable',
+                State_false: 'Disable',
+              },
+              WithoutColumns: {
+                Label: 'Without Columns',
+                Info: 'When enabled, the first row is not the column names.',
                 State_true: 'Enable',
                 State_false: 'Disable',
               },

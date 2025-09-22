@@ -54,9 +54,9 @@ interface Props {
 
 type SupportedFormat = KeyofUnion<ExportGachaRecordsArgs['exporter']>
 const SupportedFormats: Record<Business, SupportedFormat[]> = {
-  [Businesses.GenshinImpact]: ['Uigf', 'LegacyUigf'],
-  [Businesses.HonkaiStarRail]: ['Uigf', 'Srgf'],
-  [Businesses.ZenlessZoneZero]: ['Uigf'],
+  [Businesses.GenshinImpact]: ['Uigf', 'LegacyUigf', 'Csv'],
+  [Businesses.HonkaiStarRail]: ['Uigf', 'Srgf', 'Csv'],
+  [Businesses.ZenlessZoneZero]: ['Uigf', 'Csv'],
 }
 
 type LegacyUigfVersion = Extract<
@@ -69,10 +69,11 @@ type UigfVersion = Extract<
   { Uigf: unknown }
 >['Uigf']['uigfVersion']
 
-const UigfVersions: { LegacyUigf: LegacyUigfVersion[], Uigf: UigfVersion[], Srgf: [] } = {
+const UigfVersions: { LegacyUigf: LegacyUigfVersion[], Uigf: UigfVersion[], Srgf: [], Csv: [] } = {
   LegacyUigf: ['v2.0', 'v2.1', 'v2.2', 'v2.3', 'v2.4', 'v3.0'],
   Uigf: ['v4.0', 'v4.1'],
   Srgf: [],
+  Csv: [],
 }
 
 export default function GachaLegacyViewDataConvertExportForm (props: Props) {
@@ -93,6 +94,7 @@ export default function GachaLegacyViewDataConvertExportForm (props: Props) {
     formatUigfVersion: UigfVersions[supportedFormats[0]][0],
     formatUigfMinimized: false,
     formatPretty: false,
+    formatWithoutColumns: false,
     busy: false,
   })
 
@@ -153,6 +155,15 @@ export default function GachaLegacyViewDataConvertExportForm (props: Props) {
             accountUid,
             exportTime,
             pretty: state.formatPretty,
+          },
+        }
+        break
+      case 'Csv':
+        exporter = {
+          [state.format]: {
+            business,
+            accountUid,
+            withoutColumns: state.formatWithoutColumns,
           },
         }
         break
@@ -307,25 +318,48 @@ export default function GachaLegacyViewDataConvertExportForm (props: Props) {
         </Field>
       )}
       {/* Pretty supports: LegacyUigf, Uigf, Srgf */}
-      <Field
-        size="large"
-        label={<Locale mapping={['Pages.Gacha.LegacyView.DataConvert.ExportForm.Pretty.Label']} />}
-        validationMessage={<Locale mapping={['Pages.Gacha.LegacyView.DataConvert.ExportForm.Pretty.Info']} />}
-        validationState="none"
-      >
-        <Switch
-          labelPosition="after"
-          label={<Locale mapping={
-            ['Pages.Gacha.LegacyView.DataConvert.ExportForm.Pretty.State',
-              { context: String(state.formatPretty) },
-            ]} />}
-          checked={state.formatPretty}
-          onChange={(_, data) => produce((draft) => {
-            draft.formatPretty = data.checked
-          })}
-          disabled={state.busy}
-        />
-      </Field>
+      {state.format !== 'Csv' && (
+        <Field
+          size="large"
+          label={<Locale mapping={['Pages.Gacha.LegacyView.DataConvert.ExportForm.Pretty.Label']} />}
+          validationMessage={<Locale mapping={['Pages.Gacha.LegacyView.DataConvert.ExportForm.Pretty.Info']} />}
+          validationState="none"
+        >
+          <Switch
+            labelPosition="after"
+            label={<Locale mapping={
+              ['Pages.Gacha.LegacyView.DataConvert.ExportForm.Pretty.State',
+                { context: String(state.formatPretty) },
+              ]} />}
+            checked={state.formatPretty}
+            onChange={(_, data) => produce((draft) => {
+              draft.formatPretty = data.checked
+            })}
+            disabled={state.busy}
+          />
+        </Field>
+      )}
+      {state.format === 'Csv' && (
+        <Field
+          size="large"
+          label={<Locale mapping={['Pages.Gacha.LegacyView.DataConvert.ExportForm.WithoutColumns.Label']} />}
+          validationMessage={<Locale mapping={['Pages.Gacha.LegacyView.DataConvert.ExportForm.WithoutColumns.Info']} />}
+          validationState="none"
+        >
+          <Switch
+            labelPosition="after"
+            label={<Locale mapping={
+              ['Pages.Gacha.LegacyView.DataConvert.ExportForm.WithoutColumns.State',
+                { context: String(state.formatWithoutColumns) },
+              ]} />}
+            checked={state.formatWithoutColumns}
+            onChange={(_, data) => produce((draft) => {
+              draft.formatWithoutColumns = data.checked
+            })}
+            disabled={state.busy}
+          />
+        </Field>
+      )}
       <div className={styles.actions}>
         <Locale
           component={Button}

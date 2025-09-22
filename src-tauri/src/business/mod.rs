@@ -257,6 +257,15 @@ pub async fn business_export_gacha_records(
       .await
       .map_err(Error::boxed)?
     }
+    GachaRecordsExporter::Csv(writer) => {
+      GachaRecordQuestioner::find_gacha_records_by_business_and_uid(
+        database.as_ref(),
+        writer.business,
+        writer.account_uid,
+      )
+      .await
+      .map_err(Error::boxed)?
+    }
   };
 
   exporter.export(GachaMetadata::current(), records, output)

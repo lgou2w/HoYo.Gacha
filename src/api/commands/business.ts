@@ -497,6 +497,54 @@ export function isSrgfGachaRecordsReadError (error: unknown): error is SrgfGacha
 
 // #endregion
 
+// #region: CSV
+
+const NamedCsvGachaRecordsWriteError = 'CsvGachaRecordsWriteError' as const
+
+export enum CsvGachaRecordsWriteErrorKind {
+  InvalidUid = 'InvalidUid',
+  IncompatibleRecordBusiness = 'IncompatibleRecordBusiness',
+  IncompatibleRecordOwner = 'IncompatibleRecordOwner',
+  CreateOutput = 'CreateOutput',
+  WriteOutput = 'WriteOutput'
+}
+
+export type CsvGachaRecordsWriteError = DetailedError<typeof NamedCsvGachaRecordsWriteError,
+  | {
+      kind: CsvGachaRecordsWriteErrorKind.InvalidUid
+      uid: Account['uid']
+    }
+  | {
+      kind: CsvGachaRecordsWriteErrorKind.IncompatibleRecordBusiness
+      business: Business
+      id: string
+      name: string
+      cursor: number
+    }
+  | {
+      kind: CsvGachaRecordsWriteErrorKind.IncompatibleRecordOwner
+      expected: Account['uid']
+      actual: Account['uid']
+      cursor: number
+    }
+  | {
+      kind: CsvGachaRecordsWriteErrorKind.CreateOutput
+      path: string
+      cause: NativeIOError
+    }
+  | {
+      kind: CsvGachaRecordsWriteErrorKind.WriteOutput
+      cause: NativeIOError
+    }
+>
+
+export function isCsvGachaRecordsWriteError (error: unknown): error is CsvGachaRecordsWriteError {
+  return isDetailedError(error) &&
+    error.name === NamedCsvGachaRecordsWriteError
+}
+
+// #endregion
+
 // #region: Gacha Convert
 
 export type ImportGachaRecordsError =
@@ -516,6 +564,7 @@ export type ExportGachaRecordsError =
   | LegacyUigfGachaRecordsWriteError
   | UigfGachaRecordsWriteError
   | SrgfGachaRecordsWriteError
+  | CsvGachaRecordsWriteError
 
 export type ImportGachaRecordsArgs = NonNullable<{
   input: string
@@ -561,6 +610,11 @@ export type ExportGachaRecordsArgs = NonNullable<{
       accountUid: Account['uid']
       exportTime: string | Date
       pretty?: boolean | null
+    } }
+    | { Csv: {
+      business: Business
+      accountUid: Account['uid']
+      withoutColumns?: boolean | null
     } }
 }>
 

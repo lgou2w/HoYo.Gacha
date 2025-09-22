@@ -192,6 +192,13 @@ export default {
         MissingMetadataLocale: '$t(Errors.LegacyUigfGachaRecordsReadError.MissingMetadataLocale)',
         MissingMetadataEntry: '$t(Errors.LegacyUigfGachaRecordsReadError.OpenInMissingMetadataEntryput)',
       },
+      CsvGachaRecordsWriteError: {
+        InvalidUid: '$t(Errors.LegacyUigfGachaRecordsWriteError.InvalidUid)',
+        IncompatibleRecordBusiness: '$t(Errors.LegacyUigfGachaRecordsWriteError.IncompatibleRecordBusiness)',
+        IncompatibleRecordOwner: '$t(Errors.LegacyUigfGachaRecordsWriteError.IncompatibleRecordOwner)',
+        CreateOutput: '$t(Errors.LegacyUigfGachaRecordsWriteError.CreateOutput)',
+        WriteOutput: '写入输出失败：{{cause.message}}：{{path}}',
+      },
       PrettyGachaRecordsError: {
         MissingMetadataEntry: '缺失元数据条目：{{business}}，语言：{{locale}}，名称：{{name}}，物品 ID：{{itemId}}',
       },
@@ -415,6 +422,10 @@ export default {
                 Text: 'SRGF',
                 Info: '星穹铁道抽卡记录标准 (SRGF) v1.0',
               },
+              Csv: {
+                Text: 'CSV',
+                Info: '逗号分隔值 (官方 JSON 结构)',
+              },
             },
             ImportForm: {
               File: {
@@ -464,6 +475,12 @@ export default {
               Pretty: {
                 Label: '美化数据',
                 Info: '启用后，数据将以易于阅读的格式输出。',
+                State_true: '启用',
+                State_false: '禁用',
+              },
+              WithoutColumns: {
+                Label: '不含列名',
+                Info: '启用后，第一行将不是列名。',
                 State_true: '启用',
                 State_false: '禁用',
               },
