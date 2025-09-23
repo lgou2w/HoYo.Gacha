@@ -2134,7 +2134,7 @@ impl ZenlessRngMoeBackupTouchProfile {
 
 declare_error_kinds! {
   #[derive(Debug, thiserror::Error)]
-  CsvGachaRecordsWriterError {
+  CsvGachaRecordsWriteError {
     #[error("Invalid business uid: {uid}")]
     InvalidUid {
       uid: u32
@@ -2184,7 +2184,7 @@ pub struct CsvGachaRecordsWriter {
 }
 
 impl GachaRecordsWriter for CsvGachaRecordsWriter {
-  type Error = CsvGachaRecordsWriterError;
+  type Error = CsvGachaRecordsWriteError;
 
   fn write(
     &self,
@@ -2200,11 +2200,11 @@ impl GachaRecordsWriter for CsvGachaRecordsWriter {
 
     // For check
     let _server_region = ServerRegion::from_uid(*business, *account_uid)
-      .ok_or(CsvGachaRecordsWriterErrorKind::InvalidUid { uid: *account_uid })?;
+      .ok_or(CsvGachaRecordsWriteErrorKind::InvalidUid { uid: *account_uid })?;
 
     let output = PathBuf::from(format!("{}.csv", output.as_ref().display()));
     let output_file =
-      File::create(&output).map_err(|cause| CsvGachaRecordsWriterErrorKind::CreateOutput {
+      File::create(&output).map_err(|cause| CsvGachaRecordsWriteErrorKind::CreateOutput {
         path: output.clone(),
         cause,
       })?;
@@ -2217,7 +2217,7 @@ impl GachaRecordsWriter for CsvGachaRecordsWriter {
         b"uid,gacha_id,gacha_type,item_id,count,time,name,lang,item_type,rank_type,id\n";
 
       writer.write_all(COLUMNS_BYTES).map_err(|cause| {
-        CsvGachaRecordsWriterErrorKind::WriteOutput {
+        CsvGachaRecordsWriteErrorKind::WriteOutput {
           path: output.clone(),
           cause,
         }
@@ -2231,14 +2231,14 @@ impl GachaRecordsWriter for CsvGachaRecordsWriter {
 
       // Avoid writing records that are not compatible with the account.
       if record.business != *business {
-        return Err(CsvGachaRecordsWriterErrorKind::IncompatibleRecordBusiness {
+        return Err(CsvGachaRecordsWriteErrorKind::IncompatibleRecordBusiness {
           business: record.business,
           id: record.id,
           name: record.name,
           cursor,
         })?;
       } else if record.uid != *account_uid {
-        return Err(CsvGachaRecordsWriterErrorKind::IncompatibleRecordOwner {
+        return Err(CsvGachaRecordsWriteErrorKind::IncompatibleRecordOwner {
           expected: *account_uid,
           actual: record.uid,
           cursor,
@@ -2266,7 +2266,7 @@ impl GachaRecordsWriter for CsvGachaRecordsWriter {
 
       writer
         .write_fmt(format_args!("{uid},{gacha_id},{gacha_type},{item_id},{count},{time},{name},{lang},{item_type},{rank_type},{id}{has_eol}"))
-        .map_err(|cause| CsvGachaRecordsWriterErrorKind::WriteOutput {
+        .map_err(|cause| CsvGachaRecordsWriteErrorKind::WriteOutput {
           path: output.clone(),
           cause,
         })?;
