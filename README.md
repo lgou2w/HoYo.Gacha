@@ -21,7 +21,7 @@ An unofficial tool for managing and analyzing your miHoYo gacha records.
 - [x] 🔄 支持导入或导出的数据交换文件格式。 Support data exchange file formats for import or export.
   - [x] [`UIGF`](https://uigf.org/zh/standards/uigf.html) 统一可交换抽卡记录标准：v2.0, v2.1, v2.2, v2.3, v2.4, v3.0, v4.0, v4.1
   - [x] [`SRGF`](https://uigf.org/zh/standards/srgf.html) 星穹铁道抽卡记录标准：v1.0
-  - [ ] `CSV` 逗号分隔文件格式。
+  - [x] `CSV` 逗号分隔值。（仅导出）
   - [ ] `XLSX` Excel 表格文件格式。
   - [ ] [`zzz.rng.moe`](https://zzz.rng.moe) 绝区零工具箱。
 

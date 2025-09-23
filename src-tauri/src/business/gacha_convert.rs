@@ -1,7 +1,7 @@
 use std::collections::{HashMap, HashSet};
 use std::fmt::{self, Display};
 use std::fs::File;
-use std::io::{self, Read};
+use std::io::{self, BufWriter, Read, Write};
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
 use std::sync::LazyLock;
@@ -2130,6 +2130,154 @@ impl ZenlessRngMoeBackupTouchProfile {
 
 // endregion
 
+// region: CSV
+
+declare_error_kinds! {
+  #[derive(Debug, thiserror::Error)]
+  CsvGachaRecordsWriterError {
+    #[error("Invalid business uid: {uid}")]
+    InvalidUid {
+      uid: u32
+    },
+
+    #[error("Incompatible record business: {business}, id: {id}, name: {name}, cursor: {cursor}")]
+    IncompatibleRecordBusiness {
+      business: Business,
+      id: String,
+      name: String,
+      cursor: usize
+    },
+
+    #[error("Incompatible record owner uid: expected: {expected}, actual: {actual}, cursor: {cursor}")]
+    IncompatibleRecordOwner {
+      expected: u32,
+      actual: u32,
+      cursor: usize
+    },
+
+    #[error("Failed to create output '{path}': {cause}")]
+    CreateOutput {
+      path: PathBuf,
+      cause: io::Error => serde_json::json!({
+        "kind": cause.kind().to_string(),
+        "message": cause.to_string(),
+      })
+    },
+
+    #[error("Failed to write output: '{path}': {cause}")]
+    WriteOutput {
+      path: PathBuf,
+      cause: io::Error => serde_json::json!({
+        "kind": cause.kind().to_string(),
+        "message": cause.to_string(),
+      })
+    },
+  }
+}
+
+#[derive(Clone, Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CsvGachaRecordsWriter {
+  pub business: Business,
+  pub account_uid: u32,
+  pub without_columns: Option<bool>,
+}
+
+impl GachaRecordsWriter for CsvGachaRecordsWriter {
+  type Error = CsvGachaRecordsWriterError;
+
+  fn write(
+    &self,
+    _metadata: &GachaMetadata,
+    records: Vec<GachaRecord>,
+    output: impl AsRef<Path>,
+  ) -> Result<PathBuf, Self::Error> {
+    let Self {
+      business,
+      account_uid,
+      without_columns,
+    } = self;
+
+    // For check
+    let _server_region = ServerRegion::from_uid(*business, *account_uid)
+      .ok_or(CsvGachaRecordsWriterErrorKind::InvalidUid { uid: *account_uid })?;
+
+    let output = PathBuf::from(format!("{}.csv", output.as_ref().display()));
+    let output_file =
+      File::create(&output).map_err(|cause| CsvGachaRecordsWriterErrorKind::CreateOutput {
+        path: output.clone(),
+        cause,
+      })?;
+
+    let mut writer = BufWriter::new(output_file);
+
+    // HACK: Using the official API JSON Schema
+    if !without_columns.unwrap_or_default() {
+      const COLUMNS_BYTES: &[u8] =
+        b"uid,gacha_id,gacha_type,item_id,count,time,name,lang,item_type,rank_type,id\n";
+
+      writer.write_all(COLUMNS_BYTES).map_err(|cause| {
+        CsvGachaRecordsWriterErrorKind::WriteOutput {
+          path: output.clone(),
+          cause,
+        }
+      })?;
+    }
+
+    let len = records.len();
+    for (cursor, record) in records.into_iter().enumerate() {
+      // The cursor of the user's record, so it starts at 1
+      let cursor = cursor + 1;
+
+      // Avoid writing records that are not compatible with the account.
+      if record.business != *business {
+        return Err(CsvGachaRecordsWriterErrorKind::IncompatibleRecordBusiness {
+          business: record.business,
+          id: record.id,
+          name: record.name,
+          cursor,
+        })?;
+      } else if record.uid != *account_uid {
+        return Err(CsvGachaRecordsWriterErrorKind::IncompatibleRecordOwner {
+          expected: *account_uid,
+          actual: record.uid,
+          cursor,
+        })?;
+      }
+
+      let GachaRecord {
+        uid,
+        id,
+        gacha_type,
+        gacha_id,
+        rank_type,
+        count,
+        lang,
+        time,
+        name,
+        item_type,
+        item_id,
+        ..
+      } = record;
+
+      let gacha_id = gacha_id.map(|n| n.to_string()).unwrap_or_default();
+      let time = time.format(GACHA_TIME_FORMAT).unwrap();
+      let has_eol = if cursor == len { "" } else { "\n" };
+
+      writer
+        .write_fmt(format_args!("{uid},{gacha_id},{gacha_type},{item_id},{count},{time},{name},{lang},{item_type},{rank_type},{id}{has_eol}"))
+        .map_err(|cause| CsvGachaRecordsWriterErrorKind::WriteOutput {
+          path: output.clone(),
+          cause,
+        })?;
+    }
+
+    Ok(output)
+  }
+}
+
+// endregion
+
 // region: Excel Writer
 
 // declare_error_kinds! {
@@ -2187,6 +2335,7 @@ pub enum GachaRecordsExporter {
   LegacyUigf(LegacyUigfGachaRecordsWriter),
   Uigf(UigfGachaRecordsWriter),
   Srgf(SrgfGachaRecordsWriter),
+  Csv(CsvGachaRecordsWriter),
 }
 
 impl GachaRecordsExporter {
@@ -2200,6 +2349,7 @@ impl GachaRecordsExporter {
       Self::LegacyUigf(w) => w.write(metadata, records, output).map_err(Error::boxed),
       Self::Uigf(w) => w.write(metadata, records, output).map_err(Error::boxed),
       Self::Srgf(w) => w.write(metadata, records, output).map_err(Error::boxed),
+      Self::Csv(w) => w.write(metadata, records, output).map_err(Error::boxed),
     }
   }
 }
