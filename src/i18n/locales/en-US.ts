@@ -510,7 +510,7 @@ export default {
                   Total_one: '{{count}} pull in total',
                   Total_other: '{{count, number}} pulls in total',
                   GoldenSum_zero: 'No gold pulled yet',
-                  GoldenSum_other: 'Pulled {{count, number}} gold',
+                  GoldenSum: 'Pulled {{count, number}} gold',
                   NextPity_zero: 'No pulls into pity yet',
                   NextPity_one: '{{count}} pull into pity',
                   NextPity_other: '{{count}} pulls into pity',
