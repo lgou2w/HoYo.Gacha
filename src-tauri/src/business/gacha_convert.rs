@@ -621,7 +621,7 @@ impl GachaRecordsReader for LegacyUigfGachaRecordsReader {
         gacha_id: None,
         rank_type: item.rank_type.unwrap_or(metadata_entry.rank as _),
         count: item.count.unwrap_or(1),
-        lang: locale,
+        lang: metadata_entry.locale.to_owned(),
         time: item
           .time
           .assume_offset(target_time_zone)
@@ -1296,7 +1296,7 @@ impl GachaRecordsReader for UigfGachaRecordsReader {
               gacha_id,
               rank_type: item.rank_type.unwrap_or(metadata_entry.rank as _),
               count: item.count.unwrap_or(1),
-              lang: locale.clone(),
+              lang: metadata_entry.locale.to_owned(),
               time: item
                 .time
                 .assume_offset(target_time_zone)
@@ -1723,7 +1723,7 @@ impl GachaRecordsReader for SrgfGachaRecordsReader {
         gacha_id: Some(item.gacha_id),
         rank_type: item.rank_type.unwrap_or(metadata_entry.rank as _),
         count: item.count.unwrap_or(1),
-        lang: locale,
+        lang: metadata_entry.locale.to_owned(),
         time: item
           .time
           .assume_offset(target_time_zone)
@@ -2051,7 +2051,7 @@ impl GachaRecordsReader for ZenlessRngMoeGachaRecordsReader {
           )?;
         }
 
-        let entry = metadata_locale.entry_from_id(item.id).ok_or({
+        let metadata_entry = metadata_locale.entry_from_id(item.id).ok_or({
           ZenlessRngMoeGachaRecordsReadErrorKind::MissingMetadataEntry {
             locale: expected_locale.to_owned(),
             gacha_type,
@@ -2080,11 +2080,11 @@ impl GachaRecordsReader for ZenlessRngMoeGachaRecordsReader {
           gacha_id: Some(0), // FIXME: Currently, it is always 0 ?
           rank_type: item.rarity,
           count: 1, // FIXME: item.no ?
-          lang: expected_locale.to_owned(),
+          lang: metadata_entry.locale.to_owned(),
           // Convert to server time zone
           time: time.to_offset(server_region.time_zone()),
-          name: entry.name.to_owned(),
-          item_type: entry.category_name.to_owned(),
+          name: metadata_entry.name.to_owned(),
+          item_type: metadata_entry.category_name.to_owned(),
           item_id: item.id,
         });
       }
