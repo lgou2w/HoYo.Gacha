@@ -376,6 +376,9 @@ const useHistoryListStyles = makeStyles({
     flex: '0 0 12%',
     padding: `${tokens.spacingVerticalS} 0 ${tokens.spacingVerticalS} ${tokens.spacingHorizontalS}`,
   },
+  sums: {
+    marginTop: tokens.spacingVerticalS,
+  },
   upSum: {
     color: tokens.colorPaletteRedForeground1,
   },
@@ -411,7 +414,7 @@ function LegacyHistoryList (props: LegacyHistoryListProps) {
     return null
   }
 
-  const { category, rankings: { golden: { upSum, sum, values } } } = metadata
+  const { category, rankings: { golden: { upSum, sum, values } }, total } = metadata
   const isBeginner = category === PrettyCategory.Beginner
   const isPermanent = category === PrettyCategory.Permanent
   const isChronicled = category === PrettyCategory.Chronicled
@@ -425,7 +428,14 @@ function LegacyHistoryList (props: LegacyHistoryListProps) {
           component={Body1}
           mapping={[`Business.${keyofBusinesses}.Gacha.Category.${metadata.category}`]}
         />
-        <div>
+        <Locale
+          component={Caption1}
+          mapping={[
+            'Pages.Gacha.LegacyView.Clientarea.Overview.GridCard.Labels.Total',
+            { count: total },
+          ]}
+        />
+        <div className={styles.sums}>
           {hasUp && <Locale
             className={styles.upSum}
             component={Caption1}
