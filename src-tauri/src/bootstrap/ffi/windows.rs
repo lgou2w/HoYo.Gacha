@@ -1,5 +1,8 @@
 use std::env;
 use std::mem::{self, MaybeUninit};
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::{Arc, Mutex};
+use std::thread;
 
 use tauri::{Theme, WebviewWindow};
 use webview2_com::Microsoft::Web::WebView2::Win32::{
@@ -7,7 +10,9 @@ use webview2_com::Microsoft::Web::WebView2::Win32::{
   ICoreWebView2Settings4,
 };
 use webview2_com::Microsoft::Web::WebView2::Win32::{ICoreWebView2_2, ICoreWebView2_13};
-use windows::Win32::Foundation::{FALSE, HANDLE, TRUE};
+use windows::Win32::Foundation::{
+  CloseHandle, FALSE, HANDLE, TRUE, WAIT_EVENT, WAIT_FAILED, WAIT_OBJECT_0,
+};
 use windows::Win32::Graphics::DirectWrite::{
   DWRITE_FACTORY_TYPE_SHARED, DWriteCreateFactory, IDWriteFactory,
 };
@@ -21,10 +26,15 @@ use windows::Win32::System::Com::{
   CoInitialize, CoInitializeEx, CoUninitialize, IPersistFile,
 };
 use windows::Win32::System::Console::{ATTACH_PARENT_PROCESS, AttachConsole};
+use windows::Win32::System::Registry::{
+  HKEY, HKEY_CURRENT_USER, KEY_NOTIFY, KEY_READ, REG_NOTIFY_CHANGE_LAST_SET, RegCloseKey,
+  RegNotifyChangeKeyValue, RegOpenKeyExA,
+};
+use windows::Win32::System::Threading::{CreateEventA, INFINITE, SetEvent, WaitForMultipleObjects};
 use windows::Win32::UI::Controls::MARGINS;
 use windows::Win32::UI::Shell::{IShellLinkW, ShellLink};
 use windows::Win32::UI::WindowsAndMessaging::SetPropW;
-use windows::core::{BOOL, Interface, PCWSTR, PWSTR, w};
+use windows::core::{BOOL, Interface, PCWSTR, PWSTR, s, w};
 
 use crate::consts;
 
@@ -285,5 +295,118 @@ pub fn system_fonts() -> Result<Vec<String>, windows::core::Error> {
 
     CoUninitialize();
     Ok(fonts)
+  }
+}
+
+#[derive(Default)]
+pub struct AppsUseThemeMonitor {
+  is_running: Arc<AtomicBool>,
+  hshutdown: HANDLE,
+  hthread: Option<thread::JoinHandle<()>>,
+}
+
+impl AppsUseThemeMonitor {
+  pub fn start<F>(&mut self, callback: F)
+  where
+    F: Fn(Theme) + Send + 'static,
+  {
+    if self.is_running.load(Ordering::Relaxed) {
+      return;
+    }
+
+    self.is_running.store(true, Ordering::Relaxed);
+    self.hshutdown =
+      unsafe { CreateEventA(None, true, false, None) }.expect("Shutdown event create failed");
+
+    let initial_theme = apps_use_theme();
+    let mut last_theme = initial_theme;
+
+    let callback = Box::new(callback);
+    let is_running = Arc::clone(&self.is_running);
+
+    // https://github.com/microsoft/windows-rs/issues/3169#issuecomment-2489378071
+    let hshutdown = self.hshutdown.0 as isize;
+    let hthread = thread::spawn(move || {
+      use tracing::error;
+
+      let mut hkey = HKEY::default();
+      if let Err(error) = unsafe {
+        RegOpenKeyExA(
+          HKEY_CURRENT_USER,
+          s!("Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize"),
+          None,
+          KEY_NOTIFY,
+          &mut hkey,
+        )
+      }
+      .ok()
+      {
+        error!(message = "Open registry key failed", ?error);
+        return;
+      }
+
+      'monitor: while is_running.load(Ordering::Relaxed) {
+        let hevent = match unsafe { CreateEventA(None, true, false, None) } {
+          Ok(hevent) => hevent,
+          Err(error) => {
+            error!("Create event failed: {error:?}");
+            break;
+          }
+        };
+
+        if let Err(error) = unsafe {
+          RegNotifyChangeKeyValue(hkey, false, REG_NOTIFY_CHANGE_LAST_SET, Some(hevent), true)
+        }
+        .ok()
+        {
+          error!("RegNotifyChangeKeyValue failed: {error:?}");
+          let _ = unsafe { CloseHandle(hevent) };
+          break;
+        }
+
+        let handles = [hevent, HANDLE(hshutdown as _)];
+        let wait_event = unsafe { WaitForMultipleObjects(&handles, false, INFINITE) };
+        let _ = unsafe { CloseHandle(hevent) };
+
+        match wait_event {
+          WAIT_OBJECT_0 => {
+            let new_theme = apps_use_theme();
+            if new_theme != last_theme {
+              last_theme = new_theme;
+              callback(new_theme);
+            }
+          }
+          WAIT_EVENT(1) => break 'monitor,
+          WAIT_FAILED => {
+            error!("WaitForMultipleObjects failed: {wait_event:?}");
+            break 'monitor;
+          }
+          _ => {
+            error!("WaitForMultipleObjects unexpected result: {wait_event:?}");
+            break 'monitor;
+          }
+        }
+      }
+
+      let _ = unsafe { RegCloseKey(hkey) };
+    });
+
+    self.hthread = Some(hthread);
+  }
+
+  pub fn stop(&mut self) {
+    if !self.is_running.load(Ordering::Relaxed) {
+      return;
+    }
+
+    self.is_running.store(false, Ordering::Relaxed);
+
+    let _ = unsafe { SetEvent(self.hshutdown) };
+
+    if let Some(hthread) = self.hthread.take() {
+      hthread.join().expect("Thread join failed");
+    }
+
+    let _ = unsafe { CloseHandle(self.hshutdown) };
   }
 }

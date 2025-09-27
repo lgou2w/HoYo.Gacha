@@ -24,7 +24,7 @@ export const systemFonts = declareCommand<undefined, string[]>('core_system_font
 
 export const isSupportedWindowVibrancy = declareCommand<undefined, boolean>('core_is_supported_window_vibrancy', true)
 
-export type ChangeThemeArgs = { colorScheme: ColorScheme }
+export type ChangeThemeArgs = { colorScheme?: ColorScheme | null }
 export const changeTheme = declareCommand<ChangeThemeArgs>('core_change_theme')
 
 export type PickFileArgs = {

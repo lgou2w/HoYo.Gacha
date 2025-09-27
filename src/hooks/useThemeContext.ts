@@ -1,7 +1,7 @@
 import { useCallback, useContext } from 'react'
 import { changeTheme } from '@/api/commands/core'
 import ThemeContext from '@/contexts/ThemeContext'
-import { ColorScheme, Dark, Light } from '@/interfaces/Theme'
+import { ColorScheme } from '@/interfaces/Theme'
 
 export default function useThemeContext () {
   const state = useContext(ThemeContext)
@@ -15,21 +15,15 @@ export default function useThemeContext () {
 export function useColorScheme () {
   const { colorScheme, update } = useThemeContext()
 
-  const change = useCallback(async (newVal: ColorScheme) => {
+  const change = useCallback(async (newVal: ColorScheme | null) => {
     if (colorScheme !== newVal) {
-      await update({ colorScheme: newVal })
       await changeTheme({ colorScheme: newVal })
+      await update({ colorScheme: newVal })
     }
   }, [colorScheme, update])
-
-  const toggle = useCallback(
-    () => change(colorScheme === Dark ? Light : Dark),
-    [change, colorScheme],
-  )
 
   return {
     colorScheme,
     change,
-    toggle,
   }
 }
