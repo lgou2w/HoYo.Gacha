@@ -54,7 +54,7 @@ export default function ThemeProvider (props: PropsWithChildren<Props>) {
         unlisten()
       }
     }
-  }, [state])
+  }, [])
 
   const themes = useMemo(() => createFluentThemes(state.font), [state.font])
   if (!themes[state.namespace]?.[colorScheme]) {
