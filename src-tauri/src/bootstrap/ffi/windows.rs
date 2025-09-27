@@ -1,7 +1,7 @@
 use std::env;
 use std::mem::{self, MaybeUninit};
+use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::{Arc, Mutex};
 use std::thread;
 
 use tauri::{Theme, WebviewWindow};
@@ -27,7 +27,7 @@ use windows::Win32::System::Com::{
 };
 use windows::Win32::System::Console::{ATTACH_PARENT_PROCESS, AttachConsole};
 use windows::Win32::System::Registry::{
-  HKEY, HKEY_CURRENT_USER, KEY_NOTIFY, KEY_READ, REG_NOTIFY_CHANGE_LAST_SET, RegCloseKey,
+  HKEY, HKEY_CURRENT_USER, KEY_NOTIFY, REG_NOTIFY_CHANGE_LAST_SET, RegCloseKey,
   RegNotifyChangeKeyValue, RegOpenKeyExA,
 };
 use windows::Win32::System::Threading::{CreateEventA, INFINITE, SetEvent, WaitForMultipleObjects};
