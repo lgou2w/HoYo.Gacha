@@ -1,4 +1,6 @@
 use std::path::PathBuf;
+use std::sync::atomic::AtomicBool;
+use std::sync::atomic::Ordering;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 use std::{env, process};
@@ -16,6 +18,7 @@ use super::internals;
 use super::singleton::Singleton;
 use super::tracing::Tracing;
 use super::updater::{UpdatedKind, Updater};
+use crate::bootstrap::ffi::AppsUseThemeMonitor;
 use crate::business::GachaMetadata;
 use crate::database::{self, Database, KvMut};
 use crate::models::{ThemeData, WindowState};
@@ -32,6 +35,9 @@ pub async fn start(singleton: Singleton, tracing: Tracing, database: Database) {
   // Arc shared database to Tauri state
   let database = Arc::new(database);
 
+  #[cfg(windows)]
+  let mut apps_use_theme_monitor = AppsUseThemeMonitor::default();
+
   info!("Loading theme data...");
   let color_scheme = KvMut::from(&database, consts::KV_THEME_DATA)
     .try_read_val_json::<ThemeData>()
@@ -42,6 +48,7 @@ pub async fn start(singleton: Singleton, tracing: Tracing, database: Database) {
     .and_then(|theme_data| theme_data.color_scheme)
     .unwrap_or_else(|| {
       if cfg!(windows) {
+        FLAG_AUTO_COLOR_SCHEME.store(true, Ordering::Relaxed);
         ffi::apps_use_theme()
       } else {
         Theme::Light
@@ -318,9 +325,30 @@ pub async fn start(singleton: Singleton, tracing: Tracing, database: Database) {
     .build(generate_context!())
     .expect("Error while building Tauri application");
 
+  #[cfg(windows)]
+  {
+    info!("Start AppsUseTheme monitor thread...");
+    let app_handle = app.handle().clone();
+    apps_use_theme_monitor.start(move |color_scheme| {
+      info!("Detected system color scheme change: {color_scheme:?}");
+
+      if FLAG_AUTO_COLOR_SCHEME.load(Ordering::Relaxed)
+        && let Some(main_window) = app_handle.get_webview_window(consts::TAURI_MAIN_WINDOW_LABEL)
+      {
+        ffi::set_window_theme(&main_window, color_scheme);
+        let _ = ffi::set_webview_theme(&main_window, color_scheme);
+        let _ = main_window.emit(consts::EVENT_COLOR_SCHEME_CHANGED, color_scheme);
+      }
+    });
+  }
+
   let exit_code = app.run_return(|_app_handle, _event| {});
 
   info!("Tauri exiting...");
+
+  #[cfg(windows)]
+  apps_use_theme_monitor.stop();
+
   database.close().await;
   tracing.close();
   drop(singleton);
@@ -406,12 +434,22 @@ fn core_is_supported_window_vibrancy() -> bool {
   ffi::is_supported_window_vibrancy()
 }
 
+#[cfg(windows)]
+static FLAG_AUTO_COLOR_SCHEME: AtomicBool = AtomicBool::new(false);
+
 #[tauri::command]
-fn core_change_theme(window: WebviewWindow, color_scheme: Theme) -> Result<(), tauri::Error> {
+fn core_change_theme(
+  window: WebviewWindow,
+  color_scheme: Option<Theme>,
+) -> Result<(), tauri::Error> {
+  FLAG_AUTO_COLOR_SCHEME.store(color_scheme.is_none(), Ordering::Relaxed);
+
+  let color_scheme = color_scheme.unwrap_or(ffi::apps_use_theme());
   if !consts::TAURI_MAIN_WINDOW_DECORATIONS {
     ffi::set_window_theme(&window, color_scheme);
     ffi::set_webview_theme(&window, color_scheme)?;
   }
+
   Ok(())
 }
 

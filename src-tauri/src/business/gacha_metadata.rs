@@ -172,6 +172,31 @@ pub struct GachaMetadataBanner {
   pub version: Option<GameVersion>,
 }
 
+// HACK: ISO 639 -> BCP 47
+// See:
+//   https://github.com/lgou2w/HoYo.Gacha/issues/89
+//   https://github.com/lgou2w/HoYo.Gacha/issues/118
+static PERMITTED_LOCALE_ALIASES: LazyLock<HashMap<&'static str, &'static str>> =
+  LazyLock::new(|| {
+    HashMap::from_iter([
+      ("de", "de-de"),
+      ("en", "en-us"),
+      ("es", "es-es"),
+      ("fr", "fr-fr"),
+      ("id", "id-id"),
+      ("ja", "ja-jp"),
+      ("ko", "ko-kr"),
+      ("pt", "pt-pt"),
+      ("ru", "ru-ru"),
+      ("th", "th-th"),
+      ("tr", "tr-tr"),
+      ("vi", "vi-vn"),
+      // No!
+      // ("zh", "zh-cn"),
+      // ("zh", "zh-tw"),
+    ])
+  });
+
 impl GachaMetadata {
   pub const CATEGORY_CHARACTER: &'static str = "Character";
   pub const CATEGORY_WEAPON: &'static str = "Weapon";
@@ -223,7 +248,15 @@ impl GachaMetadata {
     business: Business,
     locale: impl AsRef<str>,
   ) -> Option<&GachaMetadataLocale> {
-    self.metadata.get(&business)?.locales.get(locale.as_ref())
+    let locale = locale.as_ref();
+    let m = self.metadata.get(&business)?;
+
+    // See above: PERMITTED_LOCALE_ALIASES
+    m.locales.get(locale).or_else(|| {
+      PERMITTED_LOCALE_ALIASES
+        .get(locale)
+        .and_then(|alias| m.locales.get(*alias))
+    })
   }
 
   pub fn banners(&self, business: Business, gacha_type: u32) -> Option<&GachaMetadataBanners> {
@@ -691,6 +724,27 @@ mod tests {
   #[test]
   fn test_embedded_metadata() {
     let _ = GachaMetadata::current();
+  }
+
+  #[test]
+  fn test_alias_locale() {
+    let m = GachaMetadata::current();
+
+    for (alias, locale) in &*PERMITTED_LOCALE_ALIASES {
+      let a = m.locale(Business::GenshinImpact, alias);
+      let b = m.locale(Business::GenshinImpact, locale);
+
+      let equal = if let Some(a) = a
+        && let Some(b) = b
+        && a.locale == b.locale
+      {
+        true
+      } else {
+        a.is_none() && b.is_none()
+      };
+
+      assert!(equal, "Alias locale '{alias}' does not match '{locale}'");
+    }
   }
 
   #[test]

@@ -601,6 +601,7 @@ export default {
               Subtitle: '切换应用使用浅色主题或深色主题。',
               Light: '浅色',
               Dark: '深色',
+              Auto: '跟随系统',
             },
             ScaleLevel: {
               Title: '界面缩放',

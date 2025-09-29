@@ -407,7 +407,7 @@ pub async fn migration_with(
           gacha_id,
           rank_type: rank_type.unwrap(), // SAFETY
           count,
-          lang: locale,
+          lang: metadata_entry.locale.to_owned(),
           time,
           name,
           item_type,

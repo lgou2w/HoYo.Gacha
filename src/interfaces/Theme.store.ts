@@ -1,5 +1,5 @@
 import { deleteKv, findKv, upsertKv } from '@/api/commands/database'
-import { DefaultThemeData, ThemeData, ThemeStore, Themes } from './Theme'
+import { DefaultThemeData, ThemeData, ThemeStore } from './Theme'
 
 export type { ThemeStore }
 
@@ -59,20 +59,14 @@ async function loadAndEvaluateThemeData (engine: {
   }
 
   const { namespace, colorScheme, scale, font } = parsed
-  const invalid = !namespace || !colorScheme || !Themes[namespace]?.includes(colorScheme)
-  if (invalid) {
-    console.error(
-      `Invalid ${engine.name} theme namespace or color scheme: namespace=%s, colorScheme=%s`,
-      namespace,
-      colorScheme,
-    )
-
+  if (!namespace) {
+    console.error(`Invalid ${engine.name} theme namespace:`, namespace)
     await engine.invalidate()
     return data
   }
 
   data.namespace = namespace
-  data.colorScheme = colorScheme
+  data.colorScheme = colorScheme || data.colorScheme
   data.scale = scale || data.scale
   data.font = font || data.font
 

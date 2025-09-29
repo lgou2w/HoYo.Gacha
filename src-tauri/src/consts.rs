@@ -81,6 +81,10 @@ pub const ENV_DEVTOOLS: &str = "HG_DEVTOOLS";
 pub const KV_THEME_DATA: &str = "HG_THEME_DATA";
 pub const KV_WINDOW_STATE: &str = "HG_WINDOW_STATE";
 
+// Event
+
+pub const EVENT_COLOR_SCHEME_CHANGED: &str = "HG_COLOR_SCHEME_CHANGED";
+
 // Lazy
 
 pub static OS_INFO: LazyLock<OsInfo> = LazyLock::new(get_os_info);
