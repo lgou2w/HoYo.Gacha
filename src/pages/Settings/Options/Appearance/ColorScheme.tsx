@@ -1,14 +1,19 @@
 import React from 'react'
-import { Switch } from '@fluentui/react-components'
+import { Dropdown, Option } from '@fluentui/react-components'
 import { DarkThemeRegular } from '@fluentui/react-icons'
 import Locale from '@/components/Locale'
+import useI18n from '@/hooks/useI18n'
 import { useColorScheme } from '@/hooks/useThemeContext'
-import { Dark } from '@/interfaces/Theme'
+import { ColorScheme, Dark, Light } from '@/interfaces/Theme'
 import SettingsOptionsItem from '@/pages/Settings/Options/OptionsItem'
 import capitalize from '@/utilities/capitalize'
 
+const Auto = 'auto'
+
 export default function SettingsOptionsAppearanceColorScheme () {
-  const { colorScheme, toggle } = useColorScheme()
+  const i18n = useI18n()
+  const { colorScheme, change } = useColorScheme()
+  const currentValue = colorScheme || Auto
 
   return (
     <SettingsOptionsItem
@@ -16,12 +21,21 @@ export default function SettingsOptionsAppearanceColorScheme () {
       title={<Locale mapping={['Pages.Settings.Options.Appearance.ColorScheme.Title']} />}
       subtitle={<Locale mapping={['Pages.Settings.Options.Appearance.ColorScheme.Subtitle']} />}
       action={(
-        <Switch
-          labelPosition="before"
-          label={<Locale mapping={[`Pages.Settings.Options.Appearance.ColorScheme.${capitalize(colorScheme)}`]} />}
-          checked={colorScheme === Dark}
-          onChange={() => toggle()}
-        />
+        <Dropdown
+          value={i18n.t(`Pages.Settings.Options.Appearance.ColorScheme.${capitalize(currentValue)}`)}
+          defaultSelectedOptions={[currentValue]}
+          onOptionSelect={(_, data) => {
+            const optionValue = data.optionValue as ColorScheme | typeof Auto
+            change(optionValue !== Auto ? optionValue : null)
+          }}
+          style={{ minWidth: '10rem' }}
+        >
+          {[Auto, Light, Dark].map((value) => (
+            <Option key={value} value={value}>
+              {i18n.t(`Pages.Settings.Options.Appearance.ColorScheme.${capitalize(value)}`)}
+            </Option>
+          ))}
+        </Dropdown>
       )}
     />
   )

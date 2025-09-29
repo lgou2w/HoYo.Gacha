@@ -58,15 +58,14 @@ export type ScaleLevel = 16 | 20 | 24 | 28 | 32
 
 export interface ThemeData {
   namespace: Namespace
-  colorScheme: ColorScheme
+  colorScheme: ColorScheme | null
   scale: ScaleLevel
   font: string | null
 }
 
 export const DefaultThemeData = {
   namespace: 'web',
-  // If in the absence of a custom color scheme, keep it the same as the back-end setting
-  colorScheme: window.matchMedia('(prefers-color-scheme: light)').matches ? Light : Dark,
+  colorScheme: null,
   scale: 16,
   font: null,
 } as const satisfies ThemeData

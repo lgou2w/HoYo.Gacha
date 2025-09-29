@@ -615,6 +615,7 @@ export default {
               Subtitle: 'Toggle the application to use light theme or dark theme.',
               Light: 'Light',
               Dark: 'Dark',
+              Auto: 'System',
             },
             ScaleLevel: {
               Title: 'Interface Scaling',
