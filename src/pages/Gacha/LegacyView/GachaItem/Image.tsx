@@ -1,6 +1,6 @@
 import React from 'react'
 import BizImages from '@/components/BizImages'
-import { Businesses, KeyofBusinesses } from '@/interfaces/Business'
+import { KeyofBusinesses } from '@/interfaces/Business'
 import { PrettyGachaRecord } from '@/interfaces/GachaRecord'
 
 export type GachaItemImageProps = Omit<React.JSX.IntrinsicElements['img'], 'src'> & {
@@ -32,25 +32,27 @@ export default function GachaItemImage (props: GachaItemImageProps) {
   return <img src={imageSrc} {...rest} />
 }
 
-const LEGACY_FACETS = {
-  [Businesses.GenshinImpact]: 'genshin',
-  [Businesses.HonkaiStarRail]: 'starrail',
-  [Businesses.ZenlessZoneZero]: 'zzz',
-} as const
+// HACK: No longer maintained
+// const LEGACY_FACETS = {
+//   [Businesses.GenshinImpact]: 'genshin',
+//   [Businesses.HonkaiStarRail]: 'starrail',
+//   [Businesses.ZenlessZoneZero]: 'zzz',
+// } as const
 
 function resolveRemoteImageSrc (
   keyofBusinesses: KeyofBusinesses,
   itemCategory: PrettyGachaRecord['itemCategory'],
   itemId: PrettyGachaRecord['itemId'],
-  legacy?: boolean,
+  // legacy?: boolean,
 ) {
-  if (legacy) {
-    // v0 legacy facet
-    console.debug('Using legacy image source')
-    const legacyFacet = LEGACY_FACETS[Businesses[keyofBusinesses]]
-    const legacyCategory = itemCategory.toLowerCase() as Lowercase<typeof itemCategory>
-    return `https://hoyo-gacha.lgou2w.com/static/${legacyFacet}/${legacyCategory}/${itemId}.png`
-  }
+  // HACK: No longer maintained
+  // if (legacy) {
+  //   // v0 legacy facet
+  //   console.debug('Using legacy image source')
+  //   const legacyFacet = LEGACY_FACETS[Businesses[keyofBusinesses]]
+  //   const legacyCategory = itemCategory.toLowerCase() as Lowercase<typeof itemCategory>
+  //   return `https://hoyo-gacha.lgou2w.com/static/${legacyFacet}/${legacyCategory}/${itemId}.png`
+  // }
 
   // v1 facet
   // static or transform
