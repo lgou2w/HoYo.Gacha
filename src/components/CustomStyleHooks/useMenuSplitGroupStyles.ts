@@ -1,3 +1,5 @@
+/* eslint-disable react-hooks/immutability */
+
 import { MenuSplitGroupState, getSlotClassNameProp_unstable, makeStyles, menuItemClassNames, mergeClasses } from '@fluentui/react-components'
 
 // This component reimplemented the Fluent UI rendering in order to override some of the default styles.

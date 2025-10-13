@@ -1,3 +1,5 @@
+/* eslint-disable react-hooks/static-components */
+
 import React, { ComponentProps, Fragment, ReactNode, WheelEventHandler, useCallback, useMemo, useState } from 'react'
 import { Virtuoso } from 'react-virtuoso'
 import { Caption1, Divider, Subtitle2, Tab, TabList, Title1, makeStyles, mergeClasses, tabClassNames, title1ClassNames, tokens } from '@fluentui/react-components'
