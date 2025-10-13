@@ -1,3 +1,5 @@
+/* eslint-disable react-hooks/immutability */
+
 import { SwitchState, getSlotClassNameProp_unstable, makeStyles, mergeClasses, switchClassNames, tokens } from '@fluentui/react-components'
 
 // This component reimplemented the Fluent UI rendering in order to override some of the default styles.

@@ -1,3 +1,5 @@
+/* eslint-disable react-hooks/immutability */
+
 import { MenuButtonState, getSlotClassNameProp_unstable, makeStyles, mergeClasses } from '@fluentui/react-components'
 import useButtonStyles from './useButtonStyles'
 

@@ -1,6 +1,6 @@
 [package]
 name = "hoyo_gacha"
-version = "1.1.6"
+version = "1.1.7"
 edition = "2024"
 rust-version = "1.85"
 authors = ["lgou2w <lgou2w@hotmail.com>"]
@@ -25,7 +25,7 @@ tauri-build = { version = "2.4.1", default-features = false, features = ["config
 
 [dependencies]
 async-trait = "0.1.89"
-backtrace = "0.3.75"
+backtrace = "0.3.76"
 cfg-if = "1.0.3"
 exponential-backoff = "2.1.0"
 futures-util = "0.3.31"
@@ -33,7 +33,7 @@ num_enum = "0.7.4"
 os_info = "3.12.0"
 paste = "1.0.15"
 raw-window-handle = "0.6.2"
-regex = "1.11.3"
+regex = "1.12.1"
 reqwest = { version = "0.12.23", features = ["json"] }
 rfd = { version = "0.15.4", default-features = false }
 sha1 = "0.10.6"
@@ -75,8 +75,8 @@ features = [
 # Ensure that some dependencies are version-consistent with tauri to avoid type conflicts
 
 [target.'cfg(windows)'.dependencies]
-windows-registry = "0.6.0"
-windows-version = "0.1.6"
+windows-registry = "0.6.1"
+windows-version = "0.1.7"
 webview2-com = "0.38.0"
 
 [target.'cfg(windows)'.dependencies.windows]

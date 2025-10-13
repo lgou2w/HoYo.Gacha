@@ -39,8 +39,6 @@ export default function TitleBarButtons (props: TitleBarButtonsProps) {
   }, [])
 
   useEffect(() => {
-    updateMaximized()
-
     let unlisten: Awaited<ReturnType<WebviewWindow['onResized']>>
     ;(async () => {
       unlisten = await getCurrentWebviewWindow().onResized(
