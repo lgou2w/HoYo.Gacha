@@ -4002,12 +4002,12 @@ dependencies = [
 
 [[package]]
 name = "socket2"
-version = "0.6.0"
+version = "0.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "233504af464074f9d066d7b5416c5f9b894a5862a6506e306f7b816cdd6f1807"
+checksum = "17129e116933cf371d018bb80ae557e889637989d8638274fb25622827b03881"
 dependencies = [
  "libc",
- "windows-sys 0.59.0",
+ "windows-sys 0.60.2",
 ]
 
 [[package]]
@@ -5114,8 +5114,7 @@ checksum = "8df9b6e13f2d32c91b9bd719c00d1958837bc7dec474d94952798cc8e69eeec3"
 [[package]]
 name = "tracing"
 version = "0.1.41"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "784e0ac535deb450455cbfa28a6f0df145ea1bb7ae51b821cf5e7927fdcfbdd0"
+source = "git+https://github.com/tokio-rs/tracing.git?rev=20f5b3d8ba057ca9c4ae00ad30dda3dce8a71c05#20f5b3d8ba057ca9c4ae00ad30dda3dce8a71c05"
 dependencies = [
  "log",
  "pin-project-lite",
@@ -5126,11 +5125,10 @@ dependencies = [
 [[package]]
 name = "tracing-appender"
 version = "0.2.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3566e8ce28cc0a3fe42519fc80e6b4c943cc4c8cef275620eb8dac2d3d4e06cf"
+source = "git+https://github.com/tokio-rs/tracing.git?rev=20f5b3d8ba057ca9c4ae00ad30dda3dce8a71c05#20f5b3d8ba057ca9c4ae00ad30dda3dce8a71c05"
 dependencies = [
  "crossbeam-channel",
- "thiserror 1.0.69",
+ "thiserror 2.0.17",
  "time",
  "tracing-subscriber",
 ]
@@ -5138,8 +5136,7 @@ dependencies = [
 [[package]]
 name = "tracing-attributes"
 version = "0.1.30"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "81383ab64e72a7a8b8e13130c49e3dab29def6d0c7d76a03087b3cf71c5c6903"
+source = "git+https://github.com/tokio-rs/tracing.git?rev=20f5b3d8ba057ca9c4ae00ad30dda3dce8a71c05#20f5b3d8ba057ca9c4ae00ad30dda3dce8a71c05"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -5149,8 +5146,7 @@ dependencies = [
 [[package]]
 name = "tracing-core"
 version = "0.1.34"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b9d12581f227e93f094d3af2ae690a574abb8a2b9b7a96e7cfe9647b2b617678"
+source = "git+https://github.com/tokio-rs/tracing.git?rev=20f5b3d8ba057ca9c4ae00ad30dda3dce8a71c05#20f5b3d8ba057ca9c4ae00ad30dda3dce8a71c05"
 dependencies = [
  "once_cell",
  "valuable",
@@ -5159,8 +5155,7 @@ dependencies = [
 [[package]]
 name = "tracing-log"
 version = "0.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ee855f1f400bd0e5c02d150ae5de3840039a3f54b025156404e34c23c03f47c3"
+source = "git+https://github.com/tokio-rs/tracing.git?rev=20f5b3d8ba057ca9c4ae00ad30dda3dce8a71c05#20f5b3d8ba057ca9c4ae00ad30dda3dce8a71c05"
 dependencies = [
  "log",
  "once_cell",
@@ -5170,8 +5165,7 @@ dependencies = [
 [[package]]
 name = "tracing-subscriber"
 version = "0.3.20"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2054a14f5307d601f88daf0553e1cbf472acc4f2c51afab632431cdcd72124d5"
+source = "git+https://github.com/tokio-rs/tracing.git?rev=20f5b3d8ba057ca9c4ae00ad30dda3dce8a71c05#20f5b3d8ba057ca9c4ae00ad30dda3dce8a71c05"
 dependencies = [
  "matchers",
  "nu-ansi-term",
