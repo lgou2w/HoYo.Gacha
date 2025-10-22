@@ -1,5 +1,32 @@
 # 原神 · 千星奇域 - 颂愿
 
+GET https://public-operation-hk4e.mihoyo.com/gacha_info/api/getBeyondGachaLog
+
+```json
+{
+  "retcode": 0,
+  "message": "OK",
+  "data": {
+    "total": "0",
+    "list": [
+      {
+        "id": "1761109800000081972",
+        "region": "cn_gf01",
+        "uid": "",
+        "schedule_id": "18",
+        "item_type": "装扮形录",
+        "item_id": "270857",
+        "item_name": "部件形录·「典雅半身裙·叶绿」",
+        "rank_type": "2",
+        "is_up": "0",
+        "time": "2025-10-22 13:07:45",
+        "op_gacha_type": "1000"
+      }
+    ]
+  }
+}
+```
+
 ```js
 getLogList: function () {
   var e = arguments.length > 0 &&
