@@ -2,6 +2,8 @@
 
 GET https://public-operation-hk4e.mihoyo.com/gacha_info/api/getBeyondGachaLog
 
+常驻：
+
 ```json
 {
   "retcode": 0,
@@ -26,6 +28,48 @@ GET https://public-operation-hk4e.mihoyo.com/gacha_info/api/getBeyondGachaLog
   }
 }
 ```
+
+活动（女）：
+
+```json
+{
+  "retcode": 0,
+  "message": "OK",
+  "data": {
+    "total": "0",
+    "list": [
+      {
+        "id": "1761217800000176385",
+        "region": "cn_gf01",
+        "uid": "",
+        "schedule_id": "20",
+        "item_type": "装扮套装",
+        "item_id": "265044",
+        "item_name": "女性装扮·「烛影狂欢夜」",
+        "rank_type": "5",
+        "is_up": "0",
+        "time": "2025-10-23 19:52:08",
+        "op_gacha_type": "20021"
+      },
+      {
+        "id": "1761217800000176285",
+        "region": "cn_gf01",
+        "uid": "",
+        "schedule_id": "20",
+        "item_type": "装扮部件",
+        "item_id": "260109",
+        "item_name": "女性装扮·「炽烈长袖衫」",
+        "rank_type": "3",
+        "is_up": "0",
+        "time": "2025-10-23 19:52:08",
+        "op_gacha_type": "20021"
+      }
+    ]
+  }
+}
+```
+
+官方 JS Bundle 数据：
 
 ```js
 getLogList: function () {
