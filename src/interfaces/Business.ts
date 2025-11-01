@@ -10,8 +10,12 @@ export const HonkaiStarRail = 1
 export type ZenlessZoneZero = 2
 export const ZenlessZoneZero = 2
 
+export type MiliastraWonderland = 3
+export const MiliastraWonderland = 3
+
 export const Businesses = {
   GenshinImpact: 0 as GenshinImpact,
+  MiliastraWonderland: 3 as MiliastraWonderland,
   HonkaiStarRail: 1 as HonkaiStarRail,
   ZenlessZoneZero: 2 as ZenlessZoneZero,
 } as const
@@ -72,6 +76,7 @@ export function detectUidServerRegion (business: Business, uid: number | string)
   const digits = Math.floor(Math.log10(uid)) + 1
 
   if ((business === Businesses.GenshinImpact ||
+    business === Businesses.MiliastraWonderland ||
     business === Businesses.HonkaiStarRail) &&
     (digits === 9 || digits === 10)
   ) {
@@ -123,4 +128,10 @@ export function detectUidBusinessRegion (business: Business, uid: number | strin
     default:
       return null
   }
+}
+
+export function isMiliastraWonderland (businessOrKeyof: Business | KeyofBusinesses): boolean {
+  return typeof businessOrKeyof === 'number'
+    ? businessOrKeyof === MiliastraWonderland
+    : Businesses[businessOrKeyof] === MiliastraWonderland
 }

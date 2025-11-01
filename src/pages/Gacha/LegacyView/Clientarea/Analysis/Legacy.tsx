@@ -1,8 +1,8 @@
-import React, { useMemo } from 'react'
+import React, { Fragment, useMemo } from 'react'
 import { Body1, Body2, Caption1, Caption2, Table, TableBody, TableCell, TableHeader, TableHeaderCell, TableRow, makeStyles, tableCellClassNames, tableHeaderCellClassNames, tableRowClassNames, tokens } from '@fluentui/react-components'
 import { HistoryRegular, TableAltTextRegular } from '@fluentui/react-icons'
 import Locale from '@/components/Locale'
-import { Business, Businesses, KeyofBusinesses, ReversedBusinesses } from '@/interfaces/Business'
+import { Business, Businesses, KeyofBusinesses, ReversedBusinesses, isMiliastraWonderland } from '@/interfaces/Business'
 import { AggregatedMetadata, CategorizedMetadata, CategorizedMetadataRankings, PrettyCategory } from '@/interfaces/GachaRecord'
 import { CompositeState } from '@/pages/Gacha/LegacyView/Clientarea/useCompositeState'
 import GachaItem from '@/pages/Gacha/LegacyView/GachaItem'
@@ -34,6 +34,7 @@ enum TableEntryRow {
   Golden = 'Golden',
   Purple = 'Purple',
   Blue = 'Blue',
+  Green = 'Green',
   Aggregated = 'Aggregated',
 }
 
@@ -64,6 +65,9 @@ const useTableStyles = makeStyles({
       },
       [`&[data-row="${TableEntryRow.Blue}"]`]: {
         color: tokens.colorPaletteBlueBorderActive,
+      },
+      [`&[data-row="${TableEntryRow.Green}"]`]: {
+        color: tokens.colorPaletteGreenForeground1,
       },
       [`& .${tableCellClassNames.root}[data-cell="n/a"]`]: {
         color: tokens.colorNeutralForeground4,
@@ -107,11 +111,14 @@ function GachaLegacyViewClientareaAnalysisLegacyTable (props: CompositeState) {
         Bangboo,
         CollaborationCharacter,
         CollaborationWeapon,
+        PermanentOde,
+        EventOde,
       },
       aggregated,
     },
   } = props
 
+  const isBeyond = isMiliastraWonderland(business)
   const state = useMemo(() => ({
     hasChronicled: Chronicled && Chronicled.total > 0,
     hasBangboo: Bangboo && Bangboo.total > 0,
@@ -126,10 +133,15 @@ function GachaLegacyViewClientareaAnalysisLegacyTable (props: CompositeState) {
     Beginner,
   ])
 
-  const data = [
-    createTableEntry(PrettyCategory.Character, Character),
-    createTableEntry(PrettyCategory.Weapon, Weapon),
-  ]
+  const data: ReturnType<typeof createTableEntry>[] = []
+
+  if (Character) {
+    data.push(createTableEntry(PrettyCategory.Character, Character))
+  }
+
+  if (Weapon) {
+    data.push(createTableEntry(PrettyCategory.Weapon, Weapon))
+  }
 
   if (state.hasCollaborationCharacter) {
     data.push(createTableEntry(PrettyCategory.CollaborationCharacter, CollaborationCharacter))
@@ -143,7 +155,9 @@ function GachaLegacyViewClientareaAnalysisLegacyTable (props: CompositeState) {
     data.push(createTableEntry(PrettyCategory.Chronicled, Chronicled))
   }
 
-  data.push(createTableEntry(PrettyCategory.Permanent, Permanent))
+  if (Permanent) {
+    data.push(createTableEntry(PrettyCategory.Permanent, Permanent))
+  }
 
   if (state.hasBangboo) {
     data.push(createTableEntry(PrettyCategory.Bangboo, Bangboo))
@@ -153,7 +167,17 @@ function GachaLegacyViewClientareaAnalysisLegacyTable (props: CompositeState) {
     data.push(createTableEntry(PrettyCategory.Beginner, Beginner))
   }
 
-  data.push(createTableEntry('Aggregated', aggregated))
+  if (PermanentOde) {
+    data.push(createTableEntry(PrettyCategory.PermanentOde, PermanentOde))
+  }
+
+  if (EventOde) {
+    data.push(createTableEntry(PrettyCategory.EventOde, EventOde))
+  }
+
+  if (aggregated) {
+    data.push(createTableEntry('Aggregated', aggregated))
+  }
 
   return (
     <Table className={styles.root} size="small" >
@@ -188,9 +212,15 @@ function GachaLegacyViewClientareaAnalysisLegacyTable (props: CompositeState) {
         </TableRow>
       </TableHeader>
       <TableBody>
-        {Object.values(TableEntryRow).map((row) => (
-          createTableEntryRow(business, row, data, styles.tableCellEntryRow)
-        ))}
+        {Object.values(TableEntryRow).map((row) => {
+          if (isBeyond && (row === TableEntryRow.AverageAndUp || row === TableEntryRow.UpWin || row === TableEntryRow.Up)) {
+            return null
+          } else if (!isBeyond && row === TableEntryRow.Green) {
+            return null
+          }
+
+          return createTableEntryRow(business, row, data, styles.tableCellEntryRow)
+        })}
       </TableBody>
     </Table>
   )
@@ -208,6 +238,7 @@ function createTableEntry (
       golden,
       purple,
       blue,
+      green,
     } = {},
   } = metadata || {}
 
@@ -215,7 +246,8 @@ function createTableEntry (
   const isPermanent = category === PrettyCategory.Permanent
   const isChronicled = category === PrettyCategory.Chronicled
   const isBangboo = category === PrettyCategory.Bangboo
-  const hasUp = !isBeginner && !isPermanent && !isChronicled && !isBangboo
+  const isBeyond = category === PrettyCategory.PermanentOde || category === PrettyCategory.EventOde
+  const hasUp = !isBeginner && !isPermanent && !isChronicled && !isBangboo && !isBeyond
 
   return {
     category,
@@ -226,6 +258,7 @@ function createTableEntry (
       [TableEntryRow.Golden]: [golden?.sum, golden?.percentage],
       [TableEntryRow.Purple]: [purple?.sum, purple?.percentage],
       [TableEntryRow.Blue]: [blue?.sum, blue?.percentage],
+      [TableEntryRow.Green]: [green?.sum, green?.percentage],
       [TableEntryRow.Aggregated]: [metadata?.total, 100],
     },
   }
@@ -247,7 +280,8 @@ function createTableEntryRow (
 
   if (row === TableEntryRow.Golden ||
     row === TableEntryRow.Purple ||
-    row === TableEntryRow.Blue) {
+    row === TableEntryRow.Blue ||
+    row === TableEntryRow.Green) {
     subkey = 'Count'
     ranking = row.toLowerCase() as keyof CategorizedMetadataRankings
   }
@@ -270,7 +304,9 @@ function createTableEntryRow (
       </Locale>
       {data.map((entry) => {
         const [first, last] = entry.value[row as keyof typeof entry.value]
-        const notApplicable = typeof first === 'undefined' || typeof last === 'undefined'
+        const notApplicable = typeof first === 'undefined' || typeof last === 'undefined' ||
+          (row === TableEntryRow.Golden && entry.category === PrettyCategory.PermanentOde) ||
+          (row === TableEntryRow.Green && entry.category === PrettyCategory.EventOde)
 
         return (
           <TableCell
@@ -327,6 +363,8 @@ function GachaLegacyViewClientareaAnalysisLegacyHistory (props: CompositeState) 
         Bangboo,
         CollaborationCharacter,
         CollaborationWeapon,
+        PermanentOde,
+        EventOde,
       },
     },
   } = props
@@ -344,7 +382,11 @@ function GachaLegacyViewClientareaAnalysisLegacyHistory (props: CompositeState) 
           as="span"
           childrenPosition="before"
         >
-          {<Locale mapping={[`Business.${keyofBusinesses}.Ranking.Golden`]} />}{'\u00A0'}
+          {!isMiliastraWonderland(keyofBusinesses) && (
+            <Fragment>
+              <Locale mapping={[`Business.${keyofBusinesses}.Ranking.Golden`]} />{'\u00A0'}
+            </Fragment>
+          )}
         </Locale>
       </div>
       <div className={styles.list}>
@@ -356,6 +398,8 @@ function GachaLegacyViewClientareaAnalysisLegacyHistory (props: CompositeState) 
         <LegacyHistoryList keyofBusinesses={keyofBusinesses} metadata={Permanent} />
         <LegacyHistoryList keyofBusinesses={keyofBusinesses} metadata={Bangboo} />
         <LegacyHistoryList keyofBusinesses={keyofBusinesses} metadata={Beginner} />
+        <LegacyHistoryList keyofBusinesses={keyofBusinesses} metadata={PermanentOde} />
+        <LegacyHistoryList keyofBusinesses={keyofBusinesses} metadata={EventOde} />
       </div>
     </div>
   )
@@ -382,8 +426,11 @@ const useHistoryListStyles = makeStyles({
   upSum: {
     color: tokens.colorPaletteRedForeground1,
   },
-  sum: {
+  sumGolden: {
     color: tokens.colorPaletteMarigoldForeground1,
+  },
+  sumPurple: {
+    color: tokens.colorPaletteBerryForeground1,
   },
   divider: {
     flex: 0,
@@ -409,17 +456,21 @@ interface LegacyHistoryListProps {
 function LegacyHistoryList (props: LegacyHistoryListProps) {
   const styles = useHistoryListStyles()
   const { keyofBusinesses, metadata } = props
+  const isBeyond = isMiliastraWonderland(keyofBusinesses)
+  const ranking: keyof CategorizedMetadataRankings = metadata?.category === PrettyCategory.PermanentOde
+    ? 'purple'
+    : 'golden'
 
-  if (!metadata || metadata.rankings.golden.sum < 1) {
+  if (!metadata || metadata.rankings[ranking].sum < 1) {
     return null
   }
 
-  const { category, rankings: { golden: { upSum, sum, values } }, total } = metadata
+  const { category, rankings: { [ranking]: { upSum, sum, values } }, total } = metadata
   const isBeginner = category === PrettyCategory.Beginner
   const isPermanent = category === PrettyCategory.Permanent
   const isChronicled = category === PrettyCategory.Chronicled
   const isBangboo = category === PrettyCategory.Bangboo
-  const hasUp = !isBeginner && !isPermanent && !isChronicled && !isBangboo
+  const hasUp = !isBeginner && !isPermanent && !isChronicled && !isBangboo && !isBeyond
 
   return (
     <div className={styles.root}>
@@ -446,7 +497,7 @@ function LegacyHistoryList (props: LegacyHistoryListProps) {
           />}
           {hasUp && <Caption1>{' / '}</Caption1>}
           <Locale
-            className={styles.sum}
+            className={styles[`sum${capitalize(ranking)}`]}
             component={Caption1}
             mapping={[
               'Pages.Gacha.LegacyView.Clientarea.Analysis.LegacyHistory.ListTitle',
@@ -461,8 +512,9 @@ function LegacyHistoryList (props: LegacyHistoryListProps) {
           <GachaItem
             key={record.id}
             keyofBusinesses={keyofBusinesses}
-            ranking="Golden"
+            ranking={capitalize(ranking)}
             record={record}
+            noUpBadge={isBeyond}
             small
           />
         ))}

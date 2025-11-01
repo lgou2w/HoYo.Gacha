@@ -1,8 +1,9 @@
 import React from 'react'
 import { makeStyles, mergeClasses, tokens } from '@fluentui/react-components'
+import BizImages from '@/components/BizImages'
 import Locale from '@/components/Locale'
 import useI18n from '@/hooks/useI18n'
-import { KeyofBusinesses } from '@/interfaces/Business'
+import { KeyofBusinesses, isMiliastraWonderland } from '@/interfaces/Business'
 import { CategorizedMetadataRankings, PrettyGachaRecord } from '@/interfaces/GachaRecord'
 import GachaItemImage from './Image'
 
@@ -24,10 +25,12 @@ const useStyles = makeStyles({
     height: '100%',
     borderRadius: tokens.borderRadiusMedium,
   },
+  rankingGreen: {},
   rankingBlue: { background: 'linear-gradient(#434e7e, #4d80c8)' },
   rankingPurple: { background: 'linear-gradient(#4e4976, #9061d2)' },
   rankingGolden: { background: 'linear-gradient(#986359, #d2ad70)' },
   businessGenshinImpact: {},
+  businessMiliastraWonderland: {},
   businessHonkaiStarRail: {
     borderTopRightRadius: tokens.borderRadiusXLarge,
     '&::before': {
@@ -68,6 +71,21 @@ const useStyles = makeStyles({
     color: tokens.colorPaletteLightGreenBackground1,
     backgroundColor: tokens.colorPaletteLightGreenForeground1,
     borderTopLeftRadius: tokens.borderRadiusMedium,
+  },
+  // "up" badge cannot exist at the same time.
+  labelCatalog: {
+    top: '0.075rem',
+    left: '0.075rem',
+    border: 'none',
+    borderRadius: tokens.borderRadiusMedium,
+    background: 'rgba(0, 0, 0, 0.35)',
+    width: '1rem',
+    height: '1rem',
+    padding: '0.075rem',
+    '& img': {
+      width: '100%',
+      height: '100%',
+    },
   },
 })
 
@@ -110,6 +128,9 @@ export default function GachaItem (props: GachaItemProps) {
   title += genshinCharacter2 ? '\n' + i18n.t('Pages.Gacha.LegacyView.GachaItem.Title.GenshinImpactCharacter2') : ''
   title += '\n' + i18n.dayjs(time).format('LLLL')
 
+  const isBeyond = isMiliastraWonderland(keyofBusinesses)
+  const catalog = isBeyond && itemCategory === 'CosmeticCatalog'
+
   return (
     <div
       className={mergeClasses(
@@ -147,6 +168,11 @@ export default function GachaItem (props: GachaItemProps) {
           className={mergeClasses(styles.label, styles.labelUp)}
           mapping={['Pages.Gacha.LegacyView.GachaItem.Up']}
         />
+      )}
+      {noUpBadge && catalog && (
+        <span className={mergeClasses(styles.label, styles.labelCatalog)}>
+          <img src={BizImages.MiliastraWonderland.Material!.IconCostumeSynthesis} />
+        </span>
       )}
     </div>
   )

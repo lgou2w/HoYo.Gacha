@@ -73,7 +73,7 @@ declare_error_kinds! {
 
     #[error("Error sending http request: {cause}")]
     Reqwest {
-      cause: reqwest::Error => cause.to_string()
+      cause: reqwest::Error => format_args!("{cause:?}")
     },
 
     #[error("Authkey timeout for gacha url")]
@@ -343,6 +343,8 @@ impl DirtyGachaUrl {
 
 #[derive(Debug)]
 pub struct GachaUrl {
+  pub business: Business,
+  pub region: BusinessRegion,
   pub url: ParsedGachaUrl,
   pub owner_uid: u32,
   pub creation_time: Option<OffsetDateTime>,
@@ -357,8 +359,8 @@ impl Serialize for GachaUrl {
 
     let mut state = serializer.serialize_struct("GachaUrl", 5)?;
 
-    state.serialize_field("business", &self.url.biz.0)?;
-    state.serialize_field("region", &self.url.biz.1)?;
+    state.serialize_field("business", &self.business)?;
+    state.serialize_field("region", &self.region)?;
     state.serialize_field("ownerUid", &self.owner_uid)?;
 
     let creation_time = self
@@ -368,7 +370,7 @@ impl Serialize for GachaUrl {
       .map_err(S::Error::custom)?;
 
     state.serialize_field("creationTime", &creation_time)?;
-    state.serialize_field("value", &self.url.to_url(None, None, None))?;
+    state.serialize_field("value", &self.url.to_url(self.business, None, None, None))?;
     state.end()
   }
 }
@@ -378,6 +380,8 @@ impl GachaUrl {
   // and check for timeliness and consistency to get the latest gacha url.
   #[tracing::instrument]
   pub async fn from_webcaches(
+    business: Business,
+    region: BusinessRegion,
     data_folder: impl AsRef<Path> + Debug,
     expected_uid: u32,
   ) -> Result<Self, GachaUrlError> {
@@ -387,12 +391,17 @@ impl GachaUrl {
     )
     .await?;
 
-    Self::consistency_check(dirty_urls, expected_uid, false).await
+    Self::consistency_check(business, region, dirty_urls, expected_uid, false).await
   }
 
   // Verifying timeliness and consistency from a dirty gacha url
   #[tracing::instrument]
-  pub async fn from_dirty(dirty_url: String, expected_uid: u32) -> Result<Self, GachaUrlError> {
+  pub async fn from_dirty(
+    business: Business,
+    region: BusinessRegion,
+    dirty_url: String,
+    expected_uid: u32,
+  ) -> Result<Self, GachaUrlError> {
     let dirty_urls = vec![DirtyGachaUrl {
       // Because the creation time is not known from the dirty gacha url.
       // The server will not return the creation time.
@@ -400,11 +409,13 @@ impl GachaUrl {
       value: dirty_url,
     }];
 
-    Self::consistency_check(dirty_urls, expected_uid, true).await
+    Self::consistency_check(business, region, dirty_urls, expected_uid, true).await
   }
 
   #[tracing::instrument(skip(dirty_urls), fields(urls = dirty_urls.len(), ?expected_uid))]
   async fn consistency_check(
+    business: Business,
+    region: BusinessRegion,
     dirty_urls: Vec<DirtyGachaUrl>,
     expected_uid: u32,
     spread: bool,
@@ -427,7 +438,7 @@ impl GachaUrl {
         }
       };
 
-      let url = parsed.to_url(None, None, Some(1));
+      let url = parsed.to_url(business, None, None, Some(1));
       let response = match request_gacha_url_with_retry(url, None).await {
         Ok(response) => response,
         Err(error) => {
@@ -453,7 +464,7 @@ impl GachaUrl {
         continue;
       };
 
-      if record.uid == expected_uid {
+      if record.uid() == expected_uid {
         info!(
           message = "Capture the gacha url with the expected uid",
           expected_uid,
@@ -462,13 +473,15 @@ impl GachaUrl {
         );
 
         return Ok(GachaUrl {
+          business,
+          region,
           url: parsed,
           owner_uid: expected_uid,
           creation_time: dirty.creation_time,
         });
       } else {
         // The gacha url does not match the expected uid
-        actuals.insert(record.uid);
+        actuals.insert(record.uid());
       }
     }
 
@@ -500,9 +513,9 @@ impl GachaUrl {
   }
 }
 
-#[derive(Debug, PartialEq, Eq, Serialize)]
+#[derive(Debug, PartialEq)]
 pub struct ParsedGachaUrl {
-  pub biz: (Business, BusinessRegion),
+  pub biz: &'static BizInternals,
   // Required params
   pub sign_type: String,
   pub authkey_ver: String,
@@ -510,7 +523,7 @@ pub struct ParsedGachaUrl {
   pub game_biz: String,
   pub region: String,
   pub lang: String,
-  pub gacha_type: (&'static str, String), // key:val
+  pub gacha_type: (&'static str, u32), // key:val
 }
 
 impl FromStr for ParsedGachaUrl {
@@ -558,8 +571,8 @@ impl FromStr for ParsedGachaUrl {
     let (gacha_type_field, init_gacha_type_field) = biz.gacha_type_fields();
     let gacha_type = queries
       .get(gacha_type_field)
-      .cloned()
-      .or(queries.get(init_gacha_type_field).cloned())
+      .or(queries.get(init_gacha_type_field))
+      .and_then(|str| u32::from_str(str).ok())
       .ok_or_else(|| {
         warn!(
           "Gacha url missing important '{gacha_type_field}' or '{init_gacha_type_field}' parameters: {queries:?}"
@@ -571,7 +584,7 @@ impl FromStr for ParsedGachaUrl {
       })?;
 
     Ok(Self {
-      biz: (biz.business, biz.region),
+      biz,
       sign_type,
       authkey_ver,
       authkey,
@@ -584,9 +597,11 @@ impl FromStr for ParsedGachaUrl {
 }
 
 impl ParsedGachaUrl {
+  #[tracing::instrument]
   pub fn to_url(
     &self,
-    gacha_type: Option<&str>,
+    into_business: Business,
+    gacha_type: Option<u32>,
     end_id: Option<&str>,
     page_size: Option<u8>,
   ) -> Url {
@@ -601,18 +616,37 @@ impl ParsedGachaUrl {
       gacha_type: (gacha_type_field, original_gacha_type),
     } = self;
 
-    let biz = BizInternals::mapped(biz.0, biz.1);
+    let mut base_gacha_url = biz.base_gacha_url.to_owned();
+    let mut gacha_type = gacha_type.unwrap_or(*original_gacha_type);
+    let into_category = PrettyCategory::from_gacha_type(&into_business, gacha_type);
 
-    let gacha_type = gacha_type.unwrap_or(original_gacha_type);
-    let base_gacha_url = if let Ok(value) = u32::from_str(gacha_type)
-      && let Some(category) = PrettyCategory::from_gacha_type(&biz.business, value)
-      && category.is_hkrpg_collaboration()
-    {
-      biz.base_gacha_url_to_hkrpg_collaboration()
-    } else {
-      None
+    // Honkai: Star Rail
+    // If the gacha type is Collaboration, the pathname needs to be replaced.
+    if into_category.is_some_and(|c| c.is_hkrpg_collaboration()) {
+      base_gacha_url = biz.base_gacha_url_to_hkrpg_collaboration();
     }
-    .unwrap_or(biz.base_gacha_url.to_owned());
+
+    // TODO: The `url.biz` for both 'Genshin Impact' and 'Genshin Impact: Miliastra Wonderland'
+    //   is always 'Genshin Impact'. If `into_business` is A or B, the path name needs to be replaced.
+    //   If `into_category` is None, the default `gacha_type` needs to be set.
+    if biz.business == Business::GenshinImpact
+      && (into_business == Business::MiliastraWonderland
+        || into_business == Business::GenshinImpact)
+    {
+      let is_beyond = into_business == Business::MiliastraWonderland;
+      base_gacha_url = biz.base_gacha_url_to_hk4e(is_beyond);
+
+      if into_category.is_none() {
+        gacha_type = PrettyCategory::to_gacha_type(
+          &into_business,
+          &if is_beyond {
+            PrettyCategory::PermanentOde
+          } else {
+            PrettyCategory::Permanent
+          },
+        );
+      }
+    }
 
     Url::parse_with_params(
       &base_gacha_url,
@@ -623,7 +657,7 @@ impl ParsedGachaUrl {
         ("game_biz", game_biz.as_str()),
         ("region", region.as_str()),
         ("lang", lang.as_str()),
-        (gacha_type_field, gacha_type),
+        (gacha_type_field, gacha_type.to_string().as_str()),
         ("end_id", end_id.unwrap_or("0")),
         ("page", "1"),
         ("size", page_size.unwrap_or(20).to_string().as_str()),
@@ -642,7 +676,13 @@ struct GachaRecordsResponse {
 }
 
 #[derive(Deserialize)]
-struct GachaRecordsPaginationItem {
+struct GachaRecordsPagination {
+  list: Vec<GachaRecordsPaginationItem>,
+  region: Option<String>, // Except for 'Genshin Impact: Miliastra Wonderland'
+}
+
+#[derive(Deserialize)]
+struct GenericGachaRecordsPaginationItem {
   id: String,
   #[serde(with = "serde_helper::string_number_into")]
   uid: u32,
@@ -671,10 +711,59 @@ struct GachaRecordsPaginationItem {
   item_id: Option<u32>,
 }
 
+// Genshin Impact: Miliastra Wonderland
 #[derive(Deserialize)]
-struct GachaRecordsPagination {
-  list: Vec<GachaRecordsPaginationItem>,
+struct BeyondGachaRecordsPaginationItem {
+  id: String,
   region: String,
+  #[serde(with = "serde_helper::string_number_into")]
+  uid: u32,
+  schedule_id: String,
+  item_type: String,
+  #[serde(with = "serde_helper::string_number_into")]
+  item_id: u32,
+  item_name: String,
+  #[serde(with = "serde_helper::string_number_into")]
+  rank_type: u32,
+  is_up: String,
+  #[serde(with = "gacha_time_format")]
+  time: PrimitiveDateTime,
+  #[serde(with = "serde_helper::string_number_into")]
+  op_gacha_type: u32,
+}
+
+impl BeyondGachaRecordsPaginationItem {
+  pub fn into_generic(self, lang: String) -> GenericGachaRecordsPaginationItem {
+    GenericGachaRecordsPaginationItem {
+      id: self.id,
+      uid: self.uid,
+      gacha_type: self.op_gacha_type,
+      gacha_id: None,
+      rank_type: self.rank_type,
+      count: 1, // always
+      time: self.time,
+      lang,
+      name: self.item_name,
+      item_type: self.item_type,
+      item_id: Some(self.item_id),
+    }
+  }
+}
+
+#[derive(Deserialize)]
+#[serde(untagged)]
+enum GachaRecordsPaginationItem {
+  Generic(GenericGachaRecordsPaginationItem),
+  Beyond(BeyondGachaRecordsPaginationItem),
+}
+
+impl GachaRecordsPaginationItem {
+  pub const fn uid(&self) -> u32 {
+    match self {
+      Self::Generic(item) => item.uid,
+      Self::Beyond(item) => item.uid,
+    }
+  }
 }
 
 #[tracing::instrument(skip(url))]
@@ -754,16 +843,17 @@ fn request_gacha_url_with_retry(
 
 #[tracing::instrument(skip_all)]
 pub async fn fetch_gacha_records(
+  business: Business,
+  _region: BusinessRegion,
   gacha_url: &str,
-  gacha_type: Option<&str>,
+  gacha_type: Option<u32>,
   end_id: Option<&str>,
   page_size: Option<u8>,
 ) -> Result<Option<Vec<GachaRecord>>, GachaUrlError> {
   info!("Fetching the gacha records...");
 
-  let parsed = ParsedGachaUrl::from_str(gacha_url)?;
-  let url = parsed.to_url(gacha_type, end_id, page_size);
-  let business = parsed.biz.0;
+  let parsed_url = ParsedGachaUrl::from_str(gacha_url)?;
+  let url = parsed_url.to_url(business, gacha_type, end_id, page_size);
 
   let pagination = match request_gacha_url_with_retry(url, None).await {
     Err(error) => {
@@ -784,10 +874,21 @@ pub async fn fetch_gacha_records(
     }
   };
 
-  let uid = pagination.list.first().map(|item| item.uid).unwrap(); // SAFETY: See above
+  let uid = pagination.list.first().map(|item| item.uid()).unwrap(); // SAFETY: See above
   let server_region = ServerRegion::from_uid(business, uid).unwrap_or_else(|| {
+    let region = pagination
+      .region
+      .as_deref()
+      .or(pagination.list.first().and_then(|item| {
+        if let GachaRecordsPaginationItem::Beyond(item) = item {
+          Some(item.region.as_str())
+        } else {
+          None
+        }
+      }));
+
     // Unless there is an extra digit, see FIXME of `from_uid` for details
-    error!(message = "Failed to get server region from uid", %business, %uid, %pagination.region);
+    error!(message = "Failed to get server region from uid", %business, %uid, ?region);
     ServerRegion::Official
   });
 
@@ -795,6 +896,13 @@ pub async fn fetch_gacha_records(
   let mut records = Vec::with_capacity(pagination.list.len());
 
   for item in pagination.list {
+    // FIXME: Beyond needs to retain some special field values,
+    //   which may be used in the future.
+    let item = match item {
+      GachaRecordsPaginationItem::Generic(item) => item,
+      GachaRecordsPaginationItem::Beyond(item) => item.into_generic(parsed_url.lang.clone()),
+    };
+
     let item_id = match item.item_id {
       Some(v) => v,
       // HACK: Genshin Impact only
@@ -835,6 +943,7 @@ pub async fn fetch_gacha_records(
 #[cfg(test)]
 mod tests {
   use crate::error::Error;
+  use crate::models::{BIZ_GENSHIN_IMPACT_OFFICIAL, BIZ_ZENLESS_ZONE_ZERO_OFFICIAL};
 
   use super::*;
 
@@ -883,14 +992,14 @@ mod tests {
     assert_eq!(
       gacha_url,
       ParsedGachaUrl {
-        biz: (Business::ZenlessZoneZero, BusinessRegion::Official),
+        biz: &BIZ_ZENLESS_ZONE_ZERO_OFFICIAL,
         sign_type: "2".into(),
         authkey_ver: "1".into(),
         authkey: "123456".into(),
         game_biz: "nap_cn".into(),
         region: "prod_gf_cn".into(),
         lang: "zh-cn".into(),
-        gacha_type: ("real_gacha_type", "2".into())
+        gacha_type: ("real_gacha_type", 2)
       }
     );
   }

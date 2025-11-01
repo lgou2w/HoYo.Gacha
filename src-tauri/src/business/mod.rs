@@ -48,19 +48,23 @@ pub async fn business_locate_data_folder(
 #[tauri::command]
 #[tracing::instrument(skip_all)]
 pub async fn business_from_webcaches_gacha_url(
+  business: Business,
+  region: BusinessRegion,
   data_folder: PathBuf,
   expected_uid: u32,
 ) -> Result<GachaUrl, GachaUrlError> {
-  GachaUrl::from_webcaches(&data_folder, expected_uid).await
+  GachaUrl::from_webcaches(business, region, &data_folder, expected_uid).await
 }
 
 #[tauri::command]
 #[tracing::instrument(skip_all)]
 pub async fn business_from_dirty_gacha_url(
+  business: Business,
+  region: BusinessRegion,
   dirty_url: String,
   expected_uid: u32,
 ) -> Result<GachaUrl, GachaUrlError> {
-  GachaUrl::from_dirty(dirty_url, expected_uid).await
+  GachaUrl::from_dirty(business, region, dirty_url, expected_uid).await
 }
 
 #[derive(Copy, Clone, Debug, Deserialize)]

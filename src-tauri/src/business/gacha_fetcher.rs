@@ -51,7 +51,7 @@ pub async fn create_gacha_records_fetcher(
         region,
         &sender,
         &gacha_url,
-        &gacha_type,
+        gacha_type,
         last_end_id.as_deref(),
       )
       .await
@@ -100,16 +100,16 @@ pub async fn create_gacha_records_fetcher(
 #[tracing::instrument(skip_all, fields(?gacha_type, ?last_end_id))]
 async fn pull_gacha_records(
   business: Business,
-  _region: BusinessRegion,
+  region: BusinessRegion,
   sender: &mpsc::Sender<GachaRecordsFetcherFragment>,
   gacha_url: &str,
-  gacha_type: &u32,
+  gacha_type: u32,
   last_end_id: Option<&str>,
 ) -> Result<(), GachaUrlError> {
   // Internal Abbreviations
   type Fragment = GachaRecordsFetcherFragment;
 
-  let category = PrettyCategory::from_gacha_type(&business, *gacha_type);
+  let category = PrettyCategory::from_gacha_type(&business, gacha_type);
   if category.is_none() {
     // HACK: Normally it must be Some,
     //   unless an unofficial enumeration value is manually added by the user.
@@ -140,8 +140,10 @@ async fn pull_gacha_records(
     sender.send(Fragment::Pagination(pagination)).await.unwrap();
 
     if let Some(records) = super::gacha_url::fetch_gacha_records(
+      business,
+      region,
       gacha_url,
-      Some(&format!("{}", *gacha_type)),
+      Some(gacha_type),
       Some(&end_id),
       None,
     )

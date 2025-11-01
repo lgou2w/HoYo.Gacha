@@ -46,6 +46,30 @@ export default {
           Blue: '3★',
         },
       },
+      MiliastraWonderland: {
+        Name: 'Genshin Impact: Miliastra Wonderland',
+        Player: {
+          Name: '$t(Business.GenshinImpact.Player.Name)',
+        },
+        Gacha: {
+          Name: 'Ode',
+          Category: {
+            PermanentOde: 'Standard Ode',
+            PermanentOde_Title: 'Encounter Echoes',
+            EventOde: 'Event Ode',
+            Aggregated: 'Aggregated',
+          },
+        },
+        DataFolder: {
+          Example: '$t(Business.GenshinImpact.DataFolder.Example)',
+        },
+        Ranking: {
+          Golden: 'Legendary (5-Star)',
+          Purple: 'Elite (4-Star)',
+          Blue: 'Exceptional (3-Star)',
+          Green: 'Excellent (2-Star)',
+        },
+      },
       HonkaiStarRail: {
         Name: 'Honkai: Star Rail',
         Player: {
@@ -227,6 +251,7 @@ export default {
       '/': 'Homepage',
       '/Settings': 'Settings',
       '/Gacha/GenshinImpact': '$t(Business.GenshinImpact.Name)',
+      '/Gacha/MiliastraWonderland': '$t(Business.MiliastraWonderland.Name)',
       '/Gacha/HonkaiStarRail': '$t(Business.HonkaiStarRail.Name)',
       '/Gacha/ZenlessZoneZero': '$t(Business.ZenlessZoneZero.Name)',
     },
@@ -511,16 +536,22 @@ export default {
                   Total_other: '{{count, number}} pulls in total',
                   GoldenSum_zero: 'No gold pulled yet',
                   GoldenSum: 'Pulled {{count, number}} gold',
+                  PurpleSum_zero: 'No purple pulled yet',
+                  PurpleSum: 'Pulled {{count, number}} purple',
                   NextPity_zero: 'No pulls into pity yet',
                   NextPity_one: '{{count}} pull into pity',
                   NextPity_other: '{{count}} pulls into pity',
                   Beginner: 'Beginner: {{name}}',
                   Average: 'Average rate per gold: {{count}}',
+                  AveragePurple: 'Average rate per purple: {{count}}',
                   Percentage: 'Gold rate: {{count}}%',
+                  PercentagePurple: 'Purple rate: {{count}}%',
                   UpAverage: 'Average UP gold: {{count}}',
                   UpPercentage: 'UP gold rate: {{count}}%',
                   LastGolden: 'Last gold: {{name}} ({{usedPity}})',
                   LastGoldenNone: 'Last gold: None',
+                  LastPurple: 'Last purple: {{name}} ({{usedPity}})',
+                  LastPurpleNone: 'Last purple: None',
                 },
               },
               LastUpdated: {
@@ -528,17 +559,28 @@ export default {
               },
               Tooltips: {
                 Fragment1: {
-                  Token1: ' Total $t(Business.{{keyofBusinesses}}.Gacha.Name) ',
+                  Token1: 'Total $t(Business.{{keyofBusinesses}}.Gacha.Name) ',
                   Token2: '{{total, number}}',
-                  Token3: ' times, Total value: ',
+                  Token3: ' times, total value: ',
                   Token4: '{{value, number}}',
                 },
-                Fragment2: ' $t(Business.{{keyofBusinesses}}.Gacha.Name) records date coverage: ',
-                Fragment3: ' Due to official settings, the latest data is subject to a delay of approximately one hour. During peak periods for new banners, this delay may be extended. For precise timing, please refer to the in-game data.',
+                Fragment1Beyond: {
+                  FragmentStart: 'Total',
+                  Token1: ' $t(Business.{{keyofBusinesses}}.Gacha.Category.{{category}}) ',
+                  Token2: '{{total, number}}',
+                  Token3: ' times, total value: ',
+                  Token4: '{{value, number}}',
+                  FragmentSeparator: ', ',
+                },
+                Fragment2: '$t(Business.{{keyofBusinesses}}.Gacha.Name) records date coverage: ',
+                Fragment3: 'Due to official settings, only data records from the most recent 6 months are available. There is approximately a one-hour delay in retrieving the latest data. During peak periods for new banners, this delay may be extended. For precise timing, please refer to the in-game data.',
+                Fragment3_One_Year: 'Due to official settings, only data records from the most recent year is available. There is approximately a one-hour delay in retrieving the latest data. During peak periods for new banners, this delay may be extended. For precise timing, please refer to the in-game data.',
               },
             },
             Analysis: {
               CardsEntry: {
+                Pull: 'pull',
+                Pull_other: 'pulls',
                 Labels: {
                   AverageAndUp: 'Average / UP',
                   UpWin: 'UP Win',
@@ -559,6 +601,7 @@ export default {
               },
               LegacyHistory: {
                 Title: '$t(Business.{{keyofBusinesses}}.Gacha.Name) History',
+                Title_MiliastraWonderland: 'Costume Set $t(Business.MiliastraWonderland.Gacha.Name) History',
                 ListTitle_Up: '{{upSum}} UP',
                 ListTitle_Total: '{{sum}} total',
               },

@@ -5,6 +5,7 @@ import { useSelectedAccountSuspenseQueryData } from '@/api/queries/accounts'
 import { useFirstGachaRecordSuspenseQueryData } from '@/api/queries/business'
 import Locale from '@/components/Locale'
 import useBusinessContext from '@/hooks/useBusinessContext'
+import { isMiliastraWonderland } from '@/interfaces/Business'
 import DataConvertDialog from '@/pages/Gacha/LegacyView/DataConvert/Dialog'
 
 const useStyles = makeStyles({
@@ -49,7 +50,8 @@ function DataConvertPreset (props: PropsWithoutRef<ComponentProps<typeof DataCon
   const { business, keyofBusinesses } = useBusinessContext()
   const selectedAccount = useSelectedAccountSuspenseQueryData(keyofBusinesses)
   const firstGachaRecord = useFirstGachaRecordSuspenseQueryData(business, selectedAccount?.uid)
-  const disabled = !selectedAccount || (preset === 'Export' && !firstGachaRecord)
+  const disabled = !selectedAccount || (preset === 'Export' && !firstGachaRecord) ||
+    isMiliastraWonderland(business)
 
   const dialogRef = useRef<ElementRef<typeof DataConvertDialog>>(null)
   const handleClick = useCallback<MouseEventHandler>(() => {

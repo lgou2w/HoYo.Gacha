@@ -32,24 +32,45 @@ pub enum PrettyCategory {
   Bangboo,                // 'Zenless Zone Zero' only
   CollaborationCharacter, // 'Honkai: Star Rail' only
   CollaborationWeapon,    // 'Honkai: Star Rail' only
+  PermanentOde,           // 'Genshin Impact: Miliastra Wonderland' only
+  EventOde,               // 'Genshin Impact: Miliastra Wonderland' only
+}
+
+#[derive(Debug, PartialEq, Eq)]
+pub enum RankLevel {
+  Golden,
+  Purple,
+  Blue,
+  Green,        // Genshin Impact: Miliastra Wonderland
+  Unknown(u32), // Avoid panic
 }
 
 impl PrettyCategory {
-  pub const fn max_pity(&self, is_golden: bool) -> u8 {
-    if is_golden {
-      match *self {
+  pub const fn max_pity(&self, rank_level: RankLevel) -> u8 {
+    match rank_level {
+      RankLevel::Golden => match *self {
         Self::Character | Self::Permanent | Self::Chronicled | Self::CollaborationCharacter => 90,
-        _ => 80,
-      }
-    } else {
-      // HACK: Purple maximum pity is always 10
-      10
+        Self::Weapon | Self::Bangboo | Self::CollaborationWeapon => 80,
+        Self::EventOde => 70,
+        Self::Beginner => 50,
+        Self::PermanentOde => 0,
+      },
+      RankLevel::Purple => match *self {
+        Self::PermanentOde => 70,
+        Self::EventOde => 10,
+        _ => 10,
+      },
+      RankLevel::Blue => match *self {
+        Self::PermanentOde => 5,
+        _ => 0,
+      },
+      _ => 0,
     }
   }
 
   // 0 - 100
-  pub fn calc_pity_progress(&self, is_golden: bool, used_pity: u64) -> u8 {
-    let max_pity = self.max_pity(is_golden);
+  pub fn calc_pity_progress(&self, rank_level: RankLevel, used_pity: u64) -> u8 {
+    let max_pity = self.max_pity(rank_level);
 
     if used_pity == 0 || max_pity == 0 {
       return 0;
@@ -63,6 +84,13 @@ impl PrettyCategory {
 
 // See: models/gacha_record.rs
 const GENSHIN_IMPACT_CHARACTER2: u32 = 400;
+
+const MILIASTRA_WONDERLAND_PERMANENT_ODE: u32 = 1000;
+const MILIASTRA_WONDERLAND_EVENT_ODE: u32 = 2000; // Includes: 20011, 20021, 20012, 20022
+const MILIASTRA_WONDERLAND_EVENT_ODE1_1: u32 = 20011;
+const MILIASTRA_WONDERLAND_EVENT_ODE1_2: u32 = 20021;
+const MILIASTRA_WONDERLAND_EVENT_ODE2_1: u32 = 20012;
+const MILIASTRA_WONDERLAND_EVENT_ODE2_2: u32 = 20022;
 
 static KNOWN_CATEGORIZEDS: LazyLock<HashMap<Business, HashMap<u32, PrettyCategory>>> =
   LazyLock::new(|| {
@@ -98,7 +126,32 @@ static KNOWN_CATEGORIZEDS: LazyLock<HashMap<Business, HashMap<u32, PrettyCategor
           (5, PrettyCategory::Bangboo),
         ]),
       ),
+      (
+        Business::MiliastraWonderland,
+        HashMap::from_iter([
+          (
+            MILIASTRA_WONDERLAND_PERMANENT_ODE,
+            PrettyCategory::PermanentOde,
+          ),
+          (MILIASTRA_WONDERLAND_EVENT_ODE, PrettyCategory::EventOde), // Includes: 20011, 20021
+        ]),
+      ),
     ])
+  });
+
+static KNOWN_CATEGORIES_REVERSED: LazyLock<HashMap<Business, HashMap<PrettyCategory, u32>>> =
+  LazyLock::new(|| {
+    let mut m = HashMap::with_capacity(KNOWN_CATEGORIZEDS.len());
+    for (business, categories) in &*KNOWN_CATEGORIZEDS {
+      let mut reversed = HashMap::with_capacity(categories.len());
+      for (gacha_type, category) in categories {
+        reversed.insert(*category, *gacha_type);
+      }
+
+      m.insert(*business, reversed);
+    }
+
+    m
   });
 
 impl PrettyCategory {
@@ -110,11 +163,23 @@ impl PrettyCategory {
       .cloned()
   }
 
+  pub fn to_gacha_type(business: &Business, category: &Self) -> u32 {
+    *KNOWN_CATEGORIES_REVERSED
+      .get(business)
+      .unwrap() // SAFETY
+      .get(category)
+      .unwrap() // SAFETY
+  }
+
   pub const fn is_hkrpg_collaboration(&self) -> bool {
     matches!(
       self,
       Self::CollaborationCharacter | Self::CollaborationWeapon
     )
+  }
+
+  pub const fn is_hk4e_miliastra_wonderland(&self) -> bool {
+    matches!(self, Self::PermanentOde | Self::EventOde)
   }
 }
 
@@ -139,6 +204,10 @@ pub struct PrettyGachaRecord {
   // 'Genshin Impact' Character only, Distinguish Character and Character-2
   #[serde(skip_serializing_if = "Option::is_none")]
   pub genshin_character2: Option<bool>,
+  // 'Genshin Impact: Miliastra Wonderland' EventOde only,
+  // Distinguish EventOde-1_1, EventOde-1_2, EventOde-2_1, EventOde-2_2
+  #[serde(skip_serializing_if = "Option::is_none")]
+  pub miliastra_wonderland_event_ode: Option<u32>,
 }
 
 impl PrettyGachaRecord {
@@ -161,8 +230,21 @@ impl PrettyGachaRecord {
         item_id: record.item_id.to_string(),
       })?;
 
-    let used_pity_progress =
-      used_pity.map(|n| category.calc_pity_progress(record.is_rank_type_golden(), n));
+    let used_pity_progress = used_pity.map(|n| {
+      let rank_level = if record.is_rank_type_golden() {
+        RankLevel::Golden
+      } else if record.is_rank_type_purple() {
+        RankLevel::Purple
+      } else if record.is_rank_type_blue() {
+        RankLevel::Blue
+      } else if record.is_rank_type_green() {
+        RankLevel::Green
+      } else {
+        RankLevel::Unknown(record.rank_type)
+      };
+
+      category.calc_pity_progress(rank_level, n)
+    });
 
     let (up, version) = if let Some(banner) = metadata.banner_from_record(record) {
       let up = if (record.is_rank_type_golden() && banner.in_up_golden(record.item_id))
@@ -186,6 +268,14 @@ impl PrettyGachaRecord {
       None
     };
 
+    let miliastra_wonderland_event_ode = if category == &PrettyCategory::EventOde
+      && record.business == Business::MiliastraWonderland
+    {
+      Some(record.gacha_type)
+    } else {
+      None
+    };
+
     Ok(Self {
       id: record.id.clone(),
       item_category: entry.category,
@@ -198,17 +288,29 @@ impl PrettyGachaRecord {
       up,
       version,
       genshin_character2,
+      miliastra_wonderland_event_ode,
     })
   }
 }
 
 #[derive(Clone, Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct CategorizedMetadataBlueRanking {
-  // HACK: The values of 3-star items are not needed for the time being.
-  // pub values: Vec<PrettyGachaRecord>,
+pub struct CategorizedMetadataGreenRanking {
+  pub values: Vec<PrettyGachaRecord>,
   pub sum: u64,
   pub percentage: f64,
+}
+
+#[derive(Clone, Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CategorizedMetadataBlueRanking {
+  pub values: Vec<PrettyGachaRecord>,
+  pub sum: u64,
+  pub percentage: f64,
+  // Genshin Impact: Miliastra Wonderland
+  pub average: f64,
+  pub next_pity: u64,
+  pub next_pity_progress: u8, // 0 - 100
 }
 
 #[derive(Clone, Debug, Serialize)]
@@ -244,6 +346,7 @@ pub struct CategorizedMetadataGoldenRanking {
 #[derive(Clone, Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CategorizedMetadataRankings {
+  pub green: Option<CategorizedMetadataGreenRanking>, // 'Genshin Impact: Miliastra Wonderland' only
   pub blue: CategorizedMetadataBlueRanking,
   pub purple: CategorizedMetadataPurpleRanking,
   pub golden: CategorizedMetadataGoldenRanking,
@@ -287,7 +390,7 @@ pub struct AggregatedMetadata {
   #[serde(with = "rfc3339::option")]
   pub end_time: Option<OffsetDateTime>,
   pub rankings: CategorizedMetadataRankings,
-  pub golden_tags: Vec<AggregatedGoldenTag>,
+  // pub golden_tags: Vec<AggregatedGoldenTag>,
 }
 
 #[derive(Clone, Debug, Serialize)]
@@ -302,7 +405,7 @@ pub struct PrettiedGachaRecords {
   pub end_time: Option<OffsetDateTime>,
   pub gacha_type_categories: HashMap<u32, PrettyCategory>,
   pub categorizeds: HashMap<PrettyCategory, CategorizedMetadata>,
-  pub aggregated: AggregatedMetadata,
+  pub aggregated: Option<AggregatedMetadata>, // All except 'Genshin Impact: Miliastra Wonderland'
 }
 
 macro_rules! percentage {
@@ -345,7 +448,9 @@ impl PrettiedGachaRecords {
 
     let categorizeds =
       Self::compute_categorizeds(metadata, business, gacha_type_records, custom_locale)?;
+
     let aggregated = Self::compute_aggregated(business, records, &categorizeds);
+
     let gacha_type_categories = categorizeds.values().fold(
       HashMap::with_capacity(categorizeds.len()),
       |mut acc, categorized| {
@@ -394,6 +499,27 @@ impl PrettiedGachaRecords {
           result.sort_by(|a, b| a.id.cmp(&b.id));
         }
 
+        if business == Business::MiliastraWonderland && category == &PrettyCategory::EventOde {
+          let event_ode1_1 = gacha_type_records
+            .remove(&MILIASTRA_WONDERLAND_EVENT_ODE1_1)
+            .unwrap_or_default();
+          let event_ode1_2 = gacha_type_records
+            .remove(&MILIASTRA_WONDERLAND_EVENT_ODE1_2)
+            .unwrap_or_default();
+          let event_ode2_1 = gacha_type_records
+            .remove(&MILIASTRA_WONDERLAND_EVENT_ODE2_1)
+            .unwrap_or_default();
+          let event_ode2_2 = gacha_type_records
+            .remove(&MILIASTRA_WONDERLAND_EVENT_ODE2_2)
+            .unwrap_or_default();
+
+          result.extend(event_ode1_1);
+          result.extend(event_ode1_2);
+          result.extend(event_ode2_1);
+          result.extend(event_ode2_2);
+          result.sort_by(|a, b| a.id.cmp(&b.id));
+        }
+
         result
       };
 
@@ -427,22 +553,69 @@ impl PrettiedGachaRecords {
     records: Vec<&GachaRecord>,
     custom_locale: Option<&str>,
   ) -> Result<CategorizedMetadataRankings, PrettyGachaRecordsError> {
+    let is_beyond = category.is_hk4e_miliastra_wonderland();
     let total = records.len() as u64;
 
-    let blue = {
+    let mut green = None;
+    if is_beyond {
       let values = records
         .iter()
-        .filter(|record| record.is_rank_type_blue())
-        // .map(|record| PrettyGachaRecord::mapping(metadata, record, None, false, custom_locale))
-        // .collect::<Result<Vec<_>, _>>()?;
-        .collect::<Vec<_>>();
+        .filter(|record| record.is_rank_type_green())
+        .map(|record| PrettyGachaRecord::mapping(metadata, category, record, None, custom_locale))
+        .collect::<Result<Vec<_>, _>>()?;
 
       let sum = values.len() as u64;
 
-      CategorizedMetadataBlueRanking {
-        // values,
+      green.replace(CategorizedMetadataGreenRanking {
+        values,
         sum,
         percentage: percentage!(total, sum),
+      });
+    }
+
+    let blue = {
+      let mut pity = 0;
+      let mut used_pity_sum = 0;
+
+      let values = if is_beyond {
+        let mut values = Vec::with_capacity(records.len());
+
+        for record in &records {
+          pity += 1;
+
+          let is_blue = record.is_rank_type_blue();
+          if is_blue {
+            let precord =
+              PrettyGachaRecord::mapping(metadata, category, record, Some(pity), custom_locale)?;
+
+            values.push(precord);
+          }
+
+          if is_blue || record.is_rank_type_purple() {
+            used_pity_sum += pity;
+            pity = 0;
+          }
+        }
+
+        values
+      } else {
+        records
+          .iter()
+          .filter(|record| record.is_rank_type_blue())
+          .map(|record| PrettyGachaRecord::mapping(metadata, category, record, None, custom_locale))
+          .collect::<Result<Vec<_>, _>>()?
+      };
+
+      let sum = values.len() as u64;
+      let pity_progress = category.calc_pity_progress(RankLevel::Blue, pity);
+
+      CategorizedMetadataBlueRanking {
+        values,
+        sum,
+        percentage: percentage!(total, sum),
+        average: average!(used_pity_sum, sum),
+        next_pity: pity,
+        next_pity_progress: pity_progress,
       }
     };
 
@@ -495,7 +668,7 @@ impl PrettiedGachaRecords {
       }
 
       let sum = values.len() as u64;
-      let pity_progress = category.calc_pity_progress(false, pity);
+      let pity_progress = category.calc_pity_progress(RankLevel::Purple, pity);
 
       CategorizedMetadataPurpleRanking {
         values,
@@ -554,7 +727,7 @@ impl PrettiedGachaRecords {
       }
 
       let sum = values.len() as u64;
-      let pity_progress = category.calc_pity_progress(true, pity);
+      let pity_progress = category.calc_pity_progress(RankLevel::Golden, pity);
 
       CategorizedMetadataGoldenRanking {
         values,
@@ -572,6 +745,7 @@ impl PrettiedGachaRecords {
     };
 
     Ok(CategorizedMetadataRankings {
+      green,
       blue,
       purple,
       golden,
@@ -582,7 +756,12 @@ impl PrettiedGachaRecords {
     business: Business,
     records: &[GachaRecord],
     categorizeds: &HashMap<PrettyCategory, CategorizedMetadata>,
-  ) -> AggregatedMetadata {
+  ) -> Option<AggregatedMetadata> {
+    // HACK: Completely independent banner pool, no need for aggregated
+    if business == Business::MiliastraWonderland {
+      return None;
+    }
+
     // HACK: Bangboo is a completely separate gacha banner
     //   and doesn't count towards the aggregated.
     let records: Vec<&GachaRecord> = if business == Business::ZenlessZoneZero {
@@ -599,7 +778,7 @@ impl PrettiedGachaRecords {
     let end_time = records.last().map(|record| record.time);
 
     let mut blue_sum = 0;
-    // let mut blue_values = Vec::new();
+    let mut blue_values = Vec::new();
 
     let mut purple_sum = 0;
     let mut purple_values = Vec::new();
@@ -613,7 +792,7 @@ impl PrettiedGachaRecords {
       .filter(|categorized| categorized.category != PrettyCategory::Bangboo)
     {
       blue_sum += categorized.rankings.blue.sum;
-      // blue_values.extend_from_slice(&categorized.rankings.blue.values);
+      blue_values.extend_from_slice(&categorized.rankings.blue.values);
 
       purple_sum += categorized.rankings.purple.sum;
       purple_values.extend_from_slice(&categorized.rankings.purple.values);
@@ -623,9 +802,15 @@ impl PrettiedGachaRecords {
       golden_values.extend_from_slice(&categorized.rankings.golden.values);
     }
 
-    // blue_values.sort_by(|a, b| a.id.cmp(&b.id));
+    blue_values.sort_by(|a, b| a.id.cmp(&b.id));
     purple_values.sort_by(|a, b| a.id.cmp(&b.id));
     golden_values.sort_by(|a, b| a.id.cmp(&b.id));
+
+    let mut blue_used_pity_sum = 0;
+    for blue_record in &blue_values {
+      let used_pity = blue_record.used_pity.unwrap_or(0);
+      blue_used_pity_sum += used_pity;
+    }
 
     let mut purple_used_pity_sum = 0;
     let mut purple_up_sum = 0;
@@ -660,10 +845,14 @@ impl PrettiedGachaRecords {
     }
 
     let rankings = CategorizedMetadataRankings {
+      green: None,
       blue: CategorizedMetadataBlueRanking {
-        // values: blue_values,
+        values: blue_values,
         sum: blue_sum,
         percentage: percentage!(total, blue_sum),
+        average: average!(blue_used_pity_sum, blue_sum),
+        next_pity: 0,
+        next_pity_progress: 0,
       },
       purple: CategorizedMetadataPurpleRanking {
         values: purple_values,
@@ -694,15 +883,15 @@ impl PrettiedGachaRecords {
       },
     };
 
-    let golden_tags = Self::compute_aggregated_golden_tags(records, &rankings.golden);
+    // let golden_tags = Self::compute_aggregated_golden_tags(records, &rankings.golden);
 
-    AggregatedMetadata {
+    Some(AggregatedMetadata {
       total,
       start_time,
       end_time,
       rankings,
-      golden_tags,
-    }
+      // golden_tags,
+    })
   }
 
   fn compute_aggregated_golden_tags(

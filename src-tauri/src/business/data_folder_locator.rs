@@ -69,13 +69,13 @@ impl DataFolderLocator for UnityLogDataFolderLocator {
 
     let biz = BizInternals::mapped(business, region);
 
-    let log_filename = if biz.business == Business::GenshinImpact {
+    let log_filename = if biz.business.is_genshin_impact_classification() {
       "output_log.txt"
     } else {
       "Player.log"
     };
 
-    let appdata_folder = if biz.business == Business::GenshinImpact
+    let appdata_folder = if biz.business.is_genshin_impact_classification()
       || biz.business == Business::ZenlessZoneZero
       || biz.is_official()
     {

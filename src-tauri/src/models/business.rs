@@ -31,11 +31,20 @@ pub enum Business {
   GenshinImpact = 0,
   HonkaiStarRail = 1,
   ZenlessZoneZero = 2,
+  MiliastraWonderland = 3, // Genshin Impact: Miliastra Wonderland
 }
 
 impl fmt::Display for Business {
   fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
     write!(f, "{self:?}")
+  }
+}
+
+impl Business {
+  /// 'Genshin Impact' and 'Genshin Impact: Miliastra Wonderland'
+  #[inline]
+  pub const fn is_genshin_impact_classification(&self) -> bool {
+    matches!(self, Self::GenshinImpact | Self::MiliastraWonderland)
   }
 }
 
@@ -54,6 +63,7 @@ impl Display for BusinessRegion {
 }
 
 /// Business and Region internals
+#[derive(Debug)]
 pub struct BizInternals {
   pub business: Business,
   pub region: BusinessRegion,
@@ -63,6 +73,12 @@ pub struct BizInternals {
   pub executable_name: &'static str,
   pub data_folder_name: &'static str,
   pub base_gacha_url: &'static str,
+}
+
+impl PartialEq for BizInternals {
+  fn eq(&self, other: &Self) -> bool {
+    self.business == other.business && self.region == other.region
+  }
 }
 
 macro_rules! biz {
@@ -101,6 +117,20 @@ pub const BIZ_GENSHIN_IMPACT_GLOBAL: BizInternals = biz!(
   "GenshinImpact_Data",
   "https://public-operation-hk4e-sg.hoyoverse.com/gacha_info/api/getGachaLog",
 );
+
+pub const BIZ_MILIASTRA_WONDERLAND_OFFICIAL: BizInternals = BizInternals {
+  business: Business::MiliastraWonderland,
+  base_gacha_url: "https://public-operation-hk4e.mihoyo.com/gacha_info/api/getBeyondGachaLog",
+  codename: "hk4e_beyond_cn", // HACK: fake, Avoid override
+  ..BIZ_GENSHIN_IMPACT_OFFICIAL
+};
+
+pub const BIZ_MILIASTRA_WONDERLAND_GLOBAL: BizInternals = BizInternals {
+  business: Business::MiliastraWonderland,
+  base_gacha_url: "https://public-operation-hk4e-sg.hoyoverse.com/gacha_info/api/getBeyondGachaLog",
+  codename: "hk4e_beyond_global", // HACK: fake, Avoid override
+  ..BIZ_GENSHIN_IMPACT_GLOBAL
+};
 
 pub const BIZ_HONKAI_STAR_RAIL_OFFICIAL: BizInternals = biz!(
   HonkaiStarRail,
@@ -153,6 +183,15 @@ static BIZ_INTERNALS: LazyLock<HashMap<(Business, BusinessRegion), &'static BizI
       ((HonkaiStarRail, Global), &BIZ_HONKAI_STAR_RAIL_GLOBAL),
       ((ZenlessZoneZero, Official), &BIZ_ZENLESS_ZONE_ZERO_OFFICIAL),
       ((ZenlessZoneZero, Global), &BIZ_ZENLESS_ZONE_ZERO_GLOBAL),
+      // Genshin Impact: Miliastra Wonderland
+      (
+        (MiliastraWonderland, Official),
+        &BIZ_MILIASTRA_WONDERLAND_OFFICIAL,
+      ),
+      (
+        (MiliastraWonderland, Global),
+        &BIZ_MILIASTRA_WONDERLAND_GLOBAL,
+      ),
     ])
   });
 
@@ -174,18 +213,29 @@ impl BizInternals {
   /// `gacha_type` and `init_gacha_type`
   pub const fn gacha_type_fields(&self) -> (&'static str, &'static str) {
     match self.business {
-      Business::GenshinImpact => ("gacha_type", "init_type"),
+      Business::GenshinImpact | Business::MiliastraWonderland => ("gacha_type", "init_type"),
       Business::HonkaiStarRail => ("gacha_type", "default_gacha_type"),
       Business::ZenlessZoneZero => ("real_gacha_type", "init_log_gacha_base_type"),
     }
   }
 
-  pub fn base_gacha_url_to_hkrpg_collaboration(&self) -> Option<String> {
-    if self.business == Business::HonkaiStarRail {
-      Some(self.base_gacha_url.replace("getGachaLog", "getLdGachaLog"))
+  /// Honkai: Star Rail
+  pub fn base_gacha_url_to_hkrpg_collaboration(&self) -> String {
+    self.base_gacha_url.replace("getGachaLog", "getLdGachaLog")
+  }
+
+  /// Genshin Impact <-> Miliastra Wonderland
+  pub fn base_gacha_url_to_hk4e(&self, is_beyond: bool) -> String {
+    const ORIGINAL: &str = "getGachaLog";
+    const BEYOND: &str = "getBeyondGachaLog";
+
+    let (from, to) = if is_beyond {
+      (ORIGINAL, BEYOND)
     } else {
-      None
-    }
+      (BEYOND, ORIGINAL)
+    };
+
+    self.base_gacha_url.replace(from, to)
   }
 
   pub fn is_official(&self) -> bool {
@@ -239,7 +289,10 @@ impl ServerRegion {
     };
 
     match (business, digits) {
-      (Business::GenshinImpact | Business::HonkaiStarRail, 9 | 10) => {
+      (
+        Business::GenshinImpact | Business::MiliastraWonderland | Business::HonkaiStarRail,
+        9 | 10,
+      ) => {
         let server_digit = (uid / 10_u32.pow(9 - 1)) % 10;
         match server_digit {
           1..=4 => Some(Self::Official),
@@ -302,7 +355,7 @@ mod tests {
   use super::*;
 
   #[test]
-  fn test_gi_hsr_uids() {
+  fn test_gi_mw_hsr_uids() {
     let cases = [
       (
         vec![1_0000_0000, 2_0000_0000, 3_0000_0000, 4_0000_0000],
@@ -319,6 +372,10 @@ mod tests {
       for uid in uids {
         assert_eq!(
           Business::GenshinImpact.detect_uid_server_region(uid),
+          Some(expected_region)
+        );
+        assert_eq!(
+          Business::MiliastraWonderland.detect_uid_server_region(uid),
           Some(expected_region)
         );
         assert_eq!(

@@ -7,21 +7,21 @@ use crate::utilities::serde_helper;
 
 // HACK: Known gacha record data structures.
 //
-//              | Genshin Impact               | Honkai: Star Rail       | Zenless Zone Zero            |
-// |------------|------------------------------|-------------------------|------------------------------|
-// | business   | 0                            | 1                       | 2                            |
-// | uid        | 100_000_000                  | <-                      | 10_000_000                   |
-// | id         | 1675850760000000000          | <-                      | <-                           |
-// | gacha_type | 100, 200, 301, 400, 302, 500 | 1, 2, 11, 12, 21, 22    | 1, 2, 3, 5                   |
-// | gacha_id   | Null                         | Some                    | Some                         |
-// | rank_type  | 3, 4, 5                      | <-                      | 2, 3, 4                      |
-// | count      | 1                            | <-                      | <-                           |
-// | lang       | en-us                        | <-                      | <-                           |
-// | time       | 2023-01-01T00:00:00±??:00    | <-                      | <-                           |
-// | name       | Some                         | <-                      | <-                           |
-// | item_type  | [Character, Weapon]          | [Character, Light Cone] | [Agents, W-Engines, Bangboo] |
-// | item_id    | Empty                        | Some                    | Some                         |
-// |------------|------------------------------|-------------------------|------------------------------|
+//              | Genshin Impact               | Honkai: Star Rail       | Zenless Zone Zero            | Miliastra Wonderland |
+// |------------|------------------------------|-------------------------|------------------------------|----------------------|
+// | business   | 0                            | 1                       | 2                            | 3                    |
+// | uid        | 100_000_000                  | <-                      | 10_000_000                   | Genshin Impact       |
+// | id         | 1675850760000000000          | <-                      | <-                           | Genshin Impact       |
+// | gacha_type | 100, 200, 301, 400, 302, 500 | 1, 2, 11, 12, 21, 22    | 1, 2, 3, 5                   | 1000, 2000           |
+// | gacha_id   | Null                         | Some                    | Some                         | Null                 |
+// | rank_type  | 3, 4, 5                      | <-                      | 2, 3, 4                      | Genshin Impact       |
+// | count      | 1                            | <-                      | <-                           | <-                   |
+// | lang       | en-us                        | <-                      | <-                           | <-                   |
+// | time       | 2023-01-01T00:00:00±??:00    | <-                      | <-                           | <-                   |
+// | name       | Some                         | <-                      | <-                           | <-                   |
+// | item_type  | [Character, Weapon]          | [Character, Light Cone] | [Agents, W-Engines, Bangboo] |                      |
+// | item_id    | Empty                        | Some                    | Some                         | Some                 |
+// |------------|------------------------------|-------------------------|------------------------------|----------------------|
 //
 // Note:
 //   `<-`    : Same as the left side.
@@ -60,10 +60,21 @@ impl GachaRecord {
     }
   }
 
+  /// HACK: 'Genshin Impact: Miliastra Wonderland' only
+  #[inline]
+  pub const fn is_rank_type_green(&self) -> bool {
+    match self.business {
+      Business::MiliastraWonderland => self.rank_type == 2,
+      _ => false,
+    }
+  }
+
   #[inline]
   pub const fn is_rank_type_blue(&self) -> bool {
     match self.business {
-      Business::GenshinImpact | Business::HonkaiStarRail => self.rank_type == 3,
+      Business::GenshinImpact | Business::MiliastraWonderland | Business::HonkaiStarRail => {
+        self.rank_type == 3
+      }
       Business::ZenlessZoneZero => self.rank_type == 2,
     }
   }
@@ -71,7 +82,9 @@ impl GachaRecord {
   #[inline]
   pub const fn is_rank_type_purple(&self) -> bool {
     match self.business {
-      Business::GenshinImpact | Business::HonkaiStarRail => self.rank_type == 4,
+      Business::GenshinImpact | Business::MiliastraWonderland | Business::HonkaiStarRail => {
+        self.rank_type == 4
+      }
       Business::ZenlessZoneZero => self.rank_type == 3,
     }
   }
@@ -79,7 +92,9 @@ impl GachaRecord {
   #[inline]
   pub const fn is_rank_type_golden(&self) -> bool {
     match self.business {
-      Business::GenshinImpact | Business::HonkaiStarRail => self.rank_type == 5,
+      Business::GenshinImpact | Business::MiliastraWonderland | Business::HonkaiStarRail => {
+        self.rank_type == 5
+      }
       Business::ZenlessZoneZero => self.rank_type == 4,
     }
   }

@@ -1,8 +1,10 @@
-import React from 'react'
+import React, { Fragment } from 'react'
 import { Caption1, makeStyles, tokens } from '@fluentui/react-components'
 import BizImages from '@/components/BizImages'
 import Locale from '@/components/Locale'
 import useI18n from '@/hooks/useI18n'
+import { Business, KeyofBusinesses, isMiliastraWonderland } from '@/interfaces/Business'
+import { CategorizedMetadata, PrettyCategory } from '@/interfaces/GachaRecord'
 import { CompositeState } from '@/pages/Gacha/LegacyView/Clientarea/useCompositeState'
 
 const useStyles = makeStyles({
@@ -32,34 +34,29 @@ export default function GachaLegacyViewClientareaOverviewTooltips (props: Compos
   const {
     keyofBusinesses,
     prettized: {
-      aggregated: {
-        total,
-        startTime,
-        endTime,
+      total, startTime, endTime,
+      categorizeds: {
+        PermanentOde,
+        EventOde,
       },
     },
   } = props
 
-  const now = new Date()
+  const isBeyond = isMiliastraWonderland(keyofBusinesses)
   const i18n = useI18n()
+  const now = new Date()
 
   return (
     <div className={styles.root}>
       <Caption1>
         {'\u2756\u00A0'}
-        <Locale mapping={['Pages.Gacha.LegacyView.Clientarea.Overview.Tooltips.Fragment1.Token1', { keyofBusinesses }]} />
-        <Locale
-          component="span"
-          className={styles.total}
-          mapping={['Pages.Gacha.LegacyView.Clientarea.Overview.Tooltips.Fragment1.Token2', { total }]}
-        />
-        <Locale mapping={['Pages.Gacha.LegacyView.Clientarea.Overview.Tooltips.Fragment1.Token3']} />
-        <Locale
-          component="span"
-          className={styles.currency}
-          mapping={['Pages.Gacha.LegacyView.Clientarea.Overview.Tooltips.Fragment1.Token4', { value: total * 160 }]}
-        />
-        <img className={styles.currencyIcon} src={BizImages[keyofBusinesses].Material!.IconCurrency01} />
+        {isBeyond
+          ? [
+              aggregate({ styles, keyofBusinesses, value: PermanentOde! }),
+              aggregate({ styles, keyofBusinesses, value: EventOde! }),
+            ]
+          : aggregate({ styles, keyofBusinesses, value: total })
+        }
       </Caption1>
       <Caption1>
         {'\u2756\u00A0'}
@@ -70,8 +67,66 @@ export default function GachaLegacyViewClientareaOverviewTooltips (props: Compos
       </Caption1>
       <Caption1>
         {'\u2756\u00A0'}
-        <Locale mapping={['Pages.Gacha.LegacyView.Clientarea.Overview.Tooltips.Fragment3']} />
+        <Locale mapping={[
+          'Pages.Gacha.LegacyView.Clientarea.Overview.Tooltips.Fragment3',
+          { context: isBeyond ? 'One_Year' : undefined },
+        ]} />
       </Caption1>
     </div>
+  )
+}
+
+function aggregate ({
+  styles,
+  keyofBusinesses,
+  value,
+}: {
+  styles: ReturnType<typeof useStyles>
+  keyofBusinesses: KeyofBusinesses
+  value: number | CategorizedMetadata<Business>
+}) {
+  const isBeyond = isMiliastraWonderland(keyofBusinesses)
+  const fragment = isBeyond ? 'Fragment1Beyond' : 'Fragment1'
+  const [category, total] = typeof value === 'object'
+    ? [value.category, value.total]
+    : [null, value]
+
+  let currencyIcon = 'IconCurrency01'
+  if (isBeyond) {
+    switch (category) {
+      case PrettyCategory.PermanentOde:
+        currencyIcon = 'IconGachaTicket01'
+        break
+      case PrettyCategory.EventOde:
+        currencyIcon = 'IconGachaTicket02'
+        break
+    }
+  }
+
+  return (
+    <Fragment key={category}>
+      {category === PrettyCategory.PermanentOde && (
+        <Locale mapping={[`Pages.Gacha.LegacyView.Clientarea.Overview.Tooltips.${fragment}.FragmentStart`]} />
+      )}
+      <Locale mapping={[
+        `Pages.Gacha.LegacyView.Clientarea.Overview.Tooltips.${fragment}.Token1`,
+        { keyofBusinesses, category },
+      ]} />
+      <Locale
+        component="span"
+        className={styles.total}
+        mapping={[`Pages.Gacha.LegacyView.Clientarea.Overview.Tooltips.${fragment}.Token2`, { total }]}
+      />
+      <Locale mapping={[`Pages.Gacha.LegacyView.Clientarea.Overview.Tooltips.${fragment}.Token3`]} />
+      <Locale
+        component="span"
+        className={styles.currency}
+        mapping={[`Pages.Gacha.LegacyView.Clientarea.Overview.Tooltips.${fragment}.Token4`, { value: total * 160 }]}
+      />
+      <img className={styles.currencyIcon} src={BizImages[keyofBusinesses].Material![currencyIcon]} />
+      {category === PrettyCategory.PermanentOde && (
+        <Locale mapping={[`Pages.Gacha.LegacyView.Clientarea.Overview.Tooltips.${fragment}.FragmentSeparator`]} />
+      )}
+    </Fragment>
   )
 }

@@ -116,19 +116,25 @@ export interface GachaUrl<T extends Business> {
   value: string
 }
 
-export type FromWebCachesGachaUrlArgs = NonNullable<{
+export type FromWebCachesGachaUrlArgs<T extends Business> = NonNullable<{
+  business: T
+  region: BusinessRegion
   dataFolder: string
   expectedUid: Account['uid']
 }>
 
-export const fromWebCachesGachaUrl = declareCommand<FromWebCachesGachaUrlArgs, GachaUrl<Business>>('business_from_webcaches_gacha_url')
+export type FromWebCachesGachaUrl = <T extends Business>(args: FromWebCachesGachaUrlArgs<T>) => Promise<GachaUrl<T>>
+export const fromWebCachesGachaUrl: FromWebCachesGachaUrl = declareCommand('business_from_webcaches_gacha_url')
 
-export type FromDirtyGachaUrlArgs = NonNullable<{
+export type FromDirtyGachaUrlArgs<T extends Business> = NonNullable<{
+  business: T
+  region: BusinessRegion
   dirtyUrl: string
   expectedUid: Account['uid']
 }>
 
-export const fromDirtyGachaUrl = declareCommand<FromDirtyGachaUrlArgs, GachaUrl<Business>>('business_from_dirty_gacha_url')
+export type FromDirtyGachaUrl = <T extends Business>(args: FromDirtyGachaUrlArgs<T>) => Promise<GachaUrl<T>>
+export const fromDirtyGachaUrl: FromDirtyGachaUrl = declareCommand('business_from_dirty_gacha_url')
 
 // #endregion
 

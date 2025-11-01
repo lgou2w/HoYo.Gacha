@@ -9,16 +9,16 @@ export type GachaItemImageProps = Omit<React.JSX.IntrinsicElements['img'], 'src'
 }
 
 export default function GachaItemImage (props: GachaItemImageProps) {
-  const {
-    keyofBusinesses,
-    record: {
-      itemCategory,
-      itemId,
-    },
-    ...rest
-  } = props
+  const { keyofBusinesses, record: { itemCategory, itemId }, ...rest } = props
 
   let imageSrc = BizImages[keyofBusinesses]?.[itemCategory]?.[itemId]
+
+  // FIXME: Genshin Impact: Miliastra Wonderland
+  //   Currently, this is how it reuses icon resources.
+  if (!imageSrc && itemCategory === 'CosmeticCatalog') {
+    imageSrc = BizImages[keyofBusinesses]?.CosmeticComponent?.[itemId - 10000]
+  }
+
   if (!imageSrc) {
     imageSrc = resolveRemoteImageSrc(keyofBusinesses, itemCategory, itemId)
     console.warn('No valid embedded Gacha image were found, will try to load from remote:', {
