@@ -543,7 +543,7 @@ static ACTIVATE_METADATA: LazyLock<RwLock<Arc<GachaMetadata>>> = LazyLock::new(|
     %metadata.hash,
   );
 
-  #[cfg(not(test))]
+  #[cfg(all(not(test), not(feature = "embedded-only-gacha-metadata")))]
   match load_latest_metadata() {
     Err(error) => tracing::error!(
       message = "Failed to load the latest locale gacha metadata",
@@ -576,7 +576,7 @@ fn latest_metadata_file() -> PathBuf {
   gacha_metadata_dir.join(GACHA_METADATA_LATEST)
 }
 
-#[cfg(not(test))]
+#[cfg(all(not(test), not(feature = "embedded-only-gacha-metadata")))]
 fn load_latest_metadata() -> Result<Option<GachaMetadata>, Box<dyn StdError + 'static>> {
   use std::fs::File;
   use std::io::Read;

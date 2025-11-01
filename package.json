@@ -32,8 +32,9 @@
     "web:lint": "eslint --ext .ts,.tsx --report-unused-disable-directives --max-warnings 0 --ignore-path .gitignore .",
     "web:lint:fix": "eslint --fix --ext .ts,.tsx --ignore-path .gitignore .",
     "backend:clean": "cargo clean",
-    "backend:dev": "cross-env RUST_LOG=trace RUST_BACKTRACE=full tauri dev",
+    "backend:dev": "cross-env RUST_LOG=trace RUST_BACKTRACE=full tauri dev --features offline",
     "backend:build": "tauri build",
+    "backend:build:offline": "tauri build --features offline",
     "backend:test": "cargo test",
     "backend:lint": "cargo check"
   },

@@ -201,28 +201,31 @@ pub async fn start(singleton: Singleton, tracing: Tracing, database: Database) {
       {
         let _ = GachaMetadata::current();
 
-        // Update Gacha metadata if needed
-        tokio::spawn(async move {
-          const RETRIES: u32 = 3;
-          const MIN: Duration = Duration::from_secs(3);
-          const MAX: Duration = Duration::from_secs(10);
+        #[cfg(not(feature = "embedded-only-gacha-metadata"))]
+        {
+          // Update Gacha metadata if needed
+          tokio::spawn(async move {
+            const RETRIES: u32 = 3;
+            const MIN: Duration = Duration::from_secs(3);
+            const MAX: Duration = Duration::from_secs(10);
 
-          let backoff = exponential_backoff::Backoff::new(RETRIES, MIN, MAX);
-          for duration in backoff {
-            if let Err(error) = GachaMetadata::update().await {
-              if let Some(duration) = duration {
-                tracing::warn!(message = "Failed to update Gacha metadata, retring...", ?duration, ?error);
-                tokio::time::sleep(duration).await;
-              } else {
-                tracing::error!(message = "Failed to update Gacha metadata, no more retries left", ?error);
+            let backoff = exponential_backoff::Backoff::new(RETRIES, MIN, MAX);
+            for duration in backoff {
+              if let Err(error) = GachaMetadata::update().await {
+                if let Some(duration) = duration {
+                  tracing::warn!(message = "Failed to update Gacha metadata, retring...", ?duration, ?error);
+                  tokio::time::sleep(duration).await;
+                } else {
+                  tracing::error!(message = "Failed to update Gacha metadata, no more retries left", ?error);
+                }
+                continue;
               }
-              continue;
-            }
 
-            // Success
-            break;
-          }
-        });
+              // Success
+              break;
+            }
+          });
+        }
       }
 
       info!("Application setup completed");
