@@ -589,9 +589,6 @@ impl PrettiedGachaRecords {
               PrettyGachaRecord::mapping(metadata, category, record, Some(pity), custom_locale)?;
 
             values.push(precord);
-          }
-
-          if is_blue || record.is_rank_type_purple() {
             used_pity_sum += pity;
             pity = 0;
           }
