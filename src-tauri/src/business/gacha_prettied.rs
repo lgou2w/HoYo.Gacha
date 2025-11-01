@@ -133,7 +133,7 @@ static KNOWN_CATEGORIZEDS: LazyLock<HashMap<Business, HashMap<u32, PrettyCategor
             MILIASTRA_WONDERLAND_PERMANENT_ODE,
             PrettyCategory::PermanentOde,
           ),
-          (MILIASTRA_WONDERLAND_EVENT_ODE, PrettyCategory::EventOde), // Includes: 20011, 20021
+          (MILIASTRA_WONDERLAND_EVENT_ODE, PrettyCategory::EventOde),
         ]),
       ),
     ])
