@@ -14,12 +14,12 @@ use crate::utilities::serde_helper;
 // | id         | 1675850760000000000          | <-                      | <-                           | Genshin Impact            |
 // | gacha_type | 100, 200, 301, 400, 302, 500 | 1, 2, 11, 12, 21, 22    | 1, 2, 3, 5                   | 1000, 200[11, 12, 21, 22] |
 // | gacha_id   | Null                         | Some                    | Some                         | Null                      |
-// | rank_type  | 3, 4, 5                      | <-                      | 2, 3, 4                      | Genshin Impact            |
+// | rank_type  | 3, 4, 5                      | <-                      | 2, 3, 4                      | 2, 3, 4, 5                |
 // | count      | 1                            | <-                      | <-                           | <-                        |
 // | lang       | en-us                        | <-                      | <-                           | <-                        |
 // | time       | 2023-01-01T00:00:00±??:00    | <-                      | <-                           | <-                        |
 // | name       | Some                         | <-                      | <-                           | <-                        |
-// | item_type  | [Character, Weapon]          | [Character, Light Cone] | [Agents, W-Engines, Bangboo] |                           |
+// | item_type  | [Character, Weapon]          | [Character, Light Cone] | [Agents, W-Engines, Bangboo] | See: /docs/Beyond.md      |
 // | item_id    | Empty                        | Some                    | Some                         | Some                      |
 // | properties | Null                         | Null                    | Null                         | Some                      |
 // |------------|------------------------------|-------------------------|------------------------------|---------------------------|
