@@ -19,7 +19,7 @@ use crate::database::{
   GachaRecordSaveOnConflict,
 };
 use crate::error::declare_error_kinds;
-use crate::models::{AccountProperties, Business, GachaRecord};
+use crate::models::{Business, GachaRecord, Properties};
 
 //
 // Migration v0.3.x ~ v0.4.x database to v1.0.0
@@ -197,7 +197,7 @@ pub async fn migration_with(
         return None;
       }
 
-      let mut new_props = AccountProperties::default();
+      let mut new_props = Properties::default();
 
       new_props.insert(
         "displayName".into(),
@@ -412,6 +412,7 @@ pub async fn migration_with(
           name,
           item_type,
           item_id: item_id.unwrap(), // SAFETY
+          properties: None,
         },
         GachaRecordSaveOnConflict::Nothing,
       );

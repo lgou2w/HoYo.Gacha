@@ -631,6 +631,7 @@ impl GachaRecordsReader for LegacyUigfGachaRecordsReader {
           .item_type
           .unwrap_or(metadata_entry.category_name.to_owned()),
         item_id: item.item_id.unwrap_or(metadata_entry.id.to_owned()),
+        properties: None,
       })
     }
 
@@ -1306,6 +1307,7 @@ impl GachaRecordsReader for UigfGachaRecordsReader {
                 .item_type
                 .unwrap_or(metadata_entry.category_name.to_owned()),
               item_id: item.item_id,
+              properties: None,
             })
           }
         }
@@ -1733,6 +1735,7 @@ impl GachaRecordsReader for SrgfGachaRecordsReader {
           .item_type
           .unwrap_or(metadata_entry.category_name.to_owned()),
         item_id: item.item_id,
+        properties: None,
       })
     }
 
@@ -2086,6 +2089,7 @@ impl GachaRecordsReader for ZenlessRngMoeGachaRecordsReader {
           name: metadata_entry.name.to_owned(),
           item_type: metadata_entry.category_name.to_owned(),
           item_id: item.id,
+          properties: None,
         });
       }
     }
@@ -2421,6 +2425,7 @@ mod tests {
         name: "Kamisato Ayaka".to_owned(),
         item_type: "Character".to_owned(),
         item_id: 10000002,
+        properties: None,
       }
     );
   }
@@ -2505,6 +2510,7 @@ mod tests {
         name: "Kamisato Ayaka".to_owned(),
         item_type: "Character".to_owned(),
         item_id: 10000002,
+        properties: None,
       }
     );
   }
@@ -2558,6 +2564,7 @@ mod tests {
       name: "Kamisato Ayaka".to_owned(),
       item_type: "Character".to_owned(),
       item_id: 10000002,
+      properties: None,
     }];
 
     let temp_dir = tempfile::tempdir().unwrap();
@@ -2604,6 +2611,7 @@ mod tests {
       name: "Kamisato Ayaka".to_owned(),
       item_type: "Character".to_owned(),
       item_id: 10000002,
+      properties: None,
     };
 
     let mut incorrect = correct.clone();
@@ -2714,6 +2722,7 @@ mod tests {
         name: "Kamisato Ayaka".to_owned(),
         item_type: "Character".to_owned(),
         item_id: 10000002,
+        properties: None,
       }
     );
 
@@ -2732,6 +2741,7 @@ mod tests {
         name: "March 7th".to_owned(),
         item_type: "Character".to_owned(),
         item_id: 1001,
+        properties: None,
       }
     );
 
@@ -2750,6 +2760,7 @@ mod tests {
         name: "Anby".to_owned(),
         item_type: "Agents".to_owned(),
         item_id: 1011,
+        properties: None,
       }
     );
   }
@@ -2839,6 +2850,7 @@ mod tests {
         name: "Kamisato Ayaka".to_owned(),
         item_type: "Character".to_owned(),
         item_id: 10000002,
+        properties: None,
       },
       GachaRecord {
         business: Business::HonkaiStarRail,
@@ -2853,6 +2865,7 @@ mod tests {
         name: "March 7th".to_owned(),
         item_type: "Character".to_owned(),
         item_id: 1001,
+        properties: None,
       },
       GachaRecord {
         business: Business::ZenlessZoneZero,
@@ -2867,6 +2880,7 @@ mod tests {
         name: "Anby".to_owned(),
         item_type: "Agents".to_owned(),
         item_id: 1011,
+        properties: None,
       },
     ];
 
@@ -2947,6 +2961,7 @@ mod tests {
         name: "March 7th".to_owned(),
         item_type: "Character".to_owned(),
         item_id: 1001,
+        properties: None,
       }
     );
   }
@@ -2966,6 +2981,7 @@ mod tests {
       name: "March 7th".to_owned(),
       item_type: "Character".to_owned(),
       item_id: 1001,
+      properties: None,
     }];
 
     let temp_dir = tempfile::tempdir().unwrap();
@@ -3166,6 +3182,7 @@ mod tests {
         name: "Anby".to_owned(),
         item_type: "Agents".to_owned(),
         item_id: 1011,
+        properties: None,
       }
     );
   }

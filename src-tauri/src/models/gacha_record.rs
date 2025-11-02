@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use time::serde::rfc3339;
 use time::{OffsetDateTime, PrimitiveDateTime};
 
-use super::Business;
+use super::{Business, Properties};
 use crate::utilities::serde_helper;
 
 // HACK: Known gacha record data structures.
@@ -21,6 +21,7 @@ use crate::utilities::serde_helper;
 // | name       | Some                         | <-                      | <-                           | <-                        |
 // | item_type  | [Character, Weapon]          | [Character, Light Cone] | [Agents, W-Engines, Bangboo] |                           |
 // | item_id    | Empty                        | Some                    | Some                         | Some                      |
+// | properties | Null                         | Null                    | Null                         | Some                      |
 // |------------|------------------------------|-------------------------|------------------------------|---------------------------|
 //
 // Note:
@@ -30,7 +31,7 @@ use crate::utilities::serde_helper;
 //   `Empty` : Is the empty string.
 //
 
-#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct GachaRecord {
   pub business: Business,
@@ -49,6 +50,7 @@ pub struct GachaRecord {
   // But in the program, parse is u32 type.
   #[serde(with = "serde_helper::string_number_into")]
   pub item_id: u32,
+  pub properties: Option<Properties>,
 }
 
 impl GachaRecord {

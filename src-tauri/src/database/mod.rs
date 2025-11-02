@@ -19,12 +19,12 @@ use sqlx::{Decode, Encode, Executor, FromRow, Row, Type};
 use tauri::State as TauriState;
 use time::OffsetDateTime;
 use tokio::sync::mpsc;
-use tracing::{debug, info};
+use tracing::info;
 
 use crate::consts;
 use crate::database::legacy_migration::{LegacyMigrationError, MigrationMetrics};
 use crate::error::{Error, ErrorDetails};
-use crate::models::{Account, AccountProperties, Business, GachaRecord, Kv};
+use crate::models::{Account, Business, GachaRecord, Kv, Properties};
 
 mod kvs;
 mod legacy_migration;
@@ -133,7 +133,7 @@ impl Database {
 
     let ret = self.0.execute(query.as_ref()).await;
 
-    debug!(
+    info!(
       message = "Database query executed",
       elapsed = ?start.elapsed(),
       ?ret,
@@ -251,7 +251,19 @@ RELEASE start_migration_v2;
 COMMIT TRANSACTION;
 ";
 
-const SQLS: &[&str] = &[SQL_V1, SQL_V2];
+const SQL_V3: &str = r"
+BEGIN TRANSACTION;
+SAVEPOINT start_migration_v3;
+
+ALTER TABLE `HG_GACHA_RECORDS` ADD COLUMN `properties` TEXT DEFAULT NULL;
+
+PRAGMA USER_VERSION = 3;
+
+RELEASE start_migration_v3;
+COMMIT TRANSACTION;
+";
+
+const SQLS: &[&str] = &[SQL_V1, SQL_V2, SQL_V3];
 
 // endregion
 
@@ -315,7 +327,7 @@ macro_rules! declare_questioner {
               .await
               .map_err(Into::into);
 
-            tracing::debug!(
+            tracing::info!(
               message = "Database operation executed",
               elapsed = ?start.elapsed(),
             );
@@ -428,7 +440,7 @@ declare_questioner_with_handlers! {
         business: Business,
         uid: u32,
         data_folder: String,
-        properties: Option<AccountProperties>,
+        properties: Option<Properties>,
       }: fetch_one -> Account,
 
   "UPDATE `HG_ACCOUNTS` SET `data_folder` = ? WHERE `business` = ? AND `uid` = ? RETURNING *;"
@@ -440,7 +452,7 @@ declare_questioner_with_handlers! {
 
   "UPDATE `HG_ACCOUNTS` SET `properties` = ? WHERE `business` = ? AND `uid` = ? RETURNING *;"
     = update_account_properties_by_business_and_uid {
-        properties: Option<AccountProperties>,
+        properties: Option<Properties>,
         business: Business,
         uid: u32,
       }: fetch_optional -> Option<Account>,
@@ -488,7 +500,7 @@ impl Decode<'_, Sqlite> for Business {
   }
 }
 
-impl Type<Sqlite> for AccountProperties {
+impl Type<Sqlite> for Properties {
   fn type_info() -> SqliteTypeInfo {
     String::type_info()
   }
@@ -498,21 +510,21 @@ impl Type<Sqlite> for AccountProperties {
   }
 }
 
-impl<'r> Encode<'r, Sqlite> for AccountProperties {
+impl<'r> Encode<'r, Sqlite> for Properties {
   fn encode_by_ref(
     &self,
     buf: &mut <Sqlite as sqlx::Database>::ArgumentBuffer<'r>,
   ) -> Result<IsNull, BoxDynError> {
     serde_json::to_string(self)
-      .map_err(|e| format!("Failed when serializing account properties: {e}"))?
+      .map_err(|e| format!("Failed when serializing properties: {e}"))?
       .encode_by_ref(buf)
   }
 }
 
-impl Decode<'_, Sqlite> for AccountProperties {
+impl Decode<'_, Sqlite> for Properties {
   fn decode(value: SqliteValueRef) -> Result<Self, BoxDynError> {
     serde_json::from_str(&String::decode(value)?)
-      .map_err(|e| format!("Failed when deserializing account properties: {e}").into())
+      .map_err(|e| format!("Failed when deserializing properties: {e}").into())
   }
 }
 
@@ -567,6 +579,7 @@ impl<'r> FromRow<'r, SqliteRow> for GachaRecord {
         .try_get::<String, _>("item_id")?
         .parse::<u32>()
         .map_err(|e| sqlx::Error::Decode(Box::new(e)))?,
+      properties: row.try_get("properties")?,
     })
   }
 }
@@ -583,19 +596,23 @@ impl GachaRecordSaveOnConflict {
       Self::Nothing => {
         "INSERT INTO `HG_GACHA_RECORDS` (
           `business`, `uid`, `id`, `gacha_type`, `gacha_id`, `rank_type`,
-          `count`, `time`, `lang`, `name`, `item_type`, `item_id`
+          `count`, `time`, `lang`, `name`, `item_type`, `item_id`,
+          `properties`
         ) VALUES (
           ?, ?, ?, ?, ?, ?,
-          ?, ?, ?, ?, ?, ?
+          ?, ?, ?, ?, ?, ?,
+          ?
         ) ON CONFLICT (`business`, `uid`, `id`, `gacha_type`) DO NOTHING;"
       }
       Self::Update => {
         "INSERT INTO `HG_GACHA_RECORDS` (
           `business`, `uid`, `id`, `gacha_type`, `gacha_id`, `rank_type`,
-          `count`, `time`, `lang`, `name`, `item_type`, `item_id`
+          `count`, `time`, `lang`, `name`, `item_type`, `item_id`,
+          `properties`
         ) VALUES (
           ?, ?, ?, ?, ?, ?,
-          ?, ?, ?, ?, ?, ?
+          ?, ?, ?, ?, ?, ?,
+          ?
         ) ON CONFLICT (`business`, `uid`, `id`, `gacha_type`) DO UPDATE SET
           `gacha_id`   = excluded.`gacha_id`,
           `rank_type`  = excluded.`rank_type`,
@@ -604,7 +621,8 @@ impl GachaRecordSaveOnConflict {
           `lang`       = excluded.`lang`,
           `name`       = excluded.`name`,
           `item_type`  = excluded.`item_type`,
-          `item_id`    = excluded.`item_id`;"
+          `item_id`    = excluded.`item_id`,
+          `properties` = excluded.`properties`;"
       }
     }
   }
@@ -630,6 +648,7 @@ pub trait GachaRecordQuestionerAdditions {
       .bind(record.name)
       .bind(record.item_type)
       .bind(record.item_id)
+      .bind(record.properties)
   }
 
   #[tracing::instrument(skip(database, records, progress_reporter), fields(records = records.len()))]

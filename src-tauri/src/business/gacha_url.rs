@@ -20,7 +20,9 @@ use crate::business::disk_cache::{BlockFile, IndexFile};
 use crate::business::{GachaMetadata, PrettyCategory, gacha_time_format};
 use crate::consts;
 use crate::error::declare_error_kinds;
-use crate::models::{BizInternals, Business, BusinessRegion, GachaRecord, ServerRegion};
+use crate::models::{
+  BizInternals, Business, BusinessRegion, GachaRecord, Properties, ServerRegion,
+};
 use crate::utilities::serde_helper;
 
 declare_error_kinds! {
@@ -733,8 +735,22 @@ struct BeyondGachaRecordsPaginationItem {
 }
 
 impl BeyondGachaRecordsPaginationItem {
-  pub fn into_generic(self, lang: String) -> GenericGachaRecordsPaginationItem {
-    GenericGachaRecordsPaginationItem {
+  // HACK: Beyond needs to retain some special field values,
+  //   which may be used in the future.
+  pub fn into_generic(
+    self,
+    lang: String,
+  ) -> (GenericGachaRecordsPaginationItem, Option<Properties>) {
+    let mut properties = Properties::default();
+    properties.insert("schedule_id".into(), self.schedule_id.into());
+
+    // HACK: Only keep it if it is not "0".
+    //   https://github.com/UIGF-org/UIGF-org.github.io/issues/108#issuecomment-3450043575
+    if self.is_up.as_str() != "0" {
+      properties.insert("is_up".into(), self.is_up.into());
+    }
+
+    let item = GenericGachaRecordsPaginationItem {
       id: self.id,
       uid: self.uid,
       gacha_type: self.op_gacha_type,
@@ -746,7 +762,9 @@ impl BeyondGachaRecordsPaginationItem {
       name: self.item_name,
       item_type: self.item_type,
       item_id: Some(self.item_id),
-    }
+    };
+
+    (item, Some(properties))
   }
 }
 
@@ -896,10 +914,8 @@ pub async fn fetch_gacha_records(
   let mut records = Vec::with_capacity(pagination.list.len());
 
   for item in pagination.list {
-    // FIXME: Beyond needs to retain some special field values,
-    //   which may be used in the future.
-    let item = match item {
-      GachaRecordsPaginationItem::Generic(item) => item,
+    let (item, properties) = match item {
+      GachaRecordsPaginationItem::Generic(item) => (item, None),
       GachaRecordsPaginationItem::Beyond(item) => item.into_generic(parsed_url.lang.clone()),
     };
 
@@ -934,6 +950,7 @@ pub async fn fetch_gacha_records(
       name: item.name,
       item_type: item.item_type,
       item_id,
+      properties,
     });
   }
 
@@ -943,7 +960,7 @@ pub async fn fetch_gacha_records(
 #[cfg(test)]
 mod tests {
   use crate::error::Error;
-  use crate::models::{BIZ_GENSHIN_IMPACT_OFFICIAL, BIZ_ZENLESS_ZONE_ZERO_OFFICIAL};
+  use crate::models::BIZ_ZENLESS_ZONE_ZERO_OFFICIAL;
 
   use super::*;
 
