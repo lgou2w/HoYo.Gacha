@@ -28,6 +28,7 @@ export type GachaRecord<T extends Business> = {
   name: string
   itemType: string
   itemId: number
+  properties: Record<string, unknown> | null
 }
 
 export type GenshinImpactGachaRecord = GachaRecord<GenshinImpact>
