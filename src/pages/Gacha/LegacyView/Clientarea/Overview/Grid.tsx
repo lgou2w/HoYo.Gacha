@@ -3,7 +3,7 @@ import { Badge, BadgeProps, Caption1, Title3, makeStyles, mergeClasses, tokens }
 import BizImages from '@/components/BizImages'
 import Locale, { LocaleMapping } from '@/components/Locale'
 import useI18n from '@/hooks/useI18n'
-import { Business, Businesses, ReversedBusinesses } from '@/interfaces/Business'
+import { Business, Businesses, ReversedBusinesses, isMiliastraWonderland } from '@/interfaces/Business'
 import { AggregatedMetadata, CategorizedMetadata, PrettyCategory, PrettyGachaRecord } from '@/interfaces/GachaRecord'
 import { CompositeState } from '@/pages/Gacha/LegacyView/Clientarea/useCompositeState'
 import GachaItem from '@/pages/Gacha/LegacyView/GachaItem'
@@ -41,6 +41,8 @@ export default function GachaLegacyViewClientareaOverviewGrid (props: CompositeS
         Bangboo,
         CollaborationCharacter,
         CollaborationWeapon,
+        PermanentOde,
+        EventOde,
       },
       aggregated,
     },
@@ -58,10 +60,15 @@ export default function GachaLegacyViewClientareaOverviewGrid (props: CompositeS
     CollaborationWeapon,
   ])
 
-  const items = [
-    createGridItem(styles.half, PrettyCategory.Character, business, Character),
-    createGridItem(styles.half, PrettyCategory.Weapon, business, Weapon),
-  ]
+  const items = []
+
+  if (Character) {
+    items.push(createGridItem(styles.half, PrettyCategory.Character, business, Character))
+  }
+
+  if (Weapon) {
+    items.push(createGridItem(styles.half, PrettyCategory.Weapon, business, Weapon))
+  }
 
   if (state.hasCollaborationCharacter) {
     items.push(createGridItem(styles.half, PrettyCategory.CollaborationCharacter, business, CollaborationCharacter))
@@ -75,19 +82,31 @@ export default function GachaLegacyViewClientareaOverviewGrid (props: CompositeS
     items.push(createGridItem(styles.half, PrettyCategory.Chronicled, business, Chronicled))
   }
 
-  items.push(createGridItem(styles.half, PrettyCategory.Permanent, business, Permanent))
+  if (Permanent) {
+    items.push(createGridItem(styles.half, PrettyCategory.Permanent, business, Permanent))
+  }
 
   if (state.hasBangboo) {
     items.push(createGridItem(styles.half, PrettyCategory.Bangboo, business, Bangboo))
   }
 
-  items.push(createGridItem(
-    items.length % 2 === 0 ? styles.full : styles.half,
-    'Aggregated',
-    business,
-    aggregated,
-    Beginner,
-  ))
+  if (PermanentOde) {
+    items.push(createGridItem(styles.full, PrettyCategory.PermanentOde, business, PermanentOde))
+  }
+
+  if (EventOde) {
+    items.push(createGridItem(styles.full, PrettyCategory.EventOde, business, EventOde))
+  }
+
+  if (aggregated) {
+    items.push(createGridItem(
+      items.length % 2 === 0 ? styles.full : styles.half,
+      'Aggregated',
+      business,
+      aggregated,
+      Beginner,
+    ))
+  }
 
   return (
     <div className={styles.root}>
@@ -104,7 +123,7 @@ function createGridItem (
   beginner?: CategorizedMetadata<Business> | null,
 ) {
   return (
-    <div key={category} className={className}>
+    <div key={category} className={className} data-category={category}>
       <GridCard business={business} metadata={metadata} beginner={beginner} />
     </div>
   )
@@ -178,14 +197,20 @@ function GridCard (props: GridCardProps) {
   const i18n = useI18n()
 
   const keyofBusinesses = ReversedBusinesses[business]
+  const isBeyond = isMiliastraWonderland(keyofBusinesses)
   const state = useMemo(() => {
     if (!metadata) {
       return null
     }
 
     const isCategorized = 'category' in metadata
+    const isPermanentOde = isCategorized && metadata.category === PrettyCategory.PermanentOde
+
+    const purpleRanking = metadata.rankings.purple
     const goldenRanking = metadata.rankings.golden
-    const showcase = goldenRanking.values[goldenRanking.values.length - 1] as PrettyGachaRecord | undefined
+    const showcase: PrettyGachaRecord | undefined = isPermanentOde
+      ? purpleRanking.values[purpleRanking.values.length - 1]
+      : goldenRanking.values[goldenRanking.values.length - 1]
 
     let timeRange: ReactNode
     if (metadata.startTime && metadata.endTime) {
@@ -200,6 +225,7 @@ function GridCard (props: GridCardProps) {
     if (isCategorized) {
       switch (metadata.category) {
         case PrettyCategory.Permanent:
+        case PrettyCategory.PermanentOde:
           gachaTicket = BizImages[keyofBusinesses].Material?.IconGachaTicket01
           break
         case PrettyCategory.Bangboo:
@@ -218,9 +244,17 @@ function GridCard (props: GridCardProps) {
       isPermanent: isCategorized && metadata.category === PrettyCategory.Permanent,
       isChronicled: isCategorized && metadata.category === PrettyCategory.Chronicled,
       isBangboo: isCategorized && metadata.category === PrettyCategory.Bangboo,
+      isPermanentOde,
+      isEventOde: isCategorized && metadata.category === PrettyCategory.EventOde,
       total: metadata.total,
       timeRange,
       gachaTicket,
+      purpleRanking: {
+        nextPity: purpleRanking.nextPity,
+        percentage: purpleRanking.percentage,
+        average: purpleRanking.average,
+        sum: purpleRanking.sum,
+      },
       goldenRanking: {
         nextPity: goldenRanking.nextPity,
         percentage: goldenRanking.percentage,
@@ -229,8 +263,8 @@ function GridCard (props: GridCardProps) {
         upPercentage: goldenRanking.upPercentage,
         upAverage: goldenRanking.upAverage,
         sum: goldenRanking.sum,
-        showcase,
       },
+      showcase,
       beginnerShowcase,
     }
   }, [metadata, keyofBusinesses, beginner, i18n])
@@ -276,8 +310,12 @@ function GridCard (props: GridCardProps) {
           <GridCardLabelBadge
             color="success"
             mapping={[
-              'Pages.Gacha.LegacyView.Clientarea.Overview.GridCard.Labels.GoldenSum',
-              { count: state.goldenRanking.sum },
+              `Pages.Gacha.LegacyView.Clientarea.Overview.GridCard.Labels.${state.isPermanentOde ? 'PurpleSum' : 'GoldenSum'}`,
+              {
+                count: state.isPermanentOde
+                  ? state.purpleRanking.sum
+                  : state.goldenRanking.sum,
+              },
             ]}
           />
           {!state.isAggregated
@@ -285,7 +323,11 @@ function GridCard (props: GridCardProps) {
                 color="severe"
                 mapping={[
                   'Pages.Gacha.LegacyView.Clientarea.Overview.GridCard.Labels.NextPity',
-                  { count: state.goldenRanking.nextPity },
+                  {
+                    count: state.isPermanentOde
+                      ? state.purpleRanking.nextPity
+                      : state.goldenRanking.nextPity,
+                  },
                 ]}
               />
             : state.beginnerShowcase && (
@@ -302,8 +344,14 @@ function GridCard (props: GridCardProps) {
         <div className={styles.labelsGroup}>
           <GridCardLabelBadge
             mapping={[
-              'Pages.Gacha.LegacyView.Clientarea.Overview.GridCard.Labels.Average',
-              { count: state.goldenRanking.average },
+              `Pages.Gacha.LegacyView.Clientarea.Overview.GridCard.Labels.${state.isPermanentOde ? 'AveragePurple' : 'Average'}`,
+              {
+                count: state.isPermanentOde
+                  ? state.purpleRanking.average * 160
+                  : state.isEventOde
+                    ? state.goldenRanking.average * 160
+                    : state.goldenRanking.average,
+              },
             ]}
           >
             <i aria-label="placeholder">{'\u00A0'}</i>
@@ -311,12 +359,16 @@ function GridCard (props: GridCardProps) {
           </GridCardLabelBadge>
           <GridCardLabelBadge
             mapping={[
-              'Pages.Gacha.LegacyView.Clientarea.Overview.GridCard.Labels.Percentage',
-              { count: state.goldenRanking.percentage },
+              `Pages.Gacha.LegacyView.Clientarea.Overview.GridCard.Labels.${state.isPermanentOde ? 'PercentagePurple' : 'Percentage'}`,
+              {
+                count: state.isPermanentOde
+                  ? state.purpleRanking.percentage
+                  : state.goldenRanking.percentage,
+              },
             ]}
           />
         </div>
-        {!state.isPermanent && !state.isChronicled && !state.isBangboo && (
+        {!state.isPermanent && !state.isChronicled && !state.isBangboo && !isBeyond && (
           <div className={styles.labelsGroup}>
             <GridCardLabelBadge
               mapping={[
@@ -337,23 +389,23 @@ function GridCard (props: GridCardProps) {
         )}
         <div className={styles.labelsGroup}>
           <GridCardLabelBadge
-            mapping={state.goldenRanking.showcase
-              ? ['Pages.Gacha.LegacyView.Clientarea.Overview.GridCard.Labels.LastGolden', {
-                  name: state.goldenRanking.showcase.name,
-                  usedPity: state.goldenRanking.showcase.usedPity,
+            mapping={state.showcase
+              ? [`Pages.Gacha.LegacyView.Clientarea.Overview.GridCard.Labels.${state.isPermanentOde ? 'LastPurple' : 'LastGolden'}`, {
+                  name: state.showcase.name,
+                  usedPity: state.showcase.usedPity,
                 }]
-              : ['Pages.Gacha.LegacyView.Clientarea.Overview.GridCard.Labels.LastGoldenNone']
+              : [`Pages.Gacha.LegacyView.Clientarea.Overview.GridCard.Labels.${state.isPermanentOde ? 'LastPurpleNone' : 'LastGoldenNone'}`]
             }
           />
         </div>
       </div>
       <div className={styles.showcase}>
-        {state.goldenRanking.showcase && (
+        {state.showcase && (
           <GachaItem
             keyofBusinesses={keyofBusinesses}
-            record={state.goldenRanking.showcase}
-            noUpBadge={state.isPermanent || state.isChronicled || state.isBangboo}
-            ranking="Golden"
+            record={state.showcase}
+            ranking={state.isPermanentOde ? 'Purple' : 'Golden'}
+            noUpBadge={state.isPermanent || state.isChronicled || state.isBangboo || isBeyond}
             small
           />
         )}

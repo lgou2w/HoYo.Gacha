@@ -191,9 +191,13 @@ static PERMITTED_LOCALE_ALIASES: LazyLock<HashMap<&'static str, &'static str>> =
       ("th", "th-th"),
       ("tr", "tr-tr"),
       ("vi", "vi-vn"),
-      // No!
-      // ("zh", "zh-cn"),
-      // ("zh", "zh-tw"),
+      // For compatible
+      ("zh", "zh-cn"),
+      ("zh-cn", "zh-cn"),
+      ("zh-sg", "zh-cn"),
+      ("zh-hk", "zh-tw"),
+      ("zh-mo", "zh-tw"),
+      ("zh-tw", "zh-tw"),
     ])
   });
 
@@ -201,10 +205,22 @@ impl GachaMetadata {
   pub const CATEGORY_CHARACTER: &'static str = "Character";
   pub const CATEGORY_WEAPON: &'static str = "Weapon";
   pub const CATEGORY_BANGBOO: &'static str = "Bangboo"; // 'Zenless Zone Zero' only
-  pub const KNOWN_CATEGORIES: [&'static str; 3] = [
+  // 'Genshin Impact: Miliastra Wonderland' only
+  pub const CATEGORY_INTERACTIVE_ACTIONS: &'static str = "InteractiveActions";
+  pub const CATEGORY_INTERACTIVE_EXPRESSIONS: &'static str = "InteractiveExpressions";
+  pub const CATEGORY_COSMETIC_COMPONENT: &'static str = "CosmeticComponent";
+  pub const CATEGORY_COSMETIC_SET: &'static str = "CosmeticSet";
+  pub const CATEGORY_COSMETIC_CATALOG: &'static str = "CosmeticCatalog";
+
+  pub const KNOWN_CATEGORIES: [&'static str; 8] = [
     Self::CATEGORY_CHARACTER,
     Self::CATEGORY_WEAPON,
     Self::CATEGORY_BANGBOO,
+    Self::CATEGORY_INTERACTIVE_ACTIONS,
+    Self::CATEGORY_INTERACTIVE_EXPRESSIONS,
+    Self::CATEGORY_COSMETIC_COMPONENT,
+    Self::CATEGORY_COSMETIC_SET,
+    Self::CATEGORY_COSMETIC_CATALOG,
   ];
 
   #[cfg(test)]
@@ -403,6 +419,13 @@ fn raw_categories_into_locales(
       GachaMetadata::CATEGORY_CHARACTER => GachaMetadata::CATEGORY_CHARACTER,
       GachaMetadata::CATEGORY_WEAPON => GachaMetadata::CATEGORY_WEAPON,
       GachaMetadata::CATEGORY_BANGBOO => GachaMetadata::CATEGORY_BANGBOO,
+      GachaMetadata::CATEGORY_INTERACTIVE_ACTIONS => GachaMetadata::CATEGORY_INTERACTIVE_ACTIONS,
+      GachaMetadata::CATEGORY_INTERACTIVE_EXPRESSIONS => {
+        GachaMetadata::CATEGORY_INTERACTIVE_EXPRESSIONS
+      }
+      GachaMetadata::CATEGORY_COSMETIC_COMPONENT => GachaMetadata::CATEGORY_COSMETIC_COMPONENT,
+      GachaMetadata::CATEGORY_COSMETIC_SET => GachaMetadata::CATEGORY_COSMETIC_SET,
+      GachaMetadata::CATEGORY_COSMETIC_CATALOG => GachaMetadata::CATEGORY_COSMETIC_CATALOG,
       _ => panic!(
         "Unsupported metadata category: {category} (Allowed: {})",
         GachaMetadata::KNOWN_CATEGORIES.join(", ")
@@ -478,7 +501,7 @@ fn raw_banners_into_banner_groups(
 
     match result.entry(banner.gacha_type) {
       hash_map::Entry::Vacant(o) => match business {
-        Business::GenshinImpact | Business::ZenlessZoneZero => {
+        Business::GenshinImpact | Business::MiliastraWonderland | Business::ZenlessZoneZero => {
           o.insert(GachaMetadataBanners::Purely(vec![banner]));
         }
         Business::HonkaiStarRail => {
@@ -543,7 +566,7 @@ static ACTIVATE_METADATA: LazyLock<RwLock<Arc<GachaMetadata>>> = LazyLock::new(|
     %metadata.hash,
   );
 
-  #[cfg(not(test))]
+  #[cfg(all(not(test), not(feature = "embedded-only-gacha-metadata")))]
   match load_latest_metadata() {
     Err(error) => tracing::error!(
       message = "Failed to load the latest locale gacha metadata",
@@ -576,7 +599,7 @@ fn latest_metadata_file() -> PathBuf {
   gacha_metadata_dir.join(GACHA_METADATA_LATEST)
 }
 
-#[cfg(not(test))]
+#[cfg(all(not(test), not(feature = "embedded-only-gacha-metadata")))]
 fn load_latest_metadata() -> Result<Option<GachaMetadata>, Box<dyn StdError + 'static>> {
   use std::fs::File;
   use std::io::Read;

@@ -1,28 +1,6 @@
-use std::ops::{Deref, DerefMut};
-
 use serde::{Deserialize, Serialize};
 
-use super::Business;
-
-/// Account Properties
-
-#[derive(Clone, Debug, Default, Deserialize, Serialize, PartialEq, Eq)]
-#[serde(transparent)]
-pub struct AccountProperties(serde_json::Map<String, serde_json::Value>);
-
-impl Deref for AccountProperties {
-  type Target = serde_json::Map<String, serde_json::Value>;
-
-  fn deref(&self) -> &Self::Target {
-    &self.0
-  }
-}
-
-impl DerefMut for AccountProperties {
-  fn deref_mut(&mut self) -> &mut Self::Target {
-    &mut self.0
-  }
-}
+use super::{Business, Properties};
 
 /// Account
 
@@ -32,7 +10,7 @@ pub struct Account {
   pub business: Business,
   pub uid: u32,
   pub data_folder: String,
-  pub properties: Option<AccountProperties>,
+  pub properties: Option<Properties>,
 }
 
 // Tests

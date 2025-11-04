@@ -1,3 +1,5 @@
+use std::ops::{Deref, DerefMut};
+
 use serde::{Deserialize, Serialize};
 use tauri::Theme;
 
@@ -20,4 +22,22 @@ pub struct WindowState {
   pub prev_x: i32,
   pub prev_y: i32,
   pub maximized: bool,
+}
+
+#[derive(Clone, Debug, Default, Deserialize, Serialize, PartialEq, Eq)]
+#[serde(transparent)]
+pub struct Properties(serde_json::Map<String, serde_json::Value>);
+
+impl Deref for Properties {
+  type Target = serde_json::Map<String, serde_json::Value>;
+
+  fn deref(&self) -> &Self::Target {
+    &self.0
+  }
+}
+
+impl DerefMut for Properties {
+  fn deref_mut(&mut self) -> &mut Self::Target {
+    &mut self.0
+  }
 }

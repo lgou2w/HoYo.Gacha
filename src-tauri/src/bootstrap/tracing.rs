@@ -29,6 +29,7 @@ impl Tracing {
       .from_env_lossy()
       .add_directive("hyper=error".parse().unwrap())
       .add_directive("reqwest=error".parse().unwrap())
+      .add_directive("sqlx=error".parse().unwrap())
       .add_directive("tao::platform_impl=error".parse().unwrap())
       .add_directive("wry::webview=error".parse().unwrap());
 

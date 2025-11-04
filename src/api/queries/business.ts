@@ -203,6 +203,7 @@ export type NavbarBusinessVisible = Record<Business, boolean | null>
 
 const DefaultNavbarBusinessVisible: NavbarBusinessVisible = {
   [Businesses.GenshinImpact]: null,
+  [Businesses.MiliastraWonderland]: null,
   [Businesses.HonkaiStarRail]: null,
   [Businesses.ZenlessZoneZero]: null,
 }

@@ -14,14 +14,17 @@ pub trait ErrorDetails: StdError {
 #[derive(Debug)]
 pub struct Error<T>(T);
 
+pub type BoxDynErrorDetails = Box<dyn ErrorDetails + Send + 'static>;
+
 impl<T> Error<T> {
+  #[cfg(test)]
   #[inline]
   pub fn into_inner(self) -> T {
     self.0
   }
 
   #[inline]
-  pub fn boxed(self) -> Box<dyn ErrorDetails + Send + 'static>
+  pub fn boxed(self) -> BoxDynErrorDetails
   where
     T: ErrorDetails + Send + 'static,
   {

@@ -55,6 +55,7 @@ interface Props {
 type SupportedFormat = KeyofUnion<ExportGachaRecordsArgs['exporter']>
 const SupportedFormats: Record<Business, SupportedFormat[]> = {
   [Businesses.GenshinImpact]: ['Uigf', 'LegacyUigf', 'Csv'],
+  [Businesses.MiliastraWonderland]: [],
   [Businesses.HonkaiStarRail]: ['Uigf', 'Srgf', 'Csv'],
   [Businesses.ZenlessZoneZero]: ['Uigf', 'Csv'],
 }

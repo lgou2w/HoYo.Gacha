@@ -69,16 +69,20 @@ impl DataFolderLocator for UnityLogDataFolderLocator {
 
     let biz = BizInternals::mapped(business, region);
 
-    let log_filename = if biz.business == Business::GenshinImpact {
+    let log_filename = if matches!(
+      biz.business,
+      Business::GenshinImpact | Business::MiliastraWonderland
+    ) {
       "output_log.txt"
     } else {
       "Player.log"
     };
 
-    let appdata_folder = if biz.business == Business::GenshinImpact
-      || biz.business == Business::ZenlessZoneZero
-      || biz.is_official()
-    {
+    let appdata_folder = if biz.is_official()
+      || matches!(
+        biz.business,
+        Business::GenshinImpact | Business::MiliastraWonderland | Business::ZenlessZoneZero
+      ) {
       &*consts::PLATFORM.appdata_locallow_mihoyo
     } else {
       &*consts::PLATFORM.appdata_locallow_cognosphere
@@ -231,8 +235,8 @@ cfg_if! {if #[cfg(windows)] {
     #[tracing::instrument]
     async fn locate_data_folder(
       &self,
-      business: Business,
-      region: BusinessRegion,
+      _business: Business,
+      _region: BusinessRegion,
     ) -> Result<DataFolder, DataFolderError> {
       // TODO: Locating data folder in the Registry
       unimplemented!()

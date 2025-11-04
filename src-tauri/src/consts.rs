@@ -103,6 +103,7 @@ pub static REQWEST: LazyLock<Reqwest> = LazyLock::new(|| {
 
 pub struct Locale {
   pub value: Option<String>,
+  #[allow(dead_code)]
   pub is_english: bool,
   pub is_chinese: bool,
 }
@@ -135,10 +136,13 @@ cfg_if! {if #[cfg(windows)] {
   pub struct Windows {
     // https://en.wikipedia.org/wiki/Windows_10_version_history
     // https://en.wikipedia.org/wiki/Windows_11_version_history
+    #[allow(dead_code)]
     pub version: windows_version::OsVersion,
     /// `Windows 10 . 1507` Build `10240` and higher. (First Windows 10 release)
+    #[allow(dead_code)]
     pub is_1507_and_higher: bool,
     /// `Windows 10 . 1809` Build `17763` and higher.
+    #[allow(dead_code)]
     pub is_1809_and_higher: bool,
     /// `Windows 10 . 19H1` Build `18362` and higher.
     pub is_19h1_and_higher: bool,

@@ -10,7 +10,7 @@ import Locale from '@/components/Locale'
 import useBusinessContext from '@/hooks/useBusinessContext'
 import useI18n from '@/hooks/useI18n'
 import type { Account } from '@/interfaces/Account'
-import { Business, KeyofBusinesses, ReversedBusinesses } from '@/interfaces/Business'
+import { Business, KeyofBusinesses, ReversedBusinesses, isMiliastraWonderland } from '@/interfaces/Business'
 import ChooseAvatarDialog from '@/pages/Gacha/LegacyView/ChooseAvatar/Dialog'
 import UpsertAccountDialog from '@/pages/Gacha/LegacyView/UpsertAccount/Dialog'
 
@@ -210,6 +210,7 @@ function AccountList (props: AccountListProps) {
                               data-account={String(account.uid)}
                               data-operation="choose-avatar"
                               mapping={['Pages.Gacha.LegacyView.Toolbar.Account.Options.ChooseAvatar']}
+                              disabled={isMiliastraWonderland(keyofBusinesses)}
                             />
                             <MenuDivider />
                             <Locale
