@@ -557,8 +557,8 @@ export default {
                   FragmentSeparator: '，',
                 },
                 Fragment2: '$t(Business.{{keyofBusinesses}}.Gacha.Name)记录日期覆盖范围：',
-                Fragment3: '因官方设定，仅可获取到最近 6 个月的数据记录。最新数据查询有 1 小时左右延迟，若无数据请稍后再来。如遇到新卡池高峰期延迟可能更久。具体时间请以游戏内数据为准。',
-                Fragment3_One_Year: '因官方设定，仅可获取到最近 1 年的数据记录。最新数据查询有 1 小时左右延迟，若无数据请稍后再来。如遇到新卡池高峰期延迟可能更久。具体时间请以游戏内数据为准。',
+                Fragment3: '因官方设定，仅可获取到最近 6 个月的$t(Business.{{keyofBusinesses}}.Gacha.Name)数据记录。最新数据查询有 1 小时左右延迟，若无数据请稍后再来。如遇到新卡池高峰期延迟可能更久。具体时间请以游戏内数据为准。',
+                Fragment3_One_Year: '因官方设定，仅可获取到最近 1 年的$t(Business.{{keyofBusinesses}}.Gacha.Name)数据记录。最新数据查询有 1 小时左右延迟，若无数据请稍后再来。如遇到新卡池高峰期延迟可能更久。具体时间请以游戏内数据为准。',
               },
             },
             Analysis: {

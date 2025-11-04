@@ -573,8 +573,8 @@ export default {
                   FragmentSeparator: ', ',
                 },
                 Fragment2: '$t(Business.{{keyofBusinesses}}.Gacha.Name) records date coverage: ',
-                Fragment3: 'Due to official settings, only data records from the most recent 6 months are available. There is approximately a one-hour delay in retrieving the latest data. During peak periods for new banners, this delay may be extended. For precise timing, please refer to the in-game data.',
-                Fragment3_One_Year: 'Due to official settings, only data records from the most recent year is available. There is approximately a one-hour delay in retrieving the latest data. During peak periods for new banners, this delay may be extended. For precise timing, please refer to the in-game data.',
+                Fragment3: 'Due to official settings, only $t(Business.{{keyofBusinesses}}.Gacha.Name) data records from the most recent 6 months are available. There is approximately a one-hour delay in retrieving the latest data. During peak periods for new banners, this delay may be extended. For precise timing, please refer to the in-game data.',
+                Fragment3_One_Year: 'Due to official settings, only $t(Business.{{keyofBusinesses}}.Gacha.Name) data records from the most recent year is available. There is approximately a one-hour delay in retrieving the latest data. During peak periods for new banners, this delay may be extended. For precise timing, please refer to the in-game data.',
               },
             },
             Analysis: {

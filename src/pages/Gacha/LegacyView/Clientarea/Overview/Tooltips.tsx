@@ -69,7 +69,7 @@ export default function GachaLegacyViewClientareaOverviewTooltips (props: Compos
         {'\u2756\u00A0'}
         <Locale mapping={[
           'Pages.Gacha.LegacyView.Clientarea.Overview.Tooltips.Fragment3',
-          { context: isBeyond ? 'One_Year' : undefined },
+          { keyofBusinesses, context: isBeyond ? 'One_Year' : undefined },
         ]} />
       </Caption1>
     </div>
