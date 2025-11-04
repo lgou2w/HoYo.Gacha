@@ -40,14 +40,6 @@ impl fmt::Display for Business {
   }
 }
 
-impl Business {
-  /// 'Genshin Impact' and 'Genshin Impact: Miliastra Wonderland'
-  #[inline]
-  pub const fn is_genshin_impact_classification(&self) -> bool {
-    matches!(self, Self::GenshinImpact | Self::MiliastraWonderland)
-  }
-}
-
 /// Business region
 
 #[derive(Copy, Clone, Debug, Deserialize, Serialize, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -238,13 +230,15 @@ impl BizInternals {
     self.base_gacha_url.replace(from, to)
   }
 
-  pub fn is_official(&self) -> bool {
+  pub const fn is_official(&self) -> bool {
     matches!(self.region, BusinessRegion::Official)
   }
 
   #[inline]
-  pub fn appdata_folder_subname(&self) -> &'static str {
-    if self.business == Business::ZenlessZoneZero && self.region == BusinessRegion::Global {
+  pub const fn appdata_folder_subname(&self) -> &'static str {
+    if matches!(self.business, Business::ZenlessZoneZero)
+      && matches!(self.region, BusinessRegion::Global)
+    {
       // See: https://github.com/lgou2w/HoYo.Gacha/pull/90
       // Thanks @lim1202
       "ZenlessZoneZero"

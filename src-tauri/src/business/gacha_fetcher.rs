@@ -5,7 +5,7 @@ use tauri::{Emitter, WebviewWindow};
 use tokio::sync::mpsc;
 use tracing::{error, info, warn};
 
-use crate::error::{Error, ErrorDetails};
+use crate::error::{BoxDynErrorDetails, Error};
 use crate::models::{Business, BusinessRegion, GachaRecord};
 
 use super::{GachaUrlError, PrettyCategory};
@@ -32,7 +32,7 @@ pub async fn create_gacha_records_fetcher(
   gacha_type_and_last_end_id_mappings: Vec<(u32, Option<String>)>,
   window: WebviewWindow,
   event_channel: Option<String>,
-) -> Result<Option<Vec<GachaRecord>>, Box<dyn ErrorDetails + Send + 'static>> {
+) -> Result<Option<Vec<GachaRecord>>, BoxDynErrorDetails> {
   info!("Creating a Gacha Records Fetcher");
 
   if gacha_type_and_last_end_id_mappings.is_empty() {

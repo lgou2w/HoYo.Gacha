@@ -10,7 +10,7 @@ use tokio::sync::mpsc;
 use crate::database::{
   DatabaseState, GachaRecordQuestioner, GachaRecordQuestionerAdditions, GachaRecordSaveOnConflict,
 };
-use crate::error::{Error, ErrorDetails};
+use crate::error::{BoxDynErrorDetails, Error};
 use crate::models::{Business, BusinessRegion, GachaRecord};
 
 mod data_folder_locator;
@@ -88,7 +88,7 @@ pub async fn business_create_gacha_records_fetcher(
   event_channel: Option<String>,
   save_to_database: Option<GachaRecordSaveToDatabase>,
   save_on_conflict: Option<GachaRecordSaveOnConflict>,
-) -> Result<i64, Box<dyn ErrorDetails + Send + 'static>> {
+) -> Result<i64, BoxDynErrorDetails> {
   let save_to_database = save_to_database.unwrap_or(GachaRecordSaveToDatabase::No);
   let save_on_conflict = save_on_conflict.unwrap_or(GachaRecordSaveOnConflict::Nothing);
 
@@ -181,7 +181,7 @@ pub async fn business_import_gacha_records(
   importer: GachaRecordsImporter,
   save_on_conflict: Option<GachaRecordSaveOnConflict>,
   progress_channel: Option<String>,
-) -> Result<u64, Box<dyn ErrorDetails + Send + 'static>> {
+) -> Result<u64, BoxDynErrorDetails> {
   let records = importer.import(GachaMetadata::current(), input)?;
 
   // Progress reporting
@@ -218,11 +218,11 @@ pub async fn business_import_gacha_records(
 #[tauri::command]
 #[tracing::instrument(skip_all)]
 pub async fn business_export_gacha_records(
-  window: WebviewWindow,
+  _window: WebviewWindow,
   database: DatabaseState<'_>,
   output: PathBuf,
   exporter: GachaRecordsExporter,
-) -> Result<PathBuf, Box<dyn ErrorDetails + Send + 'static>> {
+) -> Result<PathBuf, BoxDynErrorDetails> {
   // TODO: Progress reporting
 
   let records = match &exporter {
@@ -282,7 +282,7 @@ pub async fn business_find_and_pretty_gacha_records(
   business: Business,
   uid: u32,
   custom_locale: Option<String>,
-) -> Result<PrettiedGachaRecords, Box<dyn ErrorDetails + Send + 'static>> {
+) -> Result<PrettiedGachaRecords, BoxDynErrorDetails> {
   let records =
     GachaRecordQuestioner::find_gacha_records_by_business_and_uid(database.as_ref(), business, uid)
       .await

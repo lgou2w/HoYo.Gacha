@@ -431,7 +431,7 @@ impl GachaUrl {
       let parsed = match ParsedGachaUrl::from_str(&dirty.value) {
         Ok(parsed) => parsed,
         Err(error) => {
-          warn!("Error parsing gacha url: {error:?}");
+          error!("Error parsing gacha url: {error:?}");
           if spread {
             return Err(error);
           } else {
@@ -444,7 +444,7 @@ impl GachaUrl {
       let response = match request_gacha_url_with_retry(url, None).await {
         Ok(response) => response,
         Err(error) => {
-          warn!("Error requesting gacha url: {error:?}");
+          error!("Error requesting gacha url: {error:?}");
           if spread {
             return Err(error);
           } else {
@@ -599,7 +599,6 @@ impl FromStr for ParsedGachaUrl {
 }
 
 impl ParsedGachaUrl {
-  #[tracing::instrument]
   pub fn to_url(
     &self,
     into_business: Business,
@@ -737,10 +736,7 @@ struct BeyondGachaRecordsPaginationItem {
 impl BeyondGachaRecordsPaginationItem {
   // HACK: Beyond needs to retain some special field values,
   //   which may be used in the future.
-  pub fn into_generic(
-    self,
-    lang: String,
-  ) -> (GenericGachaRecordsPaginationItem, Option<Properties>) {
+  fn into_generic(self, lang: String) -> (GenericGachaRecordsPaginationItem, Option<Properties>) {
     let mut properties = Properties::default();
     properties.insert("schedule_id".into(), self.schedule_id.into());
 
@@ -875,7 +871,7 @@ pub async fn fetch_gacha_records(
 
   let pagination = match request_gacha_url_with_retry(url, None).await {
     Err(error) => {
-      warn!("Responded with an error while fetching the gacha records: {error:?}");
+      error!("Responded with an error while fetching the gacha records: {error:?}");
       return Err(error);
     }
     Ok(response) => {

@@ -398,8 +398,8 @@ fn core_os_info() -> &'static OsInfo {
 }
 
 #[tauri::command]
-fn core_locale() -> &'static Option<String> {
-  &consts::LOCALE.value
+fn core_locale() -> Option<&'static str> {
+  consts::LOCALE.value.as_deref()
 }
 
 #[tauri::command]

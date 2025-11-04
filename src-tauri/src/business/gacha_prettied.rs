@@ -1,4 +1,4 @@
-use std::collections::{HashMap, hash_map};
+use std::collections::HashMap;
 use std::sync::LazyLock;
 
 use serde::Serialize;
@@ -366,20 +366,20 @@ pub struct CategorizedMetadata {
   pub rankings: CategorizedMetadataRankings,
 }
 
-#[derive(Clone, Debug, Serialize)]
-pub enum AggregatedGoldenTag {
-  Luck(PrettyGachaRecord),
-  Unluck(PrettyGachaRecord),
-  Relation {
-    record: PrettyGachaRecord,
-    sum: u64,
-  },
-  Crazy {
-    #[serde(with = "rfc3339")]
-    time: OffsetDateTime,
-    sum: u64,
-  },
-}
+// #[derive(Clone, Debug, Serialize)]
+// pub enum AggregatedGoldenTag {
+//   Luck(PrettyGachaRecord),
+//   Unluck(PrettyGachaRecord),
+//   Relation {
+//     record: PrettyGachaRecord,
+//     sum: u64,
+//   },
+//   Crazy {
+//     #[serde(with = "rfc3339")]
+//     time: OffsetDateTime,
+//     sum: u64,
+//   },
+// }
 
 #[derive(Clone, Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -891,85 +891,85 @@ impl PrettiedGachaRecords {
     })
   }
 
-  fn compute_aggregated_golden_tags(
-    records: Vec<&GachaRecord>,
-    golden: &CategorizedMetadataGoldenRanking,
-  ) -> Vec<AggregatedGoldenTag> {
-    let mut tags = Vec::with_capacity(4);
+  // fn compute_aggregated_golden_tags(
+  //   records: Vec<&GachaRecord>,
+  //   golden: &CategorizedMetadataGoldenRanking,
+  // ) -> Vec<AggregatedGoldenTag> {
+  //   let mut tags = Vec::with_capacity(4);
 
-    {
-      let mut sort_by_used_pity: Vec<&PrettyGachaRecord> = golden.values.iter().collect();
-      sort_by_used_pity.sort_by(|a, b| a.used_pity.cmp(&b.used_pity));
+  //   {
+  //     let mut sort_by_used_pity: Vec<&PrettyGachaRecord> = golden.values.iter().collect();
+  //     sort_by_used_pity.sort_by(|a, b| a.used_pity.cmp(&b.used_pity));
 
-      if let Some(first) = sort_by_used_pity.first() {
-        tags.push(AggregatedGoldenTag::Luck((*first).clone()));
-      }
-      if let Some(last) = sort_by_used_pity.last() {
-        tags.push(AggregatedGoldenTag::Unluck((*last).clone()));
-      }
-    }
+  //     if let Some(first) = sort_by_used_pity.first() {
+  //       tags.push(AggregatedGoldenTag::Luck((*first).clone()));
+  //     }
+  //     if let Some(last) = sort_by_used_pity.last() {
+  //       tags.push(AggregatedGoldenTag::Unluck((*last).clone()));
+  //     }
+  //   }
 
-    {
-      let mut count_groups: Vec<(&PrettyGachaRecord, u64)> = golden
-        .values
-        .iter()
-        .fold(
-          HashMap::<u32, (&PrettyGachaRecord, u64)>::with_capacity(golden.values.len()),
-          |mut acc, record| {
-            match acc.entry(record.item_id) {
-              hash_map::Entry::Occupied(mut o) => {
-                o.get_mut().1 += 1;
-              }
-              hash_map::Entry::Vacant(o) => {
-                o.insert((record, 1));
-              }
-            }
-            acc
-          },
-        )
-        .into_values()
-        .collect();
+  //   {
+  //     let mut count_groups: Vec<(&PrettyGachaRecord, u64)> = golden
+  //       .values
+  //       .iter()
+  //       .fold(
+  //         HashMap::<u32, (&PrettyGachaRecord, u64)>::with_capacity(golden.values.len()),
+  //         |mut acc, record| {
+  //           match acc.entry(record.item_id) {
+  //             hash_map::Entry::Occupied(mut o) => {
+  //               o.get_mut().1 += 1;
+  //             }
+  //             hash_map::Entry::Vacant(o) => {
+  //               o.insert((record, 1));
+  //             }
+  //           }
+  //           acc
+  //         },
+  //       )
+  //       .into_values()
+  //       .collect();
 
-      count_groups.sort_by(|a, b| b.1.cmp(&a.1));
+  //     count_groups.sort_by(|a, b| b.1.cmp(&a.1));
 
-      if let Some((record, sum)) = count_groups.first() {
-        tags.push(AggregatedGoldenTag::Relation {
-          record: (*record).clone(),
-          sum: *sum,
-        });
-      }
-    }
+  //     if let Some((record, sum)) = count_groups.first() {
+  //       tags.push(AggregatedGoldenTag::Relation {
+  //         record: (*record).clone(),
+  //         sum: *sum,
+  //       });
+  //     }
+  //   }
 
-    {
-      let mut time_groups: Vec<(&OffsetDateTime, u64)> = records
-        .iter()
-        .fold(
-          HashMap::<&OffsetDateTime, (&OffsetDateTime, u64)>::with_capacity(records.len()),
-          |mut acc, record| {
-            match acc.entry(&record.time) {
-              hash_map::Entry::Occupied(mut o) => {
-                o.get_mut().1 += 1;
-              }
-              hash_map::Entry::Vacant(o) => {
-                o.insert((&record.time, 1));
-              }
-            }
-            acc
-          },
-        )
-        .into_values()
-        .collect();
+  //   {
+  //     let mut time_groups: Vec<(&OffsetDateTime, u64)> = records
+  //       .iter()
+  //       .fold(
+  //         HashMap::<&OffsetDateTime, (&OffsetDateTime, u64)>::with_capacity(records.len()),
+  //         |mut acc, record| {
+  //           match acc.entry(&record.time) {
+  //             hash_map::Entry::Occupied(mut o) => {
+  //               o.get_mut().1 += 1;
+  //             }
+  //             hash_map::Entry::Vacant(o) => {
+  //               o.insert((&record.time, 1));
+  //             }
+  //           }
+  //           acc
+  //         },
+  //       )
+  //       .into_values()
+  //       .collect();
 
-      time_groups.sort_by(|a, b| b.1.cmp(&a.1));
+  //     time_groups.sort_by(|a, b| b.1.cmp(&a.1));
 
-      if let Some((time, sum)) = time_groups.first() {
-        tags.push(AggregatedGoldenTag::Crazy {
-          time: **time,
-          sum: *sum,
-        });
-      }
-    }
+  //     if let Some((time, sum)) = time_groups.first() {
+  //       tags.push(AggregatedGoldenTag::Crazy {
+  //         time: **time,
+  //         sum: *sum,
+  //       });
+  //     }
+  //   }
 
-    tags
-  }
+  //   tags
+  // }
 }

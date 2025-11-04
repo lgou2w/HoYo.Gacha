@@ -13,7 +13,7 @@ use time::{OffsetDateTime, PrimitiveDateTime, UtcOffset};
 
 use crate::business::{GACHA_TIME_FORMAT, GachaMetadata, GachaMetadataEntryRef, gacha_time_format};
 use crate::consts;
-use crate::error::{Error, ErrorDetails, declare_error_kinds};
+use crate::error::{BoxDynErrorDetails, Error, declare_error_kinds};
 use crate::models::{Business, GachaRecord, ServerRegion};
 use crate::utilities::serde_helper;
 
@@ -2324,7 +2324,7 @@ impl GachaRecordsImporter {
     self,
     metadata: &GachaMetadata,
     input: impl AsRef<Path>,
-  ) -> Result<Vec<GachaRecord>, Box<dyn ErrorDetails + Send + 'static>> {
+  ) -> Result<Vec<GachaRecord>, BoxDynErrorDetails> {
     match self {
       Self::LegacyUigf(r) => r.read_from_file(metadata, input).map_err(Error::boxed),
       Self::Uigf(r) => r.read_from_file(metadata, input).map_err(Error::boxed),
@@ -2348,7 +2348,7 @@ impl GachaRecordsExporter {
     metadata: &GachaMetadata,
     records: Vec<GachaRecord>,
     output: impl AsRef<Path>,
-  ) -> Result<PathBuf, Box<dyn ErrorDetails + Send + 'static>> {
+  ) -> Result<PathBuf, BoxDynErrorDetails> {
     match self {
       Self::LegacyUigf(w) => w.write(metadata, records, output).map_err(Error::boxed),
       Self::Uigf(w) => w.write(metadata, records, output).map_err(Error::boxed),

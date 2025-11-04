@@ -275,7 +275,6 @@ type SqliteQueryAs<T> = QueryAs<'static, Sqlite, T, SqliteArguments<'static>>;
 
 pub trait Questioner {
   type Entity: Clone + DeserializeOwned + for<'r> FromRow<'r, SqliteRow> + Serialize + Sized;
-  const ENTITY_NAME: &'static str;
 }
 
 macro_rules! declare_questioner {
@@ -292,7 +291,6 @@ macro_rules! declare_questioner {
 
       impl crate::database::Questioner for [<$entity Questioner>] {
         type Entity = $entity;
-        const ENTITY_NAME: &'static str = stringify!($entity);
       }
 
       impl [<$entity Questioner>] {
