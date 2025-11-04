@@ -70,6 +70,7 @@ interface Props {
 type SupportedFormat = KeyofUnion<ImportGachaRecordsArgs['importer']>
 const SupportedFormats: Record<Business, SupportedFormat[]> = {
   [Businesses.GenshinImpact]: ['Uigf', 'LegacyUigf'],
+  [Businesses.MiliastraWonderland]: [],
   [Businesses.HonkaiStarRail]: ['Uigf', 'Srgf'],
   [Businesses.ZenlessZoneZero]: ['Uigf'],
 }

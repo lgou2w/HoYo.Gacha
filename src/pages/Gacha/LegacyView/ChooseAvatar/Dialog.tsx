@@ -258,6 +258,8 @@ function isPlayerAvatar (business: Business, avatarIdStr: string) {
     case Businesses.ZenlessZoneZero:
       // Proxy: Wise | Belle
       return avatarId === 2011 || avatarId === 2021
+    case Businesses.MiliastraWonderland:
+      return false
     default:
       // HACK: should never reach here
       throw new Error('unreachable')
@@ -266,6 +268,7 @@ function isPlayerAvatar (business: Business, avatarIdStr: string) {
 
 const MappingAvatarNameCaches: Record<Business, Record<string, Record<string, string | null>>> = {
   [Businesses.GenshinImpact]: {},
+  [Businesses.MiliastraWonderland]: {},
   [Businesses.HonkaiStarRail]: {},
   [Businesses.ZenlessZoneZero]: {},
 }

@@ -7,7 +7,7 @@ import ImagesNone from '@/assets/images/None.avif'
 import BizImages from '@/components/BizImages'
 import Locale from '@/components/Locale'
 import useI18n from '@/hooks/useI18n'
-import { Business, KeyofBusinesses, ReversedBusinesses } from '@/interfaces/Business'
+import { Business, KeyofBusinesses, ReversedBusinesses, isMiliastraWonderland } from '@/interfaces/Business'
 import { CategorizedMetadata, CategorizedMetadataRankings, PrettyCategory, PrettyGachaRecord } from '@/interfaces/GachaRecord'
 import { CompositeState } from '@/pages/Gacha/LegacyView/Clientarea/useCompositeState'
 import GachaItemImage from '@/pages/Gacha/LegacyView/GachaItem/Image'
@@ -48,10 +48,13 @@ export default function GachaLegacyViewClientareaAnalysisCards (props: Composite
         Bangboo,
         CollaborationCharacter,
         CollaborationWeapon,
+        PermanentOde,
+        EventOde,
       },
     },
   } = props
 
+  const isBeyond = isMiliastraWonderland(business)
   const state = useMemo(() => ({
     hasChronicled: Chronicled && Chronicled.total > 0,
     hasBangboo: Bangboo && Bangboo.total > 0,
@@ -90,15 +93,19 @@ export default function GachaLegacyViewClientareaAnalysisCards (props: Composite
   return (
     <div className={styles.root}>
       <div className={styles.cards} onWheel={transformScroll}>
-        <div className={styles.card}>
-          <CardsEntry business={business} metadata={Character} />
-        </div>
-        <div className={styles.card}>
-          <CardsEntry business={business} metadata={Weapon} />
-        </div>
-        <div className={styles.card}>
-          <CardsEntry business={business} metadata={Permanent} />
-        </div>
+        {!isBeyond && (
+          <Fragment>
+            <div className={styles.card}>
+              <CardsEntry business={business} metadata={Character} />
+            </div>
+            <div className={styles.card}>
+              <CardsEntry business={business} metadata={Weapon} />
+            </div>
+            <div className={styles.card}>
+              <CardsEntry business={business} metadata={Permanent} />
+            </div>
+          </Fragment>
+        )}
         {state.hasChronicled && (
           <div className={styles.card}>
             <CardsEntry business={business} metadata={Chronicled} />
@@ -118,6 +125,16 @@ export default function GachaLegacyViewClientareaAnalysisCards (props: Composite
           <div className={styles.card}>
             <CardsEntry business={business} metadata={CollaborationWeapon} />
           </div>
+        )}
+        {isBeyond && (
+          <Fragment>
+            <div className={styles.card}>
+              <CardsEntry business={business} metadata={PermanentOde} />
+            </div>
+            <div className={styles.card}>
+              <CardsEntry business={business} metadata={EventOde} />
+            </div>
+          </Fragment>
         )}
       </div>
     </div>
@@ -157,6 +174,9 @@ const useCardsEntryStyles = makeStyles({
       marginBottom: '0.25rem',
     },
   },
+  headerTotalPull: {
+    marginLeft: tokens.spacingHorizontalS,
+  },
   labels: {
     display: 'flex',
     flexDirection: 'column',
@@ -186,6 +206,9 @@ const useCardsEntryStyles = makeStyles({
   labelGroupBlue: {
     color: tokens.colorPaletteBlueBorderActive,
   },
+  labelGroupGreen: {
+    color: tokens.colorPaletteGreenForeground1,
+  },
 })
 
 function CardsEntry (props: CardsEntryProps) {
@@ -198,10 +221,12 @@ function CardsEntry (props: CardsEntryProps) {
   }
 
   const keyofBusinesses = ReversedBusinesses[business]
+  const isBeyond = isMiliastraWonderland(business)
   const isPermanent = metadata.category === PrettyCategory.Permanent
   const isChronicled = metadata.category === PrettyCategory.Chronicled
   const isBangboo = metadata.category === PrettyCategory.Bangboo
-  const hasUp = !isPermanent && !isChronicled && !isBangboo
+  const isPermanentOde = isBeyond && metadata.category === PrettyCategory.PermanentOde
+  const hasUp = !isPermanent && !isChronicled && !isBangboo && !isBeyond
 
   let timeRange: ReactNode
   if (metadata.startTime && metadata.endTime) {
@@ -233,7 +258,13 @@ function CardsEntry (props: CardsEntryProps) {
         />
         <div className={styles.headerTotal}>
           <Title1>{metadata.total}</Title1>
-          <img src={gachaTicket} />
+          {isBeyond
+            ? <Locale
+                className={styles.headerTotalPull}
+                component='span'
+                mapping={['Pages.Gacha.LegacyView.Clientarea.Analysis.CardsEntry.Pull', { count: metadata.total }]}
+              />
+            : <img src={gachaTicket} />}
         </div>
       </div>
       <Divider style={{ flexGrow: 0 }}>
@@ -280,25 +311,27 @@ function CardsEntry (props: CardsEntryProps) {
             </div>
           </Fragment>
         )}
-        {!hasUp && (
+        {!hasUp && !isBeyond && (
           <Fragment>
             <Caption1 aria-label="placeholder">{'\u00A0'}</Caption1>
             <Caption1 aria-label="placeholder">{'\u00A0'}</Caption1>
             <Caption1 aria-label="placeholder">{'\u00A0'}</Caption1>
           </Fragment>
         )}
-        <div className={mergeClasses(styles.labelGroup, styles.labelGroupGolden)}>
-          <Locale
-            component={Caption1}
-            mapping={['Pages.Gacha.LegacyView.Clientarea.Analysis.CardsEntry.Labels.Count']}
-            childrenPosition="before"
-          >
-            <Locale mapping={[`Business.${keyofBusinesses}.Ranking.Golden`]} />{'\u00A0'}
-          </Locale>
-          <Caption1 className={styles.labelGroupNumeric}>
-            {metadata.rankings.golden.sum} [{metadata.rankings.golden.percentage}%]
-          </Caption1>
-        </div>
+        {!isPermanentOde && (
+          <div className={mergeClasses(styles.labelGroup, styles.labelGroupGolden)}>
+            <Locale
+              component={Caption1}
+              mapping={['Pages.Gacha.LegacyView.Clientarea.Analysis.CardsEntry.Labels.Count']}
+              childrenPosition="before"
+            >
+              <Locale mapping={[`Business.${keyofBusinesses}.Ranking.Golden`]} />{'\u00A0'}
+            </Locale>
+            <Caption1 className={styles.labelGroupNumeric}>
+              {metadata.rankings.golden.sum} [{metadata.rankings.golden.percentage}%]
+            </Caption1>
+          </div>
+        )}
         <div className={mergeClasses(styles.labelGroup, styles.labelGroupPurple)}>
           <Locale
             component={Caption1}
@@ -323,6 +356,20 @@ function CardsEntry (props: CardsEntryProps) {
             {metadata.rankings.blue.sum} [{metadata.rankings.blue.percentage}%]
           </Caption1>
         </div>
+        {isPermanentOde && metadata.rankings.green && (
+          <div className={mergeClasses(styles.labelGroup, styles.labelGroupGreen)}>
+            <Locale
+              component={Caption1}
+              mapping={['Pages.Gacha.LegacyView.Clientarea.Analysis.CardsEntry.Labels.Count']}
+              childrenPosition="before"
+            >
+              <Locale mapping={[`Business.${keyofBusinesses}.Ranking.Green`]} />{'\u00A0'}
+            </Locale>
+            <Caption1 className={styles.labelGroupNumeric}>
+              {metadata.rankings.green.sum} [{metadata.rankings.green.percentage}%]
+            </Caption1>
+          </div>
+        )}
       </div>
       <Divider style={{ flexGrow: 0, padding: '0.25rem 0' }} />
       <CardsEntryRecordsTabList
@@ -368,6 +415,16 @@ const useCardsEntryRecordsTabListStyles = makeStyles({
       color: tokens.colorPaletteBerryForeground1,
     },
   },
+  tabBlue: {
+    '&:enabled:hover': {
+      [`& .${tabClassNames.content}`]: {
+        color: tokens.colorPaletteBlueBorderActive,
+      },
+    },
+    [`& .${tabClassNames.content}`]: {
+      color: tokens.colorPaletteBlueBorderActive,
+    },
+  },
   tabDivider: {
     flexGrow: 0,
   },
@@ -382,12 +439,19 @@ interface CardsEntryRecordsTabListProps {
 function CardsEntryRecordsTabList (props: CardsEntryRecordsTabListProps) {
   const styles = useCardsEntryRecordsTabListStyles()
   const { keyofBusinesses, metadata } = props
-  const [ranking, setRanking] = useState<keyof Omit<CategorizedMetadataRankings, 'blue'>>('golden')
+  const isBeyond = isMiliastraWonderland(keyofBusinesses)
+  const isPremanentOde = isBeyond && metadata.category === PrettyCategory.PermanentOde
+  const initialRanking = isPremanentOde ? 'purple' : 'golden'
+  const [ranking, setRanking] = useState<keyof Omit<CategorizedMetadataRankings, 'green'>>(initialRanking)
   const handleSelect = useCallback<Required<ComponentProps<typeof TabList>>['onTabSelect']>((_, data) => {
     setRanking(data.value as typeof ranking)
   }, [])
 
   const Golden = React.memo(function CardsEntryGoldenRecords () {
+    if (isPremanentOde) {
+      return null
+    }
+
     return (
       <CardsEntryRecords
         keyofBusinesses={keyofBusinesses}
@@ -407,6 +471,20 @@ function CardsEntryRecordsTabList (props: CardsEntryRecordsTabListProps) {
     )
   })
 
+  const Blue = React.memo(function CardsEntryBlueRecords () {
+    if (!isPremanentOde) {
+      return null
+    }
+
+    return (
+      <CardsEntryRecords
+        keyofBusinesses={keyofBusinesses}
+        metadata={metadata}
+        ranking="blue"
+      />
+    )
+  })
+
   return (
     <div className={styles.root}>
       <TabList
@@ -416,16 +494,29 @@ function CardsEntryRecordsTabList (props: CardsEntryRecordsTabListProps) {
         appearance="subtle"
         size="small"
       >
-        <Tab className={mergeClasses(styles.tab, styles.tabGolden)} value="golden">
-          <Locale mapping={[`Business.${keyofBusinesses}.Ranking.Golden`]} />
-        </Tab>
-        <Divider className={styles.tabDivider} vertical />
+        {!isPremanentOde && (
+          <Fragment>
+            <Tab className={mergeClasses(styles.tab, styles.tabGolden)} value="golden">
+              <Locale mapping={[`Business.${keyofBusinesses}.Ranking.Golden`]} />
+            </Tab>
+            <Divider className={styles.tabDivider} vertical />
+          </Fragment>
+        )}
         <Tab className={mergeClasses(styles.tab, styles.tabPurple)} value="purple">
           <Locale mapping={[`Business.${keyofBusinesses}.Ranking.Purple`]} />
         </Tab>
+        {isPremanentOde && (
+          <Fragment>
+            <Divider className={styles.tabDivider} vertical />
+            <Tab className={mergeClasses(styles.tab, styles.tabBlue)} value="blue">
+              <Locale mapping={[`Business.${keyofBusinesses}.Ranking.Blue`]} />
+            </Tab>
+          </Fragment>
+        )}
       </TabList>
       {ranking === 'golden' && <Golden />}
       {ranking === 'purple' && <Purple />}
+      {ranking === 'blue' && <Blue />}
     </div>
   )
 }
@@ -447,7 +538,7 @@ const useCardsEntryRecordsStyles = makeStyles({
 interface CardsEntryRecordsProps {
   keyofBusinesses: KeyofBusinesses
   metadata: CategorizedMetadata<Business>
-  ranking: keyof Omit<CategorizedMetadataRankings, 'blue'>
+  ranking: keyof Omit<CategorizedMetadataRankings, 'green'>
 }
 
 function CardsEntryRecords (props: CardsEntryRecordsProps) {
@@ -562,7 +653,7 @@ const useCardsEntryRecordStyles = makeStyles({
 interface CardsEntryRecordProps {
   keyofBusinesses: KeyofBusinesses
   category: PrettyCategory
-  ranking: keyof Omit<CategorizedMetadataRankings, 'blue'>
+  ranking: keyof Omit<CategorizedMetadataRankings, 'green'>
   dataRef:
     // [Curr Record, Prev Record | null]
     | [PrettyGachaRecord, PrettyGachaRecord | null]

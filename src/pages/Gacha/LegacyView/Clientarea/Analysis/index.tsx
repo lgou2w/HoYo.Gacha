@@ -92,6 +92,7 @@ function GachaLegacyViewClientareaAnalysisSwitcher ({
     <Fragment>
       <div className={styles.title}>
         {title}
+        <div aria-hidden />
         <Switch
           className={styles.switch}
           label={<Locale mapping={['Pages.Gacha.LegacyView.Clientarea.Analysis.Switcher.Label']} />}

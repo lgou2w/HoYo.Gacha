@@ -228,8 +228,7 @@ function GachaLegacyViewToolbarUrlButton () {
     notifier.dismissAll()
     setBusy(true)
 
-    const { business, uid } = selectedAccount
-    const region = detectUidBusinessRegion(business, uid)! // FIXME: Maybe null
+    const region = detectUidBusinessRegion(selectedAccount.business, selectedAccount.uid)! // FIXME: Maybe null
     const properties = { ...selectedAccount.properties } // Need to modify
     const gachaUrlDeadline = computeGachaUrlDeadline(properties.gachaUrlCreationTime)
 
@@ -242,8 +241,10 @@ function GachaLegacyViewToolbarUrlButton () {
     if (!properties.gachaUrl) {
       try {
         const data = await notifier.promise(fromWebCachesGachaUrl({
+          business: selectedAccount.business,
+          region,
           dataFolder: selectedAccount.dataFolder,
-          expectedUid: uid,
+          expectedUid: selectedAccount.uid,
         }), {
           loading: {
             title: i18n.t('Pages.Gacha.LegacyView.Toolbar.Url.Obtain.Loading', { keyofBusinesses }),
@@ -270,8 +271,8 @@ function GachaLegacyViewToolbarUrlButton () {
         throw error
       } finally {
         await updateAccountPropertiesMutation.mutateAsync({
-          business,
-          uid,
+          business: selectedAccount.business,
+          uid: selectedAccount.uid,
           properties,
         })
       }
@@ -283,9 +284,9 @@ function GachaLegacyViewToolbarUrlButton () {
     let changes: number
     try {
       changes = await notifier.promise(gachaRecordsFetcher.fetch({
-        business,
+        business: selectedAccount.business,
         region,
-        uid,
+        uid: selectedAccount.uid,
         gachaUrl: properties.gachaUrl,
         gachaTypeAndLastEndIdMappings,
         eventChannel,
@@ -327,8 +328,8 @@ function GachaLegacyViewToolbarUrlButton () {
         properties.gachaUrl = null
         properties.gachaUrlCreationTime = null
         await updateAccountPropertiesMutation.mutateAsync({
-          business,
-          uid,
+          business: selectedAccount.business,
+          uid: selectedAccount.uid,
           properties,
         })
       }
@@ -339,8 +340,8 @@ function GachaLegacyViewToolbarUrlButton () {
 
     const lastGachaRecordsUpdated = dayjs().toISOString()
     await updateAccountPropertiesMutation.mutateAsync({
-      business,
-      uid,
+      business: selectedAccount.business,
+      uid: selectedAccount.uid,
       properties: produce(properties, (draft) => {
         draft.lastGachaRecordsUpdated = lastGachaRecordsUpdated
       }),
@@ -528,14 +529,16 @@ const UrlManualInputDialog = forwardRef<{
       return
     }
 
-    const expectedUid = selectedAccount.uid
+    const region = detectUidBusinessRegion(selectedAccount.business, selectedAccount.uid)! // FIXME: Maybe null
     const properties = { ...selectedAccount.properties } // Need to modify
 
     let gachaUrl: GachaUrl<Business>
     try {
       gachaUrl = await fromDirtyGachaUrl({
+        business: selectedAccount.business,
+        region,
         dirtyUrl: data.url,
-        expectedUid,
+        expectedUid: selectedAccount.uid,
       })
     } catch (error) {
       const message = errorTranslation(i18n, error)
@@ -548,7 +551,7 @@ const UrlManualInputDialog = forwardRef<{
     // Dirty URLs have no creation date and cannot know their validity period.
     await updateAccountPropertiesMutation.mutateAsync({
       business,
-      uid: expectedUid,
+      uid: selectedAccount.uid,
       properties,
     })
 

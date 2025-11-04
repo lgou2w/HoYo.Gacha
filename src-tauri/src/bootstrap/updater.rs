@@ -105,10 +105,25 @@ impl Updater {
     &CURRENT_VERSION
   }
 
+  #[cfg(feature = "no-updater")]
+  pub fn is_updating() -> bool {
+    false
+  }
+
+  #[cfg(not(feature = "no-updater"))]
   pub fn is_updating() -> bool {
     UPDATING.load(Ordering::SeqCst)
   }
 
+  #[cfg(feature = "no-updater")]
+  #[allow(clippy::type_complexity)]
+  pub async fn update(
+    on_progress: Box<dyn (Fn(f32) -> Result<(), Box<dyn StdError + 'static>>) + Send>,
+  ) -> Result<UpdatedKind, Box<dyn StdError + 'static>> {
+    Ok(UpdatedKind::UpToDate)
+  }
+
+  #[cfg(not(feature = "no-updater"))]
   #[allow(clippy::type_complexity)]
   pub async fn update(
     on_progress: Box<dyn (Fn(f32) -> Result<(), Box<dyn StdError + 'static>>) + Send>,

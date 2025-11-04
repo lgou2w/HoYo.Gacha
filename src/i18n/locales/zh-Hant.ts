@@ -41,6 +41,30 @@ export default {
           Example: 'X:/Genshin Impact/Genshin Impact Game/YuanShen_Data',
         },
       },
+      MiliastraWonderland: {
+        Name: '原神：千星奇域',
+        Player: {
+          Name: '$t(Business.GenshinImpact.Player.Name)',
+        },
+        Gacha: {
+          Name: '頌願',
+          Category: {
+            PermanentOde: '常駐頌願',
+            PermanentOde_Title: '奇遇回聲',
+            EventOde: '活動頌願',
+            Aggregated: '總計',
+          },
+        },
+        DataFolder: {
+          Example: '$t(Business.GenshinImpact.DataFolder.Example)',
+        },
+        Ranking: {
+          Golden: '傳說（五星）',
+          Purple: '卓越（四星）',
+          Blue: '優異（三星）',
+          Green: '精良（二星）',
+        },
+      },
       HonkaiStarRail: {
         Name: '崩壞：星穹鐵道',
         Player: {
@@ -199,9 +223,9 @@ export default {
         CreateOutput: '$t(Errors.LegacyUigfGachaRecordsWriteError.CreateOutput)',
         WriteOutput: '寫入輸出失敗：{{cause.message}}：{{path}}',
       },
-      PrettyGachaRecordsError: {
-        MissingMetadataEntry: '缺失元資料條目：{{business}}，語言：{{locale}}，名稱：{{name}}，物品 ID：{{itemId}}',
-      },
+      // PrettyGachaRecordsError: {
+      //   MissingMetadataEntry: '缺失元資料條目：{{business}}，語言：{{locale}}，名稱：{{name}}，物品 ID：{{itemId}}',
+      // },
       LegacyMigrationError: {
         NotFound: '舊資料庫不存在。',
         SamePath: '舊資料庫路徑不能與當前資料庫路徑相同。',
@@ -217,6 +241,7 @@ export default {
       '/': '主頁',
       '/Settings': '設定',
       '/Gacha/GenshinImpact': '$t(Business.GenshinImpact.Name)',
+      '/Gacha/MiliastraWonderland': '$t(Business.MiliastraWonderland.Name)',
       '/Gacha/HonkaiStarRail': '$t(Business.HonkaiStarRail.Name)',
       '/Gacha/ZenlessZoneZero': '$t(Business.ZenlessZoneZero.Name)',
     },
@@ -498,14 +523,19 @@ export default {
                 Labels: {
                   Total: '共 {{count, number}} 抽',
                   GoldenSum: '已出 {{count, number}} 金',
+                  PurpleSum: '已出 {{count, number}} 紫',
                   NextPity: '已墊 {{count}} 抽',
                   Beginner: '新手：{{name}}',
                   Average: '平均每金：{{count}}',
+                  AveragePurple: '平均每紫：{{count}}',
                   Percentage: '出金率：{{count}}%',
+                  PercentagePurple: '出紫率：{{count}}%',
                   UpAverage: 'UP平均每金：{{count}}',
                   UpPercentage: 'UP出金率：{{count}}%',
                   LastGolden: '最近出金：{{name}} ({{usedPity}})',
                   LastGoldenNone: '最近出金：無',
+                  LastPurple: '最近出紫：{{name}} ({{usedPity}})',
+                  LastPurpleNone: '最近出紫：無',
                 },
               },
               LastUpdated: {
@@ -518,12 +548,22 @@ export default {
                   Token3: ' 次，總價值：',
                   Token4: '{{value, number}}',
                 },
+                Fragment1Beyond: {
+                  FragmentStart: '總計',
+                  Token1: '$t(Business.{{keyofBusinesses}}.Gacha.Category.{{category}}) ',
+                  Token2: '{{total, number}}',
+                  Token3: ' 次，總價值：',
+                  Token4: '{{value, number}}',
+                  FragmentSeparator: '，',
+                },
                 Fragment2: '$t(Business.{{keyofBusinesses}}.Gacha.Name)記錄日期涵蓋範圍：',
-                Fragment3: '因官方設定，最新資料存在約一小時延遲。如遇新卡池高峰期延遲可能更久。具體時間請以遊戲內資料為準。',
+                Fragment3: '因官方設定，僅可取得最近 6 个月的$t(Business.{{keyofBusinesses}}.Gacha.Name)資料記錄。最新資料查詢有 1 小時左右延遲，若無資料請稍後再來。如遇到新卡池高峰期延遲可能更久。具體時間請以遊戲內資料為準。',
+                Fragment3_One_Year: '因官方設定，僅可取得最近 1 年的$t(Business.{{keyofBusinesses}}.Gacha.Name)資料記錄。最新資料查詢有 1 小時左右延遲，若無資料請稍後再來。如遇到新卡池高峰期延遲可能更久。具體時間請以遊戲內資料為準。',
               },
             },
             Analysis: {
               CardsEntry: {
+                Pull: '抽',
                 Labels: {
                   AverageAndUp: '平均 / UP',
                   UpWin: 'UP不歪',
@@ -545,6 +585,7 @@ export default {
               LegacyHistory: {
                 Title: '$t(Business.{{keyofBusinesses}}.Gacha.Name)歷史',
                 Title_ZenlessZoneZero: '信號$t(Business.ZenlessZoneZero.Gacha.Name)歷史',
+                Title_MiliastraWonderland: '裝扮套裝$t(Business.MiliastraWonderland.Gacha.Name)历史',
                 ListTitle_Up: '{{upSum}} UP',
                 ListTitle_Total: '{{sum}} 總',
               },

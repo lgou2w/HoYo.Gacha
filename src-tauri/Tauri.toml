@@ -2,7 +2,7 @@
 # identifier = "com.lgou2w.hoyo.gacha"
 identifier = "com.lgou2w.hoyo.gacha.v1"
 product-name = "HoYo.Gacha"
-version = "1.1.8"
+version = "1.1.9"
 
 [build]
 # See: package.json - scripts - dev & build
