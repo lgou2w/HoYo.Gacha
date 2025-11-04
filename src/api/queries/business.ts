@@ -1,5 +1,5 @@
 import { queryOptions, useMutation, useQuery, useSuspenseQuery } from '@tanstack/react-query'
-import { FindAndPrettyGachaRecordsArgs, PrettyGachaRecordsError, findAndPrettyGachaRecords } from '@/api/commands/business'
+import { FindAndPrettyGachaRecordsArgs, /* PrettyGachaRecordsError, */ findAndPrettyGachaRecords } from '@/api/commands/business'
 import { SqlxDatabaseError, SqlxError, deleteKv, findGachaRecordsByBusinessAndUidWithLimit, findKv, upsertKv } from '@/api/commands/database'
 import { Account } from '@/interfaces/Account'
 import { Business, Businesses, ReversedBusinesses } from '@/interfaces/Business'
@@ -28,7 +28,7 @@ export function prettizedGachaRecordsQueryOptions<T extends Business> (
 ) {
   return queryOptions<
     PrettizedGachaRecords<T> | null,
-    SqlxError | SqlxDatabaseError | PrettyGachaRecordsError | Error,
+    SqlxError | SqlxDatabaseError /* | PrettyGachaRecordsError */ | Error,
     PrettizedGachaRecords<T> | null,
     PrettizedGachaRecordsQueryKey
   >({
