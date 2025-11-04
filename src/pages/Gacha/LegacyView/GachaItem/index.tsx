@@ -129,7 +129,11 @@ export default function GachaItem (props: GachaItemProps) {
   title += '\n' + i18n.dayjs(time).format('LLLL')
 
   const isBeyond = isMiliastraWonderland(keyofBusinesses)
-  const catalog = isBeyond && itemCategory === 'CosmeticCatalog'
+  const catalog = isBeyond && (
+    itemCategory === 'CosmeticCatalog' ||
+    // HACK: If 'itemCategory' is null, this method can determine whether it is a catalog.
+    (itemId >= 270000 && itemId <= 279999)
+  )
 
   return (
     <div

@@ -667,26 +667,26 @@ export type GachaRecordsFetcherFragment<T extends Business> =
 
 // #region: Prettized Gacha Records
 
-const NamedPrettyGachaRecordsError = 'PrettyGachaRecordsError' as const
+// const NamedPrettyGachaRecordsError = 'PrettyGachaRecordsError' as const
 
-export enum PrettyGachaRecordsErrorKind {
-  MissingMetadataEntry = 'MissingMetadataEntry'
-}
+// export enum PrettyGachaRecordsErrorKind {
+//   MissingMetadataEntry = 'MissingMetadataEntry'
+// }
 
-export type PrettyGachaRecordsError = DetailedError<typeof NamedPrettyGachaRecordsError,
-  | {
-      kind: PrettyGachaRecordsErrorKind.MissingMetadataEntry,
-      business: Business,
-      locale: string,
-      name: string,
-      itemId: string
-    }
->
+// export type PrettyGachaRecordsError = DetailedError<typeof NamedPrettyGachaRecordsError,
+//   | {
+//       kind: PrettyGachaRecordsErrorKind.MissingMetadataEntry,
+//       business: Business,
+//       locale: string,
+//       name: string,
+//       itemId: string
+//     }
+// >
 
-export function isPrettyGachaRecordsError (error: unknown): error is PrettyGachaRecordsError {
-  return isDetailedError(error) &&
-    error.name === NamedPrettyGachaRecordsError
-}
+// export function isPrettyGachaRecordsError (error: unknown): error is PrettyGachaRecordsError {
+//   return isDetailedError(error) &&
+//     error.name === NamedPrettyGachaRecordsError
+// }
 
 export type FindAndPrettyGachaRecordsArgs<T extends Business> = FindGachaRecordsByBusinessAndUidArgs<T> & {
   customLocale?: string

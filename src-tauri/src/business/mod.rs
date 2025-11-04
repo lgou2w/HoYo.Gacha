@@ -294,8 +294,8 @@ pub async fn business_find_and_pretty_gacha_records(
     uid,
     &records[..],
     custom_locale.as_deref(),
-  )
-  .map_err(Error::boxed)?;
+  );
+  // .map_err(Error::boxed)?;
 
   Ok(prettied)
 }

@@ -63,6 +63,7 @@ export interface PrettyGachaRecord {
     | 'CosmeticComponent'
     | 'CosmeticSet'
     | 'CosmeticCatalog'
+    | null
 
   itemId: GachaRecord<Business>['itemId']
   name: GachaRecord<Business>['name']

@@ -233,9 +233,9 @@ export default {
         CreateOutput: '$t(Errors.LegacyUigfGachaRecordsWriteError.CreateOutput)',
         WriteOutput: 'Failed to write output: {{cause.message}}: {{path}}',
       },
-      PrettyGachaRecordsError: {
-        MissingMetadataEntry: 'Missing metadata entry: {{business}}, locale: {{locale}}, name: {{name}}, item id: {{itemId}}',
-      },
+      // PrettyGachaRecordsError: {
+      //   MissingMetadataEntry: 'Missing metadata entry: {{business}}, locale: {{locale}}, name: {{name}}, item id: {{itemId}}',
+      // },
       LegacyMigrationError: {
         NotFound: 'Legacy database does not exist.',
         SamePath: 'Legacy database path cannot be the same as the current database path.',

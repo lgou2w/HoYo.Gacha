@@ -223,9 +223,9 @@ export default {
         CreateOutput: '$t(Errors.LegacyUigfGachaRecordsWriteError.CreateOutput)',
         WriteOutput: '寫入輸出失敗：{{cause.message}}：{{path}}',
       },
-      PrettyGachaRecordsError: {
-        MissingMetadataEntry: '缺失元資料條目：{{business}}，語言：{{locale}}，名稱：{{name}}，物品 ID：{{itemId}}',
-      },
+      // PrettyGachaRecordsError: {
+      //   MissingMetadataEntry: '缺失元資料條目：{{business}}，語言：{{locale}}，名稱：{{name}}，物品 ID：{{itemId}}',
+      // },
       LegacyMigrationError: {
         NotFound: '舊資料庫不存在。',
         SamePath: '舊資料庫路徑不能與當前資料庫路徑相同。',

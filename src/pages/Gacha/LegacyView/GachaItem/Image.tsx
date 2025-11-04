@@ -1,4 +1,5 @@
 import React from 'react'
+import ImagesNone from '@/assets/images/None.avif'
 import BizImages from '@/components/BizImages'
 import { KeyofBusinesses } from '@/interfaces/Business'
 import { PrettyGachaRecord } from '@/interfaces/GachaRecord'
@@ -10,6 +11,12 @@ export type GachaItemImageProps = Omit<React.JSX.IntrinsicElements['img'], 'src'
 
 export default function GachaItemImage (props: GachaItemImageProps) {
   const { keyofBusinesses, record: { itemCategory, itemId }, ...rest } = props
+
+  // HACK: Metadata for the pretty record is optional.
+  // See: src-tauri\src\business\gacha_prettied.rs
+  if (!itemCategory) {
+    return <img src={ImagesNone} {...rest} />
+  }
 
   let imageSrc = BizImages[keyofBusinesses]?.[itemCategory]?.[itemId]
 
