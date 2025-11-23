@@ -26,7 +26,7 @@ offline = [ "embedded-only-gacha-metadata", "no-updater" ]
 custom-protocol = [ "tauri/custom-protocol" ]
 
 [build-dependencies]
-tauri-build = { version = "2.5.1", default-features = false, features = ["config-toml"] }
+tauri-build = { version = "2.5.2", default-features = false, features = ["config-toml"] }
 
 [dependencies]
 async-trait = "0.1.89"
@@ -35,7 +35,7 @@ cfg-if = "1.0.4"
 exponential-backoff = "2.1.0"
 futures-util = "0.3.31"
 num_enum = "0.7.5"
-os_info = "3.12.0"
+os_info = "3.13.0"
 paste = "1.0.15"
 raw-window-handle = "0.6.2"
 regex = "1.12.2"
@@ -69,7 +69,7 @@ features = [
 
 # https://github.com/tauri-apps/tauri/blob/dev/crates/tauri/Cargo.toml
 [dependencies.tauri]
-version = "2.9.2"
+version = "2.9.3"
 default-features = false
 features = [
   "wry",
