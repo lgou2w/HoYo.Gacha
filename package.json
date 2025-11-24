@@ -21,6 +21,7 @@
     "dev": "concurrently --raw -k \"pnpm:web:dev\" \"pnpm:backend:dev\"",
     "dev:tools": "cross-env REACT_DEVTOOLS=1 pnpm dev",
     "build": "pnpm web:build && pnpm backend:build",
+    "build:offline": "pnpm web:build && pnpm backend:build:offline",
     "build:artifact": "node .scripts/build-artifact.cjs",
     "test": "pnpm web:test && pnpm backend:test",
     "lint": "pnpm web:lint && pnpm backend:lint",
