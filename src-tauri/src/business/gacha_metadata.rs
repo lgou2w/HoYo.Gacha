@@ -23,7 +23,6 @@ type RawGachaMetadata = Vec<RawGachaMetadataBusiness>;
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 struct RawGachaMetadataBusiness {
-  #[serde(alias = "Id")] // For future version
   pub business: Business,
   pub categories: Vec<RawGachaMetadataCategorization>,
   pub banners: Vec<RawGachaMetadataBanner>,
