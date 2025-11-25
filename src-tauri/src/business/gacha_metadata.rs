@@ -47,7 +47,7 @@ struct RawGachaMetadataI18n {
 #[serde(rename_all = "PascalCase")]
 struct RawGachaMetadataBanner {
   pub gacha_type: u32,
-  pub gacha_id: Option<u32>, // 'Honkai: Star Rail' only
+  // pub gacha_id: Option<u32>, // 'Honkai: Star Rail' only // Deprecated
   #[serde(with = "rfc3339")]
   pub start_time: OffsetDateTime,
   #[serde(with = "rfc3339")]
@@ -119,7 +119,7 @@ pub struct GachaMetadata {
 #[derive(Debug)]
 pub struct GachaMetadataBusiness {
   pub locales: HashMap<String, GachaMetadataLocale>,
-  pub banners: HashMap<u32, GachaMetadataBanners>, // GachaType: Banners
+  pub banners: HashMap<u32, Vec<GachaMetadataBanner>>, // GachaType: Banners
 }
 
 #[derive(Debug)]
@@ -153,18 +153,18 @@ pub struct GachaMetadataEntryRef<'a> {
   pub rank: u8,
 }
 
-#[derive(Debug)]
-pub enum GachaMetadataBanners {
-  // 'Genshin Impact' and 'Zenless Zone Zero'
-  Purely(Vec<GachaMetadataBanner>),
-  // 'Honkai: Star Rail' -> GachaId: Banner
-  ByGachaId(HashMap<u32, GachaMetadataBanner>),
-}
+// #[derive(Debug)]
+// pub enum GachaMetadataBanners {
+//   // 'Genshin Impact' and 'Zenless Zone Zero'
+//   Purely(Vec<GachaMetadataBanner>),
+//   // 'Honkai: Star Rail' -> GachaId: Banner
+//   ByGachaId(HashMap<u32, GachaMetadataBanner>),
+// }
 
 #[derive(Debug)]
 pub struct GachaMetadataBanner {
   pub gacha_type: u32,
-  pub gacha_id: Option<u32>, // 'Honkai: Star Rail' only
+  // pub gacha_id: Option<u32>, // 'Honkai: Star Rail' only // Deprecated
   pub start_time: OffsetDateTime,
   pub end_time: OffsetDateTime,
   pub up_golden: HashSet<u32>,
@@ -275,20 +275,20 @@ impl GachaMetadata {
     })
   }
 
-  pub fn banners(&self, business: Business, gacha_type: u32) -> Option<&GachaMetadataBanners> {
-    self.metadata.get(&business)?.banners.get(&gacha_type)
+  pub fn banners(&self, business: Business, gacha_type: u32) -> Option<&[GachaMetadataBanner]> {
+    self
+      .metadata
+      .get(&business)?
+      .banners
+      .get(&gacha_type)
+      .map(Vec::as_slice)
   }
 
   pub fn banner_from_record(&self, record: &GachaRecord) -> Option<&GachaMetadataBanner> {
-    match self.banners(record.business, record.gacha_type)? {
-      GachaMetadataBanners::Purely(vec) => vec
-        .iter()
-        .find(|banner| record.time >= banner.start_time && record.time <= banner.end_time),
-      GachaMetadataBanners::ByGachaId(map) => record
-        .gacha_id
-        .and_then(|k| map.get(&k))
-        .filter(|banner| record.time >= banner.start_time && record.time <= banner.end_time),
-    }
+    self
+      .banners(record.business, record.gacha_type)?
+      .iter()
+      .find(|banner| record.time >= banner.start_time && record.time <= banner.end_time)
   }
 }
 
@@ -484,14 +484,14 @@ fn raw_categories_into_locales(
 }
 
 fn raw_banners_into_banner_groups(
-  business: Business,
+  _business: Business,
   banners: Vec<RawGachaMetadataBanner>,
-) -> HashMap<u32, GachaMetadataBanners> {
-  let mut result: HashMap<u32, GachaMetadataBanners> = HashMap::new();
+) -> HashMap<u32, Vec<GachaMetadataBanner>> {
+  let mut result: HashMap<u32, Vec<GachaMetadataBanner>> = HashMap::new();
   for raw in banners {
     let banner = GachaMetadataBanner {
       gacha_type: raw.gacha_type,
-      gacha_id: raw.gacha_id,
+      // gacha_id: raw.gacha_id,
       start_time: raw.start_time,
       end_time: raw.end_time,
       up_golden: raw.up_golden,
@@ -499,30 +499,32 @@ fn raw_banners_into_banner_groups(
       version: raw.version,
     };
 
-    match result.entry(banner.gacha_type) {
-      hash_map::Entry::Vacant(o) => match business {
-        Business::GenshinImpact | Business::MiliastraWonderland | Business::ZenlessZoneZero => {
-          o.insert(GachaMetadataBanners::Purely(vec![banner]));
-        }
-        Business::HonkaiStarRail => {
-          assert!(
-            banner.gacha_id.is_some(),
-            "Honkai: Star Rail banners must have a GachaId"
-          );
+    result.entry(banner.gacha_type).or_default().push(banner);
 
-          let map = HashMap::from_iter([(banner.gacha_id.unwrap(), banner)]);
-          o.insert(GachaMetadataBanners::ByGachaId(map));
-        }
-      },
-      hash_map::Entry::Occupied(mut o) => match o.get_mut() {
-        GachaMetadataBanners::Purely(vec) => {
-          vec.push(banner);
-        }
-        GachaMetadataBanners::ByGachaId(map) => {
-          map.insert(banner.gacha_id.unwrap(), banner);
-        }
-      },
-    }
+    // match result.entry(banner.gacha_type) {
+    //   hash_map::Entry::Vacant(o) => match business {
+    //     Business::GenshinImpact | Business::MiliastraWonderland | Business::ZenlessZoneZero => {
+    //       o.insert(GachaMetadataBanners::Purely(vec![banner]));
+    //     }
+    //     Business::HonkaiStarRail => {
+    //       assert!(
+    //         banner.gacha_id.is_some(),
+    //         "Honkai: Star Rail banners must have a GachaId"
+    //       );
+
+    //       let map = HashMap::from_iter([(banner.gacha_id.unwrap(), banner)]);
+    //       o.insert(GachaMetadataBanners::ByGachaId(map));
+    //     }
+    //   },
+    //   hash_map::Entry::Occupied(mut o) => match o.get_mut() {
+    //     GachaMetadataBanners::Purely(vec) => {
+    //       vec.push(banner);
+    //     }
+    //     GachaMetadataBanners::ByGachaId(map) => {
+    //       map.insert(banner.gacha_id.unwrap(), banner);
+    //     }
+    //   },
+    // }
   }
 
   result

@@ -55,7 +55,7 @@ jobs:
         run: pnpm test
 
       - name: Build app
-        run: pnpm build
+        run: pnpm build:offline
 
       - name: Build artifact
         run: pnpm build:artifact
