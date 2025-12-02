@@ -10,9 +10,3 @@ codegen-units = 1
 lto = true
 opt-level = "s"
 strip = true
-
-[patch.crates-io]
-# appender: Prune old files at startup (https://github.com/tokio-rs/tracing/issues/2937)
-tracing = { git = "https://github.com/tokio-rs/tracing.git", rev = "20f5b3d8ba057ca9c4ae00ad30dda3dce8a71c05" }
-tracing-appender = { git = "https://github.com/tokio-rs/tracing.git", rev = "20f5b3d8ba057ca9c4ae00ad30dda3dce8a71c05" }
-tracing-subscriber = { git = "https://github.com/tokio-rs/tracing.git", rev = "20f5b3d8ba057ca9c4ae00ad30dda3dce8a71c05" }
