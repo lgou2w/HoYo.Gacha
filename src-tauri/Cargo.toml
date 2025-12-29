@@ -1,6 +1,6 @@
 [package]
 name = "hoyo_gacha"
-version = "1.1.11"
+version = "1.1.12"
 edition = "2024"
 rust-version = "1.85"
 authors = ["lgou2w <lgou2w@hotmail.com>"]
@@ -35,15 +35,15 @@ cfg-if = "1.0.4"
 exponential-backoff = "2.1.0"
 futures-util = "0.3.31"
 num_enum = "0.7.5"
-os_info = "3.13.0"
+os_info = "3.14.0"
 paste = "1.0.15"
 raw-window-handle = "0.6.2"
 regex = "1.12.2"
-reqwest = { version = "0.12.24", features = ["json"] }
+reqwest = { version = "0.12.28", features = ["json"] }
 rfd = { version = "0.16.0", default-features = false }
 sha1 = "0.10.6"
 serde = { version = "1.0.228", features = ["derive"] }
-serde_json = "1.0.145"
+serde_json = "1.0.148"
 serde_repr = "0.1.20"
 sys-locale = "0.3.2"
 tauri-plugin-shell = "2.3.3"
@@ -52,7 +52,7 @@ tauri-plugin-process = "2.3.1"
 thiserror = "2.0.17"
 time = { version = "0.3.44", features = ["local-offset", "macros", "serde-human-readable"] }
 tokio = { version = "1.48.0", features = ["macros", "rt-multi-thread"] }
-tracing = "0.1.43"
+tracing = "0.1.44"
 tracing-appender = "0.2.4"
 tracing-subscriber = { version = "0.3.22", features = ["env-filter", "local-time"] }
 url = "2.5.7"
@@ -69,7 +69,7 @@ features = [
 
 # https://github.com/tauri-apps/tauri/blob/dev/crates/tauri/Cargo.toml
 [dependencies.tauri]
-version = "2.9.4"
+version = "2.9.5"
 default-features = false
 features = [
   "wry",
@@ -103,4 +103,4 @@ features = [
 ]
 
 [dev-dependencies]
-tempfile = "3.23.0"
+tempfile = "3.24.0"

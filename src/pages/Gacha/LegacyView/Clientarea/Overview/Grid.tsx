@@ -91,11 +91,11 @@ export default function GachaLegacyViewClientareaOverviewGrid (props: CompositeS
   }
 
   if (PermanentOde) {
-    items.push(createGridItem(styles.full, PrettyCategory.PermanentOde, business, PermanentOde))
+    items.push(createGridItem(styles.half, PrettyCategory.PermanentOde, business, PermanentOde))
   }
 
   if (EventOde) {
-    items.push(createGridItem(styles.full, PrettyCategory.EventOde, business, EventOde))
+    items.push(createGridItem(styles.half, PrettyCategory.EventOde, business, EventOde))
   }
 
   if (aggregated) {
