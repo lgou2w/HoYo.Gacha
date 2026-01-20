@@ -1,0 +1,66 @@
+{
+  "LegacyMigration": {
+    "Title": "Database Migration",
+    "Subtitle": "Migrate the old version v0 database to this.",
+    "Migrate": "Migrate",
+    "Pick": "Please select the database file from the older version:",
+    "Loading": {
+      "Title": "Migrating...",
+      "Body": "Do not exit the application and wait for the migration to complete."
+    },
+    "Success": {
+      "Title": "Migration success:",
+      "Body": "Elapsed: {{elapsed}}s. Accounts: {{accounts}}, Data Records: $t(Common:GenshinImpact.Name): {{GenshinImpact}}, $t(Common:HonkaiStarRail.Name): {{HonkaiStarRail}}, $t(Common:ZenlessZoneZero.Name): {{ZenlessZoneZero}}."
+    },
+    "Error": "Migration failed:"
+  },
+  "General": {
+    "Title": "General",
+    "Language": {
+      "Title": "Language",
+      "Subtitle": "Change the primary language used by the application."
+    }
+  },
+  "Appearance": {
+    "Title": "Appearance",
+    "Namespace": {
+      "Title": "Theme Color",
+      "Subtitle": "Change the primary colors displayed in the application."
+    },
+    "ColorScheme": {
+      "Title": "Preferred Color Scheme",
+      "Subtitle": "Toggle the application to use light theme or dark theme.",
+      "Option_light": "Light",
+      "Option_dark": "Dark",
+      "Option_auto": "System"
+    },
+    "ScaleLevel": {
+      "Title": "Interface Scaling",
+      "Subtitle": "Change the scale level of the interface in the application."
+    },
+    "Font": {
+      "Title": "Interface Font",
+      "Subtitle": "Change the font of the interface in the application.",
+      "None": "None"
+    }
+  },
+  "About": {
+    "Title": "About",
+    "Updater": {
+      "Title": "Application Update",
+      "Subtitle": "Check for application version updates.",
+      "CheckBtn": "Check Update"
+    },
+    "Specification": {
+      "Title": "Device Specifications",
+      "Copy": "Copy",
+      "Copied": "Copied",
+      "OperatingSystem": "Operating system",
+      "SystemVersion": "System version",
+      "Webview2": "Webview2",
+      "Tauri": "Tauri",
+      "GitCommit": "Git commit",
+      "AppVersion": "Version"
+    }
+  }
+}

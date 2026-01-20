@@ -1,0 +1,66 @@
+{
+  "LegacyMigration": {
+    "Title": "資料庫遷移",
+    "Subtitle": "將舊版本 v0 的資料庫遷移至此。",
+    "Migrate": "遷移",
+    "Pick": "請選擇舊版本 v0 的資料庫檔案：",
+    "Loading": {
+      "Title": "遷移中...",
+      "Body": "請勿關閉應用程式並等待遷移操作完成。"
+    },
+    "Success": {
+      "Title": "遷移成功：",
+      "Body": "耗時：{{elapsed}} 秒。帳號數量：{{accounts}}，抽卡記錄資料：$t(Common:GenshinImpact.Name)：{{GenshinImpact}}、$t(Common:HonkaiStarRail.Name)：{{HonkaiStarRail}}、$t(Common:ZenlessZoneZero.Name)：{{ZenlessZoneZero}}。"
+    },
+    "Error": "遷移失敗："
+  },
+  "General": {
+    "Title": "常規",
+    "Language": {
+      "Title": "語言",
+      "Subtitle": "變更應用程式的主要語言。"
+    }
+  },
+  "Appearance": {
+    "Title": "外觀",
+    "Namespace": {
+      "Title": "主題色彩",
+      "Subtitle": "變更應用程式顯示的主要顏色。"
+    },
+    "ColorScheme": {
+      "Title": "偏好配色方案",
+      "Subtitle": "切換應用程式使用淺色主題或深色主題。",
+      "Option_light": "淺色",
+      "Option_dark": "深色",
+      "Option_auto": "跟隨系統"
+    },
+    "ScaleLevel": {
+      "Title": "介面縮放",
+      "Subtitle": "變更應用程式介面的縮放等級。"
+    },
+    "Font": {
+      "Title": "介面字型",
+      "Subtitle": "變更應用程式介面的字型。",
+      "None": "無"
+    }
+  },
+  "About": {
+    "Title": "關於",
+    "Updater": {
+      "Title": "應用程式更新",
+      "Subtitle": "檢查應用程式的版本更新。",
+      "CheckBtn": "檢查更新"
+    },
+    "Specification": {
+      "Title": "裝置規格",
+      "Copy": "複製",
+      "Copied": "已複製",
+      "OperatingSystem": "作業系統",
+      "SystemVersion": "系統版本",
+      "Webview2": "Webview2",
+      "Tauri": "Tauri",
+      "GitCommit": "Git 提交",
+      "AppVersion": "應用版本"
+    }
+  }
+}

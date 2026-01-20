@@ -1,0 +1,59 @@
+[workspace]
+resolver = "3"
+members = [
+  "crates/*",
+  "tauri",
+]
+
+[workspace.package]
+version = "1.2.0"
+edition = "2024"
+rust-version = "1.85"
+authors = ["lgou2w <lgou2w@hotmail.com>"]
+description = "An unofficial tool for managing and analyzing your miHoYo gacha records"
+homepage = "https://github.com/lgou2w/HoYo.Gacha#readme"
+repository = "https://github.com/lgou2w/HoYo.Gacha"
+readme = "../README.md"
+license = "MIT OR Apache-2.0"
+publish = false
+
+[workspace.dependencies]
+backtrace = { version = "0.3.76", default-features = false, features = ["std"] }
+cfg-if = "1.0.4"
+exponential-backoff = { version = "2.1.0", default-features = false }
+form_urlencoded = { version = "1.2.2", default-features = false, features = ["std"] }
+futures-util = { version = "0.3.31", default-features = false }
+os_info = { version = "3.14.0", default-features = false }
+raw-window-handle = { version = "0.6.2", default-features = false }
+regex = { version = "1.12.2", default-features = false, features = ["std"] }
+reqwest = { version = "0.13.1", default-features = false }
+rfd = { version = "0.17.2", default-features = false }
+serde = { version = "1.0.228", default-features = false, features = ["std"] }
+serde_json = { version = "1.0.149", default-features = false, features = ["std"] }
+sha1 = { version = "0.10.6", default-features = false }
+snafu = { version = "0.8.9", default-features = false, features = ["std", "rust_1_65", "rust_1_81", "backtraces-impl-backtrace-crate"] }
+sqlx = { version = "0.8.6", default-features = false }
+time = { version = "0.3.45", default-features = false, features = ["std"] }
+tauri = { version = "2.9.5", default-features = false }
+tauri-plugin-clipboard-manager = { version = "2.3.2", default-features = false }
+tauri-plugin-shell = { version = "2.3.4", default-features = false }
+tauri-build = { version = "2.5.3", default-features = false }
+tokio = { version = "1.49.0", default-features = false }
+tracing = { version = "0.1.44", default-features = false, features = ["std"] }
+tracing-appender = { version = "0.2.4", default-features = false }
+tracing-subscriber = { version = "0.3.22", default-features = false }
+windows = { version = "0.61.3", default-features = false, features = ["std"] }
+windows-version = { version = "0.1.7", default-features = false }
+webview2-com = { version = "0.38.2", default-features = false }
+
+[profile.dev]
+# For HoYo.Gacha app
+incremental = true
+
+[profile.release]
+# For HoYo.Gacha app
+panic = "abort"
+lto = true
+codegen-units = 1
+opt-level = "s"
+strip = true

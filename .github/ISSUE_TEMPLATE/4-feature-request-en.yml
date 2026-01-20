@@ -1,0 +1,21 @@
+name: 💡 Feature Request
+title: '[Feat]: '
+description: Provide suggestions and ideas through this issue
+labels: ['enhancement']
+
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Describe the problem
+      description: Clearly describe the rationale for this feature.
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Describe the solution
+      description: Describe in detail the functionality you would like to implement or improve.
+    validations:
+      required: true

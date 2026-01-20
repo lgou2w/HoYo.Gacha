@@ -1,0 +1,147 @@
+{
+  "GenshinImpact": {
+    "Name": "Genshin Impact",
+    "Player": {
+      "Name": "Traveler",
+      "Girl": "Lumine",
+      "Boy": "Aether"
+    },
+    "Currency": {
+      "Name01": "Primogem",
+      "Name02": "Genesis Crystal"
+    },
+    "Gacha": {
+      "Name": "Wish",
+      "Ticket01": "Acquaint Fate",
+      "Ticket02": "Intertwined Fate",
+      "Category": {
+        "Beginner": "Novice Wish",
+        "Beginner_simplicity": "Novice",
+        "Beginner_title": "Beginners' Wish",
+        "Permanent": "Standard Wish",
+        "Permanent_simplicity": "Standard",
+        "Permanent_title": "Wanderlust Invocation",
+        "Character": "Character Event Wish",
+        "Character_simplicity": "Character Event",
+        "Weapon": "Weapon Event Wish",
+        "Weapon_simplicity": "Weapon Event",
+        "Weapon_title": "Epitome Invocation",
+        "Chronicled": "Chronicled Wish",
+        "Chronicled_simplicity": "Chronicled",
+        "Aggregated": "Aggregated"
+      },
+      "Ranking": {
+        "Golden": "5★",
+        "Purple": "4★",
+        "Blue": "3★"
+      }
+    },
+    "DataFolder": "X:/Genshin Impact/Genshin Impact Game/GenshinImpact_Data"
+  },
+  "MiliastraWonderland": {
+    "Name": "Genshin Impact: Miliastra Wonderland",
+    "Player": {
+      "Name": "$t(GenshinImpact.Player.Name)"
+    },
+    "Currency": {
+      "Name02": "Chronal Nexus"
+    },
+    "Gacha": {
+      "Name": "Ode",
+      "Ticket01": "Geode of Replication",
+      "Ticket02": "Arcane Keystone",
+      "Category": {
+        "PermanentOde": "Standard Ode",
+        "PermanentOde_title": "Encounter Echoes",
+        "EventOde": "Event Ode",
+        "Aggregated": "Aggregated"
+      },
+      "Ranking": {
+        "Golden": "Legendary (5-Star)",
+        "Purple": "Elite (4-Star)",
+        "Blue": "Exceptional (3-Star)",
+        "Green": "Excellent (2-Star)"
+      }
+    },
+    "DataFolder": "$t(Common:GenshinImpact.DataFolder)"
+  },
+  "HonkaiStarRail": {
+    "Name": "Honkai: Star Rail",
+    "Player": {
+      "Name": "Trailblazer",
+      "Girl": "Stelle",
+      "Boy": "Caelus"
+    },
+    "Currency": {
+      "Name01": "Stellar Jade",
+      "Name02": "Oneiric Shard"
+    },
+    "Gacha": {
+      "Name": "Wrap",
+      "Ticket01": "Star Rail Pass",
+      "Ticket02": "Star Rail Special Pass",
+      "Category": {
+        "Beginner": "Starter Warp",
+        "Beginner_simplicity": "Starter",
+        "Beginner_title": "Departure Warp",
+        "Permanent": "Regular Warp",
+        "Permanent_simplicity": "Regular",
+        "Permanent_title": "Stellar Warp",
+        "Character": "Character Event Wrap",
+        "Character_simplicity": "Character Event",
+        "Weapon": "Light Cone Event Warp",
+        "Weapon_simplicity": "Light Cone Event",
+        "CollaborationCharacter": "Character Collaboration Warp",
+        "CollaborationCharacter_simplicity": "Character Collaboration",
+        "CollaborationWeapon": "Light Cone Collaboration Warp",
+        "CollaborationWeapon_simplicity": "Light Cone Collaboration",
+        "Aggregated": "Aggregated"
+      },
+      "Ranking": {
+        "Golden": "5★",
+        "Purple": "4★",
+        "Blue": "3★"
+      }
+    },
+    "DataFolder": "X:/Star Rail/Game/StarRail_Data"
+  },
+  "ZenlessZoneZero": {
+    "Name": "Zenless Zone Zero",
+    "Player": {
+      "Name": "Proxy",
+      "Girl": "Belle",
+      "Boy": "Wise"
+    },
+    "Currency": {
+      "Name01": "Polychrome",
+      "Name02": "Monochrome"
+    },
+    "Gacha": {
+      "Name": "Signal Search",
+      "Ticket01": "Master Tape",
+      "Ticket02": "Encrypted Master Tape",
+      "Ticket03": "Boopon",
+      "Category": {
+        "Permanent": "Stable Channel",
+        "Permanent_simplicity": "Stable",
+        "Permanent_title": "Star-Studded Cast",
+        "Character": "Exclusive Channel",
+        "Character_simplicity": "Exclusive",
+        "Weapon": "W-Engine Channel",
+        "Weapon_simplicity": "W-Engine",
+        "Bangboo": "Bangboo Channel",
+        "Bangboo_simplicity": "Bangboo",
+        "Bangboo_title": "An Outstanding Partner",
+        "Aggregated": "Aggregated",
+        "Aggregated_tooltip": "(Excluding Bangboo Channel)",
+        "Aggregated_tooltip_simplicity": "(Excluding Bangboo)"
+      },
+      "Ranking": {
+        "Golden": "S-Rank",
+        "Purple": "A-Rank",
+        "Blue": "B-Rank"
+      }
+    },
+    "DataFolder": "X:/ZenlessZoneZero Game/ZenlessZoneZero_Data"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "AppTitleBar": {
+    "Title": {
+      "/": "Home",
+      "/Gacha/GenshinImpact": "$t(Common:GenshinImpact.Name)",
+      "/Gacha/MiliastraWonderland": "$t(Common:MiliastraWonderland.Name)",
+      "/Gacha/HonkaiStarRail": "$t(Common:HonkaiStarRail.Name)",
+      "/Gacha/ZenlessZoneZero": "$t(Common:ZenlessZoneZero.Name)",
+      "/Settings": "Settings"
+    }
+  }
+}

@@ -1,0 +1,27 @@
+[package]
+name = "hoyo_gacha_url_scraper"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+description.workspace = true
+homepage.workspace = true
+repository.workspace = true
+readme.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+hg_diskcache    = { package = "hoyo_gacha_diskcache"   , path = "../diskcache" }
+hg_game_biz     = { package = "hoyo_gacha_game_biz"    , path = "../game_biz" }
+hg_serde_helper = { package = "hoyo_gacha_serde_helper", path = "../serde_helper" }
+hg_url_finder   = { package = "hoyo_gacha_url_finder"  , path = "../url_finder" }
+
+exponential-backoff = { workspace = true }
+reqwest = { workspace = true, features = ["native-tls", "http2", "json", "query"] }
+serde = { workspace = true, features = ["derive"] }
+snafu = { workspace = true }
+time = { workspace = true, features = ["macros", "formatting", "parsing", "serde"] }
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["full"] }

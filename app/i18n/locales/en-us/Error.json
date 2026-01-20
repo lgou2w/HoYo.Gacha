@@ -1,0 +1,39 @@
+{
+  "Unexpected": "An unexpected error occurred: {{message}}",
+  "LocateDataFolderError": {
+    "InvalidUid": "Invalid $t(Common:{{keyof}}.Name) account uid: {{value}}",
+    "UnityLogNotFound": "Unity log file not found: {{path}}",
+    "OpenUnityLog": "Failed to opening Unity log file: '{{path}}', cause: {{cause.message}} ({{cause.kind}})",
+    "Invalid": "Invalid game data folder.",
+    "Vacant": "Game data folder is vacant."
+  },
+  "DirtyGachaUrlError": {
+    "OpenDiskCache": "Failed to opening disk cache: {{cause.message}} ({{cause.kind}})",
+    "ReadDiskCache": "Failed to reading disk cache: {{cause.message}} ({{cause.kind}})",
+    "OpenWebcaches": "Failed to opening webcaches: {{cause.message}} ({{cause.kind}}) The game data folder location may have been moved? Please check and modify it in Account List - Edit Account .",
+    "EmptyWebCaches": "No valid webCaches version directory found. Please try launching the game at least once!"
+  },
+  "ParsedGachaUrlError": {
+    "InvalidUrl": "Invalid Gacha url",
+    "RequiredParam": "Gacha url missing required parameter: {{name}}",
+    "UnsupportedGameBiz": "Unsupported Game biz and region combination: {{gameBiz}} / {{region}}"
+  },
+  "GachaUrlRequestError": {
+    "UnsupportedEndpoint": "Game biz '{{gameBiz}}' does not support endpoint type: {{endpoint}}",
+    "Reqwest": "Error when requesting Gacha url: {{cause}}",
+    "AuthkeyTimeout": "The Gacha url has expired. Please reopen the history interface in the game!",
+    "VisitTooFrequently": "The Gacha url was visit too frequently, please try again later!",
+    "UnexpectedResponse": "The Gacha url returned an unexpected response: {{message}} (retcode: {{retcode}})",
+    "ReachedMaxAttempts": "Request reached max attempts, please try again later!"
+  },
+  "GachaUrlError": {
+    "InvalidUid": "Invalid $t(Common:{{keyof}}.Name) account uid: {{value}}",
+    "EmptyData": "Gacha url with empty data. The latest data will be delayed, please try again later!",
+    "NotFound": "No valid Gacha url found. Please try opening the history interface in the game!",
+    "InconsistentUid": "Owner uid of the Gacha url does not match. Expected: {{expected}}, Actuals: {{actuals}}. Please reopen the history interface in the game with your current account and try again!"
+  },
+  "FetchRecordError": {
+    "InvalidUid": "Invalid $t(Common:{{keyof}}.Name) account uid: {{value}}",
+    "MetadataEntry": "Missing metadata entry: $t(Common:{{keyof}}.Name), lang: {{lang}}, itemName: {{itemName}}"
+  }
+}

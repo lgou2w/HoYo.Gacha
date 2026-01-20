@@ -1,0 +1,190 @@
+{
+  "ImageItem": {
+    "Up": "UP",
+    "Titles": {
+      "Version": "Version: {{value}}",
+      "GenshinImpactCharacter2": "$t(Common:GenshinImpact.Gacha.Category.Character)-2"
+    }
+  },
+  "Toolbar": {
+    "Accounts": {
+      "Label": "Accounts",
+      "Available": "Available",
+      "More": {
+        "Label": "More options",
+        "Edit": "Edit account",
+        "ChooseAvatar": "Choose avatar",
+        "Delete": "Delete account"
+      },
+      "Add": "Add new account",
+      "NoAvailable": "No account"
+    },
+    "GachaUrl": {
+      "Label": "$t(Common:{{keyof}}.Gacha.Name) URL",
+      "Expired": "(Has expired)",
+      "Deadline": "(Valid with {{value}})",
+      "Placeholder": "$t(Toolbar.GachaUrl.Label)",
+      "UpdateBtn": "Update",
+      "More": {
+        "Label": "More options",
+        "FullUpdate": "Full update",
+        "ManualInput": "Manual input URL"
+      },
+      "Obtain": {
+        "Loading": "Obtaining $t(Common:{{keyof}}.Gacha.Name) URL...",
+        "Error": "Failed to obtain $t(Common:{{keyof}}.Gacha.Name) URL:"
+      },
+      "Fetch": {
+        "Loading": "Fetching $t(Common:{{keyof}}.Gacha.Name) Records...",
+        "Success": {
+          "Title": "Successfully fetched $t(Common:{{keyof}}.Gacha.Name) Records:",
+          "AddedBody": "Added {{changes}} new records.",
+          "DeletedBody": "Delete {{changes}} incorrect records."
+        },
+        "Error": "Failed to fetch $t(Common:{{keyof}}.Gacha.Name) Records:",
+        "Event": {
+          "Idle": "Idle...",
+          "Sleeping": "Sleeping...",
+          "Ready": "Ready to fetch records: $t(Common:{{keyof}}.Gacha.Category.{{value}})",
+          "Pagination": "Fetching records for page {{value}}...",
+          "Data": "Fetched {{value}} new records.",
+          "Completed": "Completed fetching records: $t(Common.{{keyof}}.Gacha.Category.{{value}})",
+          "Finished": "All done."
+        }
+      }
+    },
+    "ClientareaTabs": {
+      "Label": "Clientarea",
+      "Overview": "Overview",
+      "Analysis": "Analysis"
+    },
+    "Converters": {
+      "Label": "Import · Export"
+    }
+  },
+  "UpsertAccount": {
+    "Form": {
+      "Uid": {
+        "Label": "UID",
+        "Placeholder": "UID for in-game account",
+        "Required": "Please enter the UID field value.",
+        "Pattern": "Please enter the correct UID format.",
+        "Exists": "This account UID already exists."
+      },
+      "DisplayName": {
+        "Label": "Display Name",
+        "Placeholder": "Display name (Optional, for identification purposes only)",
+        "MaxLength": "Maximum character length limit exceeded."
+      },
+      "DataFolder": {
+        "Label": "Data Folder",
+        "Placeholder": "Full path to the game data folder. \nFor Example: \"$t(Common:{{keyof}}.DataFolder)\"",
+        "Required": "Please choice the game data folder.",
+        "AutoFind": "Auto Find",
+        "ManualFind": "Manual Choice"
+      },
+      "ValidMessage": "It's valid.",
+      "Cancel": "Cancel",
+      "Submit": "Confirm"
+    },
+    "Dialog": {
+      "Title_add": "Add new account: $t(Common:{{keyof}}.Name)",
+      "Title_edit": "Edit account: $t(Common:{{keyof}}.Name)",
+      "Success_add": "Successfully added new account: {{identity}}",
+      "Success_edit": "Successfully edited account: {{identity}}"
+    }
+  },
+  "DeleteAccount": {
+    "Dialog": {
+      "Title": "Confirm to delete account: $t(Common:{{keyof}}.Name)",
+      "Uid": "UID:",
+      "DisplayName": "DisplayName:",
+      "Whole": {
+        "Label": "Delete as a whole:",
+        "Information": "Warning! After enabling, this will delete this account and the data records."
+      },
+      "Confirm": {
+        "1": "Confirm that you want to completely delete all data of this account?",
+        "2": "Confirm again, please be aware of what you are doing. This operation is irreversible!",
+        "3": "Final confirmation required."
+      },
+      "Cancel": "Cancel",
+      "Submit": "Confirm"
+    }
+  },
+  "Clientarea": {
+    "LastUpdated": {
+      "Label": "Latest update date of records: "
+    },
+    "Overview": {
+      "Grid": {
+        "Labels": {
+          "Total_zero": "No pulls record yet",
+          "Total_one": "{{count}} pull in total",
+          "Total": "{{count, number}} pulls in total",
+          "Sum_golden_zero": "No gold pulled yet",
+          "Sum_golden": "Pulled {{count, number}} gold",
+          "Sum_purple_zero": "No purple pulled yet",
+          "Sum_purple": "Pulled {{count, number}} purple",
+          "NextPity_zero": "No pulls into pity yet",
+          "NextPity_one": "{{count}} pull into pity",
+          "NextPity": "{{count}} pulls into pity",
+          "Average_golden": "Average rate per gold: {{count}}",
+          "Average_purple": "Average rate per purple: {{count}}",
+          "Percentage_golden": "Gold rate: {{count}}%",
+          "Percentage_purple": "Purple rate: {{count}}%",
+          "UpAverage_golden": "Average $t(ImageItem.Up) gold: {{count}}",
+          "UpAverage_purple": "Average $t(ImageItem.Up) purple: {{count}}",
+          "UpPercentage_golden": "$t(ImageItem.Up) gold rate: {{count}}%",
+          "UpPercentage_purple": "$t(ImageItem.Up) purple rate: {{count}}%",
+          "Last_golden_zero": "Last gold: None",
+          "Last_golden": "Last gold: {{itemName}} ({{count}})",
+          "Last_purple_zero": "Last purple: None",
+          "Last_purple": "Last purple: {{itemName}} ({{count}})"
+        },
+        "Tags": {
+          "Title": "$t(Common:{{keyof}}.Gacha.Name) Tags",
+          "Recent": "Latest: {{date}}, +{{count, number}} pulls",
+          "Luck": "Luckiest $t(Common:{{keyof}}.Gacha.Ranking.Golden): {{itemName}} in {{count, number}} pulls",
+          "Unluck": "Unluckiest $t(Common:{{keyof}}.Gacha.Ranking.Golden): <1>{{itemName}}</1> after <1>{{count, number}}</1> pulls",
+          "Relation": "Most Encountered $t(Common:{{keyof}}.Gacha.Ranking.Golden): <1>{{itemName}}</1>, obtained <1>{{count, number}}</1> times",
+          "Crazy": "Craziest Day: <1>{{date}}</1> with <1>{{count, number}}</1> total pulls"
+        }
+      },
+      "Tooltips": {
+        "First": "Total {{title}} <1>{{total, number}}</1> times, total value: <2>{{value, number}}</2>",
+        "Second": "$t(Common:{{keyof}}.Gacha.Name) records date coverage: <time>{{start}}</time> - <time>{{end}}</time>",
+        "Third": "Due to official settings, only $t(Common:{{keyof}}.Gacha.Name) data records from the <1>most recent 6 months</1> are available. There is approximately a <1>one-hour</1> delay in retrieving the latest data. During peak periods for new banners, this delay may be extended. For precise timing, please refer to the in-game data.",
+        "Third_one_year": "Due to official settings, only $t(Common:{{keyof}}.Gacha.Name) data records from the <1>most recent year</1> is available. There is approximately a <1>one-hour</1> delay in retrieving the latest data. During peak periods for new banners, this delay may be extended. For precise timing, please refer to the in-game data."
+      }
+    },
+    "Analysis": {
+      "VersionSwitcher": "Use the Classic version",
+      "Classic": {
+        "Table": {
+          "Title": "Proportion of Data",
+          "RowLabels": {
+            "AverageAndUp": "Average / $t(ImageItem.Up)",
+            "UpWin": "$t(ImageItem.Up) Win",
+            "Up": "$t(ImageItem.Up)",
+            "Count": "Count"
+          }
+        },
+        "Histories": {
+          "Title": "$t(Common:{{keyof}}.Gacha.Ranking.Golden) $t(Common:{{keyof}}.Gacha.Name) History",
+          "Title_MiliastraWonderland": "Costume Set $t(Common:MiliastraWonderland.Gacha.Name) History",
+          "Total": "$t(Clientarea.Overview.Grid.Labels.Total)",
+          "Sum": "{{count, number}} total",
+          "Sum_up": "{{count, number}} $t(ImageItem.Up)"
+        }
+      },
+      "Remastered": {
+        "Total": "{{count, number}}",
+        "Pull": "pulls",
+        "NextPity": "Pity Count",
+        "HardPity": "Hard!",
+        "Up": "$t(ImageItem.Up)"
+      }
+    }
+  }
+}

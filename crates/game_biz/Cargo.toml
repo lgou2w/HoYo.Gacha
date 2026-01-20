@@ -1,0 +1,18 @@
+[package]
+name = "hoyo_gacha_game_biz"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+description.workspace = true
+homepage.workspace = true
+repository.workspace = true
+readme.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[features]
+timezone = ["dep:time"]
+
+[dependencies]
+time = { workspace = true, optional = true }

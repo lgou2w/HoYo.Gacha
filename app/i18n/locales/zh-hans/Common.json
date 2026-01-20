@@ -1,0 +1,134 @@
+{
+  "GenshinImpact": {
+    "Name": "原神",
+    "Player": {
+      "Name": "旅行者",
+      "Girl": "荧",
+      "Boy": "空"
+    },
+    "Currency": {
+      "Name01": "原石",
+      "Name02": "创世结晶"
+    },
+    "Gacha": {
+      "Name": "祈愿",
+      "Ticket01": "相遇之缘",
+      "Ticket02": "纠缠之缘",
+      "Category": {
+        "Beginner": "新手祈愿",
+        "Beginner_simplicity": "新手",
+        "Beginner_title": "初行者推荐祈愿",
+        "Permanent": "常驻祈愿",
+        "Permanent_simplicity": "常驻",
+        "Permanent_title": "奔行世间",
+        "Character": "角色活动祈愿",
+        "Character_simplicity": "角色活动",
+        "Weapon": "武器活动祈愿",
+        "Weapon_simplicity": "武器活动",
+        "Weapon_title": "神铸赋形",
+        "Chronicled": "集录祈愿",
+        "Chronicled_simplicity": "集录",
+        "Aggregated": "总计"
+      }
+    },
+    "DataFolder": "X:/Genshin Impact/Genshin Impact Game/YuanShen_Data"
+  },
+  "MiliastraWonderland": {
+    "Name": "原神：千星奇域",
+    "Currency": {
+      "Name02": "事象凝核"
+    },
+    "Gacha": {
+      "Name": "颂愿",
+      "Ticket01": "重现晶簇",
+      "Ticket02": "绮刻之楔",
+      "Category": {
+        "PermanentOde": "常驻颂愿",
+        "PermanentOde_title": "奇遇回声",
+        "EventOde": "活动颂愿",
+        "Aggregated": "总计"
+      },
+      "Ranking": {
+        "Golden": "传说（5星）",
+        "Purple": "卓越（4星）",
+        "Blue": "优异（3星）",
+        "Green": "精良（2星）"
+      }
+    },
+    "DataFolder": "$t(Common:GenshinImpact.DataFolder)"
+  },
+  "HonkaiStarRail": {
+    "Name": "崩坏：星穹铁道",
+    "Player": {
+      "Name": "开拓者",
+      "Girl": "星",
+      "Boy": "穹"
+    },
+    "Currency": {
+      "Name01": "星琼",
+      "Name02": "古老梦华"
+    },
+    "Gacha": {
+      "Name": "跃迁",
+      "Ticket01": "星轨通票",
+      "Ticket02": "星轨专票",
+      "Category": {
+        "Beginner": "新手跃迁",
+        "Beginner_simplicity": "新手",
+        "Beginner_title": "始发跃迁",
+        "Permanent": "常驻跃迁",
+        "Permanent_simplicity": "常驻",
+        "Permanent_title": "群星跃迁",
+        "Character": "角色活动跃迁",
+        "Character_simplicity": "角色活动",
+        "Weapon": "光锥活动跃迁",
+        "Weapon_simplicity": "光锥活动",
+        "CollaborationCharacter": "角色联动跃迁",
+        "CollaborationCharacter_simplicity": "角色联动",
+        "CollaborationWeapon": "光锥联动跃迁",
+        "CollaborationWeapon_simplicity": "光锥联动",
+        "Aggregated": "总计"
+      }
+    },
+    "DataFolder": "X:/Star Rail/Game/StarRail_Data"
+  },
+  "ZenlessZoneZero": {
+    "Name": "绝区零",
+    "Player": {
+      "Name": "绳匠",
+      "Girl": "铃",
+      "Boy": "哲"
+    },
+    "Currency": {
+      "Name01": "菲林",
+      "Name02": "菲林底片"
+    },
+    "Gacha": {
+      "Name": "调频",
+      "Ticket01": "原装母带",
+      "Ticket02": "加密母带",
+      "Ticket03": "邦布券",
+      "Category": {
+        "Permanent": "常驻频段",
+        "Permanent_simplicity": "常驻",
+        "Permanent_title": "热门卡司",
+        "Character": "独家频段",
+        "Character_simplicity": "独家",
+        "Weapon": "音擎频段",
+        "Weapon_simplicity": "音擎",
+        "Bangboo": "邦布频段",
+        "Bangboo_simplicity": "邦布",
+        "Bangboo_title": "卓越搭档",
+        "Aggregated": "总计",
+        "Aggregated_tooltip": "(不含邦布频段)",
+        "Aggregated_tooltip_simplicity": "(不含邦布)"
+      },
+      "Ranking": {
+        "Golden": "S级",
+        "Purple": "A级",
+        "Blue": "B级"
+      }
+    },
+    "DataFolder": "X:/ZenlessZoneZero Game/ZenlessZoneZero_Data"
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "editor.tabSize": 2,
+  "editor.indentSize": "tabSize",
+
+  "typescript.tsdk": "./node_modules/typescript/lib",
+  "typescript.preferences.importModuleSpecifier": "shortest",
+
+  "eslint.format.enable": true,
+  "eslint.useFlatConfig": true,
+  "eslint.validate": ["javascript", "javascriptreact", "typescript", "typescriptreact"],
+  "[javascript][javascriptreact][typescript][typescriptreact]": {
+    "editor.formatOnSave": false, // Because it conflicts with ESLint.
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "explicit"
+    }
+  },
+
+  "rust-analyzer.check.command": "clippy",
+  "rust-analyzer.diagnostics.enable": true,
+  "rust-analyzer.showUnlinkedFileNotification": false,
+  "[rust]": {
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "rust-lang.rust-analyzer"
+  },
+}

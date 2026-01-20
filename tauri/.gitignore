@@ -1,0 +1,15 @@
+# Because using Toml
+/gen/schemas
+
+# User custom
+# Database file
+/*HoYo.Gacha.db
+/*HoYo.Gacha.db.*
+/*HoYo.Gacha.v1.db
+/*HoYo.Gacha.v1.db.*
+# GachaMetadata dump
+/*HoYo.Gacha.Metadata.Dump.txt
+# Crashs
+/Crashs
+# WindowState
+/*HoYo.Gacha.WindowState.json

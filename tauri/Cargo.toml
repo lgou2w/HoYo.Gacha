@@ -1,0 +1,77 @@
+[package]
+name = "hoyo_gacha"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+description.workspace = true
+homepage.workspace = true
+repository.workspace = true
+readme.workspace = true
+license.workspace = true
+publish.workspace = true
+build = "build.rs"
+
+[features]
+# For Release
+default = []
+
+# For Development
+prod-develop = [
+  "disable-app-updater",
+  "disable-metadata-updater",
+]
+
+# For GitHub Actions
+prod-cicd = ["prod-develop"]
+
+# Disable features
+disable-app-updater = []
+disable-metadata-updater = []
+
+# this feature is used for production builds or when `devPath` points to the filesystem and the built-in dev server is disabled.
+# If you use cargo directly instead of tauri's cli you can use this feature flag to switch between tauri's `dev` and `build` modes.
+# DO NOT REMOVE!!
+custom-protocol = [ "tauri/custom-protocol" ]
+
+[dependencies]
+hg_diskcache    = { package = "hoyo_gacha_diskcache"   , path = "../crates/diskcache" }
+hg_game_biz     = { package = "hoyo_gacha_game_biz"    , path = "../crates/game_biz", features = ["timezone"] }
+hg_metadata     = { package = "hoyo_gacha_metadata"    , path = "../crates/metadata", features = ["json"] }
+hg_serde_helper = { package = "hoyo_gacha_serde_helper", path = "../crates/serde_helper" }
+hg_url_finder   = { package = "hoyo_gacha_url_finder"  , path = "../crates/url_finder" }
+hg_url_scraper  = { package = "hoyo_gacha_url_scraper" , path = "../crates/url_scraper" }
+hg_ffi          = { package = "hoyo_gacha_ffi"         , path = "../crates/ffi" }
+
+backtrace = { workspace = true }
+cfg-if = { workspace = true }
+exponential-backoff = { workspace = true }
+futures-util = { workspace = true }
+os_info = { workspace = true }
+reqwest = { workspace = true, features = ["native-tls", "http2", "json"] }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+sha1 = { workspace = true }
+snafu = { workspace = true }
+sqlx = { workspace = true, features = ["runtime-tokio", "sqlite", "time", "tls-native-tls"] }
+tauri-plugin-clipboard-manager = { workspace = true }
+tauri-plugin-shell = { workspace = true }
+time = { workspace = true, features = ["macros", "formatting", "parsing", "serde", "local-offset"] }
+tokio = { workspace = true, features = ["macros", "rt-multi-thread", "fs", "sync", "time"] }
+tracing = { workspace = true, features = ["attributes"] }
+tracing-appender = { workspace = true }
+tracing-subscriber = { workspace = true, features = ["ansi", "env-filter", "local-time"] }
+
+[build-dependencies]
+tauri-build = { workspace = true, features = ["config-toml"] }
+
+[dependencies.tauri]
+workspace = true
+features = [
+  "wry",
+  "compression",
+  "devtools",
+]
+
+[target.'cfg(windows)'.dependencies]
+windows-version = { workspace = true }

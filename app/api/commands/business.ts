@@ -1,0 +1,486 @@
+import { Channel } from '@tauri-apps/api/core'
+import { Command, declareCommand } from '@/api/command'
+import { AppError, isAppError } from '@/api/error'
+import { Account, AccountBusiness } from '@/api/schemas/Account'
+import { GachaRecord, GachaType } from '@/api/schemas/GachaRecord'
+import { PrettizedCategory, PrettizedRecord, PrettizedRecords } from '@/pages/Gacha/contexts/PrettizedRecords/types'
+
+// See: https://doc.rust-lang.org/std/io/struct.Error.html
+export interface NativeIOError {
+  kind: string // too many
+  message: string
+}
+
+// #region: Error compat
+
+export const NamedDirtyGachaUrlError = 'DirtyGachaUrlError' as const
+export type NamedDirtyGachaUrlError = typeof NamedDirtyGachaUrlError
+
+export enum DirtyGachaUrlErrorKind {
+  OpenDiskCache = 'OpenDiskCache',
+  ReadDiskCache = 'ReadDiskCache',
+  OpenWebcaches = 'OpenWebcaches',
+  EmptyWebCaches = 'EmptyWebCaches',
+}
+
+export type DirtyGachaUrlError = AppError<NamedDirtyGachaUrlError,
+  | {
+    kind:
+      | DirtyGachaUrlErrorKind.OpenDiskCache
+      | DirtyGachaUrlErrorKind.ReadDiskCache
+      | DirtyGachaUrlErrorKind.OpenWebcaches
+    cause: NativeIOError
+  }
+  | {
+    kind: DirtyGachaUrlErrorKind.EmptyWebCaches
+  }
+>
+
+export function isDirtyGachaUrlError (error: unknown): error is DirtyGachaUrlError {
+  return isAppError(error)
+    && error.name === NamedDirtyGachaUrlError
+}
+
+export const NamedParsedGachaUrlError = 'ParsedGachaUrlError' as const
+export type NamedParsedGachaUrlError = typeof NamedParsedGachaUrlError
+
+export enum ParsedGachaUrlErrorKind {
+  InvalidUrl = 'InvalidUrl',
+  RequiredParam = 'RequiredParam',
+  UnsupportedGameBiz = 'UnsupportedGameBiz',
+}
+
+export type ParsedGachaUrlError = AppError<NamedParsedGachaUrlError,
+  | {
+    kind: ParsedGachaUrlErrorKind.InvalidUrl
+  }
+  | {
+    kind: ParsedGachaUrlErrorKind.RequiredParam
+    name: string
+  }
+  | {
+    kind: ParsedGachaUrlErrorKind.UnsupportedGameBiz
+    gameBiz: string
+    region: string
+  }
+>
+
+export function isParsedGachaUrlError (error: unknown): error is ParsedGachaUrlError {
+  return isAppError(error)
+    && error.name === NamedParsedGachaUrlError
+}
+
+export const NamedGachaUrlRequestError = 'GachaUrlRequestError' as const
+export type NamedGachaUrlRequestError = typeof NamedGachaUrlRequestError
+
+export enum GachaUrlRequestErrorKind {
+  UnsupportedEndpoint = 'UnsupportedEndpoint',
+  Reqwest = 'Reqwest',
+  AuthkeyTimeout = 'AuthkeyTimeout',
+  VisitTooFrequently = 'VisitTooFrequently',
+  UnexpectedResponse = 'UnexpectedResponse',
+  ReachedMaxAttempts = 'ReachedMaxAttempts',
+}
+
+export type GachaUrlRequestError = AppError<NamedGachaUrlRequestError,
+  | {
+    kind: GachaUrlRequestErrorKind.UnsupportedEndpoint
+    gameBiz: string
+    endpoint: string
+  }
+  | {
+    kind: GachaUrlRequestErrorKind.Reqwest
+    cause: string
+  }
+  | {
+    kind: GachaUrlRequestErrorKind.AuthkeyTimeout
+  }
+  | {
+    kind: GachaUrlRequestErrorKind.VisitTooFrequently
+  }
+  | {
+    kind: GachaUrlRequestErrorKind.UnexpectedResponse
+    retcode: number
+    message: string
+  }
+  | {
+    kind: GachaUrlRequestErrorKind.ReachedMaxAttempts
+  }
+>
+
+export function isGachaUrlRequestError (error: unknown): error is GachaUrlRequestError {
+  return isAppError(error)
+    && error.name === NamedGachaUrlRequestError
+}
+
+// #endregion
+
+// #region: Validate Uid
+
+export type ValidateUidArgs
+  = Pick<Account, 'business' | 'uid'>
+
+export type ValidateUid
+  = Command<ValidateUidArgs, 'official' | 'oversea' | null>
+
+// #endregion
+
+// #region: Locate Data Folder
+
+export const NamedLocateDataFolderError = 'LocateDataFolderError' as const
+export type NamedLocateDataFolderError = typeof NamedLocateDataFolderError
+
+export enum LocateDataFolderErrorKind {
+  InvalidUid = 'InvalidUid',
+  UnityLogNotFound = 'UnityLogNotFound',
+  OpenUnityLog = 'OpenUnityLog',
+  Invalid = 'Invalid',
+  Vacant = 'Vacant',
+}
+
+export type LocateDataFolderError = AppError<NamedLocateDataFolderError,
+  | {
+    kind: LocateDataFolderErrorKind.InvalidUid
+    business: AccountBusiness
+    value: Account['uid']
+  }
+  | {
+    kind: LocateDataFolderErrorKind.UnityLogNotFound
+    path: string
+  }
+  | {
+    kind: LocateDataFolderErrorKind.OpenUnityLog
+    path: string
+    cause: NativeIOError
+  }
+  | {
+    kind: LocateDataFolderErrorKind.Invalid
+  }
+  | {
+    kind: LocateDataFolderErrorKind.Vacant
+  }
+>
+
+export function isLocateDataFolderError (error: unknown): error is LocateDataFolderError {
+  return isAppError(error)
+    && error.name === NamedLocateDataFolderError
+}
+
+export interface DataFolder<T extends AccountBusiness> {
+  business: T
+  value: string
+}
+
+export enum LocateDataFolderFactoryKind {
+  UnityLog = 'UnityLog',
+  Manual = 'Manual',
+}
+
+export type LocateDataFolderFactory
+  = | { [LocateDataFolderFactoryKind.UnityLog]: null }
+    | { [LocateDataFolderFactoryKind.Manual]: { title: string } }
+
+export interface LocateDataFolderArgs<T extends AccountBusiness> {
+  business: T
+  uid: Account['uid']
+  factory: LocateDataFolderFactory
+}
+
+export type LocateDataFolder
+  = <T extends AccountBusiness> (args: LocateDataFolderArgs<T>) => Promise<DataFolder<T>>
+
+// #endregion
+
+// #region: From Gacha url
+
+export const NamedGachaUrlError = 'GachaUrlError' as const
+export type NamedGachaUrlError = typeof NamedGachaUrlError
+
+export enum GachaUrlErrorKind {
+  InvalidUid = 'InvalidUid',
+  EmptyData = 'EmptyData',
+  NotFound = 'NotFound',
+  InconsistentUid = 'InconsistentUid',
+}
+
+export type GachaUrlError = AppError<NamedGachaUrlError,
+  | {
+    kind: GachaUrlErrorKind.InvalidUid
+    business: AccountBusiness
+    value: Account['uid']
+  }
+  | {
+    kind: GachaUrlErrorKind.EmptyData
+  }
+  | {
+    kind: GachaUrlErrorKind.NotFound
+  }
+  | {
+    kind: GachaUrlErrorKind.InconsistentUid
+    expected: Account['uid']
+    actuals: Account['uid'][]
+  }
+>
+
+export function isGachaUrlError (error: unknown): error is GachaUrlError {
+  return isAppError(error)
+    && error.name === NamedGachaUrlError
+}
+
+export interface GachaUrl<T extends AccountBusiness> {
+  business: T
+  ownerUid: Account['uid']
+  creationTime?: string | null
+  value: string
+}
+
+export interface FromWebcachesGachaUrlArgs<T extends AccountBusiness> {
+  business: T
+  uid: Account['uid']
+  dataFolder: Account['dataFolder']
+}
+
+export type FromWebcachesGachaUrl
+  = <T extends AccountBusiness> (args: FromWebcachesGachaUrlArgs<T>) => Promise<GachaUrl<T>>
+
+export interface FromDirtyGachaUrlArgs<T extends AccountBusiness> {
+  business: T
+  uid: Account['uid']
+  dirty: string
+}
+
+export type FromDirtyGachaUrl
+  = <T extends AccountBusiness> (args: FromDirtyGachaUrlArgs<T>) => Promise<GachaUrl<T>>
+
+// #endregion
+
+// #region: Image Resolver
+
+export interface ResolveImageArgs {
+  business: AccountBusiness
+  itemCategory: NonNullable<PrettizedRecord['itemCategory']>
+  itemId: PrettizedRecord['itemId']
+}
+
+export type ResolveImage
+  = (args: ResolveImageArgs) => Promise<Uint8Array>
+
+export interface PrettyRecordsArgs<T extends AccountBusiness> {
+  business: T
+  uid: Account['uid']
+  customLocale?: string | null
+}
+
+export type PrettyRecords
+  = <T extends AccountBusiness> (args: PrettyRecordsArgs<T>) => Promise<PrettizedRecords<T>>
+
+// #endregion
+
+// #region: Records Fetcher
+
+export const NamedFetchRecordError = 'FetchRecordError' as const
+export type NamedFetchRecordError = typeof NamedFetchRecordError
+
+export enum FetchRecordErrorKind {
+  InvalidUid = 'InvalidUid',
+  MetadataEntry = 'MetadataEntry',
+}
+
+export type FetchRecordError = AppError<NamedFetchRecordError,
+  | {
+    kind: FetchRecordErrorKind.InvalidUid
+    business: AccountBusiness
+    value: Account['uid']
+  }
+  | {
+    kind: FetchRecordErrorKind.MetadataEntry
+    business: AccountBusiness
+    lang: GachaRecord<AccountBusiness>['lang']
+    itemName: GachaRecord<AccountBusiness>['itemName']
+  }
+>
+
+export function isFetchRecordError (error: unknown): error is FetchRecordError {
+  return isAppError(error)
+    && error.name === NamedFetchRecordError
+}
+
+export enum SaveToDatabase {
+  No = 'No',
+  Yes = 'Yes',
+  FullUpdate = 'FullUpdate',
+}
+
+export interface FetchRecordsArgs<T extends AccountBusiness> {
+  business: T
+  uid: Account['uid']
+  gachaUrl: string
+  gachaTypeAndLastEndIds: [GachaType<T>, GachaRecord<T>['id'] | null | undefined][]
+  eventChannel: Channel<FetchRecordsEvent>
+  saveToDatabase?: SaveToDatabase | null
+  saveOnConflict?: 'Nothing' | 'Update' | null
+}
+
+export type FetchRecords
+  = <T extends AccountBusiness> (args: FetchRecordsArgs<T>) => Promise<number>
+
+export enum FetchRecordsEventKind {
+  Sleeping = 'Sleeping',
+  Ready = 'Ready',
+  Pagination = 'Pagination',
+  Data = 'Data',
+  Completed = 'Completed',
+  Finished = 'Finished',
+}
+
+export type FetchRecordsEvent
+  = | FetchRecordsEventKind.Sleeping
+    | { [FetchRecordsEventKind.Ready]: PrettizedCategory | null }
+    | { [FetchRecordsEventKind.Pagination]: number }
+    | { [FetchRecordsEventKind.Data]: number }
+    | { [FetchRecordsEventKind.Completed]: PrettizedCategory | null }
+    | FetchRecordsEventKind.Finished
+
+// #endregion
+
+// #region: Legacy Migration
+
+export const NamedLegacyMigrationError = 'LegacyMigrationError' as const
+export type NamedLegacyMigrationError = typeof NamedLegacyMigrationError
+
+export enum LegacyMigrationErrorKind {
+  NotFound = 'NotFound',
+  SamePath = 'SamePath',
+  InvalidUid = 'InvalidUid',
+  InvalidRecord = 'InvalidRecord',
+  MetadataLocale = 'MetadataLocale',
+  MetadataEntry = 'MetadataEntry',
+}
+
+export type LegacyMigrationError = AppError<NamedLegacyMigrationError,
+  | {
+    kind: LegacyMigrationErrorKind.NotFound
+  }
+  | {
+    kind: LegacyMigrationErrorKind.SamePath
+  }
+  | {
+    kind: LegacyMigrationErrorKind.InvalidUid
+    business: AccountBusiness
+    value: Account['uid']
+  }
+  | {
+    kind: LegacyMigrationErrorKind.InvalidRecord
+    business: AccountBusiness
+    uid: Account['uid']
+    id: GachaRecord<AccountBusiness>['id']
+    field: string
+    value: string
+  }
+  | {
+    kind: LegacyMigrationErrorKind.MetadataLocale
+    business: AccountBusiness
+    lang: GachaRecord<AccountBusiness>['lang']
+  }
+  | {
+    kind: LegacyMigrationErrorKind.MetadataEntry
+    business: AccountBusiness
+    lang: GachaRecord<AccountBusiness>['lang']
+    field: string
+    value: string
+  }
+>
+
+export function isLegacyMigrationError (error: unknown): error is LegacyMigrationError {
+  return isAppError(error)
+    && error.name === NamedLegacyMigrationError
+}
+
+export interface LegacyMigrationResult {
+  accounts: number
+  records: Record<AccountBusiness, number>
+  elapsed: number
+}
+
+export interface LegacyMigrationArgs extends Record<string, unknown> {
+  /** Legacy database file */
+  legacy?: string | null
+}
+
+export type LegacyMigration
+  = Command<LegacyMigrationArgs, LegacyMigrationResult>
+
+// #endregion
+
+// #region: Commands
+
+const BusinessCommands = {
+  validateUid:
+    declareCommand('business_validate_uid') as ValidateUid,
+
+  /**
+   * @throws `LocateDataFolderError`
+   */
+  locateDataFolder:
+    declareCommand('business_locate_data_folder') as LocateDataFolder,
+
+  /**
+   * @throws `GachaUrlError`
+   * @throws `DirtyGachaUrlError`
+   * @throws `ParsedGachaUrlError`
+   * @throws `GachaUrlRequestError`
+   */
+  fromWebcachesGachaUrl:
+    declareCommand('business_from_webcaches_gacha_url') as FromWebcachesGachaUrl,
+
+  /**
+   * @throws `GachaUrlError`
+   * @throws `DirtyGachaUrlError`
+   * @throws `ParsedGachaUrlError`
+   * @throws `GachaUrlRequestError`
+   */
+  fromDirtyGachaUrl:
+    declareCommand('business_from_dirty_gacha_url') as FromDirtyGachaUrl,
+
+  resolveImageMime:
+    declareCommand<undefined, string>('business_resolve_image_mime', true),
+
+  resolveImage:
+    declareCommand('business_resolve_image') as ResolveImage,
+
+  /** @throws `DatabaseError` */
+  prettyRecords:
+    declareCommand('business_pretty_records') as PrettyRecords,
+
+  /**
+   * @throws `FetchRecordError`
+   * @throws `ParsedGachaUrlError`
+   * @throws `GachaUrlRequestError`
+   */
+  fetchRecords:
+    declareCommand('business_fetch_records') as FetchRecords,
+
+  /**
+   * @throws `DatabaseError`
+   * @throws `LegacyMigrationError`
+   */
+  legacyMigration:
+    declareCommand('business_legacy_migration') as LegacyMigration,
+} as const
+
+Object.freeze(BusinessCommands)
+
+export default BusinessCommands
+
+declare global {
+  /**
+   * @deprecated For devtools only, do not use in code.
+   */
+  var __BUSINESS_COMMANDS__: typeof BusinessCommands
+}
+
+if (!globalThis.__BUSINESS_COMMANDS__) {
+  globalThis.__BUSINESS_COMMANDS__ = BusinessCommands
+}
+
+// #endregion

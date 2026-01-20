@@ -1,0 +1,186 @@
+{
+  "ImageItem": {
+    "Up": "UP",
+    "Titles": {
+      "Version": "版本：{{value}}",
+      "GenshinImpactCharacter2": "$t(Common:GenshinImpact.Gacha.Category.Character)-2"
+    }
+  },
+  "Toolbar": {
+    "Accounts": {
+      "Label": "账号",
+      "Available": "可用账号",
+      "More": {
+        "Label": "更多选项",
+        "Edit": "编辑账号",
+        "ChooseAvatar": "修改头像",
+        "Delete": "删除账号"
+      },
+      "Add": "添加新的账号",
+      "NoAvailable": "无账号"
+    },
+    "GachaUrl": {
+      "Label": "$t(Common:{{keyof}}.Gacha.Name)链接",
+      "Expired": "(已失效)",
+      "Deadline": "(有效期 {{value}})",
+      "Placeholder": "$t(Toolbar.GachaUrl.Label)",
+      "UpdateBtn": "更新",
+      "More": {
+        "Label": "更多操作",
+        "FullUpdate": "全量更新",
+        "ManualInput": "手动输入链接"
+      },
+      "Obtain": {
+        "Loading": "获取$t(Common:{{keyof}}.Gacha.Name)链接...",
+        "Error": "获取$t(Common:{{keyof}}.Gacha.Name)链接失败："
+      },
+      "Fetch": {
+        "Loading": "拉取$t(Common:{{keyof}}.Gacha.Name)记录...",
+        "Success": {
+          "Title": "拉取$t(Common:{{keyof}}.Gacha.Name)记录成功：",
+          "AddedBody": "新增 {{changes}} 条新记录。",
+          "DeletedBody": "移除 {{changes}} 条不正确记录。"
+        },
+        "Error": "拉取$t(Common:{{keyof}}.Gacha.Name)记录失败：",
+        "Event": {
+          "Idle": "空闲中...",
+          "Sleeping": "等待中...",
+          "Ready": "准备拉取记录：$t(Common:{{keyof}}.Gacha.Category.{{value}})",
+          "Pagination": "拉取第 {{value}} 页记录...",
+          "Data": "拉取到 {{value}} 条新记录。",
+          "Completed": "完成拉取记录：$t(Common:{{keyof}}.Gacha.Category.{{value}})",
+          "Finished": "全部完成。"
+        }
+      }
+    },
+    "ClientareaTabs": {
+      "Label": "标签页",
+      "Overview": "概览",
+      "Analysis": "分析"
+    },
+    "Converters": {
+      "Label": "导入 · 导出"
+    }
+  },
+  "UpsertAccount": {
+    "Form": {
+      "Uid": {
+        "Label": "UID",
+        "Placeholder": "游戏内账号的 UID",
+        "Required": "请输入 UID 字段值。",
+        "Pattern": "请输入正确的 UID 格式。",
+        "Exists": "该账号 UID 已经存在。"
+      },
+      "DisplayName": {
+        "Label": "显示名称",
+        "Placeholder": "账号的显示名称（可选，仅用于识别）",
+        "MaxLength": "超过最大字符长度限制。"
+      },
+      "DataFolder": {
+        "Label": "游戏数据目录",
+        "Placeholder": "游戏数据目录的完整路径。\n例如：\"$t(Common:{{keyof}}.DataFolder)\"",
+        "Required": "请选择游戏数据目录。",
+        "AutoFind": "自动查找",
+        "ManualFind": "手动选择"
+      },
+      "ValidMessage": "有效。",
+      "Cancel": "取消",
+      "Submit": "确认"
+    },
+    "Dialog": {
+      "Title_add": "添加新账号：$t(Common:{{keyof}}.Name)",
+      "Title_edit": "编辑账号：$t(Common:{{keyof}}.Name)",
+      "Success_add": "成功添加新账号：{{identity}}",
+      "Success_edit": "成功编辑账号：{{identity}}"
+    }
+  },
+  "DeleteAccount": {
+    "Dialog": {
+      "Title": "确认删除账号：$t(Common:{{keyof}}.Name)",
+      "Uid": "UID：",
+      "DisplayName": "显示名称：",
+      "Whole": {
+        "Label": "完整删除：",
+        "Information": "敬告！启用后，这将删除此账号以及抽卡记录数据。"
+      },
+      "Confirm": {
+        "1": "确认要完整删除此账号的所有数据吗？",
+        "2": "请再次确认，请务必清楚自己在做什么。此操作不可逆！",
+        "3": "请最后确认。"
+      },
+      "Cancel": "取消",
+      "Submit": "确认删除"
+    }
+  },
+  "Clientarea": {
+    "LastUpdated": {
+      "Label": "最近$t(Common:{{keyof}}.Gacha.Name)记录更新日期："
+    },
+    "Overview": {
+      "Grid": {
+        "Labels": {
+          "Total": "共 {{count, number}} 抽",
+          "Sum_golden_zero": "暂无出金",
+          "Sum_golden": "已出 {{count, number}} 金",
+          "Sum_purple_zero": "暂无出紫",
+          "Sum_purple": "已出 {{count, number}} 紫",
+          "NextPity": "已垫 {{count}} 抽",
+          "Average_golden": "平均每金：{{count}}",
+          "Average_purple": "平均每紫：{{count}}",
+          "Percentage_golden": "出金率：{{count}}%",
+          "Percentage_purple": "出紫率：{{count}}%",
+          "UpAverage_golden": "$t(ImageItem.Up)平均每金：{{count}}",
+          "UpAverage_purple": "$t(ImageItem.Up)平均每紫：{{count}}",
+          "UpPercentage_golden": "$t(ImageItem.Up)出金率：{{count}}%",
+          "UpPercentage_purple": "$t(ImageItem.Up)出金率：{{count}}%",
+          "Last_golden_zero": "最近出金：无",
+          "Last_golden": "最近出金：{{itemName}} ({{count}})",
+          "Last_purple_zero": "最近出紫：无",
+          "Last_purple": "最近出紫：{{itemName}} ({{count}})"
+        },
+        "Tags": {
+          "Title": "$t(Common:{{keyof}}.Gacha.Name)标签",
+          "Recent": "最近于 {{date}}，新增 {{count, number}} 抽",
+          "Luck": "最幸运的$t(Common:{{keyof}}.Gacha.Ranking.Golden)：{{itemName}}，{{count, number}} 抽就出啦",
+          "Unluck": "最非的$t(Common:{{keyof}}.Gacha.Ranking.Golden)：<1>{{itemName}}</1>，共花费 <1>{{count, number}}</1> 抽才出",
+          "Relation": "最有缘的$t(Common:{{keyof}}.Gacha.Ranking.Golden)：<1>{{itemName}}</1>，重复抽到 <1>{{count, number}}</1> 次",
+          "Crazy": "最疯狂的一天：<1>{{date}}</1>，这一天共抽 <1>{{count, number}}</1> 次"
+        }
+      },
+      "Tooltips": {
+        "First": "总计{{title}} <1>{{total, number}}</1> 次，总价值：<2>{{value, number}}</2>",
+        "Second": "$t(Common:{{keyof}}.Gacha.Name)记录日期覆盖范围：<time>{{start}}</time> - <time>{{end}}</time>",
+        "Third": "因官方设定，仅可获取到<1>最近 6 个月</1>的$t(Common:{{keyof}}.Gacha.Name)数据记录。最新数据查询有 <1>1 小时</1>左右延迟，若无数据请稍后再来。如遇到新卡池高峰期延迟可能更久。具体时间请以游戏内数据为准。",
+        "Third_one_year": "因官方设定，仅可获取到<1>最近 1 年</1>的$t(Common:{{keyof}}.Gacha.Name)数据记录。最新数据查询有 <1>1 小时</1>左右延迟，若无数据请稍后再来。如遇到新卡池高峰期延迟可能更久。具体时间请以游戏内数据为准。"
+      }
+    },
+    "Analysis": {
+      "VersionSwitcher": "使用经典版",
+      "Classic": {
+        "Table": {
+          "Title": "$t(Common:{{keyof}}.Gacha.Name)数据占比",
+          "RowLabels": {
+            "AverageAndUp": "平均 / $t(ImageItem.Up)",
+            "UpWin": "$t(ImageItem.Up)不歪",
+            "Up": "$t(ImageItem.Up)",
+            "Count": "统计"
+          }
+        },
+        "Histories": {
+          "Title": "$t(Common:{{keyof}}.Gacha.Ranking.Golden)$t(Common:{{keyof}}.Gacha.Name)历史",
+          "Title_MiliastraWonderland": "装扮套装$t(Common:{{keyof}}.Gacha.Name)历史",
+          "Total": "$t(Clientarea.Overview.Grid.Labels.Total)",
+          "Sum": "{{count, number}} 总",
+          "Sum_up": "{{count, number}} $t(ImageItem.Up)"
+        }
+      },
+      "Remastered": {
+        "Total": "{{count, number}}",
+        "Pull": "抽",
+        "NextPity": "已垫",
+        "HardPity": "保底!",
+        "Up": "$t(ImageItem.Up)"
+      }
+    }
+  }
+}

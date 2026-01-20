@@ -1,0 +1,66 @@
+{
+  "LegacyMigration": {
+    "Title": "数据库迁移",
+    "Subtitle": "将旧版本 v0 的数据库迁移至此。",
+    "Migrate": "迁移",
+    "Pick": "请选择旧版本 v0 的数据库文件：",
+    "Loading": {
+      "Title": "迁移中...",
+      "Body": "请勿退出应用程序并等待迁移操作完成。"
+    },
+    "Success": {
+      "Title": "迁移成功：",
+      "Body": "耗时：{{elapsed}} 秒。账号数量：{{accounts}}，抽卡记录数据：$t(Common:GenshinImpact.Name)：{{GenshinImpact}}、$t(Common:HonkaiStarRail.Name)：{{HonkaiStarRail}}、$t(Common:ZenlessZoneZero.Name)：{{ZenlessZoneZero}}。"
+    },
+    "Error": "迁移失败："
+  },
+  "General": {
+    "Title": "常规",
+    "Language": {
+      "Title": "语言",
+      "Subtitle": "更改应用使用的主要语言。"
+    }
+  },
+  "Appearance": {
+    "Title": "外观",
+    "Namespace": {
+      "Title": "主题颜色",
+      "Subtitle": "更改应用中显示的主要颜色。"
+    },
+    "ColorScheme": {
+      "Title": "偏好配色方案",
+      "Subtitle": "切换应用使用浅色主题或深色主题。",
+      "Option_light": "浅色",
+      "Option_dark": "深色",
+      "Option_auto": "跟随系统"
+    },
+    "ScaleLevel": {
+      "Title": "界面缩放",
+      "Subtitle": "更改应用中界面的缩放等级。"
+    },
+    "Font": {
+      "Title": "界面字体",
+      "Subtitle": "更改应用中界面的字体。",
+      "None": "无"
+    }
+  },
+  "About": {
+    "Title": "关于",
+    "Updater": {
+      "Title": "应用更新",
+      "Subtitle": "检查应用的版本更新。",
+      "CheckBtn": "检查更新"
+    },
+    "Specification": {
+      "Title": "设备规格",
+      "Copy": "复制",
+      "Copied": "已复制",
+      "OperatingSystem": "操作系统",
+      "SystemVersion": "系统版本",
+      "Webview2": "Webview2",
+      "Tauri": "Tauri",
+      "GitCommit": "Git 提交",
+      "AppVersion": "应用版本"
+    }
+  }
+}

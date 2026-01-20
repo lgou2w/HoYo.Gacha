@@ -1,0 +1,39 @@
+{
+  "Unexpected": "發生意外錯誤：{{message}}",
+  "LocateDataFolderError": {
+    "InvalidUid": "無效的 $t(Common:{{keyof}}.Name) 帳號 UID 值：{{value}}",
+    "UnityLogNotFound": "Unity 日誌檔案不存在：{{path}}",
+    "OpenUnityLog": "開啟 Unity 日誌檔案時錯誤：'{{path}}'，原因：{{cause.message}} ({{cause.kind}})",
+    "Invalid": "無效的遊戲資料目錄。",
+    "Vacant": "空缺的遊戲資料目錄。"
+  },
+  "DirtyGachaUrlError": {
+    "OpenDiskCache": "開啟硬碟快取時錯誤：{{cause.message}} ({{cause.kind}})",
+    "ReadDiskCache": "讀取硬碟快取時錯誤：{{cause.message}} ({{cause.kind}})",
+    "OpenWebcaches": "開啟網頁快取時錯誤：{{cause.message}} ({{cause.kind}}) 遊戲資料目錄位置可能已被移動？請在「帳號列表」-「編輯帳號」中檢查並修改。",
+    "EmptyWebCaches": "未找到有效的網頁快取版本目錄。請嘗試至少啟動一次遊戲！"
+  },
+  "ParsedGachaUrlError": {
+    "InvalidUrl": "無效的抽卡連結",
+    "RequiredParam": "抽卡連結缺少必需參數：{{name}}",
+    "UnsupportedGameBiz": "不支援的遊戲業務和區域組合：{{gameBiz}} / {{region}}"
+  },
+  "GachaUrlRequestError": {
+    "UnsupportedEndpoint": "遊戲業務 '{{gameBiz}}' 不支援的端點類型：{{endpoint}}",
+    "Reqwest": "請求抽卡連結時錯誤：{{cause}}",
+    "AuthkeyTimeout": "抽卡連結已經過期失效。請重新在遊戲內開啟抽卡歷史記錄介面！",
+    "VisitTooFrequently": "抽卡連結存取過於頻繁。請稍後重試！",
+    "UnexpectedResponse": "抽卡連結返回了意外響應：{{message}} (返回碼：{{retcode}})",
+    "ReachedMaxAttempts": "請求已達最大嘗試次數，請稍後重試！"
+  },
+  "GachaUrlError": {
+    "InvalidUid": "無效的 $t(Common:{{keyof}}.Name) 帳號 UID 值：{{value}}",
+    "EmptyData": "抽卡連結返回空資料。最新資料會有延遲，請稍後重試！",
+    "NotFound": "未找到有效的抽卡連結。請嘗試在遊戲內開啟歷史記錄介面！",
+    "InconsistentUid": "抽卡連結的擁有者 UID 不匹配。預期：{{expected}}，實際：{{actuals}}。請以目前帳號在遊戲內重新開啟歷史記錄介面後重試！"
+  },
+  "FetchRecordError": {
+    "InvalidUid": "無效的 $t(Common:{{keyof}}.Name) 帳號 UID 值：{{value}}",
+    "MetadataEntry": "缺失元資料條目：$t(Common:{{keyof}}.Name)，語言：{{lang}}，物品名稱：{{itemName}}"
+  }
+}
