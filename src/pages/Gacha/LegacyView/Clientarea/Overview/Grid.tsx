@@ -287,6 +287,19 @@ function GridCard (props: GridCardProps) {
     return null
   }
 
+  let average: number
+  if (state.isPermanentOde || state.isEventOde) {
+    average = (state.isPermanentOde
+      ? state.purpleRanking.average
+      : state.goldenRanking.average
+    ) * 160
+
+    // Round to 2 decimal places
+    average = Math.round((average + Number.EPSILON) * 100) / 100
+  } else {
+    average = state.goldenRanking.average
+  }
+
   return (
     <div className={styles.root} data-category={state.category}>
       <div className={mergeClasses(styles.badge, state.isAggregated && styles.badgeAggregated)}>
@@ -360,11 +373,7 @@ function GridCard (props: GridCardProps) {
             mapping={[
               `Pages.Gacha.LegacyView.Clientarea.Overview.GridCard.Labels.${state.isPermanentOde ? 'AveragePurple' : 'Average'}`,
               {
-                count: state.isPermanentOde
-                  ? state.purpleRanking.average * 160
-                  : state.isEventOde
-                    ? state.goldenRanking.average * 160
-                    : state.goldenRanking.average,
+                count: average,
               },
             ]}
           >
