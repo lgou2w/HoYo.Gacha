@@ -10,7 +10,7 @@ export type GachaRecord<T extends Business> = {
   gachaType:
       T extends GenshinImpact ? 100 | 200 | 301 | 400 | 302 | 500
     : T extends HonkaiStarRail ? 1 | 2 | 11 | 12 | 21 | 22
-    : T extends ZenlessZoneZero ? 1 | 2 | 3 | 5
+    : T extends ZenlessZoneZero ? 1 | 2 | 3 | 5 | 102 | 103
     : T extends MiliastraWonderland ? 1000 | 20011 | 20021 | 20012 | 20022
     : never
   gachaId:
@@ -49,6 +49,8 @@ export enum PrettyCategory {
   CollaborationWeapon = 'CollaborationWeapon', // 'Honkai: Star Rail' only
   PermanentOde = 'PermanentOde', // 'Genshin Impact: Miliastra Wonderland' only
   EventOde = 'EventOde', // 'Genshin Impact: Miliastra Wonderland' only
+  ExclusiveRescreening = 'ExclusiveRescreening', // 'Zenless Zone Zero' only
+  WEngineReverberation = 'WEngineReverberation', // 'Zenless Zone Zero' only
 }
 
 export interface PrettyGachaRecord {

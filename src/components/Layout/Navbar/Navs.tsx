@@ -99,9 +99,15 @@ export default function NavbarNavs () {
       ref={tabListRef}
       className={styles.root}
       selectedValue={location.pathname}
-      onTabSelect={(_, data) => {
+      onTabSelect={(evt, data) => {
+        const keyofBusinesses = evt.currentTarget?.getAttribute('data-business')
         if (typeof data.value === 'string') {
-          navigate({ to: data.value })
+          navigate({
+            to: data.value,
+            params: keyofBusinesses
+              ? { keyofBusinesses }
+              : undefined,
+          })
         }
       }}
       size="large"
@@ -181,6 +187,7 @@ function NavbarNavItemPath (props: NavbarNavItemPathProps) {
       <Tab
         value={item.path}
         className={tabClassName}
+        data-business={item.keyofBusinesses}
         tabIndex={-1}
         icon={{
           children: typeof item.icon === 'string'

@@ -119,6 +119,8 @@ export default {
             Weapon: '音擎频段',
             Bangboo: '邦布频段',
             Bangboo_Title: '卓越搭档',
+            ExclusiveRescreening: '独家重映',
+            WEngineReverberation: '音擎回响',
             Aggregated: '总计',
             Aggregated_NoBangboo: '(不含邦布频段)',
           },

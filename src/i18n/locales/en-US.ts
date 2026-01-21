@@ -129,6 +129,8 @@ export default {
             Weapon: 'W-Engine Channel',
             Bangboo: 'Bangboo Channel',
             Bangboo_Title: 'An Outstanding Partner',
+            ExclusiveRescreening: 'Exclusive Rescreening',
+            WEngineReverberation: 'W-Engine Reverberation',
             Aggregated: 'Aggregated',
             Aggregated_NoBangboo: '(Excluding Bangboo Channel)',
           },

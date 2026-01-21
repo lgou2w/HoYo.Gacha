@@ -119,6 +119,8 @@ export default {
             Weapon: '音擎頻道',
             Bangboo: '邦布頻道',
             Bangboo_Title: '卓越搭檔',
+            ExclusiveRescreening: '獨家重映',
+            WEngineReverberation: '音擎迴響',
             Aggregated: '總計',
             Aggregated_NoBangboo: '(不含邦布頻道)',
           },

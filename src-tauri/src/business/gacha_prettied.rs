@@ -40,6 +40,8 @@ pub enum PrettyCategory {
   CollaborationWeapon,    // 'Honkai: Star Rail' only
   PermanentOde,           // 'Genshin Impact: Miliastra Wonderland' only
   EventOde,               // 'Genshin Impact: Miliastra Wonderland' only
+  ExclusiveRescreening,   // 'Zenless Zone Zero' only
+  WEngineReverberation,   // 'Zenless Zone Zero' only
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -55,8 +57,12 @@ impl PrettyCategory {
   pub const fn max_pity(&self, rank_level: RankLevel) -> u8 {
     match rank_level {
       RankLevel::Golden => match *self {
-        Self::Character | Self::Permanent | Self::Chronicled | Self::CollaborationCharacter => 90,
-        Self::Weapon | Self::Bangboo | Self::CollaborationWeapon => 80,
+        Self::Character
+        | Self::Permanent
+        | Self::Chronicled
+        | Self::CollaborationCharacter
+        | Self::ExclusiveRescreening => 90,
+        Self::Weapon | Self::Bangboo | Self::CollaborationWeapon | Self::WEngineReverberation => 80,
         Self::EventOde => 70,
         Self::Beginner => 50,
         Self::PermanentOde => 0,
@@ -130,6 +136,8 @@ static KNOWN_CATEGORIZEDS: LazyLock<HashMap<Business, HashMap<u32, PrettyCategor
           (2, PrettyCategory::Character),
           (3, PrettyCategory::Weapon),
           (5, PrettyCategory::Bangboo),
+          (102, PrettyCategory::ExclusiveRescreening),
+          (103, PrettyCategory::WEngineReverberation),
         ]),
       ),
       (
