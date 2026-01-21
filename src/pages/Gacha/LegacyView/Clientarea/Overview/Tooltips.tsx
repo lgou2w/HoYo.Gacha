@@ -3,7 +3,7 @@ import { Caption1, makeStyles, tokens } from '@fluentui/react-components'
 import BizImages from '@/components/BizImages'
 import Locale from '@/components/Locale'
 import useI18n from '@/hooks/useI18n'
-import { Business, KeyofBusinesses, isMiliastraWonderland } from '@/interfaces/Business'
+import { Business, KeyofBusinesses, ZenlessZoneZero, isMiliastraWonderland } from '@/interfaces/Business'
 import { CategorizedMetadata, PrettyCategory } from '@/interfaces/GachaRecord'
 import { CompositeState } from '@/pages/Gacha/LegacyView/Clientarea/useCompositeState'
 
@@ -32,6 +32,7 @@ const useStyles = makeStyles({
 export default function GachaLegacyViewClientareaOverviewTooltips (props: CompositeState) {
   const styles = useStyles()
   const {
+    business,
     keyofBusinesses,
     prettized: {
       total, startTime, endTime,
@@ -39,10 +40,12 @@ export default function GachaLegacyViewClientareaOverviewTooltips (props: Compos
         PermanentOde,
         EventOde,
       },
+      aggregated,
     },
   } = props
 
   const isBeyond = isMiliastraWonderland(keyofBusinesses)
+  const isZenlessZoneZero = business === ZenlessZoneZero
   const i18n = useI18n()
   const now = new Date()
 
@@ -55,7 +58,13 @@ export default function GachaLegacyViewClientareaOverviewTooltips (props: Compos
               aggregate({ styles, keyofBusinesses, value: PermanentOde! }),
               aggregate({ styles, keyofBusinesses, value: EventOde! }),
             ]
-          : aggregate({ styles, keyofBusinesses, value: total })
+          : aggregate({
+            styles,
+            keyofBusinesses,
+            value: isZenlessZoneZero
+              ? aggregated?.total ?? 0
+              : total,
+          })
         }
       </Caption1>
       <Caption1>
