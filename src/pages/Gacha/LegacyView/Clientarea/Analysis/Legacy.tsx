@@ -3,7 +3,7 @@ import { Body1, Body2, Caption1, Caption2, Table, TableBody, TableCell, TableHea
 import { HistoryRegular, TableAltTextRegular } from '@fluentui/react-icons'
 import Locale from '@/components/Locale'
 import { Business, Businesses, KeyofBusinesses, ReversedBusinesses, isMiliastraWonderland } from '@/interfaces/Business'
-import { AggregatedMetadata, CategorizedMetadata, CategorizedMetadataRankings, PrettyCategory } from '@/interfaces/GachaRecord'
+import { AggregatedMetadata, CategorizedMetadata, CategorizedMetadataRankings, PrettyCategory, PrettyGachaRecord } from '@/interfaces/GachaRecord'
 import { CompositeState } from '@/pages/Gacha/LegacyView/Clientarea/useCompositeState'
 import GachaItem from '@/pages/Gacha/LegacyView/GachaItem'
 import capitalize from '@/utilities/capitalize'
@@ -475,19 +475,75 @@ function LegacyHistoryList (props: LegacyHistoryListProps) {
   const styles = useHistoryListStyles()
   const { keyofBusinesses, metadata } = props
   const isBeyond = isMiliastraWonderland(keyofBusinesses)
-  const ranking: keyof CategorizedMetadataRankings = metadata?.category === PrettyCategory.PermanentOde
-    ? 'purple'
-    : 'golden'
+  const computed = useMemo<{
+    ranking?: 'purple' | 'golden'
+    has: boolean
+    data:
+      | PrettyGachaRecord[]
+      | {
+        merged: {
+          ranking: 'purple' | 'golden'
+          index: number
+          id: PrettyGachaRecord['id']
+        }[]
+        purple: PrettyGachaRecord[]
+        golden: PrettyGachaRecord[]
+      }
+  } | null>(() => {
+    if (!metadata) {
+      return null
+    }
 
-  if (!metadata || metadata.rankings[ranking].sum < 1) {
+    if (metadata.category === PrettyCategory.EventOde) {
+      // Merge purple and golden
+      const merged = []
+
+      for (const ranking of ['purple', 'golden'] as const) {
+        const values = metadata.rankings[ranking].values
+        for (let i = 0; i < values.length; i++) {
+          merged.push({
+            ranking,
+            index: i,
+            id: values[i].id,
+          })
+        }
+      }
+
+      merged.sort((a, b) => a.id.localeCompare(b.id))
+
+      return {
+        has: merged.length > 0,
+        data: {
+          merged,
+          purple: metadata.rankings.purple.values,
+          golden: metadata.rankings.golden.values,
+        },
+      }
+    } else {
+      // Otherwise, a single
+      const ranking = metadata.category === PrettyCategory.PermanentOde
+        ? 'purple'
+        : 'golden'
+
+      return {
+        ranking,
+        has: metadata.rankings[ranking].sum > 0,
+        data: metadata.rankings[ranking].values,
+      }
+    }
+  }, [metadata])
+
+  if (!metadata || !computed || !computed.has) {
     return null
   }
 
-  const { category, rankings: { [ranking]: { upSum, sum, values } }, total } = metadata
+  const { ranking = 'golden', data } = computed
+  const category = metadata.category
   const isBeginner = category === PrettyCategory.Beginner
   const isPermanent = category === PrettyCategory.Permanent
   const isChronicled = category === PrettyCategory.Chronicled
   const isBangboo = category === PrettyCategory.Bangboo
+  const isEventOde = category === PrettyCategory.EventOde
   const hasUp = !isBeginner && !isPermanent && !isChronicled && !isBangboo && !isBeyond
 
   return (
@@ -501,41 +557,67 @@ function LegacyHistoryList (props: LegacyHistoryListProps) {
           component={Caption1}
           mapping={[
             'Pages.Gacha.LegacyView.Clientarea.Overview.GridCard.Labels.Total',
-            { count: total },
+            { count: metadata.total },
           ]}
         />
         <div className={styles.sums}>
-          {hasUp && <Locale
-            className={styles.upSum}
-            component={Caption1}
-            mapping={[
-              'Pages.Gacha.LegacyView.Clientarea.Analysis.LegacyHistory.ListTitle',
-              { upSum, context: 'Up' },
-            ]}
-          />}
-          {hasUp && <Caption1>{' / '}</Caption1>}
+          {hasUp && (
+            <>
+              <Locale
+                className={styles.upSum}
+                component={Caption1}
+                mapping={[
+                  'Pages.Gacha.LegacyView.Clientarea.Analysis.LegacyHistory.ListTitle',
+                  { upSum: metadata.rankings[ranking].upSum, context: 'Up' },
+                ]}
+              />
+            <Caption1>{' / '}</Caption1>
+            </>
+          )}
+          {isEventOde && !Array.isArray(data) && (
+            <>
+              <Caption1 className={styles.sumPurple}>
+                {metadata.rankings.purple.sum}
+              </Caption1>
+              <Caption1> / </Caption1>
+            </>
+          )}
           <Locale
             className={styles[`sum${capitalize(ranking)}`]}
             component={Caption1}
             mapping={[
               'Pages.Gacha.LegacyView.Clientarea.Analysis.LegacyHistory.ListTitle',
-              { sum, context: 'Total' },
+              { sum: metadata.rankings[ranking].sum, context: 'Total' },
             ]}
           />
         </div>
       </div>
       <div className={styles.divider} />
       <div className={styles.records}>
-        {values.map((record) => (
-          <GachaItem
-            key={record.id}
-            keyofBusinesses={keyofBusinesses}
-            ranking={capitalize(ranking)}
-            record={record}
-            noUpBadge={isBeyond}
-            small
-          />
-        ))}
+        {Array.isArray(data)
+          ? data.map((record) => (
+            <GachaItem
+              key={record.id}
+              keyofBusinesses={keyofBusinesses}
+              ranking={capitalize(ranking)}
+              record={record}
+              noUpBadge={!hasUp}
+              small
+            />
+          ))
+          : data.merged.map((ref) => {
+            const record = data[ref.ranking][ref.index]
+            return (
+              <GachaItem
+                key={record.id}
+                keyofBusinesses={keyofBusinesses}
+                ranking={capitalize(ref.ranking)}
+                record={record}
+                noUpBadge={!hasUp}
+                small
+              />
+            )
+          })}
       </div>
     </div>
   )
