@@ -50,6 +50,8 @@ export default function GachaLegacyViewClientareaAnalysisCards (props: Composite
         CollaborationWeapon,
         PermanentOde,
         EventOde,
+        ExclusiveRescreening,
+        WEngineReverberation,
       },
     },
   } = props
@@ -60,11 +62,15 @@ export default function GachaLegacyViewClientareaAnalysisCards (props: Composite
     hasBangboo: Bangboo && Bangboo.total > 0,
     hasCollaborationCharacter: CollaborationCharacter && CollaborationCharacter.total > 0,
     hasCollaborationWeapon: CollaborationWeapon && CollaborationWeapon.total > 0,
+    hasExclusiveRescreening: ExclusiveRescreening && ExclusiveRescreening.total > 0,
+    hasWEngineReverberation: WEngineReverberation && WEngineReverberation.total > 0,
   }), [
     Bangboo,
     Chronicled,
     CollaborationCharacter,
     CollaborationWeapon,
+    ExclusiveRescreening,
+    WEngineReverberation,
   ])
 
   const transformScroll = useCallback<WheelEventHandler>((evt) => {
@@ -135,6 +141,16 @@ export default function GachaLegacyViewClientareaAnalysisCards (props: Composite
               <CardsEntry business={business} metadata={EventOde} />
             </div>
           </Fragment>
+        )}
+        {state.hasExclusiveRescreening && (
+          <div className={styles.card}>
+            <CardsEntry business={business} metadata={ExclusiveRescreening} />
+          </div>
+        )}
+        {state.hasWEngineReverberation && (
+          <div className={styles.card}>
+            <CardsEntry business={business} metadata={WEngineReverberation} />
+          </div>
         )}
       </div>
     </div>

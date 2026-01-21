@@ -43,6 +43,8 @@ export default function GachaLegacyViewClientareaOverviewGrid (props: CompositeS
         CollaborationWeapon,
         PermanentOde,
         EventOde,
+        ExclusiveRescreening,
+        WEngineReverberation,
       },
       aggregated,
     },
@@ -53,11 +55,15 @@ export default function GachaLegacyViewClientareaOverviewGrid (props: CompositeS
     hasBangboo: Bangboo && Bangboo.total > 0,
     hasCollaborationCharacter: CollaborationCharacter && CollaborationCharacter.total > 0,
     hasCollaborationWeapon: CollaborationWeapon && CollaborationWeapon.total > 0,
+    hasExclusiveRescreening: ExclusiveRescreening && ExclusiveRescreening.total > 0,
+    hasWEngineReverberation: WEngineReverberation && WEngineReverberation.total > 0,
   }), [
     Bangboo,
     Chronicled,
     CollaborationCharacter,
     CollaborationWeapon,
+    ExclusiveRescreening,
+    WEngineReverberation,
   ])
 
   const items = []
@@ -96,6 +102,14 @@ export default function GachaLegacyViewClientareaOverviewGrid (props: CompositeS
 
   if (EventOde) {
     items.push(createGridItem(styles.half, PrettyCategory.EventOde, business, EventOde))
+  }
+
+  if (state.hasExclusiveRescreening) {
+    items.push(createGridItem(styles.half, PrettyCategory.ExclusiveRescreening, business, ExclusiveRescreening))
+  }
+
+  if (state.hasWEngineReverberation) {
+    items.push(createGridItem(styles.half, PrettyCategory.WEngineReverberation, business, WEngineReverberation))
   }
 
   if (aggregated) {

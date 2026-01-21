@@ -113,6 +113,8 @@ function GachaLegacyViewClientareaAnalysisLegacyTable (props: CompositeState) {
         CollaborationWeapon,
         PermanentOde,
         EventOde,
+        ExclusiveRescreening,
+        WEngineReverberation,
       },
       aggregated,
     },
@@ -120,17 +122,21 @@ function GachaLegacyViewClientareaAnalysisLegacyTable (props: CompositeState) {
 
   const isBeyond = isMiliastraWonderland(business)
   const state = useMemo(() => ({
+    hasBeginner: Beginner && Beginner.total > 0,
     hasChronicled: Chronicled && Chronicled.total > 0,
     hasBangboo: Bangboo && Bangboo.total > 0,
     hasCollaborationCharacter: CollaborationCharacter && CollaborationCharacter.total > 0,
     hasCollaborationWeapon: CollaborationWeapon && CollaborationWeapon.total > 0,
-    hasBeginner: Beginner && Beginner.total > 0,
+    hasExclusiveRescreening: ExclusiveRescreening && ExclusiveRescreening.total > 0,
+    hasWEngineReverberation: WEngineReverberation && WEngineReverberation.total > 0,
   }), [
+    Beginner,
     Bangboo,
     Chronicled,
     CollaborationCharacter,
     CollaborationWeapon,
-    Beginner,
+    ExclusiveRescreening,
+    WEngineReverberation,
   ])
 
   const data: ReturnType<typeof createTableEntry>[] = []
@@ -173,6 +179,14 @@ function GachaLegacyViewClientareaAnalysisLegacyTable (props: CompositeState) {
 
   if (EventOde) {
     data.push(createTableEntry(PrettyCategory.EventOde, EventOde))
+  }
+
+  if (state.hasExclusiveRescreening) {
+    data.push(createTableEntry(PrettyCategory.ExclusiveRescreening, ExclusiveRescreening))
+  }
+
+  if (state.hasWEngineReverberation) {
+    data.push(createTableEntry(PrettyCategory.WEngineReverberation, WEngineReverberation))
   }
 
   if (aggregated) {
@@ -365,6 +379,8 @@ function GachaLegacyViewClientareaAnalysisLegacyHistory (props: CompositeState) 
         CollaborationWeapon,
         PermanentOde,
         EventOde,
+        ExclusiveRescreening,
+        WEngineReverberation,
       },
     },
   } = props
@@ -400,6 +416,8 @@ function GachaLegacyViewClientareaAnalysisLegacyHistory (props: CompositeState) 
         <LegacyHistoryList keyofBusinesses={keyofBusinesses} metadata={Beginner} />
         <LegacyHistoryList keyofBusinesses={keyofBusinesses} metadata={PermanentOde} />
         <LegacyHistoryList keyofBusinesses={keyofBusinesses} metadata={EventOde} />
+        <LegacyHistoryList keyofBusinesses={keyofBusinesses} metadata={ExclusiveRescreening} />
+        <LegacyHistoryList keyofBusinesses={keyofBusinesses} metadata={WEngineReverberation} />
       </div>
     </div>
   )
