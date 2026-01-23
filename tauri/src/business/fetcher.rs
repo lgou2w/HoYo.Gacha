@@ -10,7 +10,7 @@ use snafu::{OptionExt, ResultExt, Snafu};
 use tauri::ipc::Channel;
 use tracing::{debug, info};
 
-use crate::business::records::prettized::{
+use crate::business::prettized::{
   HONKAI_STAR_RAIL_COLLABORATION_CHARACTER, HONKAI_STAR_RAIL_COLLABORATION_WEAPON,
   PrettizedCategory,
 };

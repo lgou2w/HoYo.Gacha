@@ -11,7 +11,7 @@ use time::OffsetDateTime;
 use time::serde::rfc3339;
 use tracing::{error, info, warn};
 
-use crate::business::records::prettized::permanent_gacha_type;
+use crate::business::prettized::permanent_gacha_type;
 use crate::constants;
 use crate::database::schemas::AccountBusiness;
 use crate::error::{AppError, ErrorDetails};

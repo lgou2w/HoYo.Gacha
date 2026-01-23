@@ -9,12 +9,10 @@ use crate::bootstrap::{TauriDatabaseState, TauriMetadataState};
 use crate::business::data_folder::{
   DataFolder, DataFolderLocator, DataFolderLocatorFactory, LocateDataFolderError,
 };
+use crate::business::fetcher::{FetchEventPayload, FetchRecordError, GachaRecordSaveToDatabase};
 use crate::business::gacha_url::{GachaUrl, GachaUrlError};
 use crate::business::image_resolver::ImageResolver;
-use crate::business::records::fetcher::{
-  FetchEventPayload, FetchRecordError, GachaRecordSaveToDatabase,
-};
-use crate::business::records::prettized::PrettizedRecords;
+use crate::business::prettized::PrettizedRecords;
 use crate::database::DatabaseError;
 use crate::database::legacy::{LegacyMigration, LegacyMigrationError};
 use crate::database::schemas::{AccountBusiness, GachaRecordQuestioner, GachaRecordSaveOnConflict};
@@ -110,7 +108,7 @@ pub async fn business_fetch_records(
   save_on_conflict: Option<GachaRecordSaveOnConflict>,
 ) -> Result<i64, AppError<FetchRecordError>> {
   let metadata = { &*metadata.read().await };
-  crate::business::records::fetcher::fetch(
+  crate::business::fetcher::fetch(
     &database,
     metadata,
     business,
