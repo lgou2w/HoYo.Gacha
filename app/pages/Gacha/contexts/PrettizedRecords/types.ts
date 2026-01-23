@@ -72,6 +72,11 @@ export enum PrettizedCategory {
   PermanentOde = 'PermanentOde',
   EventOde = 'EventOde',
   //
+
+  // 'Zenless Zone Zero' only
+  ExclusiveRescreening = 'ExclusiveRescreening',
+  WEngineReverberation = 'WEngineReverberation',
+  //
 }
 
 export const Aggregated = 'Aggregated' as const

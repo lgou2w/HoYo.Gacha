@@ -175,6 +175,8 @@ function useTableEntries (): TableEntry[] {
           || category === PrettizedCategory.Chronicled
           || category === PrettizedCategory.Bangboo
           || category === PrettizedCategory.Beginner
+          || category === PrettizedCategory.ExclusiveRescreening
+          || category === PrettizedCategory.WEngineReverberation
 
         createTableEntry(
           [datasets, category],

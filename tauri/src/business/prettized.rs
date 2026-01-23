@@ -38,6 +38,11 @@ pub enum PrettizedCategory {
   PermanentOde,
   EventOde,
   //
+
+  // 'Zenless Zone Zero' only
+  ExclusiveRescreening,
+  WEngineReverberation,
+  //
 }
 
 pub const GENSHIN_IMPACT_PERMANENT: u32 = 200;
@@ -101,6 +106,8 @@ static KNOWN_CATEGORIZEDS: LazyLock<HashMap<AccountBusiness, HashMap<u32, Pretti
           (2, PrettizedCategory::Character),
           (3, PrettizedCategory::Weapon),
           (ZENLESS_ZONE_ZERO_BANGBOO, PrettizedCategory::Bangboo),
+          (102, PrettizedCategory::ExclusiveRescreening),
+          (103, PrettizedCategory::WEngineReverberation),
         ]),
       ),
       (
@@ -136,8 +143,12 @@ impl PrettizedCategory {
   pub const fn max_pity(&self, rank: RankLevel) -> u8 {
     match rank {
       RankLevel::Golden => match self {
-        Self::Character | Self::Permanent | Self::Chronicled | Self::CollaborationCharacter => 90,
-        Self::Weapon | Self::Bangboo | Self::CollaborationWeapon => 80,
+        Self::Character
+        | Self::Permanent
+        | Self::Chronicled
+        | Self::CollaborationCharacter
+        | Self::ExclusiveRescreening => 90,
+        Self::Weapon | Self::Bangboo | Self::CollaborationWeapon | Self::WEngineReverberation => 80,
         Self::EventOde => 70,
         Self::Beginner => 50,
         _ => 0,

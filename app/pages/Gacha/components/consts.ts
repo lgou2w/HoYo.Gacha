@@ -16,6 +16,8 @@ export const PrettizedCategoryFlexOrders = {
   [`&[${PrettizedCategoryFlexOrderDataset}="${PrettizedCategory.Beginner}"]`]: { order: 'var(--order, 7)' },
   [`&[${PrettizedCategoryFlexOrderDataset}="${PrettizedCategory.PermanentOde}"]`]: { order: 'var(--order, 8)' },
   [`&[${PrettizedCategoryFlexOrderDataset}="${PrettizedCategory.EventOde}"]`]: { order: 'var(--order, 9)' },
-  [`&[${PrettizedCategoryFlexOrderDataset}="${Aggregated}"]`]: { order: 'var(--order, 10)' },
+  [`&[${PrettizedCategoryFlexOrderDataset}="${PrettizedCategory.ExclusiveRescreening}"]`]: { order: 'var(--order, 10)' },
+  [`&[${PrettizedCategoryFlexOrderDataset}="${PrettizedCategory.WEngineReverberation}"]`]: { order: 'var(--order, 11)' },
+  [`&[${PrettizedCategoryFlexOrderDataset}="${Aggregated}"]`]: { order: 'var(--order, 12)' },
   order: 999, // others can be placed last.
 } as const

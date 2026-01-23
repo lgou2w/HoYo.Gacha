@@ -67,6 +67,8 @@ function useCards (styles: ReturnType<typeof useStyles>): ReactNode[] {
           || category === PrettizedCategory.CollaborationWeapon
           || category === PrettizedCategory.Chronicled
           || category === PrettizedCategory.Bangboo
+          || category === PrettizedCategory.ExclusiveRescreening
+          || category === PrettizedCategory.WEngineReverberation
 
         createCard(
           [datasets, category],
