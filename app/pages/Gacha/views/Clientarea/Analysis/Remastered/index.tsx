@@ -31,6 +31,7 @@ const useStyles = makeStyles({
     flex: 1,
     minWidth: '12.75rem',
     border: `${tokens.strokeWidthThin} solid ${tokens.colorNeutralStrokeAlpha}`,
+    borderRadius: tokens.borderRadiusMedium,
     boxShadow: tokens.shadow2,
     ...PrettizedCategoryFlexOrders,
   },
@@ -111,8 +112,8 @@ const useCardStyles = makeStyles({
     flexDirection: 'column',
     rowGap: tokens.spacingHorizontalS,
     padding: tokens.spacingHorizontalM,
-    borderRadius: tokens.borderRadiusMedium,
     background: tokens.colorNeutralBackgroundAlpha,
+    borderRadius: 'inherit',
     height: '100%',
   },
   header: {
