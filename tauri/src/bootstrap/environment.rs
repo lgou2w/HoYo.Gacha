@@ -72,10 +72,19 @@ impl Environment {
       "hwnd": self.hwnd.get().unwrap_or(&0),
       "locale": *constants::LOCALE,
       "tauriVersion": self.tauri_version,
-      "webviewVersion": self.webview_version.get().map(String::deref).unwrap_or("0"),
+      "webviewVersion": self.webview_version
+        .get()
+        .map(String::deref)
+        .unwrap_or("0"),
       "os": {
-        "edition": self.os_info.edition().map(ToOwned::to_owned).unwrap_or(self.os_info.os_type().to_string()),
-        "architecture": self.os_info.architecture().map(ToOwned::to_owned).unwrap_or(self.os_info.bitness().to_string())
+        "edition": self.os_info
+          .edition()
+          .map(ToOwned::to_owned)
+          .unwrap_or_else(|| self.os_info.os_type().to_string()),
+        "architecture": self.os_info
+          .architecture()
+          .map(ToOwned::to_owned)
+          .unwrap_or_else(|| self.os_info.bitness().to_string())
       }
     });
 

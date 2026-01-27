@@ -149,10 +149,10 @@ impl LegacyMigration {
     legacy: Option<PathBuf>,
   ) -> Result<Self, LegacyMigrationError> {
     // Or current exe dir with default filename
-    let legacy = legacy.unwrap_or(
+    let legacy = legacy.unwrap_or_else(|| {
       #[allow(deprecated)]
-      constants::EXE_WORKING_DIR.join(constants::DATABASE_LEGACY),
-    );
+      constants::EXE_WORKING_DIR.join(constants::DATABASE_LEGACY)
+    });
 
     // Verify legacy
     ensure!(legacy.exists(), NotFoundSnafu);

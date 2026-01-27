@@ -53,7 +53,7 @@ pub async fn pick_file(
 ) -> Option<PathBuf> {
   let mut rfd = hg_ffi::file_dialog(None)
     .set_title(title.unwrap_or_default())
-    .set_directory(directory.as_ref().unwrap_or(&PathBuf::default()));
+    .set_directory(directory.unwrap_or_default());
 
   if let Some(filters) = filters {
     for (name, extensions) in filters {
@@ -68,7 +68,7 @@ pub async fn pick_file(
 pub async fn pick_folder(title: Option<String>, directory: Option<PathBuf>) -> Option<PathBuf> {
   hg_ffi::file_dialog(None)
     .set_title(title.unwrap_or_default())
-    .set_directory(directory.as_ref().unwrap_or(&PathBuf::default()))
+    .set_directory(directory.unwrap_or_default())
     .pick_folder()
     .await
     .map(Into::into)

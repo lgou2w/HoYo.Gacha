@@ -146,7 +146,7 @@ impl MetadataInner {
     Ok(Self {
       metadata,
       // Compute hash if not provided
-      hash: hash.unwrap_or(sha1sum(bytes)),
+      hash: hash.unwrap_or_else(|| sha1sum(bytes)),
     })
   }
 }
