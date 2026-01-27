@@ -163,10 +163,10 @@ impl DirtyGachaUrl {
     let mut walk_dir = fs::read_dir(&webcaches_folder).context(OpenWebcachesSnafu)?;
     let mut versions = Vec::new();
     while let Some(Ok(entry)) = walk_dir.next() {
-      if entry.path().is_dir() {
-        if let Some(Ok(version)) = entry.file_name().to_str().map(WebCachesVersion::from_str) {
-          versions.push(version);
-        }
+      if entry.path().is_dir()
+        && let Some(Ok(version)) = entry.file_name().to_str().map(WebCachesVersion::from_str)
+      {
+        versions.push(version);
       }
     }
 
