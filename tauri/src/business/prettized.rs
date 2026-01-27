@@ -45,13 +45,20 @@ pub enum PrettizedCategory {
   //
 }
 
+pub const GENSHIN_IMPACT_BEGINNER: u32 = 100;
 pub const GENSHIN_IMPACT_PERMANENT: u32 = 200;
+pub const GENSHIN_IMPACT_CHARACTER: u32 = 301;
 pub const GENSHIN_IMPACT_CHARACTER2: u32 = 400;
+pub const GENSHIN_IMPACT_WEAPON: u32 = 302;
+pub const GENSHIN_IMPACT_CHRONICLED: u32 = 500;
+
 pub const HONKAI_STAR_RAIL_PERMANENT: u32 = 1;
 pub const HONKAI_STAR_RAIL_COLLABORATION_CHARACTER: u32 = 21;
 pub const HONKAI_STAR_RAIL_COLLABORATION_WEAPON: u32 = 22;
+
 pub const ZENLESS_ZONE_ZERO_PERMANENT: u32 = 1;
 pub const ZENLESS_ZONE_ZERO_BANGBOO: u32 = 5;
+
 pub const MILIASTRA_WONDERLAND_PERMANENT_ODE: u32 = 1000;
 pub const MILIASTRA_WONDERLAND_EVENT_ODE: u32 = 2000; // Includes: 20011, 20021, 20012, 20022
 pub const MILIASTRA_WONDERLAND_EVENT_ODE1_1: u32 = 20011;
@@ -74,12 +81,12 @@ static KNOWN_CATEGORIZEDS: LazyLock<HashMap<AccountBusiness, HashMap<u32, Pretti
       (
         AccountBusiness::GenshinImpact,
         HashMap::from_iter([
-          (100, PrettizedCategory::Beginner),
+          (GENSHIN_IMPACT_BEGINNER, PrettizedCategory::Beginner),
           (GENSHIN_IMPACT_PERMANENT, PrettizedCategory::Permanent),
-          (301, PrettizedCategory::Character),
+          (GENSHIN_IMPACT_CHARACTER, PrettizedCategory::Character),
           (GENSHIN_IMPACT_CHARACTER2, PrettizedCategory::Character),
-          (302, PrettizedCategory::Weapon),
-          (500, PrettizedCategory::Chronicled),
+          (GENSHIN_IMPACT_WEAPON, PrettizedCategory::Weapon),
+          (GENSHIN_IMPACT_CHRONICLED, PrettizedCategory::Chronicled),
         ]),
       ),
       (

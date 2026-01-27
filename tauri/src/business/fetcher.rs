@@ -36,7 +36,7 @@ pub enum FetchRecordError {
   #[snafu(display("{source}"))]
   Scrape { source: GachaUrlRequestError },
 
-  #[snafu(display("Missing metadata entry: {business:?}, lang: {lang}, item name: {item_name}"))]
+  #[snafu(display("Missing metadata entry: {business:?}, lang: {lang}, item_name: {item_name}"))]
   MetadataEntry {
     business: AccountBusiness,
     lang: String,
@@ -250,22 +250,18 @@ pub async fn fetch(
     // HACK: 'Genshin Impact: Miliastra Wonderland' needs to retain some special field values,
     //   which may be used in the future.
     let properties = if is_miliastra_wonderland {
-      const KEY_SCHEDULE_ID: &str = "schedule_id";
-      const KEY_IS_UP: &str = "is_up";
-      const IS_UP_ZERO: &str = "0";
-
       let mut value = JsonProperties::default();
 
       if let Some(schedule_id) = log.schedule_id {
-        value.insert(KEY_SCHEDULE_ID.into(), schedule_id.into());
+        value.insert(GachaRecord::KEY_SCHEDULE_ID.into(), schedule_id.into());
       }
 
       // HACK: Only keep it if it is not "0".
       //   https://github.com/UIGF-org/UIGF-org.github.io/issues/108#issuecomment-3450043575
       if let Some(is_up) = log.is_up
-        && is_up.as_str() != IS_UP_ZERO
+        && is_up.as_str() != GachaRecord::IS_UP_ZERO
       {
-        value.insert(KEY_IS_UP.into(), is_up.into());
+        value.insert(GachaRecord::KEY_IS_UP.into(), is_up.into());
       }
 
       Some(value)

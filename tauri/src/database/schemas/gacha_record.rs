@@ -1,4 +1,3 @@
-use std::collections::HashSet;
 use std::time::Instant;
 
 use serde::{Deserialize, Serialize};
@@ -62,6 +61,11 @@ pub struct GachaRecord {
 }
 
 impl GachaRecord {
+  // Known `properties` keys
+  pub const KEY_SCHEDULE_ID: &str = "schedule_id";
+  pub const KEY_IS_UP: &str = "is_up";
+  pub const IS_UP_ZERO: &str = "0";
+
   /// HACK: 'Genshin Impact: Miliastra Wonderland' only
   #[inline]
   pub const fn is_rank_green(&self) -> bool {
@@ -157,16 +161,6 @@ impl_questioner_with_handlers! {
         business: AccountBusiness,
         uid: u32,
         limit: u32
-      }: fetch_all -> Vec<GachaRecord>,
-
-  "SELECT * FROM `HG_GACHA_RECORDS` WHERE `business` IN (?) AND `uid` = ? ORDER BY `id` ASC;"
-    = find_gacha_records_with_businesses {
-        businesses: HashSet<AccountBusiness> => businesses
-          .iter()
-          .map(|b| (*b as u8).to_string())
-          .collect::<Vec<_>>()
-          .join(","),
-        uid: u32
       }: fetch_all -> Vec<GachaRecord>,
 
   #[database_delete_gacha_records]

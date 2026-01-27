@@ -6,6 +6,7 @@ use tauri::ipc::{Channel, IpcResponse};
 use tracing::debug;
 
 use crate::bootstrap::{TauriDatabaseState, TauriMetadataState};
+use crate::business::converters::{RecordsReaderFactory, RecordsWriterFactory};
 use crate::business::data_folder::{
   DataFolder, DataFolderLocator, DataFolderLocatorFactory, LocateDataFolderError,
 };
@@ -15,8 +16,10 @@ use crate::business::image_resolver::ImageResolver;
 use crate::business::prettized::PrettizedRecords;
 use crate::database::DatabaseError;
 use crate::database::legacy::{LegacyMigration, LegacyMigrationError};
-use crate::database::schemas::{AccountBusiness, GachaRecordQuestioner, GachaRecordSaveOnConflict};
-use crate::error::AppError;
+use crate::database::schemas::{
+  AccountBusiness, GachaRecordQuestioner, GachaRecordSaveOnConflict, GachaRecordSaver,
+};
+use crate::error::{AppError, BoxDynErrorDetails, ErrorDetails};
 
 #[tauri::command]
 pub fn business_validate_uid(business: AccountBusiness, uid: u32) -> Option<&'static str> {
@@ -132,4 +135,75 @@ pub async fn business_legacy_migration(
   LegacyMigration::migrate(&database, metadata, legacy)
     .await
     .map_err(Into::into)
+}
+
+#[tauri::command]
+#[tracing::instrument(skip(database, metadata))]
+pub async fn business_export_records(
+  database: TauriDatabaseState<'_>,
+  metadata: TauriMetadataState<'_>,
+  writer: RecordsWriterFactory,
+  output: PathBuf,
+) -> Result<PathBuf, BoxDynErrorDetails> {
+  let metadata = { &*metadata.read().await };
+  let records = match &writer {
+    RecordsWriterFactory::ClassicUigf(_)
+    | RecordsWriterFactory::ClassicSrgf(_)
+    | RecordsWriterFactory::Csv(_) => {
+      let (business, uid) = match &writer {
+        RecordsWriterFactory::ClassicUigf(writer) => (AccountBusiness::GenshinImpact, writer.uid),
+        RecordsWriterFactory::ClassicSrgf(writer) => (AccountBusiness::HonkaiStarRail, writer.uid),
+        RecordsWriterFactory::Csv(writer) => (writer.business, writer.uid),
+        _ => unreachable!(), // SAFETY
+      };
+
+      database
+        .find_gacha_records(business, uid)
+        .await
+        .map_err(ErrorDetails::boxed)?
+    }
+    RecordsWriterFactory::Uigf(writer) => {
+      let mut records = Vec::new();
+
+      for (business, uids) in &writer.businesses {
+        for uid in uids.keys() {
+          records.extend(
+            database
+              .find_gacha_records(*business, *uid)
+              .await
+              .map_err(ErrorDetails::boxed)?,
+          );
+        }
+      }
+
+      records
+    }
+  };
+
+  writer.write(metadata, records, output)
+}
+
+#[tauri::command]
+#[tracing::instrument(skip(database, metadata, progress_channel))]
+pub async fn business_import_records(
+  database: TauriDatabaseState<'_>,
+  metadata: TauriMetadataState<'_>,
+  reader: RecordsReaderFactory,
+  input: PathBuf,
+  save_on_conflict: Option<GachaRecordSaveOnConflict>,
+  progress_channel: Channel<u64>,
+) -> Result<u64, BoxDynErrorDetails> {
+  let metadata = { &*metadata.read().await };
+  let records = reader.read(metadata, input)?;
+
+  GachaRecordSaver::new(
+    &records[..],
+    save_on_conflict.unwrap_or_default(),
+    Some(|progress| {
+      let _ = progress_channel.send(progress);
+    }),
+  )
+  .save(&database)
+  .await
+  .map_err(ErrorDetails::boxed)
 }

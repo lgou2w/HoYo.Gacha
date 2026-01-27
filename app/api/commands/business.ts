@@ -412,6 +412,255 @@ export type LegacyMigration
 
 // #endregion
 
+// #region: Converters
+
+export enum UigfVersion {
+  V1_0 = 'v1.0',
+  V2_0 = 'v2.0',
+  V2_1 = 'v2.1',
+  V2_2 = 'v2.2',
+  V2_3 = 'v2.3',
+  V2_4 = 'v2.4',
+  V3_0 = 'v3.0',
+  V4_0 = 'v4.0',
+  V4_1 = 'v4.1',
+  V4_2 = 'v4.2',
+}
+
+export const NamedUigfError = 'UigfError' as const
+export type NamedUigfError = typeof NamedUigfError
+
+export enum UigfErrorKind {
+  UnsupportedVersion = 'UnsupportedVersion',
+  InvalidUid = 'InvalidUid',
+  MappingGachaType = 'MappingGachaType',
+  MetadataEntry = 'MetadataEntry',
+  CreateOutput = 'CreateOutput',
+  Serialize = 'Serialize',
+  OpenInput = 'OpenInput',
+  Deserialize = 'Deserialize',
+  InvalidVersion = 'InvalidVersion',
+  InconsistentUid = 'InconsistentUid',
+  RequiredField = 'RequiredField',
+  MetadataLocale = 'MetadataLocale',
+  VacantAccount = 'VacantAccount',
+}
+
+export type UigfError = AppError<NamedUigfError,
+  | {
+    kind: UigfErrorKind.UnsupportedVersion
+    actual: UigfVersion
+    expected: UigfVersion[]
+  }
+  | {
+    kind: UigfErrorKind.InvalidUid
+    business: AccountBusiness
+    value: Account['uid']
+  }
+  | {
+    kind: UigfErrorKind.MappingGachaType
+    value: number
+    cursor: number
+  }
+  | {
+    kind: UigfErrorKind.MetadataEntry
+    business: AccountBusiness
+    lang: GachaRecord<AccountBusiness>['lang']
+    field: string
+    value: string
+    cursor: number
+  }
+  | {
+    kind: UigfErrorKind.CreateOutput
+    path: string
+    cause: NativeIOError
+  }
+  | {
+    kind: UigfErrorKind.Serialize
+    cause: string
+  }
+  | {
+    kind: UigfErrorKind.OpenInput
+    path: string
+    cause: NativeIOError
+  }
+  | {
+    kind: UigfErrorKind.Deserialize
+    cause: string
+  }
+  | {
+    kind: UigfErrorKind.InvalidVersion
+    value: string
+  }
+  | {
+    kind: UigfErrorKind.InconsistentUid
+    actual: Account['uid']
+    expected: Account['uid']
+  }
+  | {
+    kind: UigfErrorKind.RequiredField
+    path: string
+    cursor: number
+  }
+  | {
+    kind: UigfErrorKind.MetadataLocale
+    business: AccountBusiness
+    lang: GachaRecord<AccountBusiness>['lang']
+  }
+  | {
+    kind: UigfErrorKind.VacantAccount
+    business: AccountBusiness
+    uid: Account['uid']
+  }
+>
+
+export function isUigfError (error: unknown): error is UigfError {
+  return isAppError(error)
+    && error.name === NamedUigfError
+}
+
+export const NamedCsvError = 'CsvError' as const
+export type NamedCsvError = typeof NamedCsvError
+
+export enum CsvErrorKind {
+  InvalidUid = 'InvalidUid',
+  CreateOutput = 'CreateOutput',
+  WriteOutput = 'WriteOutput',
+}
+
+export type CsvError = AppError<NamedCsvError,
+  | {
+    kind: CsvErrorKind.InvalidUid
+    business: AccountBusiness
+    value: Account['uid']
+  }
+  | {
+    kind: CsvErrorKind.CreateOutput
+    path: string
+    cause: NativeIOError
+  }
+  | {
+    kind: CsvErrorKind.WriteOutput
+    path: string
+    cause: NativeIOError
+  }
+>
+
+export function isCsvError (error: unknown): error is CsvError {
+  return isAppError(error)
+    && error.name === NamedCsvError
+}
+
+export enum RecordsWriterFactory {
+  ClassicUigf = 'ClassicUigf',
+  ClassicSrgf = 'ClassicSrgf',
+  Uigf = 'Uigf',
+  Csv = 'Csv',
+}
+
+export enum RecordsReaderFactory {
+  ClassicUigf = 'ClassicUigf',
+  ClassicSrgf = 'ClassicSrgf',
+  Uigf = 'Uigf',
+}
+
+export interface ClassicUigfWriterOptions {
+  uigfVersion:
+    | UigfVersion.V2_0
+    | UigfVersion.V2_1
+    | UigfVersion.V2_2
+    | UigfVersion.V2_3
+    | UigfVersion.V2_4
+    | UigfVersion.V3_0
+  uid: Account['uid']
+  lang: GachaRecord<AccountBusiness>['lang']
+  exportTime: string | Date
+  pretty?: boolean | null
+}
+
+export interface ClassicUigfReaderOptions {
+  uid: Account['uid']
+  lang: GachaRecord<AccountBusiness>['lang']
+}
+
+export interface ClassicSrgfWriterOptions {
+  srgfVersion: UigfVersion.V1_0
+  uid: Account['uid']
+  lang: GachaRecord<AccountBusiness>['lang']
+  exportTime: string | Date
+  pretty?: boolean | null
+}
+
+export interface ClassicSrgfReaderOptions {
+  uid: Account['uid']
+}
+
+export interface UigfWriterOptions {
+  uigfVersion:
+    | UigfVersion.V4_0
+    | UigfVersion.V4_1
+    | UigfVersion.V4_2
+  // business -> uid -> lang
+  businesses: Record<
+    AccountBusiness,
+    Record<
+      Account['uid'],
+      GachaRecord<AccountBusiness>['lang']
+    >
+  >
+  exportTime: string | Date
+  pretty?: boolean | null
+  minimized?: boolean | null
+}
+
+export interface UigfReaderOptions {
+  // business -> uid -> lang
+  businesses: Record<
+    AccountBusiness,
+    Record<
+      Account['uid'],
+      GachaRecord<AccountBusiness>['lang']
+    >
+  >
+}
+
+export interface CsvWriterOptions {
+  business: AccountBusiness
+  uid: Account['uid']
+  withoutColumns?: boolean | null
+}
+
+export type RecordsWriterOptions
+  = | { [RecordsWriterFactory.ClassicUigf]: ClassicUigfWriterOptions }
+    | { [RecordsWriterFactory.ClassicSrgf]: ClassicSrgfWriterOptions }
+    | { [RecordsWriterFactory.Uigf]: UigfWriterOptions }
+    | { [RecordsWriterFactory.Csv]: CsvWriterOptions }
+
+export type RecordsReaderOptions
+  = | { [RecordsReaderFactory.ClassicUigf]: ClassicUigfReaderOptions }
+    | { [RecordsReaderFactory.ClassicSrgf]: ClassicSrgfReaderOptions }
+    | { [RecordsReaderFactory.Uigf]: UigfReaderOptions }
+
+export interface ExportRecordsArgs extends Record<string, unknown> {
+  writer: RecordsWriterFactory
+  output: string // output file path without extension
+}
+
+export type ExportRecords
+  = Command<ExportRecordsArgs, string>
+
+export interface ImportRecordsArgs extends Record<string, unknown> {
+  reader: RecordsReaderFactory
+  input: string // input file path
+  saveOnConflict?: 'Nothing' | 'Update' | null
+  progressChannel: Channel<number>
+}
+
+export type ImportRecords
+  = Command<ImportRecordsArgs, number>
+
+// #endregion
+
 // #region: Commands
 
 const BusinessCommands = {
@@ -466,6 +715,22 @@ const BusinessCommands = {
    */
   legacyMigration:
     declareCommand('business_legacy_migration') as LegacyMigration,
+
+  /**
+   * @throws `DatabaseError`
+   * @throws `UigfError`
+   * @throws `CsvError`
+   */
+  exportRecords:
+    declareCommand('business_export_records') as ExportRecords,
+
+  /**
+   * @throws `DatabaseError`
+   * @throws `UigfError`
+   * @throws `CsvError`
+   */
+  importRecords:
+    declareCommand('business_import_records') as ImportRecords,
 } as const
 
 Object.freeze(BusinessCommands)

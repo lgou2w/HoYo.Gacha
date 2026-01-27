@@ -269,6 +269,8 @@ fn command_handlers() -> Box<dyn Fn(Invoke<Wry>) -> bool + Send + Sync + 'static
     crate::business::handlers::business_pretty_records,
     crate::business::handlers::business_fetch_records,
     crate::business::handlers::business_legacy_migration,
+    crate::business::handlers::business_export_records,
+    crate::business::handlers::business_import_records,
   ])
 }
 

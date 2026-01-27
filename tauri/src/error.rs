@@ -10,7 +10,17 @@ pub trait ErrorDetails: Error {
   fn details(&self) -> Option<serde_json::Value> {
     None
   }
+
+  #[inline]
+  fn boxed(self) -> Box<dyn ErrorDetails + Send + 'static>
+  where
+    Self: Sized + Send + 'static,
+  {
+    Box::new(self)
+  }
 }
+
+pub type BoxDynErrorDetails = Box<dyn ErrorDetails + Send + 'static>;
 
 #[derive(Debug, Snafu)]
 #[snafu(visibility, display("{source}"))] // Display -> source
