@@ -79,20 +79,16 @@ pub async fn metadata_hash(state: TauriMetadataState<'_>) -> Result<String, ()> 
   Ok(state.hash().await)
 }
 
-#[tauri::command]
-pub fn metadata_is_updating(state: TauriMetadataState) -> bool {
-  cfg_if! {if #[cfg(not(feature = "disable-metadata-updater"))] {
-    state.is_updating()
-  } else {
-    false
-  }}
-}
-
 cfg_if! {if #[cfg(not(feature = "disable-metadata-updater"))] {
   use std::sync::Arc;
 
   use crate::error::AppError;
   use crate::business::metadata::{MetadataUpdateKind, MetadataUpdateError};
+
+  #[tauri::command]
+  pub fn metadata_is_updating(state: TauriMetadataState) -> bool {
+    state.is_updating()
+  }
 
   #[tauri::command]
   #[tracing::instrument(skip(state))]
@@ -107,8 +103,11 @@ cfg_if! {if #[cfg(not(feature = "disable-metadata-updater"))] {
       .map_err(AppError::from)
   }
 } else {
+  // Feature disabled
+
   #[tauri::command]
-  pub fn metadata_update() {
-    // Feature disabled
-  }
+  pub fn metadata_is_updating() -> bool { false }
+
+  #[tauri::command]
+  pub fn metadata_update() {}
 }}
