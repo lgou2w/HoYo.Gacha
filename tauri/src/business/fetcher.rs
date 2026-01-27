@@ -216,7 +216,7 @@ pub async fn fetch(
 
   for log in logs {
     // FIXME: Transform lang
-    let lang = log.lang.unwrap_or(scraper.url().lang.clone());
+    let lang = log.lang.unwrap_or_else(|| scraper.url().lang.to_string());
 
     // HACK: Genshin Impact only
     //   Mandatory mapping of item ids.

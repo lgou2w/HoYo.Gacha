@@ -29,20 +29,22 @@ pub struct ParsedGachaType {
 pub struct ParsedGachaUrl<'a> {
   // Required params
   pub game_biz: &'static GameBiz,
-  pub sign_type: String,
-  pub authkey_ver: String,
-  pub authkey: String,
-  pub lang: String,
+  pub sign_type: Cow<'a, str>,
+  pub authkey_ver: Cow<'a, str>,
+  pub authkey: Cow<'a, str>,
+  pub lang: Cow<'a, str>,
   // Optional params
   pub gacha_type: ParsedGachaType,
   pub init_gacha_type: ParsedGachaType,
-  pub end_id: Option<String>,
+  pub end_id: Option<Cow<'a, str>>,
   pub size: Option<u32>,
   // pub page: Option<u32>, // Deprecated
-
-  // HACK: The base URL value (before the question mark) that matches the regular expression.
-  //   However, it is not necessarily the API Endpoint.
+  //
+  /// HACK: The base URL value (before the question mark) that matches the regular expression.
+  ///   However, it is not necessarily the API Endpoint.
   pub base_url: &'a str,
+  /// Other remaining query parameters
+  pub queries: HashMap<Cow<'a, str>, Cow<'a, str>>,
 }
 
 // Required params
@@ -69,13 +71,13 @@ impl<'a> ParsedGachaUrl<'a> {
     let base_url = &s[..query_start];
 
     let queries_str = &s[query_start + 1..];
-    let queries = form_urlencoded::parse(queries_str.as_bytes()).collect::<HashMap<_, _>>();
+    let mut queries = form_urlencoded::parse(queries_str.as_bytes()).collect::<HashMap<_, _>>();
 
     // Required params
     macro_rules! required_param {
       ($param:expr) => {
         queries
-          .get($param)
+          .remove($param)
           .filter(|s| !s.is_empty())
           .context(RequiredParamSnafu { name: $param })
       };
@@ -91,9 +93,9 @@ impl<'a> ParsedGachaUrl<'a> {
     // Validate game_biz and region combination
     // If unsupported, return error.
     let game_biz =
-      GameBiz::from_codename(game_biz, region).with_context(|| UnsupportedGameBizSnafu {
-        game_biz: game_biz.clone(),
-        region: region.clone(),
+      GameBiz::from_codename(&game_biz, &region).with_context(|| UnsupportedGameBizSnafu {
+        game_biz: game_biz.to_string(),
+        region: region.to_string(),
       })?;
 
     // These two parameters will vary depending on the specific Game biz.
@@ -122,22 +124,23 @@ impl<'a> ParsedGachaUrl<'a> {
     let gacha_type = gacha_type_param! { gacha_type_name };
     let init_gacha_type = gacha_type_param! { init_gacha_type_name };
 
-    let end_id = queries.get(PARAM_END_ID).map(ToString::to_string);
-    let size = queries.get(PARAM_SIZE).and_then(|s| s.parse::<_>().ok());
-    // let page = queries.get(PARAM_PAGE).and_then(|s| s.parse::<_>().ok());
+    let end_id = queries.remove(PARAM_END_ID);
+    let size = queries.remove(PARAM_SIZE).and_then(|s| s.parse::<_>().ok());
+    // let page = queries.remove(PARAM_PAGE).and_then(|s| s.parse::<_>().ok());
 
     Ok(Self {
       game_biz,
-      sign_type: sign_type.to_string(),
-      authkey_ver: authkey_ver.to_string(),
-      authkey: authkey.to_string(),
-      lang: lang.to_string(),
+      sign_type,
+      authkey_ver,
+      authkey,
+      lang,
       gacha_type,
       init_gacha_type,
       end_id,
       size,
       // page,
       base_url,
+      queries,
     })
   }
 }
@@ -168,9 +171,9 @@ impl<'a> ParsedGachaUrl<'a> {
   ) -> Vec<(&'static str, Cow<'a, str>)> {
     let mut queries = vec![
       // Required params
-      (PARAM_SIGN_TYPE, Cow::Borrowed(self.sign_type.as_str())),
-      (PARAM_AUTHKEY_VER, Cow::Borrowed(self.authkey_ver.as_str())),
-      (PARAM_AUTHKEY, Cow::Borrowed(self.authkey.as_str())),
+      (PARAM_SIGN_TYPE, Cow::clone(&self.sign_type)),
+      (PARAM_AUTHKEY_VER, Cow::clone(&self.authkey_ver)),
+      (PARAM_AUTHKEY, Cow::clone(&self.authkey)),
       (PARAM_GAME_BIZ, Cow::Borrowed(self.game_biz.codename())),
       (PARAM_REGION, Cow::Borrowed(self.game_biz.region())),
     ];
@@ -189,7 +192,7 @@ impl<'a> ParsedGachaUrl<'a> {
     }
 
     // Allow overriding lang and gacha_type
-    push_query! { PARAM_LANG, Borrowed(options.lang.or(Some(self.lang.as_str()))) }
+    push_query! { PARAM_LANG, Borrowed(options.lang.or(Some(&self.lang))) }
     push_query! { self.gacha_type.name, Owned(options.gacha_type.or(self.gacha_type.value)) }
     push_query! { self.init_gacha_type.name, Owned(options.init_gacha_type.or(self.init_gacha_type.value)) }
 
