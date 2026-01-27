@@ -10,7 +10,9 @@ use crate::business::converters::{RecordsReaderFactory, RecordsWriterFactory};
 use crate::business::data_folder::{
   DataFolder, DataFolderLocator, DataFolderLocatorFactory, LocateDataFolderError,
 };
-use crate::business::fetcher::{FetchEventPayload, FetchRecordError, GachaRecordSaveToDatabase};
+use crate::business::gacha_fetcher::{
+  FetchEventPayload, GachaFetcherError, GachaRecordSaveToDatabase,
+};
 use crate::business::gacha_url::{GachaUrl, GachaUrlError};
 use crate::business::image_resolver::ImageResolver;
 use crate::business::prettized::PrettizedRecords;
@@ -109,9 +111,9 @@ pub async fn business_fetch_records(
   event_channel: Channel<FetchEventPayload>,
   save_to_database: Option<GachaRecordSaveToDatabase>,
   save_on_conflict: Option<GachaRecordSaveOnConflict>,
-) -> Result<i64, AppError<FetchRecordError>> {
+) -> Result<i64, AppError<GachaFetcherError>> {
   let metadata = { &*metadata.read().await };
-  crate::business::fetcher::fetch(
+  crate::business::gacha_fetcher::fetch(
     &database,
     metadata,
     business,

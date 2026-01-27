@@ -23,7 +23,7 @@ use crate::error::{AppError, ErrorDetails};
 
 #[derive(Debug, Snafu)]
 #[snafu(visibility)]
-pub enum FetchRecordError {
+pub enum GachaFetcherError {
   #[snafu(display("Invalid {business:?} account uid: {value}"))]
   InvalidUid {
     business: AccountBusiness,
@@ -47,13 +47,13 @@ pub enum FetchRecordError {
   Database { source: DatabaseError },
 }
 
-impl ErrorDetails for FetchRecordError {
+impl ErrorDetails for GachaFetcherError {
   fn name(&self) -> &'static str {
     match self {
       Self::Parse { source } => source.name(),
       Self::Scrape { source } => source.name(),
       Self::Database { source } => source.name(),
-      _ => stringify!(FetchRecordError),
+      _ => stringify!(GachaFetcherError),
     }
   }
 
@@ -130,7 +130,7 @@ pub async fn fetch(
   event_channel: Channel<FetchEventPayload>,
   save_to_database: Option<GachaRecordSaveToDatabase>,
   save_on_conflict: Option<GachaRecordSaveOnConflict>,
-) -> Result<i64, AppError<FetchRecordError>> {
+) -> Result<i64, AppError<GachaFetcherError>> {
   // First, Verify the uid
   let uid = Uid::validate(business.as_game(), uid).context(InvalidUidSnafu {
     business,

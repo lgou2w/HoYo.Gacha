@@ -32,7 +32,7 @@
     "NotFound": "未找到有效的抽卡链接。请尝试在游戏内打开历史记录界面！",
     "InconsistentUid": "抽卡链接的拥有者 UID 不匹配。预期：{{expected}}，实际：{{actuals}}。请以当前账号在游戏内重新打开历史记录界面后重试！"
   },
-  "FetchRecordError": {
+  "GachaFetcherError": {
     "InvalidUid": "效的 $t(Common:{{keyof}}.Name) 账号 UID 值：{{value}}",
     "MetadataEntry": "缺失元数据条目：$t(Common:{{keyof}}.Name)，语言：{{lang}}，物品名称：{{itemName}}"
   }

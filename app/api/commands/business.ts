@@ -278,31 +278,31 @@ export type PrettyRecords
 
 // #region: Records Fetcher
 
-export const NamedFetchRecordError = 'FetchRecordError' as const
-export type NamedFetchRecordError = typeof NamedFetchRecordError
+export const NamedGachaFetcherError = 'GachaFetcherError' as const
+export type NamedGachaFetcherError = typeof NamedGachaFetcherError
 
-export enum FetchRecordErrorKind {
+export enum GachaFetcherErrorKind {
   InvalidUid = 'InvalidUid',
   MetadataEntry = 'MetadataEntry',
 }
 
-export type FetchRecordError = AppError<NamedFetchRecordError,
+export type GachaFetcherError = AppError<NamedGachaFetcherError,
   | {
-    kind: FetchRecordErrorKind.InvalidUid
+    kind: GachaFetcherErrorKind.InvalidUid
     business: AccountBusiness
     value: Account['uid']
   }
   | {
-    kind: FetchRecordErrorKind.MetadataEntry
+    kind: GachaFetcherErrorKind.MetadataEntry
     business: AccountBusiness
     lang: GachaRecord<AccountBusiness>['lang']
     itemName: GachaRecord<AccountBusiness>['itemName']
   }
 >
 
-export function isFetchRecordError (error: unknown): error is FetchRecordError {
+export function isGachaFetcherError (error: unknown): error is GachaFetcherError {
   return isAppError(error)
-    && error.name === NamedFetchRecordError
+    && error.name === NamedGachaFetcherError
 }
 
 export enum SaveToDatabase {
@@ -702,7 +702,7 @@ const BusinessCommands = {
     declareCommand('business_pretty_records') as PrettyRecords,
 
   /**
-   * @throws `FetchRecordError`
+   * @throws `GachaFetcherError`
    * @throws `ParsedGachaUrlError`
    * @throws `GachaUrlRequestError`
    */

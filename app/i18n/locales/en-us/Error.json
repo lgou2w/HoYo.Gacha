@@ -32,7 +32,7 @@
     "NotFound": "No valid Gacha url found. Please try opening the history interface in the game!",
     "InconsistentUid": "Owner uid of the Gacha url does not match. Expected: {{expected}}, Actuals: {{actuals}}. Please reopen the history interface in the game with your current account and try again!"
   },
-  "FetchRecordError": {
+  "GachaFetcherError": {
     "InvalidUid": "Invalid $t(Common:{{keyof}}.Name) account uid: {{value}}",
     "MetadataEntry": "Missing metadata entry: $t(Common:{{keyof}}.Name), lang: {{lang}}, itemName: {{itemName}}"
   }
