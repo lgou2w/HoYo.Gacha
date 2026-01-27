@@ -48,6 +48,7 @@ cfg-if = { workspace = true }
 exponential-backoff = { workspace = true }
 futures-util = { workspace = true }
 os_info = { workspace = true }
+regex = { workspace = true }
 reqwest = { workspace = true, features = ["native-tls", "http2", "json"] }
 serde = { workspace = true, features = ["derive"] }
 serde_json = { workspace = true }

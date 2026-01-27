@@ -8,7 +8,7 @@ members = [
 [workspace.package]
 version = "1.2.0"
 edition = "2024"
-rust-version = "1.85"
+rust-version = "1.88"
 authors = ["lgou2w <lgou2w@hotmail.com>"]
 description = "An unofficial tool for managing and analyzing your miHoYo gacha records"
 homepage = "https://github.com/lgou2w/HoYo.Gacha#readme"
@@ -33,7 +33,7 @@ serde_json = { version = "1.0.149", default-features = false, features = ["std"]
 sha1 = { version = "0.10.6", default-features = false }
 snafu = { version = "0.8.9", default-features = false, features = ["std", "rust_1_65", "rust_1_81", "backtraces-impl-backtrace-crate"] }
 sqlx = { version = "0.8.6", default-features = false }
-time = { version = "0.3.45", default-features = false, features = ["std"] }
+time = { version = "0.3.46", default-features = false, features = ["std"] }
 tauri = { version = "2.9.5", default-features = false }
 tauri-plugin-clipboard-manager = { version = "2.3.2", default-features = false }
 tauri-plugin-shell = { version = "2.3.4", default-features = false }
