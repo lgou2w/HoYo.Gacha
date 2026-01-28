@@ -38,6 +38,7 @@ tauri = { version = "2.9.5", default-features = false }
 tauri-plugin-clipboard-manager = { version = "2.3.2", default-features = false }
 tauri-plugin-shell = { version = "2.3.4", default-features = false }
 tauri-build = { version = "2.5.3", default-features = false }
+tempfile = { version = "3.24.0", default-features = false }
 tokio = { version = "1.49.0", default-features = false }
 tracing = { version = "0.1.44", default-features = false, features = ["std"] }
 tracing-appender = { version = "0.2.4", default-features = false }

@@ -76,3 +76,6 @@ features = [
 
 [target.'cfg(windows)'.dependencies]
 windows-version = { workspace = true }
+
+[dev-dependencies]
+tempfile = { workspace = true }
