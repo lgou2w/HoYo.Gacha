@@ -1409,11 +1409,12 @@ impl RecordsWriter for UigfWriter {
           .properties
           .as_ref()
           .and_then(|props| props.get("schedule_id"))
+          .and_then(|value| value.as_str())
           .context(uigf_error::RequiredFieldSnafu {
             path: "records[].properties.schedule_id",
             cursor,
           })?
-          .to_string();
+          .to_owned();
 
         let item = UigfHk4eBeyondItem {
           schedule_id,
@@ -1937,6 +1938,616 @@ impl RecordsReaderFactory {
     }
 
     delegates! { ClassicUigf, ClassicSrgf, Uigf, }
+  }
+}
+
+// endregion
+
+// region: Tests
+
+#[cfg(test)]
+mod tests {
+  use std::io::Cursor;
+
+  use time::macros::datetime;
+
+  use super::*;
+  use crate::business::metadata::Metadata;
+
+  #[test]
+  fn test_parse_uigf_version() {
+    assert_eq!("v2.2".parse(), Ok(UigfVersion::V2_2));
+    assert_eq!("v2.3".parse(), Ok(UigfVersion::V2_3));
+    assert_eq!("v2.4".parse(), Ok(UigfVersion::V2_4));
+    assert_eq!("v4.0".parse(), Ok(UigfVersion::V4_0));
+
+    assert_eq!("v2.2.1".parse::<UigfVersion>(), Err(()));
+    assert_eq!("v2".parse::<UigfVersion>(), Err(()));
+    assert_eq!("2.2".parse::<UigfVersion>(), Err(()));
+    assert_eq!("2".parse::<UigfVersion>(), Err(()));
+  }
+
+  #[test]
+  fn test_uigf_v2_2_reader() {
+    // v2.2: The name and item_type fields must be provided.
+    let input = br#"{
+      "info": {
+        "uid": "100000000",
+        "uigf_version": "v2.2"
+      },
+      "list": [
+        {
+          "id": "1000000000000000000",
+          "gacha_type": "301",
+          "time": "2023-01-01 00:00:00",
+          "name": "Kamisato Ayaka",
+          "item_type": "Character",
+          "uigf_gacha_type": "301"
+        }
+      ]
+    }"#;
+
+    let records = ClassicUigfReader {
+      lang: "en-us".into(),
+      uid: 100_000_000,
+    }
+    .read_from(Metadata::embedded(), Cursor::new(input))
+    .unwrap();
+
+    assert_eq!(records.len(), 1);
+    assert_eq!(
+      records[0],
+      GachaRecord {
+        business: AccountBusiness::GenshinImpact,
+        uid: 100_000_000,
+        id: "1000000000000000000".into(),
+        gacha_type: 301,
+        gacha_id: None,
+        rank_type: 5,
+        count: 1,
+        lang: "en-us".into(),
+        time: datetime!(2023-01-01 00:00:00 +8),
+        item_name: "Kamisato Ayaka".into(),
+        item_type: "Character".into(),
+        item_id: 10000002,
+        properties: None,
+      }
+    );
+  }
+
+  #[test]
+  fn test_uigf_v2_2_reader_inconsistent_uid() {
+    let input = br#"{
+      "info": {
+        "uid": "100000000",
+        "uigf_version": "v2.2"
+      },
+      "list": [
+        {
+          "uid": "100000001",
+          "id": "1000000000000000000",
+          "gacha_type": "301",
+          "time": "2023-01-01 00:00:00",
+          "name": "Kamisato Ayaka",
+          "item_type": "Character",
+          "uigf_gacha_type": "301"
+        }
+      ]
+    }"#;
+
+    // The info uid is 100_000_000
+    // but the uid in the list entry is different
+
+    let err = ClassicUigfReader {
+      lang: "en-us".to_owned(),
+      uid: 100_000_000,
+    }
+    .read_from(Metadata::embedded(), Cursor::new(input))
+    .unwrap_err();
+
+    assert!(matches!(
+      err,
+      UigfError::InconsistentUid { expected, actual }
+        if actual == 100_000_001 && expected == 100_000_000
+    ));
+  }
+
+  #[test]
+  fn test_uigf_v2_3_reader() {
+    // v2.3: The item_id field must be provided.
+    let input = br#"{
+      "info": {
+        "uid": "100000000",
+        "uigf_version": "v2.3"
+      },
+      "list": [
+        {
+          "id": "1000000000000000000",
+          "gacha_type": "301",
+          "time": "2023-01-01 00:00:00",
+          "item_id": "10000002",
+          "uigf_gacha_type": "301"
+        }
+      ]
+    }"#;
+
+    let records = ClassicUigfReader {
+      lang: "en-us".into(),
+      uid: 100_000_000,
+    }
+    .read_from(Metadata::embedded(), Cursor::new(input))
+    .unwrap();
+
+    assert_eq!(records.len(), 1);
+    assert_eq!(
+      records[0],
+      GachaRecord {
+        business: AccountBusiness::GenshinImpact,
+        uid: 100_000_000,
+        id: "1000000000000000000".into(),
+        gacha_type: 301,
+        gacha_id: None,
+        rank_type: 5,
+        count: 1,
+        lang: "en-us".into(),
+        time: datetime!(2023-01-01 00:00:00 +8),
+        item_name: "Kamisato Ayaka".into(),
+        item_type: "Character".into(),
+        item_id: 10000002,
+        properties: None,
+      }
+    );
+  }
+
+  #[test]
+  fn test_uigf_v2_4_reader_null_region_time_zone() {
+    // v2.4: The region_time_zone field must be provided.
+    let input = br#"{
+      "info": {
+        "uid": "100000000",
+        "uigf_version": "v2.4",
+        "region_time_zone": null
+      },
+      "list": [
+        {
+          "id": "1000000000000000000",
+          "gacha_type": "301",
+          "time": "2023-01-01 00:00:00",
+          "item_id": "10000002",
+          "uigf_gacha_type": "301"
+        }
+      ]
+    }"#;
+
+    let err = ClassicUigfReader {
+      lang: "en-us".into(),
+      uid: 100_000_000,
+    }
+    .read_from(Metadata::embedded(), Cursor::new(input))
+    .unwrap_err();
+
+    assert!(matches!(
+      err,
+      UigfError::RequiredField { path, .. }
+        if path.contains("region_time_zone")
+    ));
+  }
+
+  #[test]
+  fn test_uigf_v2_2_writer_and_reader() {
+    let records = vec![GachaRecord {
+      business: AccountBusiness::GenshinImpact,
+      uid: 100_000_000,
+      id: "1000000000000000000".into(),
+      gacha_type: 301,
+      gacha_id: None,
+      rank_type: 5,
+      count: 1,
+      lang: "en-us".to_owned(),
+      time: datetime!(2023-01-01 00:00:00 +8),
+      item_name: "Kamisato Ayaka".into(),
+      item_type: "Character".into(),
+      item_id: 10000002,
+      properties: None,
+    }];
+
+    let temp_dir = tempfile::tempdir().unwrap();
+    let output = temp_dir.path().join("test_uigf_v2_2_writer_and_reader");
+
+    ClassicUigfWriter {
+      uigf_version: UigfVersion::V2_2,
+      lang: "en-us".to_owned(),
+      uid: 100_000_000,
+      export_time: OffsetDateTime::now_utc().to_offset(*constants::LOCAL_OFFSET),
+      pretty: None,
+    }
+    .write(Metadata::embedded(), records.clone(), &output)
+    .unwrap();
+
+    let input = File::open(output.with_extension("json")).unwrap();
+    let read_records = ClassicUigfReader {
+      lang: "en-us".into(),
+      uid: 100_000_000,
+    }
+    .read_from(Metadata::embedded(), input)
+    .unwrap();
+
+    assert_eq!(records, read_records);
+
+    temp_dir.close().unwrap();
+  }
+
+  #[test]
+  fn test_srgf_v1_0_reader() {
+    let input = br#"{
+      "info": {
+        "uid": "100000000",
+        "lang": "en-us",
+        "srgf_version": "v1.0",
+        "region_time_zone": 8
+      },
+      "list": [
+        {
+          "id": "1000000000000000000",
+          "gacha_id": "1",
+          "gacha_type": "301",
+          "time": "2023-01-01 00:00:00",
+          "item_id": "1001"
+        }
+      ]
+    }"#;
+
+    let records = ClassicSrgfReader { uid: 100_000_000 }
+      .read_from(Metadata::embedded(), Cursor::new(input))
+      .unwrap();
+
+    assert_eq!(records.len(), 1);
+    assert_eq!(
+      records[0],
+      GachaRecord {
+        business: AccountBusiness::HonkaiStarRail,
+        uid: 100_000_000,
+        id: "1000000000000000000".into(),
+        gacha_type: 301,
+        gacha_id: Some(1),
+        rank_type: 4,
+        count: 1,
+        lang: "en-us".into(),
+        time: datetime!(2023-01-01 00:00:00 +8),
+        item_name: "March 7th".into(),
+        item_type: "Character".into(),
+        item_id: 1001,
+        properties: None,
+      }
+    );
+  }
+
+  #[test]
+  fn test_srgf_v1_0_writer_and_reader() {
+    let records = vec![GachaRecord {
+      business: AccountBusiness::HonkaiStarRail,
+      uid: 100_000_000,
+      id: "1000000000000000000".into(),
+      gacha_type: 301,
+      gacha_id: Some(1),
+      rank_type: 4,
+      count: 1,
+      lang: "en-us".into(),
+      time: datetime!(2023-01-01 00:00:00 +8),
+      item_name: "March 7th".into(),
+      item_type: "Character".into(),
+      item_id: 1001,
+      properties: None,
+    }];
+
+    let temp_dir = tempfile::tempdir().unwrap();
+    let output = temp_dir.path().join("test_srgf_v1_0_writer_and_reader");
+
+    ClassicSrgfWriter {
+      srgf_version: UigfVersion::V1_0,
+      lang: "en-us".into(),
+      uid: 100_000_000,
+      export_time: OffsetDateTime::now_utc().to_offset(*constants::LOCAL_OFFSET),
+      pretty: None,
+    }
+    .write(Metadata::embedded(), records.clone(), &output)
+    .unwrap();
+
+    let input = File::open(output.with_extension("json")).unwrap();
+    let read_records = ClassicSrgfReader { uid: 100_000_000 }
+      .read_from(Metadata::embedded(), input)
+      .unwrap();
+
+    assert_eq!(records, read_records);
+
+    temp_dir.close().unwrap();
+  }
+
+  #[test]
+  fn test_uigf_v4_0_reader() {
+    let input = br#"{
+      "info": {
+        "export_timestamp": "1672531200",
+        "export_app": "foobar",
+        "export_app_version": "1.0.0",
+        "version": "v4.2"
+      },
+      "hk4e": [
+        {
+          "uid": "100000000",
+          "timezone": 8,
+          "list": [
+            {
+              "uigf_gacha_type": "301",
+              "gacha_type": "301",
+              "item_id": "10000002",
+              "time": "2023-01-01 00:00:00",
+              "id": "1000000000000000000"
+            }
+          ]
+        }
+      ],
+      "hkrpg": [
+        {
+          "uid": "100000001",
+          "timezone": 8,
+          "list": [
+            {
+              "gacha_id": "1",
+              "gacha_type": "11",
+              "item_id": "1001",
+              "time": "2023-01-01 00:00:00",
+              "id": "1000000000000000001"
+            }
+          ]
+        }
+      ],
+      "nap": [
+        {
+          "uid": "10000002",
+          "timezone": 8,
+          "list": [
+            {
+              "gacha_type": "1",
+              "item_id": "1011",
+              "time": "2023-01-01 00:00:00",
+              "id": "1000000000000000002"
+            }
+          ]
+        }
+      ],
+      "hk4e_ugc": [
+        {
+          "uid": "100000003",
+          "timezone": 8,
+          "list": [
+            {
+              "id": "1000000000000000003",
+              "schedule_id": "20",
+              "op_gacha_type": "20021",
+              "item_id": "265044",
+              "time": "2026-01-01 00:00:00",
+              "item_name": "Manekina Cosmetic - \"Candlelit Revelry\"",
+              "item_type": "Cosmetic Set",
+              "rank_type": "5"
+            }
+          ]
+        }
+      ]
+    }"#;
+
+    let records = UigfReader {
+      businesses: HashMap::from_iter([
+        (
+          AccountBusiness::GenshinImpact,
+          HashMap::from_iter([(100_000_000, "en-us".into())]),
+        ),
+        (
+          AccountBusiness::HonkaiStarRail,
+          HashMap::from_iter([(100_000_001, "en-us".into())]),
+        ),
+        (
+          AccountBusiness::ZenlessZoneZero,
+          HashMap::from_iter([(10_000_002, "en-us".into())]),
+        ),
+        (
+          AccountBusiness::MiliastraWonderland,
+          HashMap::from_iter([(100_000_003, "en-us".into())]),
+        ),
+      ]),
+    }
+    .read_from(Metadata::embedded(), Cursor::new(input))
+    .unwrap();
+
+    assert_eq!(records.len(), 4);
+
+    assert_eq!(
+      records[0],
+      GachaRecord {
+        business: AccountBusiness::GenshinImpact,
+        uid: 100_000_000,
+        id: "1000000000000000000".into(),
+        gacha_type: 301,
+        gacha_id: None,
+        rank_type: 5,
+        count: 1,
+        lang: "en-us".into(),
+        time: datetime!(2023-01-01 00:00:00 +8),
+        item_name: "Kamisato Ayaka".into(),
+        item_type: "Character".into(),
+        item_id: 10000002,
+        properties: None,
+      }
+    );
+
+    assert_eq!(
+      records[1],
+      GachaRecord {
+        business: AccountBusiness::HonkaiStarRail,
+        uid: 100_000_001,
+        id: "1000000000000000001".into(),
+        gacha_type: 11,
+        gacha_id: Some(1),
+        rank_type: 4,
+        count: 1,
+        lang: "en-us".into(),
+        time: datetime!(2023-01-01 00:00:00 +8),
+        item_name: "March 7th".into(),
+        item_type: "Character".into(),
+        item_id: 1001,
+        properties: None,
+      }
+    );
+
+    assert_eq!(
+      records[2],
+      GachaRecord {
+        business: AccountBusiness::ZenlessZoneZero,
+        uid: 10_000_002,
+        id: "1000000000000000002".into(),
+        gacha_type: 1,
+        gacha_id: None,
+        rank_type: 3,
+        count: 1,
+        lang: "en-us".into(),
+        time: datetime!(2023-01-01 00:00:00 +8),
+        item_name: "Anby".into(),
+        item_type: "Agents".into(),
+        item_id: 1011,
+        properties: None,
+      }
+    );
+
+    assert_eq!(
+      records[3],
+      GachaRecord {
+        business: AccountBusiness::MiliastraWonderland,
+        uid: 100_000_003,
+        id: "1000000000000000003".into(),
+        gacha_type: 20021,
+        gacha_id: None,
+        rank_type: 5,
+        count: 1,
+        lang: "en-us".into(),
+        time: datetime!(2026-01-01 00:00:00 +8),
+        item_name: "Manekina Cosmetic - \"Candlelit Revelry\"".into(),
+        item_type: "Cosmetic Set".into(),
+        item_id: 265044,
+        properties: Some(JsonProperties::from_iter([(
+          "schedule_id".into(),
+          "20".into()
+        )])),
+      }
+    );
+  }
+
+  #[test]
+  fn test_uigf_v4_0_writer_and_reader() {
+    let records = vec![
+      GachaRecord {
+        business: AccountBusiness::GenshinImpact,
+        uid: 100_000_000,
+        id: "1000000000000000000".into(),
+        gacha_type: 301,
+        gacha_id: None,
+        rank_type: 5,
+        count: 1,
+        lang: "en-us".into(),
+        time: datetime!(2023-01-01 00:00:00 +8),
+        item_name: "Kamisato Ayaka".into(),
+        item_type: "Character".into(),
+        item_id: 10000002,
+        properties: None,
+      },
+      GachaRecord {
+        business: AccountBusiness::HonkaiStarRail,
+        uid: 100_000_001,
+        id: "1000000000000000001".into(),
+        gacha_type: 11,
+        gacha_id: Some(1),
+        rank_type: 4,
+        count: 1,
+        lang: "en-us".into(),
+        time: datetime!(2023-01-01 00:00:00 +8),
+        item_name: "March 7th".into(),
+        item_type: "Character".into(),
+        item_id: 1001,
+        properties: None,
+      },
+      GachaRecord {
+        business: AccountBusiness::ZenlessZoneZero,
+        uid: 10_000_002,
+        id: "1000000000000000002".into(),
+        gacha_type: 1,
+        gacha_id: None,
+        rank_type: 3,
+        count: 1,
+        lang: "en-us".into(),
+        time: datetime!(2023-01-01 00:00:00 +8),
+        item_name: "Anby".into(),
+        item_type: "Agents".into(),
+        item_id: 1011,
+        properties: None,
+      },
+      GachaRecord {
+        business: AccountBusiness::MiliastraWonderland,
+        uid: 100_000_003,
+        id: "1000000000000000003".into(),
+        gacha_type: 20021,
+        gacha_id: None,
+        rank_type: 5,
+        count: 1,
+        lang: "en-us".into(),
+        time: datetime!(2026-01-01 00:00:00 +8),
+        item_name: "Manekina Cosmetic - \"Candlelit Revelry\"".into(),
+        item_type: "Cosmetic Set".into(),
+        item_id: 265044,
+        properties: Some(JsonProperties::from_iter([(
+          "schedule_id".into(),
+          "20".into(),
+        )])),
+      },
+    ];
+
+    let temp_dir = tempfile::tempdir().unwrap();
+    let output = temp_dir.path().join("test_uigf_v4_0_writer_and_reader");
+    let businesses = HashMap::from_iter([
+      (
+        AccountBusiness::GenshinImpact,
+        HashMap::from_iter([(100_000_000, "en-us".into())]),
+      ),
+      (
+        AccountBusiness::HonkaiStarRail,
+        HashMap::from_iter([(100_000_001, "en-us".into())]),
+      ),
+      (
+        AccountBusiness::ZenlessZoneZero,
+        HashMap::from_iter([(10_000_002, "en-us".into())]),
+      ),
+      (
+        AccountBusiness::MiliastraWonderland,
+        HashMap::from_iter([(100_000_003, "en-us".into())]),
+      ),
+    ]);
+
+    UigfWriter {
+      uigf_version: UigfVersion::V4_2,
+      businesses: businesses.clone(),
+      export_time: OffsetDateTime::now_utc().to_offset(*constants::LOCAL_OFFSET),
+      minimized: None,
+      pretty: None,
+    }
+    .write(Metadata::embedded(), records.clone(), &output)
+    .unwrap();
+
+    let input = File::open(output.with_extension("json")).unwrap();
+    let read_records = UigfReader { businesses }
+      .read_from(Metadata::embedded(), input)
+      .unwrap();
+
+    assert_eq!(records, read_records);
+
+    temp_dir.close().unwrap();
   }
 }
 
