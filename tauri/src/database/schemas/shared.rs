@@ -25,6 +25,12 @@ impl DerefMut for JsonProperties {
   }
 }
 
+impl FromIterator<(String, JsonValue)> for JsonProperties {
+  fn from_iter<T: IntoIterator<Item = (String, JsonValue)>>(iter: T) -> Self {
+    Self(JsonMap::from_iter(iter))
+  }
+}
+
 impl Type<Sqlite> for JsonProperties {
   fn type_info() -> SqliteTypeInfo {
     String::type_info()

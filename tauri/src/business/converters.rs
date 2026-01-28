@@ -1673,13 +1673,13 @@ impl RecordsReader for UigfReader {
     // 'Genshin Impact: Miliastra Wonderland'
     convert(self, metadata, &mut records, hk4e_ugc, |item| {
       // See: fetcher.rs :: fetch :: properties
-      let mut properties = JsonProperties::default();
-      properties.insert(
-        GachaRecord::KEY_SCHEDULE_ID.into(),
-        item.schedule_id.clone().into(),
-      );
-
-      (None, Some(properties))
+      (
+        None,
+        Some(JsonProperties::from_iter([(
+          GachaRecord::KEY_SCHEDULE_ID.into(),
+          item.schedule_id.clone().into(),
+        )])),
+      )
     })?;
 
     Ok(records)

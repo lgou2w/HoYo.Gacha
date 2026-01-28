@@ -264,13 +264,13 @@ impl LegacyMigration {
         .unwrap_or_default();
 
       let new_properties = properties.map(|mut props| {
-        let mut new_props = JsonProperties::default();
-        new_props.insert("displayName".into(), props.remove("displayName").into());
-        new_props.insert(
-          "lastGachaRecordsUpdated".into(),
-          props.remove("lastGachaUpdated").into(),
-        );
-        new_props
+        JsonProperties::from_iter([
+          ("displayName".into(), props.remove("displayName").into()),
+          (
+            "lastGachaRecordsUpdated".into(),
+            props.remove("lastGachaUpdated").into(),
+          ),
+        ])
       });
 
       // Check data folder
