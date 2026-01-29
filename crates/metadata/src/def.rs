@@ -1,7 +1,7 @@
 use std::collections::hash_map::Values as MapValues;
 use std::collections::{BTreeMap, HashMap, HashSet};
 use std::ops::Deref;
-use std::sync::{Arc, OnceLock};
+use std::sync::{Arc, LazyLock, OnceLock};
 
 use snafu::{Snafu, ensure};
 use time::OffsetDateTime;
@@ -161,15 +161,46 @@ struct MetadataBannerImpl {
   version: Option<String>,
 }
 
-// rn: Trait
+// region: Trait
+
+/// Used to map locale aliases from ISO 639 to BCP 47.
+///
+/// `Metadata.locale` method will automatically resolve these aliases.
+/// For example, when requesting locale `"en"`, it will be mapped to `"en-us"`.
+///
+/// See:
+///   * https://github.com/lgou2w/HoYo.Gacha/issues/89
+///   * https://github.com/lgou2w/HoYo.Gacha/issues/118
+pub static LOCALE_ALIASES: LazyLock<HashMap<&'static str, &'static str>> = LazyLock::new(|| {
+  HashMap::from_iter([
+    ("de", "de-de"),
+    ("en", "en-us"),
+    ("es", "es-es"),
+    ("fr", "fr-fr"),
+    ("id", "id-id"),
+    ("ja", "ja-jp"),
+    ("ko", "ko-kr"),
+    ("pt", "pt-pt"),
+    ("ru", "ru-ru"),
+    ("th", "th-th"),
+    ("tr", "tr-tr"),
+    ("vi", "vi-vn"),
+    // For compatible
+    ("zh", "zh-cn"),
+    ("zh-cn", "zh-cn"),
+    ("zh-sg", "zh-cn"),
+    ("zh-hk", "zh-tw"),
+    ("zh-mo", "zh-tw"),
+    ("zh-tw", "zh-tw"),
+  ])
+});
 
 impl Metadata for MetadataImpl {
   fn locale(&self, business_id: u8, locale: &str) -> Option<&dyn MetadataLocale> {
-    self
-      .businesses
-      .get(&business_id)?
-      .locales
+    let map = &self.businesses.get(&business_id)?.locales;
+    map
       .get(locale)
+      .or_else(|| LOCALE_ALIASES.get(locale).and_then(|alias| map.get(*alias)))
       .map(Box::deref)
   }
 
