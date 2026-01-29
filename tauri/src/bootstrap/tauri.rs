@@ -240,6 +240,7 @@ fn command_handlers() -> Box<dyn Fn(Invoke<Wry>) -> bool + Send + Sync + 'static
     crate::bootstrap::handlers::pick_file,
     crate::bootstrap::handlers::pick_folder,
     crate::bootstrap::handlers::metadata_hash,
+    crate::bootstrap::handlers::metadata_locales,
     crate::bootstrap::handlers::metadata_is_updating,
     crate::bootstrap::handlers::metadata_update,
     // KeyValuePair

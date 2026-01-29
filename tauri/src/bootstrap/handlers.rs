@@ -6,6 +6,7 @@ use tauri::{Error as TauriError, Theme, WebviewWindow};
 use crate::bootstrap::{TauriAppState, TauriEnvironmentState};
 use crate::bootstrap::{TauriMetadataState, resolve_theme_or_system};
 use crate::constants;
+use crate::database::schemas::AccountBusiness;
 
 #[cfg(debug_assertions)]
 #[tauri::command]
@@ -77,6 +78,20 @@ pub async fn pick_folder(title: Option<String>, directory: Option<PathBuf>) -> O
 #[tauri::command]
 pub async fn metadata_hash(state: TauriMetadataState<'_>) -> Result<String, ()> {
   Ok(state.hash().await)
+}
+
+#[tauri::command]
+pub async fn metadata_locales(
+  state: TauriMetadataState<'_>,
+  business: AccountBusiness,
+) -> Result<Option<Vec<String>>, ()> {
+  let metadata = { &*state.read().await };
+  match metadata.locales(business as _) {
+    None => Ok(None),
+    Some(locales) => Ok(Some(
+      locales.map(|locale| locale.lang().to_owned()).collect(),
+    )),
+  }
 }
 
 cfg_if! {if #[cfg(not(feature = "disable-metadata-updater"))] {

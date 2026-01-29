@@ -1,5 +1,7 @@
 use std::collections::HashSet;
+use std::collections::hash_map::Values as MapValues;
 use std::fmt;
+use std::sync::Arc;
 
 use time::OffsetDateTime;
 
@@ -16,6 +18,8 @@ pub struct Entry<'a> {
 pub trait Metadata: fmt::Debug + Send + Sync {
   fn locale(&self, business_id: u8, locale: &str) -> Option<&dyn MetadataLocale>;
 
+  fn locales(&self, business_id: u8) -> Option<MapValues<'_, Arc<str>, Box<dyn MetadataLocale>>>;
+
   fn query_banner(
     &self,
     business_id: u8,
@@ -25,6 +29,8 @@ pub trait Metadata: fmt::Debug + Send + Sync {
 }
 
 pub trait MetadataLocale: fmt::Debug + Send + Sync {
+  fn lang(&self) -> &str;
+
   fn entry_from_id(&self, item_id: u32) -> Option<Entry<'_>>;
 
   fn entry_from_name<'a, 'n: 'a>(&'a self, item_name: &'n str) -> Option<HashSet<Entry<'a>>>;

@@ -1,5 +1,6 @@
 import { declareCommand } from '@/api/command'
 import { AppError, isAppError } from '@/api/error'
+import { AccountBusiness } from '@/api/schemas/Account'
 
 export const NamedMetadataError = 'MetadataError' as const
 export type NamedMetadataError = typeof NamedMetadataError
@@ -57,6 +58,9 @@ export type MetadataUpdateKind
 const MetadataCommands = {
   hash:
     declareCommand<undefined, string>('metadata_hash'),
+
+  locales:
+    declareCommand<{ business: AccountBusiness }, string[] | null>('metadata_locales'),
 
   isUpdating:
     declareCommand<undefined, boolean>('metadata_is_updating'),

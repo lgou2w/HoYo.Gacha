@@ -1,3 +1,4 @@
+use std::collections::hash_map::Values as MapValues;
 use std::collections::{BTreeMap, HashMap, HashSet};
 use std::ops::Deref;
 use std::sync::{Arc, OnceLock};
@@ -172,6 +173,10 @@ impl Metadata for MetadataImpl {
       .map(Box::deref)
   }
 
+  fn locales(&self, business_id: u8) -> Option<MapValues<'_, Arc<str>, Box<dyn MetadataLocale>>> {
+    Some(self.businesses.get(&business_id)?.locales.values())
+  }
+
   fn query_banner(
     &self,
     business_id: u8,
@@ -188,6 +193,10 @@ impl Metadata for MetadataImpl {
 }
 
 impl MetadataLocale for MetadataLocaleImpl {
+  fn lang(&self) -> &str {
+    &self.locale
+  }
+
   fn entry_from_id(&self, item_id: u32) -> Option<Entry<'_>> {
     let find = self.entries.get(&item_id)?;
     let entry = find.as_entry(self, item_id);
