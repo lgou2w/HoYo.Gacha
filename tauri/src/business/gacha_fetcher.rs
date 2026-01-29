@@ -214,10 +214,23 @@ pub async fn fetch(
   let is_miliastra_wonderland = business == AccountBusiness::MiliastraWonderland;
   let mut records = Vec::with_capacity(logs.len());
 
-  for log in logs {
-    // FIXME: Transform lang
-    let lang = log.lang.unwrap_or_else(|| scraper.url().lang.to_string());
+  // HACK: Automatically correct non-standard language codes
+  // For example, when requesting locale "en", it will be mapped to "en-us".
+  let mut lang = logs
+    .first()
+    .cloned()
+    .unwrap() // SAFETY, See above: !logs.is_empty
+    .lang
+    .unwrap_or_else(|| scraper.url().lang.to_string());
 
+  if let Some(std) = hg_metadata::def::LOCALE_ALIASES.get(lang.as_str())
+    && lang.as_str() != *std
+  {
+    debug!(message = "Correcting locale alias", ?lang, ?std);
+    lang = std.to_string();
+  }
+
+  for log in logs {
     // HACK: Genshin Impact only
     //   Mandatory mapping of item ids.
     //   If metadata is outdated, this error will be thrown.
@@ -277,7 +290,7 @@ pub async fn fetch(
       gacha_id: log.gacha_id,
       rank_type: log.rank_type,
       count: log.count,
-      lang,
+      lang: lang.clone(),
       time: log.time.assume_offset(uid.game_biz().timezone()),
       item_name: log.item_name,
       item_type: log.item_type,
