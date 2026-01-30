@@ -191,6 +191,10 @@
     }
   },
   "Clientarea": {
+    "NoAccount": {
+      "Title": "無可用帳號",
+      "Create": "建立"
+    },
     "LastUpdated": {
       "Label": "最近$t(Common:{{keyof}}.Gacha.Name)記錄更新日期："
     },

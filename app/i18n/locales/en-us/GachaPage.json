@@ -191,6 +191,10 @@
     }
   },
   "Clientarea": {
+    "NoAccount": {
+      "Title": "No available accounts",
+      "Create": "Create"
+    },
     "LastUpdated": {
       "Label": "Latest update date of records: "
     },
