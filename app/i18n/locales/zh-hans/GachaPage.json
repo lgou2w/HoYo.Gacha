@@ -112,6 +112,84 @@
       "Submit": "确认删除"
     }
   },
+  "Converters": {
+    "Factory": {
+      "Label": "格式",
+      "ClassicUigf": {
+        "Info": "统一可交换抽卡记录标准 (UIGF) {{versions, list}}",
+        "Text": "UIGF (旧版)"
+      },
+      "ClassicSrgf": {
+        "Info": "星穹铁道抽卡记录标准 (SRGF) {{versions, list}}",
+        "Text": "SRGF"
+      },
+      "Uigf": {
+        "Info": "统一可交换抽卡记录标准 (UIGF) {{versions, list}}",
+        "Text": "UIGF"
+      },
+      "Csv": {
+        "Info": "逗号分隔值（官方 JSON 结构）",
+        "Text": "CSV"
+      }
+    },
+    "Exporter": {
+      "Title": "导出$t(Common:{{keyof}}.Gacha.Name)记录",
+      "Folder": {
+        "Label": "目录",
+        "Placeholder": "待导出目录",
+        "Select": "选择..."
+      },
+      "UigfVersion": {
+        "Label": "版本"
+      },
+      "Minimized": {
+        "Label": "最小化数据",
+        "Info": "启用最小化数据后，一些可选字段不再导出。"
+      },
+      "Pretty": {
+        "Label": "美化数据",
+        "Info": "启用后，数据将以易于阅读的格式输出。"
+      },
+      "WithoutColumns": {
+        "Label": "不含列名",
+        "Info": "启用后，第一行将不是列名。"
+      },
+      "SwitchState_true": "启用",
+      "SwitchState_false": "禁用",
+      "Opener": {
+        "Label": "完成后打开"
+      },
+      "Cancel": "取消",
+      "Submit": "导出",
+      "Success": {
+        "Title": "导出成功：",
+        "Body": "文件保存至：{{outputFile}}"
+      }
+    },
+    "Importer": {
+      "Title": "导入$t(Common:{{keyof}}.Gacha.Name)记录",
+      "File": {
+        "Label": "文件",
+        "Placeholder": "待导入文件",
+        "Select": "选择..."
+      },
+      "ChooseLang": {
+        "Label": "语言",
+        "Info": "导入文件格式的预期语言区域。"
+      },
+      "SaveOnConflict": {
+        "Label": "保存冲突时",
+        "Nothing": "忽略",
+        "Update": "更新"
+      },
+      "Cancel": "取消",
+      "Submit": "导入",
+      "Success": {
+        "Title": "导入成功：",
+        "Body": "记录合并成功，影响 {{changes}} 行。"
+      }
+    }
+  },
   "Clientarea": {
     "LastUpdated": {
       "Label": "最近$t(Common:{{keyof}}.Gacha.Name)记录更新日期："

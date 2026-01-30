@@ -112,6 +112,84 @@
       "Submit": "Confirm"
     }
   },
+  "Converters": {
+    "Factory": {
+      "Label": "Format",
+      "ClassicUigf": {
+        "Info": "Uniformed Interchangeable GachaLog Format standard (UIGF) {{versions, list}}",
+        "Text": "UIGF (Legacy)"
+      },
+      "ClassicSrgf": {
+        "Info": "Star Rail GachaLog Format standard (SRGF) {{versions, list}}",
+        "Text": "SRGF"
+      },
+      "Uigf": {
+        "Info": "Uniformed Interchangeable GachaLog Format standard (UIGF) {{versions, list}}",
+        "Text": "UIGF"
+      },
+      "Csv": {
+        "Info": "Comma-Separated Values (Official JSON Schema)",
+        "Text": "CSV"
+      }
+    },
+    "Exporter": {
+      "Title": "Export $t(Common:{{keyof}}.Gacha.Name) Records",
+      "Folder": {
+        "Label": "Folder",
+        "Placeholder": "Export folder",
+        "Select": "Select..."
+      },
+      "UigfVersion": {
+        "Label": "Version"
+      },
+      "Minimized": {
+        "Label": "Minimize Data",
+        "Info": "When minimizing data is enabled, some optional fields are no longer exported."
+      },
+      "Pretty": {
+        "Label": "Pretty Data",
+        "Info": "When enabled, data will be output in an easy to read format."
+      },
+      "WithoutColumns": {
+        "Label": "Without Columns",
+        "Info": "When enabled, the first row is not the column names."
+      },
+      "SwitchState_true": "Enable",
+      "SwitchState_false": "Disable",
+      "Opener": {
+        "Label": "Open when completed"
+      },
+      "Cancel": "Cancel",
+      "Submit": "Export",
+      "Success": {
+        "Title": "Export Success:",
+        "Body": "File save to: {{outputFile}}"
+      }
+    },
+    "Importer": {
+      "Title": "Import $t(Common:{{keyof}}.Gacha.Name) Records",
+      "File": {
+        "Label": "File",
+        "Placeholder": "Importing file",
+        "Select": "Select..."
+      },
+      "ChooseLang": {
+        "Label": "Locale",
+        "Info": "Expected locale of the import file format."
+      },
+      "SaveOnConflict": {
+        "Label": "Save on conflict",
+        "Nothing": "Nothing",
+        "Update": "Update"
+      },
+      "Cancel": "Cancel",
+      "Submit": "Import",
+      "Success": {
+        "Title": "Import Success:",
+        "Body": "Records merge successful, affecting {{changes}} rows."
+      }
+    }
+  },
   "Clientarea": {
     "LastUpdated": {
       "Label": "Latest update date of records: "

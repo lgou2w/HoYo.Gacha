@@ -145,7 +145,9 @@ pub async fn business_export_records(
   database: TauriDatabaseState<'_>,
   metadata: TauriMetadataState<'_>,
   writer: RecordsWriterFactory,
-  output: PathBuf,
+  output: PathBuf,                      // Output folder
+  filename: String,                     // filename without extension
+  #[cfg(windows)] opener: Option<bool>, // Whether open this file with Explorer
 ) -> Result<PathBuf, BoxDynErrorDetails> {
   let metadata = { &*metadata.read().await };
   let records = match &writer {
@@ -182,7 +184,14 @@ pub async fn business_export_records(
     }
   };
 
-  writer.write(metadata, records, output)
+  let file = writer.write(metadata, records, output.join(filename))?;
+
+  #[cfg(windows)]
+  if opener == Some(true) {
+    let _ = hg_ffi::open_with_explorer(&file);
+  }
+
+  Ok(file)
 }
 
 #[tauri::command]
@@ -191,17 +200,20 @@ pub async fn business_import_records(
   database: TauriDatabaseState<'_>,
   metadata: TauriMetadataState<'_>,
   reader: RecordsReaderFactory,
-  input: PathBuf,
+  input: PathBuf, // File path
   save_on_conflict: Option<GachaRecordSaveOnConflict>,
-  progress_channel: Channel<u64>,
+  progress_channel: Channel<f32>,
 ) -> Result<u64, BoxDynErrorDetails> {
   let metadata = { &*metadata.read().await };
   let records = reader.read(metadata, input)?;
+  let total = records.len() as f32;
 
   GachaRecordSaver::new(
     &records[..],
     save_on_conflict.unwrap_or_default(),
-    Some(|progress| {
+    Some(|completes| {
+      let progress = completes as f32 / total;
+      let progress = (progress * 100.).round() / 100.;
       let _ = progress_channel.send(progress);
     }),
   )

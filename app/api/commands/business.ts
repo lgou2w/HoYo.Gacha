@@ -4,6 +4,7 @@ import { AppError, isAppError } from '@/api/error'
 import { Account, AccountBusiness } from '@/api/schemas/Account'
 import { GachaRecord, GachaType } from '@/api/schemas/GachaRecord'
 import { PrettizedCategory, PrettizedRecord, PrettizedRecords } from '@/pages/Gacha/contexts/PrettizedRecords/types'
+import { PickFileArgs } from './app'
 
 // See: https://doc.rust-lang.org/std/io/struct.Error.html
 export interface NativeIOError {
@@ -311,6 +312,11 @@ export enum SaveToDatabase {
   FullUpdate = 'FullUpdate',
 }
 
+export enum SaveOnConflict {
+  Nothing = 'Nothing',
+  Update = 'Update',
+}
+
 export interface FetchRecordsArgs<T extends AccountBusiness> {
   business: T
   uid: Account['uid']
@@ -318,7 +324,7 @@ export interface FetchRecordsArgs<T extends AccountBusiness> {
   gachaTypeAndLastEndIds: [GachaType<T>, GachaRecord<T>['id'] | null | undefined][]
   eventChannel: Channel<FetchRecordsEvent>
   saveToDatabase?: SaveToDatabase | null
-  saveOnConflict?: 'Nothing' | 'Update' | null
+  saveOnConflict?: SaveOnConflict | null
 }
 
 export type FetchRecords
@@ -641,16 +647,116 @@ export type RecordsReaderOptions
     | { [RecordsReaderFactory.ClassicSrgf]: ClassicSrgfReaderOptions }
     | { [RecordsReaderFactory.Uigf]: UigfReaderOptions }
 
+export const SupportedRecordsWriterFactories: Record<
+  AccountBusiness,
+  RecordsWriterFactory[]
+> = {
+  [AccountBusiness.GenshinImpact]: [
+    RecordsWriterFactory.ClassicUigf,
+    RecordsWriterFactory.Uigf,
+    RecordsWriterFactory.Csv,
+  ],
+  [AccountBusiness.HonkaiStarRail]: [
+    RecordsWriterFactory.ClassicSrgf,
+    RecordsWriterFactory.Uigf,
+    RecordsWriterFactory.Csv,
+  ],
+  [AccountBusiness.ZenlessZoneZero]: [
+    RecordsWriterFactory.Uigf,
+    RecordsWriterFactory.Csv,
+  ],
+  [AccountBusiness.MiliastraWonderland]: [
+    RecordsWriterFactory.Uigf,
+    RecordsWriterFactory.Csv,
+  ],
+}
+
+export const SupportedRecordsReaderFactories: Record<
+  AccountBusiness,
+  RecordsReaderFactory[]
+> = {
+  [AccountBusiness.GenshinImpact]: [
+    RecordsReaderFactory.ClassicUigf,
+    RecordsReaderFactory.Uigf,
+  ],
+  [AccountBusiness.HonkaiStarRail]: [
+    RecordsReaderFactory.ClassicSrgf,
+    RecordsReaderFactory.Uigf,
+  ],
+  [AccountBusiness.ZenlessZoneZero]: [
+    RecordsReaderFactory.Uigf,
+  ],
+  [AccountBusiness.MiliastraWonderland]: [
+    RecordsReaderFactory.Uigf,
+  ],
+}
+
+export const SupportedRecordsWriterUigfVersions: Record<
+  RecordsWriterFactory,
+  UigfVersion[]
+> = {
+  [RecordsWriterFactory.ClassicUigf]: [
+    UigfVersion.V3_0,
+    UigfVersion.V2_4,
+    UigfVersion.V2_3,
+    UigfVersion.V2_2,
+    UigfVersion.V2_1,
+    UigfVersion.V2_0,
+  ],
+  [RecordsWriterFactory.ClassicSrgf]: [
+    UigfVersion.V1_0,
+  ],
+  [RecordsWriterFactory.Uigf]: [
+    UigfVersion.V4_2,
+    UigfVersion.V4_1,
+    UigfVersion.V4_0,
+  ],
+  [RecordsWriterFactory.Csv]: [],
+}
+
+export const SupportedRecordsReaderUigfVersions: Record<
+  RecordsReaderFactory,
+  UigfVersion[]
+> = {
+  [RecordsReaderFactory.ClassicUigf]: [
+    UigfVersion.V3_0,
+    UigfVersion.V2_4,
+    UigfVersion.V2_3,
+    UigfVersion.V2_2,
+    UigfVersion.V2_1,
+    UigfVersion.V2_0,
+  ],
+  [RecordsReaderFactory.ClassicSrgf]: [
+    UigfVersion.V1_0,
+  ],
+  [RecordsReaderFactory.Uigf]: [
+    UigfVersion.V4_2,
+    UigfVersion.V4_1,
+    UigfVersion.V4_0,
+  ],
+}
+
+export const SupportedRecordsReaderFactoryFilters: Record<
+  RecordsReaderFactory,
+  Required<PickFileArgs>['filters']
+> = {
+  [RecordsReaderFactory.ClassicUigf]: [['Legacy UIGF JSON', ['json']]],
+  [RecordsReaderFactory.ClassicSrgf]: [['Legacy SRGF JSON', ['json']]],
+  [RecordsReaderFactory.Uigf]: [['UIGF JSON', ['json']]],
+}
+
 export interface ExportRecordsArgs extends Record<string, unknown> {
-  writer: RecordsWriterFactory
-  output: string // output file path without extension
+  writer: RecordsWriterOptions
+  output: string // Output folder
+  filename: string // filename without extension
+  opener?: boolean | null // Whether open this file with Explorer (Windows only)
 }
 
 export type ExportRecords
   = Command<ExportRecordsArgs, string>
 
 export interface ImportRecordsArgs extends Record<string, unknown> {
-  reader: RecordsReaderFactory
+  reader: RecordsReaderOptions
   input: string // input file path
   saveOnConflict?: 'Nothing' | 'Update' | null
   progressChannel: Channel<number>
