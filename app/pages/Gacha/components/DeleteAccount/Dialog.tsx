@@ -42,7 +42,7 @@ const DeleteAccountDialog = forwardRef<
   }), [produceState])
 
   const { business } = props
-  const { language, t } = useI18n(WithTransKnownNs.GachaPage)
+  const { constants: { gacha }, t } = useI18n(WithTransKnownNs.GachaPage)
 
   const deleteAccountWholeMutation = useDeleteAccountWholeMutation()
   const handleDelete = useCallback<MouseEventHandler>(async () => {
@@ -56,14 +56,14 @@ const DeleteAccountDialog = forwardRef<
       business,
       uid: owner.uid,
       whole,
-      customLocale: language,
+      customLocale: gacha,
     })
 
     // Done
     produceState((draft) => {
       draft.open = false
     })
-  }, [business, deleteAccountWholeMutation, language, owner, produceState, whole])
+  }, [business, deleteAccountWholeMutation, gacha, owner, produceState, whole])
 
   const handleConfirmChange = useCallback((evt: ChangeEvent<HTMLInputElement>, data: CheckboxOnChangeData) => {
     produceState((draft) => {
