@@ -181,7 +181,7 @@ const Card = withTrans.GachaPage(function (
     const end = dayjs(dataset.endTime).format('L')
     timeRange = (start + ' - ' + end).replace(/\//g, '.')
   } else {
-    timeRange = <Placeholder />
+    timeRange = undefined
   }
 
   const total = dataset.total

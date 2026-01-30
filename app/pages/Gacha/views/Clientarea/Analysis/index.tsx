@@ -2,7 +2,6 @@ import { ChangeEventHandler, ComponentType, LazyExoticComponent, Suspense, lazy,
 import { Spinner, Switch, makeStyles, switchClassNames, tokens } from '@fluentui/react-components'
 import { WithTransKnownNs, useI18n } from '@/i18n'
 import ClientareaLastUpdated from '@/pages/Gacha/components/Clientarea/LastUpdated'
-import { usePrettizedRecords } from '@/pages/Gacha/contexts/PrettizedRecords'
 
 const useStyles = makeStyles({
   root: {
@@ -15,10 +14,10 @@ const useStyles = makeStyles({
     display: 'inline-flex',
     flex: '0 0 auto',
     flexWrap: 'nowrap',
-    justifyContent: 'space-between',
     alignItems: 'center',
   },
   switcher: {
+    marginLeft: 'auto',
     [`& .${switchClassNames.indicator}`]: {
       margin: 0,
     },
@@ -33,13 +32,6 @@ export default function AnalysisView () {
   const styles = useStyles()
   const { useClassic, handleChange, Component } = useAnalysisVersion()
   const { t } = useI18n(WithTransKnownNs.GachaPage)
-  const { data } = usePrettizedRecords()
-
-  // FIXME: This situation usually occurs when no accounts are available.
-  //   Users need to be instructed to create one manually.
-  if (!data) {
-    return null
-  }
 
   return (
     <div className={styles.root}>

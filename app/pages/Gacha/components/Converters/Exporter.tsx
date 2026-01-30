@@ -44,7 +44,6 @@ const useStyles = makeStyles({
   },
   opener: {
     display: 'flex',
-    // alignItems: 'center',
   },
   buttons: {
     display: 'flex',

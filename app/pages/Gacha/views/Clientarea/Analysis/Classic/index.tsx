@@ -247,7 +247,7 @@ function createTableEntry (
       [EntryRow.Purple]: [purple.sum, purple.percentage],
       [EntryRow.Blue]: [blue.sum, blue.percentage],
       [EntryRow.Green]: [green?.sum, green?.percentage],
-      [EntryRow.Aggregated]: [dataset.total, 100],
+      [EntryRow.Aggregated]: [dataset.total, dataset.total > 0 ? 100 : 0],
     },
   })
 }
