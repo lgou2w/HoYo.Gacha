@@ -358,7 +358,11 @@ const ConvertersImporterInner = withTrans.GachaPage(function ConvertersImporterI
           <Button onClick={onCancel} disabled={busy}>
             {t('Converters.Importer.Cancel')}
           </Button>
-          <Button onClick={handleSubmit} disabled={busy || !file}>
+          <Button
+            onClick={handleSubmit}
+            disabled={busy || !file}
+            appearance="primary"
+          >
             {t('Converters.Importer.Submit')}
           </Button>
         </div>
