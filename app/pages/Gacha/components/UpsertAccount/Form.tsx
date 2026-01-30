@@ -220,7 +220,7 @@ export default withTrans.GachaPage(function UpsertAccountForm (
               return
             }
 
-            const uid = value && parseInt(value)
+            const uid = value && Number(value)
             const validated = uid && isSafeU32(uid)
               ? await BusinessCommands.validateUid({
                   business,
