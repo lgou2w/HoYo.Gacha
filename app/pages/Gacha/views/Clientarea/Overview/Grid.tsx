@@ -114,7 +114,7 @@ function createGrid (
     </div>
   ))
 
-  if (category === Aggregated) {
+  if (category === Aggregated && dataset.total > 0) {
     results.push((
       <div
         className={className}
