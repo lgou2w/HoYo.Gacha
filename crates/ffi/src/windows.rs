@@ -1,11 +1,13 @@
 use std::ffi::OsString;
 use std::mem::MaybeUninit;
 use std::os::windows::ffi::OsStringExt;
+use std::os::windows::process::CommandExt;
 use std::path::{Path, PathBuf};
 use std::string::FromUtf16Error;
 use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, AtomicIsize, Ordering};
 use std::thread::{self, JoinHandle};
+use std::{io, process};
 
 use rfd::AsyncFileDialog;
 use tauri::webview::PlatformWebview;
@@ -504,6 +506,14 @@ pub fn crash_msgbox(message: &str) -> bool {
         MB_ICONERROR | MB_YESNO | MB_DEFBUTTON1,
       )
     }
+}
+
+/// Open a file or directory in the system's default file explorer.
+pub fn open_with_explorer(path: impl AsRef<Path>) -> io::Result<process::Child> {
+  process::Command::new("explorer")
+    .arg("/select,")
+    .raw_arg(format!("\"{}\"", path.as_ref().display()))
+    .spawn()
 }
 
 pub fn file_dialog(hwnd: Option<isize>) -> AsyncFileDialog {

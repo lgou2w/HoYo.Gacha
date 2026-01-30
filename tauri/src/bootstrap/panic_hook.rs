@@ -182,12 +182,7 @@ impl<'a> Crash<'a> {
 
     #[cfg(windows)]
     if hg_ffi::crash_msgbox(&message) {
-      use std::os::windows::process::CommandExt;
-      use std::process::Command;
-      let _ = Command::new("explorer")
-        .arg("/select,")
-        .raw_arg(format!("\"{}\"", report_path.display()))
-        .spawn();
+      let _ = hg_ffi::open_with_explorer(report_path);
     }
 
     Ok(())
