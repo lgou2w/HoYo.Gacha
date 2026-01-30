@@ -12,6 +12,7 @@ import { Account, AccountBusiness } from '@/api/schemas/Account'
 import { GachaRecord } from '@/api/schemas/GachaRecord'
 import useNotifier, { DefaultNotifierTimeouts } from '@/hooks/useNotifier'
 import { WithTrans, WithTransKnownNs, languageMetadata, useI18n, withTrans } from '@/i18n'
+import { invalidatePrettizedRecordsQuery } from '@/pages/Gacha/queries/prettizedRecords'
 
 const useStyles = makeStyles({
   root: {
@@ -74,13 +75,14 @@ function useImporter ({
   & Pick<ConvertersImporterProps, 'business' | 'uid' | 'preferLang' | 'onSuccess'>,
 ) {
   const factories = SupportedRecordsReaderFactories[business]
+  const currentGachaLang = languageMetadata(i18n.language).constants.gacha
 
   const notifier = useNotifier()
   const [state, produceState] = useImmer({
     error: null as string | null,
     file: null as string | null,
     factory: factories[0],
-    chooseLang: preferLang ?? languageMetadata(i18n.language).constants.gacha,
+    chooseLang: preferLang ?? currentGachaLang,
     saveOnConflict: SaveOnConflict.Nothing,
     progress: undefined as number | undefined, // 0. ~ 1.
     busy: false,
@@ -213,7 +215,12 @@ function useImporter ({
       timeout: DefaultNotifierTimeouts.success * 2,
       dismissible: true,
     })
-  }, [business, notifier, onSuccess, produceState, state, t, uid])
+
+    // Invalidate the prettized records query if changes were made
+    if (changes > 0) {
+      invalidatePrettizedRecordsQuery(business, uid, currentGachaLang)
+    }
+  }, [business, currentGachaLang, notifier, onSuccess, produceState, state, t, uid])
 
   return {
     ...state,
