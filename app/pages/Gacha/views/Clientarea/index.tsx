@@ -1,7 +1,6 @@
 import { ComponentType, LazyExoticComponent, Suspense, lazy, useMemo } from 'react'
 import { Spinner, makeStyles, tokens } from '@fluentui/react-components'
 import { Clientarea, Clientareas, useClientarea } from '@/pages/Gacha/contexts/Clientarea'
-import { PrettizedRecordsProvider } from '@/pages/Gacha/contexts/PrettizedRecords'
 
 const useStyles = makeStyles({
   root: {
@@ -29,9 +28,7 @@ export default function ClientareaView () {
   return (
     <div className={styles.root}>
       <Suspense fallback={<Spinner />}>
-        <PrettizedRecordsProvider>
-          <Component />
-        </PrettizedRecordsProvider>
+        <Component />
       </Suspense>
     </div>
   )

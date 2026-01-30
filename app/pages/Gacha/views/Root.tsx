@@ -1,4 +1,5 @@
 import { makeStyles, tokens } from '@fluentui/react-components'
+import { PrettizedRecordsProvider } from '@/pages/Gacha/contexts/PrettizedRecords'
 import ClientareaView from './Clientarea'
 import ToolbarView from './Toolbar'
 
@@ -15,9 +16,11 @@ export default function RootView () {
   const styles = useStyles()
 
   return (
-    <div className={styles.root}>
-      <ToolbarView />
-      <ClientareaView />
-    </div>
+    <PrettizedRecordsProvider>
+      <div className={styles.root}>
+        <ToolbarView />
+        <ClientareaView />
+      </div>
+    </PrettizedRecordsProvider>
   )
 }
