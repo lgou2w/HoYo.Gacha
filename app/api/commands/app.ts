@@ -28,6 +28,18 @@ export type Environment = Readonly<{
   }> | null
 }>
 
+export interface PickFileArgs extends Record<string, unknown> {
+  title?: string | null
+  directory?: string | null
+  /** [name, extension[]] */
+  filters?: [string, string[]][]
+}
+
+export interface PickFolderArgs extends Record<string, unknown> {
+  title?: string | null
+  directory?: string | null
+}
+
 const AppCommands = {
   /** Panic the application (for testing purpose) (Dev only) */
   panic:
@@ -48,18 +60,10 @@ const AppCommands = {
     declareCommand<undefined, string[]>('system_fonts', true),
 
   pickFile:
-    declareCommand<{
-      title?: string | null
-      directory?: string | null
-      /** [name, extension[]] */
-      filters?: [string, string[]][]
-    }, string | null>('pick_file'),
+    declareCommand<PickFileArgs, string | null>('pick_file'),
 
   pickFolder:
-    declareCommand<{
-      title?: string | null
-      directory?: string | null
-    }, string | null>('pick_folder'),
+    declareCommand<PickFolderArgs, string | null>('pick_folder'),
 } as const
 
 Object.freeze(AppCommands)
