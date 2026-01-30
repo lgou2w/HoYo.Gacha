@@ -44,12 +44,12 @@ const useStyles = makeStyles({
 
 export default function OverviewTooltips () {
   const styles = useStyles()
-  const { business, selectedAccount, data } = usePrettizedRecords()
+  const { business, selected, data } = usePrettizedRecords()
   const isMiliastraWonderland = business.toBe(MiliastraWonderland)
   const isZenlessZoneZero = business.toBe(ZenlessZoneZero)
   const i18n = useI18n()
 
-  if (!selectedAccount) {
+  if (!selected) {
     return null
   }
 

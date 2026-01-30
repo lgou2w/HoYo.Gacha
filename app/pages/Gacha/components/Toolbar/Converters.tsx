@@ -20,13 +20,13 @@ const useStyles = makeStyles({
 export default withTrans.GachaPage(function Converters ({ t }: WithTrans) {
   const styles = useStyles()
   const business = useBusiness()
-  const selectedAccount = useSelectedAccount(business.keyof)
+  const selected = useSelectedAccount(business.keyof)
 
   const importerRef = useRef<ComponentRef<typeof ConvertersImporter>>(null)
   const exporterRef = useRef<ComponentRef<typeof ConvertersExporter>>(null)
 
-  const importable = !!selectedAccount
-  const exportable = !!selectedAccount
+  const importable = !!selected
+  const exportable = !!selected
 
   return (
     <ToolbarContainer
@@ -51,17 +51,17 @@ export default withTrans.GachaPage(function Converters ({ t }: WithTrans) {
           size="large"
         />
       </div>
-      {selectedAccount && (
+      {selected && (
         <>
           <ConvertersImporter
             ref={importerRef}
             business={business.value}
-            uid={selectedAccount.uid}
+            uid={selected.uid}
           />
           <ConvertersExporter
             ref={exporterRef}
             business={business.value}
-            uid={selectedAccount.uid}
+            uid={selected.uid}
           />
         </>
       )}

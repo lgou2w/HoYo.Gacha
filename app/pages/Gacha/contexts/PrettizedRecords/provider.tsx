@@ -8,20 +8,20 @@ import { PrettiedRecordsState, PrettizedRecordsContext } from './context'
 export default function PrettizedRecordsProvider (props: PropsWithChildren) {
   const i18n = useI18n()
   const business = useBusiness()
-  const selectedAccount = useSelectedAccount(business.keyof)
+  const selected = useSelectedAccount(business.keyof)
   const { data } = usePrettizedRecordsSuspenseQuery(
     business.value,
-    selectedAccount?.uid,
+    selected?.uid,
     i18n.constants.gacha,
   )
 
   const state = useMemo<PrettiedRecordsState>(
     () => ({
       business,
-      selectedAccount,
+      selected,
       data,
     }),
-    [selectedAccount, business, data],
+    [selected, business, data],
   )
 
   return (

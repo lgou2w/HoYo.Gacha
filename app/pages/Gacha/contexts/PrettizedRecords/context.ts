@@ -5,7 +5,7 @@ import { PrettizedRecords } from './types'
 
 export interface PrettiedRecordsState {
   readonly business: BusinessState
-  readonly selectedAccount: Account | null
+  readonly selected: Account | null
   readonly data: PrettizedRecords<AccountBusiness> | null
 }
 

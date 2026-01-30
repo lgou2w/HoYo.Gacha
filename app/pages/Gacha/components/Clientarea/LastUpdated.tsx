@@ -32,8 +32,8 @@ const useStyles = makeStyles({
 export default withTrans.GachaPage(function ClientareaLastUpdated ({ i18n, t }: WithTrans) {
   const styles = useStyles()
   const business = useBusiness()
-  const selectedAccount = useSelectedAccount(business.keyof)
-  const value = selectedAccount?.properties?.lastGachaRecordsUpdated
+  const selected = useSelectedAccount(business.keyof)
+  const value = selected?.properties?.lastGachaRecordsUpdated
 
   if (!value) {
     return null
