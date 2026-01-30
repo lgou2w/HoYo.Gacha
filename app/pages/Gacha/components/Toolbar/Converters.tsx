@@ -4,8 +4,7 @@ import { ArrowDownloadRegular, ArrowUploadRegular } from '@fluentui/react-icons'
 import { WithTrans, withTrans } from '@/i18n'
 import ConvertersExporter from '@/pages/Gacha/components/Converters/Exporter'
 import ConvertersImporter from '@/pages/Gacha/components/Converters/Importer'
-import { useBusiness } from '@/pages/Gacha/contexts/Business'
-import { useSelectedAccount } from '@/pages/Gacha/queries/accounts'
+import { usePrettizedRecords } from '@/pages/Gacha/contexts/PrettizedRecords'
 import ToolbarContainer from './Container'
 
 const useStyles = makeStyles({
@@ -19,14 +18,13 @@ const useStyles = makeStyles({
 
 export default withTrans.GachaPage(function Converters ({ t }: WithTrans) {
   const styles = useStyles()
-  const business = useBusiness()
-  const selected = useSelectedAccount(business.keyof)
+  const { business, selected, data } = usePrettizedRecords()
 
   const importerRef = useRef<ComponentRef<typeof ConvertersImporter>>(null)
   const exporterRef = useRef<ComponentRef<typeof ConvertersExporter>>(null)
 
   const importable = !!selected
-  const exportable = !!selected
+  const exportable = !!selected && data && data.total > 0
 
   return (
     <ToolbarContainer
