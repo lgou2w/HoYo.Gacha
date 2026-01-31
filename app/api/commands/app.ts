@@ -28,6 +28,26 @@ export type Environment = Readonly<{
   }> | null
 }>
 
+export function deviceSpec (env: Environment) {
+  const appVersion = env.app.version
+  const shortHash = env.git.commitHash.substring(0, 7)
+
+  return {
+    OperatingSystem: env.os.edition,
+    SystemVersion: env.windows?.version + ' ' + env.os.architecture,
+    Webview2: env.webviewVersion,
+    Tauri: env.tauriVersion,
+    GitCommit: env.git.commitHash,
+    AppVersion: {
+      version: appVersion,
+      shortHash,
+      date: env.git.commitDate,
+      text: `${appVersion}-git-${shortHash}`,
+      link: `${env.git.remoteUrl}/commit/${env.git.commitHash}`,
+    },
+  }
+}
+
 export interface PickFileArgs extends Record<string, unknown> {
   title?: string | null
   directory?: string | null
