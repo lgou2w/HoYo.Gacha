@@ -1,5 +1,5 @@
 import { MouseEventHandler, ReactNode, useCallback, useState } from 'react'
-import { Button, ButtonProps, buttonClassNames, makeStyles, tokens } from '@fluentui/react-components'
+import { Button, ButtonProps, buttonClassNames, makeStyles, mergeClasses, tokens } from '@fluentui/react-components'
 import { CheckmarkRegular, CopyRegular } from '@fluentui/react-icons'
 import { writeText } from '@tauri-apps/plugin-clipboard-manager'
 
@@ -15,13 +15,14 @@ const useStyles = makeStyles({
 export interface CopyButtonProps extends Pick<ButtonProps,
   'appearance' | 'shape' | 'size' | 'disabled' | 'disabledFocusable'
 > {
+  className?: string
   content?: string | null | (() => Promise<string>)
   delay?: number
   children?: (copied: boolean) => ReactNode
 }
 
 export default function CopyButton (props: CopyButtonProps) {
-  const { content, delay = 3000, children, ...rest } = props
+  const { className, content, delay = 3000, children, ...rest } = props
   const styles = useStyles()
 
   const [copied, setCopied] = useState(false)
@@ -49,7 +50,7 @@ export default function CopyButton (props: CopyButtonProps) {
   return (
     <Button
       as="button"
-      className={copied ? styles.copied : undefined}
+      className={mergeClasses(className, copied && styles.copied)}
       icon={copied ? <CheckmarkRegular /> : <CopyRegular />}
       onClick={handleCopy}
       {...rest}
