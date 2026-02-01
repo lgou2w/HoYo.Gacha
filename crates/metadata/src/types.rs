@@ -1,5 +1,5 @@
-use std::collections::HashSet;
 use std::collections::hash_map::Values as MapValues;
+use std::collections::{HashMap, HashSet};
 use std::fmt;
 use std::sync::Arc;
 
@@ -30,6 +30,7 @@ pub trait Metadata: fmt::Debug + Send + Sync {
 
 pub trait MetadataLocale: fmt::Debug + Send + Sync {
   fn lang(&self) -> &str;
+  fn entries(&self) -> HashMap<u32, Entry<'_>>;
 
   fn entry_from_id(&self, item_id: u32) -> Option<Entry<'_>>;
 

@@ -62,6 +62,9 @@ const MetadataCommands = {
   locales:
     declareCommand<{ business: AccountBusiness }, string[] | null>('metadata_locales'),
 
+  entries:
+    declareCommand<{ business: AccountBusiness, category: string }, number[] | null>('metadata_entries'),
+
   isUpdating:
     declareCommand<undefined, boolean>('metadata_is_updating'),
 

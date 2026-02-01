@@ -228,6 +228,14 @@ impl MetadataLocale for MetadataLocaleImpl {
     &self.locale
   }
 
+  fn entries(&self) -> HashMap<u32, Entry<'_>> {
+    self
+      .entries
+      .iter()
+      .map(|(item_id, entry)| (*item_id, entry.as_entry(self, *item_id)))
+      .collect()
+  }
+
   fn entry_from_id(&self, item_id: u32) -> Option<Entry<'_>> {
     let find = self.entries.get(&item_id)?;
     let entry = find.as_entry(self, item_id);

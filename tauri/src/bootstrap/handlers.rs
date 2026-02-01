@@ -94,6 +94,32 @@ pub async fn metadata_locales(
   }
 }
 
+#[tauri::command]
+pub async fn metadata_entries(
+  state: TauriMetadataState<'_>,
+  business: AccountBusiness,
+  category: String,
+) -> Result<Option<Vec<u32>>, ()> {
+  let metadata = { &*state.read().await };
+  match metadata.locales(business as _) {
+    None => Ok(None),
+    Some(mut locales) => {
+      if let Some(first) = locales.next() {
+        let entries = first
+          .entries()
+          .values()
+          .filter(|entry| entry.category == category)
+          .map(|entry| entry.item_id)
+          .collect();
+
+        Ok(Some(entries))
+      } else {
+        Ok(None)
+      }
+    }
+  }
+}
+
 cfg_if! {if #[cfg(not(feature = "disable-metadata-updater"))] {
   use std::sync::Arc;
 
