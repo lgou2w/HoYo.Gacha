@@ -408,7 +408,7 @@ const useHistoryStyles = makeStyles({
     flexDirection: 'column',
     flexShrink: 0,
     width: '8.5rem',
-    padding: `${tokens.spacingVerticalM} 0 ${tokens.spacingVerticalM} ${tokens.spacingHorizontalM}`,
+    padding: tokens.spacingVerticalM,
   },
   sumUp: {
     color: tokens.colorPaletteRedForeground1,
