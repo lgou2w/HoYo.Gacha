@@ -112,6 +112,13 @@
       "Submit": "Confirm"
     }
   },
+  "ChooseAvatar": {
+    "Dialog": {
+      "Title": "Change avatar: {{identity}}",
+      "Confirm": "Use",
+      "Success": "Successfully changed the avatar."
+    }
+  },
   "Converters": {
     "Factory": {
       "Label": "Format",

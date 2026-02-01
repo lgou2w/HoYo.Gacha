@@ -1,8 +1,9 @@
 import { ComponentPropsWithoutRef, ComponentRef, MouseEventHandler, PropsWithChildren, RefObject, createContext, use, useCallback, useRef } from 'react'
 import { Menu, MenuButton, MenuDivider, MenuGroup, MenuGroupHeader, MenuItem, MenuItemRadio, MenuList, MenuListProps, MenuPopover, MenuSplitGroup, MenuTrigger, MenuTriggerChildProps, makeStyles, menuItemClassNames, menuItemRadioClassNames, shorthands, tokens } from '@fluentui/react-components'
 import { PeopleRegular, PersonAddRegular, PersonCircleRegular, PersonDeleteRegular, PersonEditRegular } from '@fluentui/react-icons'
-import { Account } from '@/api/schemas/Account'
+import { Account, AccountBusiness } from '@/api/schemas/Account'
 import { WithTrans, withTrans } from '@/i18n'
+import ChooseAvatarDialog from '@/pages/Gacha/components/ChooseAvatar/Dialog'
 import DeleteAccountDialog from '@/pages/Gacha/components/DeleteAccount/Dialog'
 import ToolbarContainer from '@/pages/Gacha/components/Toolbar/Container'
 import UpsertAccountDialog from '@/pages/Gacha/components/UpsertAccount/Dialog'
@@ -20,6 +21,7 @@ export default withTrans.GachaPage(function Accounts ({ t }: WithTrans) {
         <UserMenu />
       </ToolbarContainer>
       <UpsertAccount />
+      <ChooseAvatar />
       <DeleteAccount />
     </UserMenuProvider>
   )
@@ -52,6 +54,7 @@ type UserMenuContextState = Readonly<{
     handleOperation: MouseEventHandler
   }
   upsertAccountDialogRef: RefObject<ComponentRef<typeof UpsertAccountDialog> | null>
+  chooseAvatarDialogRef: RefObject<ComponentRef<typeof ChooseAvatarDialog> | null>
   deleteAccountDialogRef: RefObject<ComponentRef<typeof DeleteAccountDialog> | null>
 }>
 
@@ -66,6 +69,7 @@ function UserMenuProvider (props: PropsWithChildren) {
 
   const moreItemActivateRef = useRef<Account | null>(null)
   const upsertAccountDialogRef = useRef<ComponentRef<typeof UpsertAccountDialog>>(null)
+  const chooseAvatarDialogRef = useRef<ComponentRef<typeof ChooseAvatarDialog>>(null)
   const deleteAccountDialogRef = useRef<ComponentRef<typeof DeleteAccountDialog>>(null)
 
   const state: UserMenuContextState = {
@@ -113,6 +117,9 @@ function UserMenuProvider (props: PropsWithChildren) {
           case MoreItemOperation.Edit:
             upsertAccountDialogRef.current?.open(bind)
             break
+          case MoreItemOperation.ChooseAvatar:
+            chooseAvatarDialogRef.current?.open(bind)
+            break
           case MoreItemOperation.Delete:
             deleteAccountDialogRef.current?.open(bind)
             break
@@ -120,6 +127,7 @@ function UserMenuProvider (props: PropsWithChildren) {
       }, [accounts]),
     },
     upsertAccountDialogRef,
+    chooseAvatarDialogRef,
     deleteAccountDialogRef,
   }
 
@@ -299,6 +307,11 @@ const UserMenuGroupAccountsItem = withTrans.GachaPage(function (
               { icon: <PersonDeleteRegular />, operation: MoreItemOperation.Delete },
             ].map((item, index) => {
               if (typeof item.operation !== 'undefined') {
+                // TODO: 'Genshin Impact: Miliastra Wonderland'
+                //   does not currently support changing account avatar
+                const disabled = business.toBe(AccountBusiness.MiliastraWonderland)
+                  && item.operation === MoreItemOperation.ChooseAvatar
+
                 return (
                   <UserMenuGroupAccountsMoreItem
                     className={styles.moreItem}
@@ -307,6 +320,7 @@ const UserMenuGroupAccountsItem = withTrans.GachaPage(function (
                     bind={account}
                     operation={item.operation}
                     onClick={moreItem.handleOperation}
+                    disabled={disabled}
                   >
                     {t(`Toolbar.Accounts.More.${item.operation}`)}
                   </UserMenuGroupAccountsMoreItem>
@@ -359,7 +373,7 @@ const UserMenuGroupAdd = withTrans.GachaPage(function ({ t }: WithTrans) {
 
 // #endregion
 
-// #region: Upsert & Delete account
+// #region: Upsert & Choose avatar & Delete account
 
 function UpsertAccount () {
   const { business, accounts, upsertAccountDialogRef } = useUserMenu()
@@ -368,6 +382,16 @@ function UpsertAccount () {
       ref={upsertAccountDialogRef}
       business={business.value}
       accounts={accounts}
+    />
+  )
+}
+
+function ChooseAvatar () {
+  const { business, chooseAvatarDialogRef } = useUserMenu()
+  return (
+    <ChooseAvatarDialog
+      ref={chooseAvatarDialogRef}
+      business={business.value}
     />
   )
 }

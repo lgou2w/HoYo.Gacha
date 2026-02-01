@@ -112,6 +112,13 @@
       "Submit": "确认删除"
     }
   },
+  "ChooseAvatar": {
+    "Dialog": {
+      "Title": "修改头像：{{identity}}",
+      "Confirm": "使用",
+      "Success": "成功修改头像。"
+    }
+  },
   "Converters": {
     "Factory": {
       "Label": "格式",
