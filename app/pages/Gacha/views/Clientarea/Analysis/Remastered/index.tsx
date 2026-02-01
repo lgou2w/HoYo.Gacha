@@ -29,7 +29,7 @@ const useStyles = makeStyles({
   },
   card: {
     flex: 1,
-    minWidth: '12.75rem',
+    minWidth: '15rem',
     border: `${tokens.strokeWidthThin} solid ${tokens.colorNeutralStrokeAlpha}`,
     borderRadius: tokens.borderRadiusMedium,
     boxShadow: tokens.shadow2,

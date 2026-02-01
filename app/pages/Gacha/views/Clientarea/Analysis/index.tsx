@@ -17,6 +17,7 @@ const useStyles = makeStyles({
     alignItems: 'center',
   },
   switcher: {
+    flex: '0 0 auto',
     marginLeft: 'auto',
     [`& .${switchClassNames.indicator}`]: {
       margin: 0,

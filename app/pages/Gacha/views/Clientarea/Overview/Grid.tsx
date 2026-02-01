@@ -19,10 +19,19 @@ const useStyles = makeStyles({
     gap: tokens.spacingVerticalL,
   },
   item: {
-    display: 'inline-flex',
-    flex: '1 0 auto',
-    width: `calc(50% - ${tokens.spacingHorizontalL} / 2)`,
+    display: 'flex',
+    flex: `1 0 auto`,
+    minWidth: `calc(50% - ${tokens.spacingHorizontalL} / 2)`,
     ...PrettizedCategoryFlexOrders,
+  },
+  itemAggEvenNoTags: {
+    width: '100%',
+  },
+  itemTagsWithEvenAgg: {
+    width: `calc(50% - ${tokens.spacingHorizontalL} / 2)`,
+  },
+  itemTagsWithOddAgg: {
+    width: '100%',
   },
 })
 
@@ -60,7 +69,7 @@ function useGridItems (styles: ReturnType<typeof useStyles>): ReactNode[] {
 
         createGrid(
           [datasets, category],
-          styles.item,
+          styles,
           items,
           required,
         )
@@ -69,7 +78,7 @@ function useGridItems (styles: ReturnType<typeof useStyles>): ReactNode[] {
     if (data?.aggregated) {
       createGrid(
         data.aggregated,
-        styles.item,
+        styles,
         items,
       )
     }
@@ -82,7 +91,7 @@ function createGrid (
   source:
     | [PrettizedRecords<AccountBusiness>['categorizeds'] | undefined, PrettizedCategory]
     | AggregatedRecords,
-  className: string,
+  styles: ReturnType<typeof useStyles>,
   results: ReactNode[],
   required?: boolean,
 ) {
@@ -104,9 +113,15 @@ function createGrid (
     category = Aggregated
   }
 
+  const isAggEven = category === Aggregated && results.length % 2 === 0
+  const hasAggTags = category === Aggregated && dataset.total > 0
+
   results.push((
     <div
-      className={className}
+      className={mergeClasses(
+        styles.item,
+        category === Aggregated && isAggEven && !hasAggTags && styles.itemAggEvenNoTags,
+      )}
       key={category}
       {...{ [PrettizedCategoryFlexOrderDataset]: category }}
     >
@@ -114,10 +129,13 @@ function createGrid (
     </div>
   ))
 
-  if (category === Aggregated && dataset.total > 0) {
+  if (hasAggTags) {
     results.push((
       <div
-        className={className}
+        className={mergeClasses(
+          styles.item,
+          isAggEven ? styles.itemTagsWithEvenAgg : styles.itemTagsWithOddAgg,
+        )}
         data-category={Aggregated + '-Tags'}
         key={Aggregated + '-Tags'}
       >
@@ -279,7 +297,7 @@ const Grid = withTrans.GachaPage(function (
       </div>
       <div className={styles.header}>
         <div>
-          <Title3>
+          <Title3 as="h2">
             {t(`Common:${business.keyof}.Gacha.Category.${category}`, {
               context: 'title',
             })}
@@ -295,11 +313,9 @@ const Grid = withTrans.GachaPage(function (
             </>
           )}
         </div>
-        <div>
-          <Caption1>
-            {timeRange || <Placeholder />}
-          </Caption1>
-        </div>
+        <Caption1 as="p">
+          {timeRange || <Placeholder />}
+        </Caption1>
       </div>
       <div className={styles.labels}>
         <div className={styles.labelsGroup}>
@@ -392,6 +408,7 @@ const useGridLabelStyles = makeStyles({
   root: {
     boxShadow: tokens.shadow2,
     whiteSpace: 'pre-wrap',
+    flex: '0 0 auto',
   },
 })
 
@@ -437,7 +454,7 @@ const TagsGrid = withTrans.GachaPage(function (
   return (
     <div className={styles.root}>
       <div className={styles.header}>
-        <Title3>
+        <Title3 as="h2">
           {tTags('Title', { keyof: business.keyof })}
         </Title3>
       </div>
