@@ -1,4 +1,4 @@
-import { ComponentProps, ReactNode, useCallback, useMemo, useState } from 'react'
+import { ComponentProps, ReactNode, WheelEventHandler, useCallback, useMemo, useState } from 'react'
 import { Virtuoso } from 'react-virtuoso'
 import { Body1, Caption1, Divider, Image, Subtitle2, Tab, TabList, Title1, makeStyles, mergeClasses, tabClassNames, tokens } from '@fluentui/react-components'
 import { AccountBusiness } from '@/api/schemas/Account'
@@ -41,9 +41,33 @@ export default function AnalysisRemastered () {
   const styles = useStyles()
   const cards = useCards(styles)
 
+  // Wheel controls horizontal scrolling
+  function shouldPreventHorizontalScroll (evt: React.WheelEvent) {
+    let el: EventTarget | ParentNode | null = evt.target
+
+    while (el && el instanceof HTMLElement && el !== evt.currentTarget) {
+      if (el.style.overflowY === 'auto' || el.style.overflowY === 'scroll') {
+        return false
+      }
+      el = el.parentNode
+    }
+
+    return true
+  }
+
+  const transformScroll = useCallback<WheelEventHandler>((evt) => {
+    if (!evt.deltaY || !shouldPreventHorizontalScroll(evt)) {
+      return
+    }
+
+    const delta = Math.abs(evt.deltaY)
+    const dir = evt.deltaY > 0 ? 1 : -1
+    evt.currentTarget.scrollLeft += Math.max(delta, 100) * dir + evt.deltaX
+  }, [])
+
   return (
     <div className={styles.root}>
-      <div className={styles.cards}>
+      <div className={styles.cards} onWheel={transformScroll}>
         {cards}
       </div>
     </div>
