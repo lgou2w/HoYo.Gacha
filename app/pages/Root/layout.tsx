@@ -3,6 +3,7 @@ import { Outlet } from '@tanstack/react-router'
 import { EnvironmentProvider } from '@/contexts/Environment'
 import { ThemeProvider } from '@/contexts/Theme'
 import AppLayout from './components/AppLayout'
+import ErrorBoundary from './components/ErrorBoundary'
 import rootRoute from './route'
 
 export default function RootLayout () {
@@ -16,7 +17,9 @@ export default function RootLayout () {
         isSupportedMica={environment.windows?.isWindows11}
       >
         <AppLayout>
-          <Outlet />
+          <ErrorBoundary>
+            <Outlet />
+          </ErrorBoundary>
         </AppLayout>
         <ReactQueryDevtools />
       </ThemeProvider>

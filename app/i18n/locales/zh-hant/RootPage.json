@@ -4,5 +4,46 @@
       "/": "主頁",
       "/Settings": "設定"
     }
+  },
+  "ErrorBoundary": {
+    "Title": "哎呀！出問題了 :(",
+    "Subtitle": "抱歉，應用程式遇到了意外的錯誤。如果您能幫助我們改進，我們會非常感謝。",
+    "Message": {
+      "Title": "錯誤訊息："
+    },
+    "Stack": {
+      "Title": "堆疊追蹤：",
+      "Copy": "複製",
+      "Copied": "已複製"
+    },
+    "Feedback": {
+      "Title": "幫助我們改進",
+      "Subtitle": "請選擇以下方式回報這個錯誤。您的回饋將幫助我們快速修復問題。",
+      "GitHub": {
+        "Title": "方式一：GitHub Issue",
+        "Subtitle": "在我們的 GitHub 儲存庫中建立一個 Issue，方便我們追蹤和修復。",
+        "Button": "建立 GitHub Issue",
+        "Tooltip": "提示：建立 Issue 時會自動包含錯誤訊息和堆疊追蹤，並支援後續討論和更新。"
+      },
+      "Email": {
+        "Title": "方式二：郵件回饋",
+        "Subtitle": "透過郵件向我們傳送錯誤報告，適合不熟悉 GitHub 的使用者。",
+        "Button": "傳送郵件報告",
+        "Tooltip": "提示：郵件報告適合詳細描述問題和提供截圖，但回應可能不如 GitHub 及時。"
+      },
+      "Report": {
+        "Title": "{{app}} 錯誤報告：{{message}}"
+      }
+    },
+    "Actions": {
+      "Title": "您也可以嘗試以下操作：",
+      "Reset": "重試頁面",
+      "Home": "返回主頁"
+    },
+    "Footer": {
+      "Title": "更多幫助資源：",
+      "Faq": "常見問題",
+      "Official": "官方網站"
+    }
   }
 }

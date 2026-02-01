@@ -8,5 +8,46 @@
       "/Gacha/ZenlessZoneZero": "$t(Common:ZenlessZoneZero.Name)",
       "/Settings": "Settings"
     }
+  },
+  "ErrorBoundary": {
+    "Title": "Oops! Something went wrong :(",
+    "Subtitle": "Sorry, the application encountered an unexpected error. We would greatly appreciate your help in improving it.",
+    "Message": {
+      "Title": "Error Message:"
+    },
+    "Stack": {
+      "Title": "Stack Trace:",
+      "Copy": "Copy",
+      "Copied": "Copied"
+    },
+    "Feedback": {
+      "Title": "Help Us Improve",
+      "Subtitle": "Please choose one of the following methods to report this error. Your feedback will help us quickly resolve the issue.",
+      "GitHub": {
+        "Title": "Method 1: GitHub Issue",
+        "Subtitle": "Create an Issue in our GitHub repository, making it easier for us to track and fix the problem.",
+        "Button": "Create GitHub Issue",
+        "Tooltip": "Tip: Creating an Issue will automatically include error information and stack trace, and supports follow-up discussion and updates."
+      },
+      "Email": {
+        "Title": "Method 2: Email Feedback",
+        "Subtitle": "Send us an error report via email, suitable for users unfamiliar with GitHub.",
+        "Button": "Send Email Report",
+        "Tooltip": "Tip: Email reports are suitable for detailed descriptions of problems and screenshots, but responses may not be as timely as GitHub."
+      },
+      "Report": {
+        "Title": "{{app}} Error report: {{message}}"
+      }
+    },
+    "Actions": {
+      "Title": "You can also try the following actions:",
+      "Reset": "Retry Page",
+      "Home": "Return to Home"
+    },
+    "Footer": {
+      "Title": "More Help Resources: ",
+      "Faq": "FAQ",
+      "Official": "Website"
+    }
   }
 }
