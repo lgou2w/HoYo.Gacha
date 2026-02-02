@@ -2,8 +2,8 @@ import { forwardRef, useCallback, useImperativeHandle } from 'react'
 import { Dialog, DialogBody, DialogContent, DialogSurface, DialogTitle } from '@fluentui/react-components'
 import { useImmer } from 'use-immer'
 import { Account, AccountBusiness } from '@/api/schemas/Account'
-import useNotifier from '@/hooks/useNotifier'
 import { WithTransKnownNs, useI18n } from '@/i18n'
+import useAppNotifier from '@/pages/Root/hooks/useAppNotifier'
 import UpsertAccountForm, { UpsertAccountFormProps } from './Form'
 
 const UpsertAccountDialog = forwardRef<
@@ -23,7 +23,7 @@ const UpsertAccountDialog = forwardRef<
   }), [produceState])
 
   const { t } = useI18n(WithTransKnownNs.GachaPage)
-  const notifier = useNotifier()
+  const notifier = useAppNotifier()
   const context = !owner ? 'add' : 'edit'
 
   const handleSuccess = useCallback<Required<UpsertAccountFormProps>['onSuccess']>((data) => {

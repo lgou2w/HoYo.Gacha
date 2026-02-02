@@ -6,7 +6,6 @@ import BusinessCommands, { FetchRecordsArgs, FetchRecordsEvent, FetchRecordsEven
 import errorTrans from '@/api/errorTrans'
 import { Account, AccountBusiness, KeyofAccountBusiness } from '@/api/schemas/Account'
 import CopyButton from '@/components/CopyButton'
-import useNotifier, { DefaultNotifierTimeouts } from '@/hooks/useNotifier'
 import useRecordsFetcher from '@/hooks/useRecordsFetcher'
 import { Language, TFunction, WithTrans, i18nDayjs, languageMetadata, withTrans } from '@/i18n'
 import ToolbarContainer from '@/pages/Gacha/components/Toolbar/Container'
@@ -14,6 +13,7 @@ import { useBusiness } from '@/pages/Gacha/contexts/Business'
 import { PrettizedCategory, PrettizedRecords } from '@/pages/Gacha/contexts/PrettizedRecords'
 import { useSelectedAccount, useUpdateAccountPropertiesMutation } from '@/pages/Gacha/queries/accounts'
 import { invalidatePrettizedRecordsQuery, usePrettizedRecordsSuspenseQuery } from '@/pages/Gacha/queries/prettizedRecords'
+import useAppNotifier, { DefaultNotifierTimeouts } from '@/pages/Root/hooks/useAppNotifier'
 import dayjs from '@/utilities/dayjs'
 
 export default function GachaUrl () {
@@ -264,7 +264,7 @@ function useUserAction (language: Language | string, t: TFunction) {
   const customLocale = languageMetadata(language).constants.gacha
   const url = computeDeadline(language, selected)
 
-  const notifier = useNotifier()
+  const notifier = useAppNotifier()
   const fetcher = useRecordsFetcher()
   const prettized = usePrettizedRecordsSuspenseQuery(
     business.value,

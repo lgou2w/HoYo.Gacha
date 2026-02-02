@@ -7,8 +7,8 @@ import BusinessCommands, { ClassicSrgfWriterOptions, ClassicUigfWriterOptions, R
 import errorTrans from '@/api/errorTrans'
 import { Account, AccountBusiness } from '@/api/schemas/Account'
 import { GachaRecord } from '@/api/schemas/GachaRecord'
-import useNotifier, { DefaultNotifierTimeouts } from '@/hooks/useNotifier'
 import { WithTrans, WithTransKnownNs, i18nDayjs, languageMetadata, useI18n, withTrans } from '@/i18n'
+import useAppNotifier, { DefaultNotifierTimeouts } from '@/pages/Root/hooks/useAppNotifier'
 import capitalize from '@/utilities/capitalize'
 
 const useStyles = makeStyles({
@@ -70,7 +70,7 @@ function useExporter ({
   const uigfVersions = SupportedRecordsWriterUigfVersions[factories[0]]
   const lang = preferLang || languageMetadata(i18n.language).constants.gacha
 
-  const notifier = useNotifier()
+  const notifier = useAppNotifier()
   const [state, produceState] = useImmer({
     error: null as string | null,
     folder: null as string | null,

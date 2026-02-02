@@ -7,8 +7,6 @@ export type NotifyOptions = Omit<
   'content'
 >
 
-export const NotifierId = 'notifier'
-
 export const DefaultNotifierTimeouts = {
   info: 3000,
   success: 3000,
@@ -28,18 +26,18 @@ export type NotifierPromiseContentOptions
     | null
     | undefined
 
-export default function useNotifier () {
+export default function useNotifier (toasterId: string) {
   const {
     dispatchToast,
     updateToast,
     dismissToast,
     dismissAllToasts,
-  } = useToastController(NotifierId)
+  } = useToastController(toasterId)
 
   const toastCouterRef = useRef(0)
   const genToastId = useCallback(
-    () => `${NotifierId}__toast${++toastCouterRef.current}`,
-    [],
+    () => `${toasterId}__toast${++toastCouterRef.current}`,
+    [toasterId],
   )
 
   const notify = useCallback((
@@ -188,7 +186,7 @@ export default function useNotifier () {
   }, [dismissToast, error, loading, success])
 
   return {
-    NotifierId,
+    toasterId,
     info,
     success,
     error,

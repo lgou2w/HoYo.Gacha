@@ -10,9 +10,9 @@ import MetadataCommands from '@/api/commands/metadata'
 import errorTrans from '@/api/errorTrans'
 import { Account, AccountBusiness } from '@/api/schemas/Account'
 import { GachaRecord } from '@/api/schemas/GachaRecord'
-import useNotifier, { DefaultNotifierTimeouts } from '@/hooks/useNotifier'
 import { WithTrans, WithTransKnownNs, languageMetadata, useI18n, withTrans } from '@/i18n'
 import { invalidatePrettizedRecordsQuery } from '@/pages/Gacha/queries/prettizedRecords'
+import useAppNotifier, { DefaultNotifierTimeouts } from '@/pages/Root/hooks/useAppNotifier'
 
 const useStyles = makeStyles({
   root: {
@@ -77,7 +77,7 @@ function useImporter ({
   const factories = SupportedRecordsReaderFactories[business]
   const currentGachaLang = languageMetadata(i18n.language).constants.gacha
 
-  const notifier = useNotifier()
+  const notifier = useAppNotifier()
   const [state, produceState] = useImmer({
     error: null as string | null,
     file: null as string | null,

@@ -5,8 +5,8 @@ import AppCommands from '@/api/commands/app'
 import BusinessCommands from '@/api/commands/business'
 import errorTrans from '@/api/errorTrans'
 import { AccountBusiness, KeyofGenshinImpact, KeyofHonkaiStarRail, KeyofZenlessZoneZero } from '@/api/schemas/Account'
-import useNotifier from '@/hooks/useNotifier'
 import { TFunction, WithTrans, withTrans } from '@/i18n'
+import useAppNotifier from '@/pages/Root/hooks/useAppNotifier'
 import SectionGroup from '@/pages/Settings/components/SectionGroup'
 import SectionItem from '@/pages/Settings/components/SectionItem'
 import queryClient from '@/queryClient'
@@ -27,7 +27,7 @@ export default withTrans.SettingsPage(function LegacyMigration ({ t }: WithTrans
 
 function Migrate ({ t }: { t: TFunction }) {
   const [busy, setBusy] = useState(false)
-  const notifier = useNotifier()
+  const notifier = useAppNotifier()
   const handleMigrate = useCallback<MouseEventHandler>(async () => {
     const legacy = await AppCommands.pickFile({
       title: t('LegacyMigration.Pick'),

@@ -7,11 +7,11 @@ import { useImmer } from 'use-immer'
 import MetadataCommands from '@/api/commands/metadata'
 import { Account, AccountBusiness, KeyofAccountBusiness } from '@/api/schemas/Account'
 import BusinessImages from '@/assets/images/BusinessImages'
-import useNotifier from '@/hooks/useNotifier'
 import { WithTrans, WithTransKnownNs, useI18n, withTrans } from '@/i18n'
 import GachaImage from '@/pages/Gacha/components/Image'
 import { ItemCategory } from '@/pages/Gacha/contexts/PrettizedRecords'
 import { useUpdateAccountPropertiesMutation } from '@/pages/Gacha/queries/accounts'
+import useAppNotifier from '@/pages/Root/hooks/useAppNotifier'
 
 const useStyles = makeStyles({
   root: {
@@ -115,7 +115,7 @@ function useChooseAvatar ({
     }
   }, [])
 
-  const notifier = useNotifier()
+  const notifier = useAppNotifier()
   const updateAccountPropertiesMutation = useUpdateAccountPropertiesMutation()
   const handleConfirm = useCallback<MouseEventHandler>(async (evt) => {
     if (!activeAvatar) {

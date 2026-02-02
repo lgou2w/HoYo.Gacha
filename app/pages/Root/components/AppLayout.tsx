@@ -1,8 +1,8 @@
 import { PropsWithChildren } from 'react'
 import { makeStyles, tokens } from '@fluentui/react-components'
 import AppNavbar from './AppNavbar'
+import AppNotifier from './AppNotifier'
 import AppTitleBar from './AppTitleBar'
-import Notifier from './Notifier'
 import { NavbarWidth, TitleBarHeight } from './consts'
 
 const useStyles = makeStyles({
@@ -37,7 +37,7 @@ export default function AppLayout (props: PropsWithChildren) {
       <AppNavbar />
       <main className={styles.content}>
         <AppTitleBar />
-        <Notifier />
+        <AppNotifier />
         <div className={styles.wrapper}>
           {props.children}
         </div>
