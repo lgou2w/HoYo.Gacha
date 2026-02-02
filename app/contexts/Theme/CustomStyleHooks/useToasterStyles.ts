@@ -9,7 +9,7 @@ const useStyles = makeStyles({
   root: {
     // [`& .${toastContainerClassNames.root}`]: {}, // No export!
     '& .fui-ToastContainer': {
-      marginTop: tokens.spacingVerticalM,
+      marginTop: `${tokens.spacingVerticalM} !important`,
     },
   },
 })

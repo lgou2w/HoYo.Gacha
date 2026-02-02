@@ -26,6 +26,7 @@ import useTableCellStyles from './useTableCellStyles'
 import useTableHeaderCellStyles from './useTableHeaderCellStyles'
 import useTextareaStyles from './useTextareaStyles'
 import useToastBodyStyles from './useToastBodyStyles'
+import useToastFooterStyles from './useToastFooterStyles'
 import useToastStyles from './useToastStyles'
 import useToastTitleStyles from './useToastTitleStyles'
 import useToasterStyles from './useToasterStyles'
@@ -65,6 +66,7 @@ export const CustomStylesHooks: FluentProviderCustomStyleHooks = {
   useTableHeaderCellStyles_unstable: useTableHeaderCellStyles as CustomStyleHook,
   useTextareaStyles_unstable: useTextareaStyles as CustomStyleHook,
   useToastBodyStyles_unstable: useToastBodyStyles as CustomStyleHook,
+  useToastFooterStyles_unstable: useToastFooterStyles as CustomStyleHook,
   useToasterStyles_unstable: useToasterStyles as CustomStyleHook,
   useToastStyles_unstable: useToastStyles as CustomStyleHook,
   useToastTitleStyles_unstable: useToastTitleStyles as CustomStyleHook,
