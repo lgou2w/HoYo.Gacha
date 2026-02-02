@@ -1,3 +1,4 @@
+use std::env;
 use std::error::Error as StdError;
 use std::sync::Arc;
 
@@ -171,8 +172,8 @@ fn setup(
   // Apply window color scheme
   hg_ffi::apply_window_color_scheme(&window, color_scheme)?;
 
-  // Open devtools in debug mode
-  let devtools = cfg!(debug_assertions);
+  // Open devtools in debug or when specifying environment variable
+  let devtools = cfg!(debug_assertions) || env::var(constants::ENV_DEVTOOLS).is_ok();
   if devtools {
     debug!("Opening devtools for main window");
     window.open_devtools();

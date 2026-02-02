@@ -40,6 +40,9 @@ pub const GIT_COMMIT_HASH: &str = env!("GIT_COMMIT_HASH");
 pub const GIT_COMMIT_DATE: &str = env!("GIT_COMMIT_DATE");
 pub const GIT_REMOTE_URL: &str = env!("GIT_REMOTE_URL");
 
+// Environment variable keys
+pub const ENV_DEVTOOLS: &str = "HG_DEVTOOLS";
+
 /// The user's profile directory.
 pub static PROFILE_DIR: LazyLock<PathBuf> =
   LazyLock::new(|| hg_ffi::profile_dir().expect("Failed to get user profile directory"));
