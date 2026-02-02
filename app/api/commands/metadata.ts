@@ -1,6 +1,7 @@
 import { declareCommand } from '@/api/command'
 import { AppError, isAppError } from '@/api/error'
 import { AccountBusiness } from '@/api/schemas/Account'
+import { ItemCategory } from '@/pages/Gacha/contexts/PrettizedRecords'
 
 export const NamedMetadataError = 'MetadataError' as const
 export type NamedMetadataError = typeof NamedMetadataError
@@ -63,7 +64,7 @@ const MetadataCommands = {
     declareCommand<{ business: AccountBusiness }, string[] | null>('metadata_locales'),
 
   entries:
-    declareCommand<{ business: AccountBusiness, category: string }, number[] | null>('metadata_entries'),
+    declareCommand<{ business: AccountBusiness, category: ItemCategory }, number[] | null>('metadata_entries'),
 
   isUpdating:
     declareCommand<undefined, boolean>('metadata_is_updating'),
