@@ -1,5 +1,5 @@
 import { ReactNode, useCallback, useMemo, useRef } from 'react'
-import { Link, Spinner, Toast, ToastBody, ToastTitle, ToastTrigger, useToastController } from '@fluentui/react-components'
+import { Link, Spinner, Toast, ToastBody, ToastFooter, ToastTitle, ToastTrigger, useToastController } from '@fluentui/react-components'
 import { DismissRegular } from '@fluentui/react-icons'
 
 export type NotifyOptions = Omit<
@@ -22,7 +22,7 @@ const HandlerDefaultOptions: NotifyOptions = {
 export type NotifierPromiseContentOptions
   = & { title: ReactNode }
     & Omit<NotifyOptions, 'intent' | 'toastId'>
-    & { dismissible?: boolean, body?: ReactNode }
+    & { dismissible?: boolean, body?: ReactNode, footer?: ReactNode }
     | null
     | undefined
 
@@ -73,9 +73,10 @@ export default function useNotifier (toasterId: string) {
           options?: Omit<NotifyOptions, 'intent'> & {
             dismissible?: boolean
             body?: ReactNode
+            footer?: ReactNode
           },
         ) => {
-          const { dismissible, body, ...rest } = options || {}
+          const { dismissible, body, footer, ...rest } = options || {}
           notify(
             <Toast>
               <ToastTitle action={dismissible
@@ -89,6 +90,7 @@ export default function useNotifier (toasterId: string) {
                 {title}
               </ToastTitle>
               {body && <ToastBody>{body}</ToastBody>}
+              {footer && <ToastFooter>{footer}</ToastFooter>}
             </Toast>,
             {
               ...defaultOptions,
@@ -123,13 +125,29 @@ export default function useNotifier (toasterId: string) {
 
   const loading = useCallback((
     title: ReactNode,
-    options?: NotifyOptions & { body?: ReactNode },
+    options?: Omit<NotifyOptions, 'intent'> & {
+      dismissible?: boolean
+      body?: ReactNode
+      footer?: ReactNode
+    },
   ) => {
-    const { body, ...rest } = options || {}
+    const { dismissible, body, footer, ...rest } = options || {}
     return notify(
       <Toast>
-        <ToastTitle media={<Spinner size="extra-tiny" />}>{title}</ToastTitle>
+        <ToastTitle
+          media={<Spinner size="extra-tiny" />}
+          action={dismissible
+            ? (
+                <ToastTrigger>
+                  <Link><DismissRegular /></Link>
+                </ToastTrigger>
+              )
+            : undefined}
+        >
+          {title}
+        </ToastTitle>
         {body && <ToastBody>{body}</ToastBody>}
+        {footer && <ToastFooter>{footer}</ToastFooter>}
       </Toast>,
       {
         timeout: -1,
@@ -146,8 +164,8 @@ export default function useNotifier (toasterId: string) {
       error?: NotifierPromiseContentOptions | ((error: unknown) => NotifierPromiseContentOptions)
     },
   ) => Promise<T> = useCallback((promise, contents) => {
-    const { title, body, ...rest } = contents.loading
-    const toastId = loading(title, { timeout: -1, body, ...rest })
+    const { title, body, footer, ...rest } = contents.loading
+    const toastId = loading(title, { timeout: -1, body, footer, ...rest })
 
     if (typeof promise === 'function') {
       promise = promise()
@@ -159,8 +177,8 @@ export default function useNotifier (toasterId: string) {
         : contents.success
 
       if (successOptions) {
-        const { title, body, ...rest } = successOptions
-        success(title, { toastId, body, ...rest })
+        const { title, body, footer, ...rest } = successOptions
+        success(title, { toastId, body, footer, ...rest })
       } else {
         dismissToast(toastId)
       }
@@ -172,8 +190,8 @@ export default function useNotifier (toasterId: string) {
         : contents.error
 
       if (errorOptions) {
-        const { title, body, ...rest } = errorOptions
-        error(title, { toastId, body, ...rest })
+        const { title, body, footer, ...rest } = errorOptions
+        error(title, { toastId, body, footer, ...rest })
       } else {
         dismissToast(toastId)
       }
