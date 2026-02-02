@@ -50,10 +50,16 @@ export function isMetadataUpdateError (error: unknown): error is MetadataUpdateE
     && error.name === NamedMetadataUpdateError
 }
 
-export type MetadataUpdateKind
-  = | 'Updating'
-    | 'UpToDate'
-    | { Success: string }
+export enum MetadataUpdateKind {
+  Updating = 'Updating',
+  UpToDate = 'UpToDate',
+  Success = 'Success',
+}
+
+export type MetadataUpdateResult
+  = | MetadataUpdateKind.Updating
+    | MetadataUpdateKind.UpToDate
+    | { [MetadataUpdateKind.Success]: string }
     | null // 'Feature disabled' only
 
 const MetadataCommands = {
@@ -74,7 +80,7 @@ const MetadataCommands = {
    * @throws `MetadataUpdateError`
    */
   update:
-    declareCommand<{ maxAttempts?: number | null }, MetadataUpdateKind>('metadata_update'),
+    declareCommand<{ maxAttempts?: number | null }, MetadataUpdateResult>('metadata_update'),
 } as const
 
 Object.freeze(MetadataCommands)

@@ -3,6 +3,7 @@ import { makeStyles, tokens } from '@fluentui/react-components'
 import AppNavbar from './AppNavbar'
 import AppNotifier from './AppNotifier'
 import AppTitleBar from './AppTitleBar'
+import Metadata from './Metadata'
 import { NavbarWidth, TitleBarHeight } from './consts'
 
 const useStyles = makeStyles({
@@ -38,6 +39,7 @@ export default function AppLayout (props: PropsWithChildren) {
       <main className={styles.content}>
         <AppTitleBar />
         <AppNotifier />
+        <Metadata />
         <div className={styles.wrapper}>
           {props.children}
         </div>

@@ -45,5 +45,15 @@
       "Faq": "常见问题",
       "Official": "官方网站"
     }
+  },
+  "Metadata": {
+    "Loading": "元数据检查更新中...",
+    "Success": {
+      "Title": "元数据检查更新成功：",
+      "Body_UpToDate": "已是最新状态。",
+      "Body_Success": "{{hash}}"
+    },
+    "Error": "元数据检查更新失败：",
+    "Retry": "重试"
   }
 }

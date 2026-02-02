@@ -45,5 +45,15 @@
       "Faq": "常見問題",
       "Official": "官方網站"
     }
+  },
+  "Metadata": {
+    "Loading": "元資料檢查更新中...",
+    "Success": {
+      "Title": "元資料檢查更新成功：",
+      "Body_UpToDate": "已是最新狀態。",
+      "Body_Success": "{{hash}}"
+    },
+    "Error": "元資料檢查更新失敗：",
+    "Retry": "重試"
   }
 }

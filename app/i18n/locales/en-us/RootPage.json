@@ -49,5 +49,15 @@
       "Faq": "FAQ",
       "Official": "Website"
     }
+  },
+  "Metadata": {
+    "Loading": "Checking for metadata updates...",
+    "Success": {
+      "Title": "Metadata check completed:",
+      "Body_UpToDate": "Already up to date.",
+      "Body_Success": "{{hash}}"
+    },
+    "Error": "Failed to check metadata updates:",
+    "Retry": "Retry"
   }
 }
