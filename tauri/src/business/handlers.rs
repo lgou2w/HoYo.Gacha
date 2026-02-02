@@ -143,8 +143,9 @@ pub async fn business_resolve_image(
   business: AccountBusiness,
   item_category: String,
   item_id: u32,
+  online: Option<bool>,
 ) -> Result<impl IpcResponse, String> {
-  ImageResolver::resolve(business, item_category, item_id).await
+  ImageResolver::resolve(business, item_category, item_id, online).await
 }
 
 #[tauri::command]

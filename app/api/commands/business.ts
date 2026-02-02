@@ -261,6 +261,7 @@ export interface ResolveImageArgs {
   business: AccountBusiness
   itemCategory: NonNullable<PrettizedRecord['itemCategory']>
   itemId: PrettizedRecord['itemId']
+  online?: boolean | null
 }
 
 export type ResolveImage

@@ -64,6 +64,8 @@ function CacheableImage (props: GachaImageProps) {
     enabled: !!itemCategory,
     gcTime: Infinity,
     staleTime: Infinity,
+    networkMode: 'offlineFirst',
+    refetchOnReconnect: true,
     queryKey: ['GachaImage', keyof, itemId, itemCategory],
     queryFn: async function gachaCacheableImageQueryFn () {
       const mime = await BusinessCommands.resolveImageMime()
@@ -71,10 +73,16 @@ function CacheableImage (props: GachaImageProps) {
         business: AccountBusiness[keyof],
         itemId,
         itemCategory: itemCategory!,
+        online: window.navigator.onLine,
       }).catch((error) => {
         console.error('Failed to resolve image for', { keyof, itemId, itemCategory }, error)
         throw error
       })
+
+      // Offline and no cache
+      if (data.byteLength < 1) {
+        return undefined
+      }
 
       const blob = new Blob([data as Uint8Array<ArrayBuffer>], { type: mime })
       console.debug('Resolved image for', { keyof, itemId, itemCategory }, blob)
