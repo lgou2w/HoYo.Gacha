@@ -17,7 +17,7 @@ impl WindowState {
     cfg_if! {if #[cfg(debug_assertions)] {
       PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("__DEV__HoYo.Gacha.WindowState.json")
     } else {
-      constants::APP_LOCAL_DATA_DIR.join("WindowState.json")
+      crate::constants::APP_LOCAL_DATA_DIR.join("WindowState.json")
     }}
   }
 

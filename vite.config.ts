@@ -21,7 +21,16 @@ export default defineConfig ((env) => {
       sourcemap: isDev,
     },
     plugins: [
-      isProd && griffel(),
+      isProd && griffel({
+        include: ['app\/**\/*.{ts,tsx}'],
+        exclude: ['**\/node_modules\/**'],
+        babelOptions: {
+          presets: [
+            '@babel/preset-typescript',
+            '@babel/preset-react',
+          ],
+        },
+      }),
       react(),
     ],
     define: {
