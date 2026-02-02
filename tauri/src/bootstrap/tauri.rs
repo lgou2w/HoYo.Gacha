@@ -239,11 +239,6 @@ fn command_handlers() -> Box<dyn Fn(Invoke<Wry>) -> bool + Send + Sync + 'static
     crate::bootstrap::handlers::system_fonts,
     crate::bootstrap::handlers::pick_file,
     crate::bootstrap::handlers::pick_folder,
-    crate::bootstrap::handlers::metadata_hash,
-    crate::bootstrap::handlers::metadata_locales,
-    crate::bootstrap::handlers::metadata_entries,
-    crate::bootstrap::handlers::metadata_is_updating,
-    crate::bootstrap::handlers::metadata_update,
     // KeyValuePair
     crate::database::schemas::key_value_pair_handlers::database_find_kv_pair,
     crate::database::schemas::key_value_pair_handlers::database_create_kv_pair,
@@ -262,6 +257,11 @@ fn command_handlers() -> Box<dyn Fn(Invoke<Wry>) -> bool + Send + Sync + 'static
     crate::database::schemas::gacha_record_handlers::database_find_gacha_records_with_limit,
     crate::database::schemas::gacha_record_handlers::database_delete_gacha_records,
     // Business
+    crate::business::handlers::metadata_hash,
+    crate::business::handlers::metadata_locales,
+    crate::business::handlers::metadata_entries,
+    crate::business::handlers::metadata_is_updating,
+    crate::business::handlers::metadata_update,
     crate::business::handlers::business_validate_uid,
     crate::business::handlers::business_locate_data_folder,
     crate::business::handlers::business_from_webcaches_gacha_url,

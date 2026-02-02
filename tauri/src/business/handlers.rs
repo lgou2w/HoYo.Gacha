@@ -1,6 +1,7 @@
 use std::path::PathBuf;
 use std::time::Instant;
 
+use cfg_if::cfg_if;
 use hg_game_biz::Uid;
 use tauri::ipc::{Channel, IpcResponse};
 use tracing::debug;
@@ -22,6 +23,83 @@ use crate::database::schemas::{
   AccountBusiness, GachaRecordQuestioner, GachaRecordSaveOnConflict, GachaRecordSaver,
 };
 use crate::error::{AppError, BoxDynErrorDetails, ErrorDetails};
+
+#[tauri::command]
+pub async fn metadata_hash(state: TauriMetadataState<'_>) -> Result<String, ()> {
+  Ok(state.hash().await)
+}
+
+#[tauri::command]
+pub async fn metadata_locales(
+  state: TauriMetadataState<'_>,
+  business: AccountBusiness,
+) -> Result<Option<Vec<String>>, ()> {
+  let metadata = { &*state.read().await };
+  match metadata.locales(business as _) {
+    None => Ok(None),
+    Some(locales) => Ok(Some(
+      locales.map(|locale| locale.lang().to_owned()).collect(),
+    )),
+  }
+}
+
+#[tauri::command]
+pub async fn metadata_entries(
+  state: TauriMetadataState<'_>,
+  business: AccountBusiness,
+  category: String,
+) -> Result<Option<Vec<u32>>, ()> {
+  let metadata = { &*state.read().await };
+  match metadata.locales(business as _) {
+    None => Ok(None),
+    Some(mut locales) => {
+      if let Some(first) = locales.next() {
+        let entries = first
+          .entries()
+          .values()
+          .filter(|entry| entry.category == category)
+          .map(|entry| entry.item_id)
+          .collect();
+
+        Ok(Some(entries))
+      } else {
+        Ok(None)
+      }
+    }
+  }
+}
+
+cfg_if! {if #[cfg(not(feature = "disable-metadata-updater"))] {
+  use std::sync::Arc;
+
+  use crate::business::metadata::{MetadataUpdateKind, MetadataUpdateError};
+
+  #[tauri::command]
+  pub fn metadata_is_updating(state: TauriMetadataState) -> bool {
+    state.is_updating()
+  }
+
+  #[tauri::command]
+  #[tracing::instrument(skip(state))]
+  pub async fn metadata_update(
+    state: TauriMetadataState<'_>,
+    max_attempts: Option<u8>,
+  ) -> Result<MetadataUpdateKind, AppError<MetadataUpdateError>> {
+    Arc::clone(state.inner())
+      .update_with_retry(max_attempts)
+      .await
+      .expect("Failed join metadata update task")
+      .map_err(AppError::from)
+  }
+} else {
+  // Feature disabled
+
+  #[tauri::command]
+  pub fn metadata_is_updating() -> bool { false }
+
+  #[tauri::command]
+  pub fn metadata_update() {}
+}}
 
 #[tauri::command]
 pub fn business_validate_uid(business: AccountBusiness, uid: u32) -> Option<&'static str> {
