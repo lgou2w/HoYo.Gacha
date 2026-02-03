@@ -229,7 +229,7 @@ const ChooseAvatarDialog = forwardRef<
 >(function ChooseAvatarDialog (props, ref) {
   const [{ owner, open }, produceState] = useImmer({
     owner: null as Account | null,
-    open: true,
+    open: false,
   })
 
   useImperativeHandle(ref, () => ({
