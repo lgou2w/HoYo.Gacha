@@ -160,7 +160,7 @@ const useGridStyles = makeStyles({
     padding: tokens.spacingVerticalM,
     border: `${tokens.strokeWidthThin} solid ${tokens.colorNeutralStrokeAlpha}`,
     borderRadius: tokens.borderRadiusMedium,
-    background: tokens.colorNeutralBackgroundAlpha,
+    backgroundColor: tokens.colorNeutralBackgroundAlpha,
     boxShadow: tokens.shadow2,
   },
   badge: {
@@ -171,14 +171,14 @@ const useGridStyles = makeStyles({
     border: `${tokens.strokeWidthThin} solid ${tokens.colorPaletteLightGreenBorder1}`,
     borderBottomLeftRadius: tokens.borderRadiusMedium,
     borderTopRightRadius: tokens.borderRadiusMedium,
-    background: tokens.colorPaletteLightGreenBackground2,
+    backgroundColor: tokens.colorPaletteLightGreenBackground2,
     color: tokens.colorPaletteLightGreenForeground2,
     lineHeight: tokens.lineHeightBase200,
     fontSize: tokens.fontSizeBase200,
   },
   badgeAggregated: {
     border: `${tokens.strokeWidthThin} solid ${tokens.colorPaletteMarigoldBorder1}`,
-    background: tokens.colorPaletteMarigoldBackground2,
+    backgroundColor: tokens.colorPaletteMarigoldBackground2,
     color: tokens.colorPaletteMarigoldForeground2,
   },
   header: {

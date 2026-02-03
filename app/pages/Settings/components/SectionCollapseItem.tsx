@@ -16,7 +16,7 @@ const useStyles = makeStyles({
     borderTop: 'none',
     borderBottomLeftRadius: tokens.borderRadiusMedium,
     borderBottomRightRadius: tokens.borderRadiusMedium,
-    background: tokens.colorNeutralBackgroundAlpha,
+    backgroundColor: tokens.colorNeutralBackgroundAlpha,
     // Item padding + Icon size + Item gap
     padding: `0 calc(${tokens.spacingVerticalM} + ${tokens.fontSizeHero800} + ${tokens.spacingHorizontalM})`,
   },

@@ -85,7 +85,7 @@ const useStyles = makeStyles({
     left: '0.075rem',
     border: 'none',
     borderRadius: tokens.borderRadiusMedium,
-    background: 'rgba(0, 0, 0, 0.35)',
+    backgroundColor: 'rgba(0, 0, 0, 0.35)',
     width: '1rem',
     height: '1rem',
     minWidth: '1rem',

@@ -13,7 +13,7 @@ const useStyles = makeStyles({
   },
   rootPaper: {
     boxShadow: tokens.shadow2,
-    background: tokens.colorNeutralBackgroundAlpha,
+    backgroundColor: tokens.colorNeutralBackgroundAlpha,
   },
   icon: {
     display: 'flex',

@@ -31,7 +31,7 @@ const useStyles = makeStyles({
     padding: `${tokens.spacingVerticalM} ${tokens.spacingHorizontalS}`,
     border: `${tokens.strokeWidthThin} solid ${tokens.colorNeutralStroke3}`,
     borderRadius: tokens.borderRadiusMedium,
-    background: tokens.colorNeutralBackground2,
+    backgroundColor: tokens.colorNeutralBackground2,
     boxShadow: tokens.shadow2,
   },
   avatarWrapper: {
@@ -44,14 +44,14 @@ const useStyles = makeStyles({
     justifyContent: 'center',
     width: '4rem',
     height: '4rem',
-    background: tokens.colorNeutralBackground6,
     borderRadius: tokens.borderRadiusCircular,
+    backgroundColor: tokens.colorNeutralBackground6,
     border: `${tokens.strokeWidthThickest} solid ${tokens.colorNeutralStroke1}`,
     '& img': {
       width: '100%',
       height: '100%',
-      background: tokens.colorNeutralBackground6,
       borderRadius: tokens.borderRadiusCircular,
+      backgroundColor: tokens.colorNeutralBackground6,
     },
   },
   actions: {

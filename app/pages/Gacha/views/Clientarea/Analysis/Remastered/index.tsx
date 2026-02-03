@@ -136,7 +136,7 @@ const useCardStyles = makeStyles({
     flexDirection: 'column',
     rowGap: tokens.spacingHorizontalS,
     padding: tokens.spacingHorizontalM,
-    background: tokens.colorNeutralBackgroundAlpha,
+    backgroundColor: tokens.colorNeutralBackgroundAlpha,
     borderRadius: 'inherit',
     height: '100%',
   },

@@ -48,7 +48,7 @@ const useTableStyles = makeStyles({
   root: {
     border: `${tokens.strokeWidthThin} solid ${tokens.colorNeutralStrokeAlpha}`,
     borderRadius: tokens.borderRadiusMedium,
-    background: tokens.colorNeutralBackgroundAlpha,
+    backgroundColor: tokens.colorNeutralBackgroundAlpha,
     boxShadow: tokens.shadow2,
     [`& .${tableHeaderCellClassNames.root}:not(:first-child)`]: {
       [`& .${tableHeaderCellClassNames.button}`]: {
@@ -398,8 +398,8 @@ const useHistoryStyles = makeStyles({
     flexDirection: 'row',
     width: '100%',
     border: `${tokens.strokeWidthThin} solid ${tokens.colorNeutralStrokeAlpha}`,
-    background: tokens.colorNeutralBackgroundAlpha,
     borderRadius: tokens.borderRadiusMedium,
+    backgroundColor: tokens.colorNeutralBackgroundAlpha,
     boxShadow: tokens.shadow2,
     ...PrettizedCategoryFlexOrders,
   },
