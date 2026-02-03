@@ -119,6 +119,19 @@
       "Success": "成功修改头像。"
     }
   },
+  "ManuallyUrl": {
+    "Form": {
+      "Placeholder": "带有完整查询参数的 URL 抽卡链接：\n{{example}}",
+      "Required": "请输入 URL 抽卡链接。",
+      "Validate": "请输入有效的 URL 抽卡链接格式。",
+      "Cancel": "取消",
+      "Submit": "验证",
+      "Success": "成功修改 URL 抽卡链接。"
+    },
+    "Dialog": {
+      "Title": "手动输入抽卡链接："
+    }
+  },
   "Converters": {
     "Factory": {
       "Label": "格式",

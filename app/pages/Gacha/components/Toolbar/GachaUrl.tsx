@@ -1,4 +1,4 @@
-import { MouseEventHandler, ReactNode, useCallback, useRef, useState } from 'react'
+import { ComponentRef, MouseEventHandler, ReactNode, useCallback, useRef, useState } from 'react'
 import { Body1, Caption2, Dialog, DialogSurface, Field, Input, Menu, MenuDivider, MenuGroup, MenuGroupHeader, MenuItem, MenuList, MenuPopover, MenuTrigger, Spinner, SplitButton, Tooltip, makeStyles, mergeClasses, tokens } from '@fluentui/react-components'
 import { ArrowClockwiseRegular, ArrowSyncRegular, LinkEditRegular, LinkRegular } from '@fluentui/react-icons'
 import { produce } from 'immer'
@@ -8,6 +8,7 @@ import { Account, AccountBusiness, KeyofAccountBusiness } from '@/api/schemas/Ac
 import CopyButton from '@/components/CopyButton'
 import useRecordsFetcher from '@/hooks/useRecordsFetcher'
 import { Language, TFunction, WithTrans, i18nDayjs, languageMetadata, withTrans } from '@/i18n'
+import ManuallyUrlDialog from '@/pages/Gacha/components/ManuallyUrl/Dialog'
 import ToolbarContainer from '@/pages/Gacha/components/Toolbar/Container'
 import { useBusiness } from '@/pages/Gacha/contexts/Business'
 import { PrettizedCategory, PrettizedRecords } from '@/pages/Gacha/contexts/PrettizedRecords'
@@ -167,7 +168,21 @@ const DatasetUserActionType = 'data-action'
 
 const UserAction = withTrans.GachaPage(function ({ i18n, t }: WithTrans) {
   const styles = useUserActionStyles()
-  const { business, isFetching, fetchEvent, disabled, update } = useUserAction(i18n.language, t)
+  const {
+    business,
+    selected,
+    isFetching,
+    fetchEvent,
+    disabled,
+    update,
+  } = useUserAction(i18n.language, t)
+
+  const manuallyUrlDialogRef = useRef<ComponentRef<typeof ManuallyUrlDialog>>(null)
+  const handleManuallyUrl = useCallback<MouseEventHandler>(() => {
+    if (selected && manuallyUrlDialogRef.current) {
+      manuallyUrlDialogRef.current.open(selected)
+    }
+  }, [selected])
 
   return (
     <>
@@ -205,7 +220,10 @@ const UserAction = withTrans.GachaPage(function ({ i18n, t }: WithTrans) {
             </MenuGroup>
             <MenuDivider />
             <MenuGroup>
-              <MenuItem icon={<LinkEditRegular />}>
+              <MenuItem
+                icon={<LinkEditRegular />}
+                onClick={handleManuallyUrl}
+              >
                 {t('Toolbar.GachaUrl.More.ManualInput')}
               </MenuItem>
             </MenuGroup>
@@ -222,6 +240,10 @@ const UserAction = withTrans.GachaPage(function ({ i18n, t }: WithTrans) {
           </div>
         </DialogSurface>
       </Dialog>
+      <ManuallyUrlDialog
+        ref={manuallyUrlDialogRef}
+        business={business.value}
+      />
     </>
   )
 })
@@ -445,6 +467,7 @@ function useUserAction (language: Language | string, t: TFunction) {
 
   return {
     business,
+    selected,
     isBusy,
     isFetching: fetcher.isFetching,
     fetchEvent: fetcher.event,

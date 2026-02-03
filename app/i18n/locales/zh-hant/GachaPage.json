@@ -119,6 +119,19 @@
       "Success": "成功修改頭像。"
     }
   },
+  "ManuallyUrl": {
+    "Form": {
+      "Placeholder": "帶有完整查詢參數的 URL 抽卡連結：\n{{example}}",
+      "Required": "請輸入 URL 抽卡連結。",
+      "Validate": "請輸入有效的 URL 抽卡連結格式。",
+      "Cancel": "取消",
+      "Submit": "驗證",
+      "Success": "成功修改 URL 抽卡連結。"
+    },
+    "Dialog": {
+      "Title": "手動輸入抽卡連結："
+    }
+  },
   "Converters": {
     "Factory": {
       "Label": "格式",

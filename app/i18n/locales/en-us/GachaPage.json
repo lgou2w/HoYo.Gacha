@@ -119,6 +119,19 @@
       "Success": "Successfully changed the avatar."
     }
   },
+  "ManuallyUrl": {
+    "Form": {
+      "Placeholder": "A Gacha URL with full query parameters:\n{{example}}",
+      "Required": "Please enter the URL value.",
+      "Validate": "Please enter a valid URL format.",
+      "Cancel": "Cancel",
+      "Submit": "Validate",
+      "Success": "Successfully changed the Gacha URL."
+    },
+    "Dialog": {
+      "Title": "Manual input Gacha URL:"
+    }
+  },
   "Converters": {
     "Factory": {
       "Label": "Format",
