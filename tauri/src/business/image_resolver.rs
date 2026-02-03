@@ -21,12 +21,23 @@ impl ImageResolver {
     mut item_id: u32,
     online: Option<bool>,
   ) -> Result<impl IpcResponse, String> {
+    // FIXME: Genshin Impact: Miliastra Wonderland
+    //   Currently, this is how it reuses icon resources.
+    let mut item_category = item_category.as_str();
+    if business == AccountBusiness::MiliastraWonderland
+      && item_category == "CosmeticCatalog"
+      && !(275000..=275999).contains(&item_id)
+    {
+      item_category = "CosmeticComponent";
+      item_id -= 10000;
+    }
+
     // APPDATA/Local/${bundle_identifier}/${CACHES_DIR}/${business}/${category}
     const CACHES_DIR: &str = "GachaImages";
     let image_dir = constants::APP_LOCAL_DATA_DIR
       .join(CACHES_DIR)
       .join(business.as_str())
-      .join(&item_category);
+      .join(item_category);
 
     if !image_dir.exists() {
       tokio::fs::create_dir_all(&image_dir)
@@ -82,17 +93,6 @@ impl ImageResolver {
     // v1 facet
     // static or transform
     // https://docs.netlify.com/image-cdn/overview/
-
-    // FIXME: Genshin Impact: Miliastra Wonderland
-    //   Currently, this is how it reuses icon resources.
-    let mut item_category = item_category.as_str();
-    if business == AccountBusiness::MiliastraWonderland
-      && item_category == "CosmeticCatalog"
-      && !(275000..=275999).contains(&item_id)
-    {
-      item_category = "CosmeticComponent";
-      item_id -= 10000;
-    }
 
     let url = format!(
       "{base_url}/{keyof}/{item_category}/{item_id}.avif",
