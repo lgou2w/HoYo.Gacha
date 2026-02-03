@@ -134,7 +134,7 @@ static UIGF_GACHA_TYPE_MAPPINGS: LazyLock<HashMap<u32, u32>> = LazyLock::new(|| 
 #[derive(Debug, Snafu)]
 #[snafu(module)]
 pub enum UigfError {
-  #[snafu(display("Unsupported uigf version: {actual} (Expected: {expected:?}"))]
+  #[snafu(display("Unsupported UIGF version: {actual} (Expected: {expected:?}"))]
   UnsupportedVersion {
     actual: UigfVersion,
     expected: &'static [UigfVersion],
@@ -146,7 +146,7 @@ pub enum UigfError {
     value: u32,
   },
 
-  #[snafu(display("Failed to mapping uigf gacha type: {value} (Cursor: {cursor})"))]
+  #[snafu(display("Failed to mapping UIGF gacha type: {value} (Cursor: {cursor})"))]
   MappingGachaType { value: u32, cursor: usize },
 
   #[snafu(display(
@@ -172,13 +172,13 @@ pub enum UigfError {
   #[snafu(display("Deserialization json error: {source}"))]
   Deserialize { source: serde_json::Error },
 
-  #[snafu(display("Invalid uigf version: {value}"))]
+  #[snafu(display("Invalid UIGF version: {value}"))]
   InvalidVersion { value: String },
 
-  #[snafu(display("Owner uid of the uigf does not match: {actual} (Expected: {expected})"))]
+  #[snafu(display("Owner uid of the UIGF does not match: {actual} (Expected: {expected})"))]
   InconsistentUid { actual: u32, expected: u32 },
 
-  #[snafu(display("Required field missing: {path} (Cursor: {cursor})"))]
+  #[snafu(display("Incorrect data. Missing required field: {path} (Cursor: {cursor})"))]
   RequiredField { path: &'static str, cursor: usize },
 
   #[snafu(display("Missing metadata locale: {business:?}, lang: {lang}"))]
@@ -193,7 +193,7 @@ pub enum UigfError {
 
 impl ErrorDetails for UigfError {
   fn name(&self) -> &'static str {
-    stringify!(ClassicUigfError)
+    stringify!(UigfError)
   }
 
   fn details(&self) -> Option<serde_json::Value> {
