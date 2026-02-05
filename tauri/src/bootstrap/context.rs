@@ -1,15 +1,19 @@
 use std::process;
 use std::sync::Arc;
 
+use hg_ffi::Singleton;
 use tracing::info;
 
 use crate::bootstrap::environment::Environment;
 use crate::bootstrap::state::AppState;
 use crate::bootstrap::tracing::Tracing;
 use crate::business::metadata::Metadata;
+use crate::constants;
 use crate::database::Database;
 
 pub struct Context {
+  // singleton
+  singleton: Singleton,
   // logger
   tracing: Tracing,
   // Shared to Tauri state
@@ -22,6 +26,7 @@ pub struct Context {
 impl Context {
   #[tracing::instrument]
   pub async fn new() -> Self {
+    let singleton = Singleton::new(constants::ID).expect("Failed to create singleton");
     let tracing = Tracing::new();
 
     info!("Initializing application context...");
@@ -38,6 +43,7 @@ impl Context {
       .expect("Failed to apply database migrations");
 
     Self {
+      singleton,
       tracing,
       environment: Arc::new(environment),
       metadata: Arc::new(metadata),
@@ -57,6 +63,7 @@ impl Context {
 
     info!("bye!");
     self.tracing.close();
+    drop(self.singleton);
 
     // Exit the process with the given code
     process::exit(exit_code)

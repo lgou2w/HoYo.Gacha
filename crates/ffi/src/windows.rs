@@ -18,7 +18,8 @@ use webview2_com::Microsoft::Web::WebView2::Win32::{
   ICoreWebView2_2, ICoreWebView2_13, ICoreWebView2Settings4,
 };
 use windows::Win32::Foundation::{
-  CloseHandle, HANDLE, HWND, WAIT_EVENT, WAIT_FAILED, WAIT_OBJECT_0,
+  CloseHandle, ERROR_ALREADY_EXISTS, GetLastError, HANDLE, HWND, NO_ERROR, WAIT_EVENT, WAIT_FAILED,
+  WAIT_OBJECT_0,
 };
 use windows::Win32::Globalization::{GetUserPreferredUILanguages, MUI_LANGUAGE_NAME};
 use windows::Win32::Graphics::DirectWrite::{
@@ -33,15 +34,18 @@ use windows::Win32::System::Registry::{
   HKEY, HKEY_CURRENT_USER, KEY_NOTIFY, KEY_READ, REG_NOTIFY_CHANGE_LAST_SET, REG_SAM_FLAGS,
   RegCloseKey, RegNotifyChangeKeyValue, RegOpenKeyExA, RegQueryValueExA,
 };
-use windows::Win32::System::Threading::{CreateEventA, INFINITE, SetEvent, WaitForMultipleObjects};
+use windows::Win32::System::Threading::{
+  CreateEventA, CreateMutexW, INFINITE, ReleaseMutex, SetEvent, WaitForMultipleObjects,
+};
 use windows::Win32::UI::Shell::{
   FOLDERID_Desktop, FOLDERID_LocalAppData, FOLDERID_LocalAppDataLow, FOLDERID_Profile, IShellLinkW,
   KF_FLAG_DEFAULT, SHGetKnownFolderPath, ShellLink,
 };
 use windows::Win32::UI::WindowsAndMessaging::{
-  IDYES, MB_DEFBUTTON1, MB_ICONERROR, MB_YESNO, MessageBoxW,
+  FindWindowW, IDYES, IsWindow, MB_DEFBUTTON1, MB_ICONERROR, MB_YESNO, MessageBoxW, SW_SHOW,
+  SetForegroundWindow, ShowWindow,
 };
-use windows::core::{BOOL, Error as WindowsError, GUID, Interface, PCWSTR, PWSTR, s, w};
+use windows::core::{BOOL, Error as WindowsError, GUID, HSTRING, Interface, PCWSTR, PWSTR, s, w};
 
 /// The current window HWND stored as an atomic isize. (Pointer)
 static CURRENT_WINDOW_HWND: AtomicIsize = AtomicIsize::new(0);
@@ -550,6 +554,49 @@ pub fn file_dialog(hwnd: Option<isize>) -> AsyncFileDialog {
 
   rfd
 }
+
+pub struct Singleton(HANDLE);
+
+impl Singleton {
+  pub fn new(unique: &str) -> Result<Self, WindowsError> {
+    let unique = HSTRING::from(unique);
+    let hmutex = unsafe { CreateMutexW(None, true, &unique) }?;
+
+    let error = unsafe { GetLastError() };
+    if error == NO_ERROR {
+      Ok(Self(hmutex))
+    } else if error == ERROR_ALREADY_EXISTS {
+      unsafe {
+        if let Ok(hwnd) = FindWindowW(&unique, None)
+          && IsWindow(Some(hwnd)).as_bool()
+        {
+          let _ = ShowWindow(hwnd, SW_SHOW);
+          let _ = SetForegroundWindow(hwnd);
+        }
+      }
+
+      println!("Singleton instance already exists");
+      process::exit(1)
+    } else {
+      Err(error.to_hresult().into())
+    }
+  }
+}
+
+impl Drop for Singleton {
+  fn drop(&mut self) {
+    if !self.0.is_invalid() {
+      unsafe {
+        let _ = ReleaseMutex(self.0);
+        let _ = CloseHandle(self.0);
+      }
+    }
+  }
+}
+
+// SAFETY: HANDLE is safe to send and share between threads.
+unsafe impl Send for Singleton {}
+unsafe impl Sync for Singleton {}
 
 #[cfg(test)]
 mod tests {
