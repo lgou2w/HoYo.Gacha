@@ -377,9 +377,7 @@ impl Metadata {
     let f = async move {
       'retry: {
         for duration in backoff {
-          let result = self.update().await;
-
-          match result {
+          match self.update().await {
             Ok(kind) => {
               // On success, dump the metadata
               // only for successful updates
@@ -390,25 +388,35 @@ impl Metadata {
 
               break 'retry Ok(kind);
             }
-            // Retry on reqwest errors
-            Err(MetadataUpdateError::Reqwest { ref source }) => {
-              // When `duration` is `Some`, we can retry
-              if let Some(d) = duration {
+            Err(err) => {
+              // Retry on Reqwest errors or Downloaded mismatch
+              if matches!(
+                err,
+                MetadataUpdateError::Reqwest { .. } | MetadataUpdateError::DownloadedMismatch
+              ) {
+                // When `duration` is `Some`, we can retry
+                if let Some(d) = duration {
+                  tracing::error!(
+                    message = "Metadata update failed due to network error, will retry...",
+                    ?err
+                  );
+
+                  tokio::time::sleep(d).await;
+                  continue;
+                }
+
+                // No more retries
                 tracing::error!(
-                  message = "Metadata update failed due to network error, will retry...",
-                  err = ?source,
+                  message = "Metadata update max attempts reached, giving up",
+                  ?err
                 );
 
-                tokio::time::sleep(d).await;
-                continue;
+                break 'retry Err(err);
+              } else {
+                // Other errors are not retriable
+                break 'retry Err(err);
               }
-
-              // No more retries
-              debug!("Metadata update max attempts reached, giving up");
-              break 'retry result;
             }
-            // Other errors are not retriable
-            _ => break 'retry result,
           }
         }
 
