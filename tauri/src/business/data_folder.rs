@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 use snafu::{OptionExt, ResultExt, Snafu};
 use tokio::fs::File as TokioFile;
 use tokio::io::{AsyncBufReadExt, BufReader as TokioBufReader};
-use tracing::{debug, info, warn};
+use tracing::{info, warn};
 
 use crate::constants;
 use crate::database::schemas::AccountBusiness;
@@ -156,7 +156,7 @@ impl DataFolderLocator for UnityLogDataFolderLocator {
     let keyword = uid.game_biz().data_folder_name();
     let keyword_len = keyword.len();
 
-    debug!(
+    info!(
       message = "Try to find the keyword from the log file",
       ?keyword,
       ?log_file
