@@ -80,7 +80,7 @@ const MetadataCommands = {
    * @throws `MetadataUpdateError`
    */
   update:
-    declareCommand<{ maxAttempts?: number | null }, MetadataUpdateResult>('metadata_update'),
+    declareCommand<{ maxAttempts?: 0 | 1 | 2 | 3 | 4 | 5 | null }, MetadataUpdateResult>('metadata_update'),
 } as const
 
 Object.freeze(MetadataCommands)

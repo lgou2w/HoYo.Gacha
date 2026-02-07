@@ -372,7 +372,7 @@ impl Metadata {
     const MIN: std::time::Duration = std::time::Duration::from_secs(3);
     const MAX: std::time::Duration = std::time::Duration::from_secs(10);
 
-    let max_attempts = max_attempts.unwrap_or(MAX_ATTEMPTS).max(5);
+    let max_attempts = max_attempts.unwrap_or(MAX_ATTEMPTS).clamp(0, 5);
     let backoff = exponential_backoff::Backoff::new(max_attempts as _, MIN, MAX);
     let f = async move {
       'retry: {
