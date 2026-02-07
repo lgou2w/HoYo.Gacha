@@ -34,6 +34,7 @@ pub struct ParsedGachaUrl<'a> {
   pub authkey: Cow<'a, str>,
   pub lang: Cow<'a, str>,
   // Optional params
+  pub auth_appid: Option<Cow<'a, str>>,
   pub gacha_type: ParsedGachaType,
   pub init_gacha_type: ParsedGachaType,
   pub end_id: Option<Cow<'a, str>>,
@@ -47,7 +48,8 @@ pub struct ParsedGachaUrl<'a> {
   pub queries: HashMap<Cow<'a, str>, Cow<'a, str>>,
 }
 
-// Required params
+// Parameters
+pub const PARAM_AUTH_APPID: &str = "auth_appid";
 pub const PARAM_SIGN_TYPE: &str = "sign_type";
 pub const PARAM_AUTHKEY_VER: &str = "authkey_ver";
 pub const PARAM_AUTHKEY: &str = "authkey";
@@ -57,6 +59,17 @@ pub const PARAM_LANG: &str = "lang";
 pub const PARAM_END_ID: &str = "end_id";
 pub const PARAM_PAGE: &str = "page";
 pub const PARAM_SIZE: &str = "size";
+
+// Known Auth appid
+pub const AUTH_APPID_WEBVIEW_GACHA: &str = "webview_gacha";
+
+impl<'a> ParsedGachaUrl<'a> {
+  /// Returns `true` if the `auth_appid` is `webview_gacha`.
+  #[inline]
+  pub fn is_auth_appid_webview_gacha(&self) -> bool {
+    self.auth_appid.as_deref() == Some(AUTH_APPID_WEBVIEW_GACHA)
+  }
+}
 
 impl<'a> ParsedGachaUrl<'a> {
   /// Validate the format of a dirty URL and parse the required parameters.
@@ -121,6 +134,7 @@ impl<'a> ParsedGachaUrl<'a> {
       };
     }
 
+    let auth_appid = queries.remove(PARAM_AUTH_APPID);
     let gacha_type = gacha_type_param! { gacha_type_name };
     let init_gacha_type = gacha_type_param! { init_gacha_type_name };
 
@@ -134,6 +148,7 @@ impl<'a> ParsedGachaUrl<'a> {
       authkey_ver,
       authkey,
       lang,
+      auth_appid,
       gacha_type,
       init_gacha_type,
       end_id,
@@ -193,6 +208,7 @@ impl<'a> ParsedGachaUrl<'a> {
 
     // Allow overriding lang and gacha_type
     push_query! { PARAM_LANG, Borrowed(options.lang.or(Some(&self.lang))) }
+    push_query! { PARAM_AUTH_APPID, Borrowed(self.auth_appid.as_deref()) }
     push_query! { self.gacha_type.name, Owned(options.gacha_type.or(self.gacha_type.value)) }
     push_query! { self.init_gacha_type.name, Owned(options.init_gacha_type.or(self.init_gacha_type.value)) }
 
