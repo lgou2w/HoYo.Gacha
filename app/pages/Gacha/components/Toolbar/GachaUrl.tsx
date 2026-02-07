@@ -328,7 +328,7 @@ function useUserAction (language: Language | string, t: TFunction) {
     // The URL already contains the calculated properties status value; see above.
     // url.value === properties.gachaUrl
     if (url.value && url.hasExpired) {
-      console.info('Gacha URL is expired, need to reobtain...')
+      console.debug('Gacha URL is expired, need to reobtain...')
       properties.gachaUrl = null
       properties.gachaUrlCreationTime = null
     }
