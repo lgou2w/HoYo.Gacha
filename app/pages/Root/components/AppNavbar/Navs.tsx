@@ -2,11 +2,12 @@ import React, { ComponentProps, ReactNode, createRef, useCallback, useEffect } f
 import { Divider, Image, SelectTabEventHandler, Tab, TabList, imageClassNames, makeStyles, tabClassNames, tokens } from '@fluentui/react-components'
 import { SettingsColor } from '@fluentui/react-icons'
 import { useLocation, useNavigate } from '@tanstack/react-router'
-import { AccountBusinessKeys, KeyofAccountBusiness } from '@/api/schemas/Account'
+import { AccountBusiness, AccountBusinessKeys, KeyofAccountBusiness } from '@/api/schemas/Account'
 import BusinessImages from '@/assets/images/BusinessImages'
+import { useNavbarBusinessVisibleSuspenseQuery } from '@/pages/Root/queries/navbar'
 
 interface NavIcon { normal: ReactNode, selected?: ReactNode }
-interface NavItemPath { path: string, icon: NavIcon | string }
+interface NavItemPath { path: string, icon: NavIcon | string, keyofBusiness?: KeyofAccountBusiness }
 interface NavItemSpacing { spacing: true }
 interface NavItemDivider { divider: true }
 type NavItem
@@ -22,6 +23,7 @@ const NavItems: NavItem[] = [
       return {
         path: `/Gacha/${keyofBusiness}`,
         icon: BusinessImages[keyofBusiness as KeyofAccountBusiness].Material!.Icon!,
+        keyofBusiness,
       }
     }),
   { divider: true },
@@ -91,7 +93,7 @@ const MemoizedNavItems = React.memo(function RenderNavItems () {
 })
 
 function RenderNavItemPath (props: Omit<ComponentProps<'button'>, 'children'> & NavItemPath) {
-  const { path, icon, ...rest } = props
+  const { path, icon, keyofBusiness, ...rest } = props
   const location = useLocation()
   const isSelected = location.pathname === path
   const iconChildren = typeof icon === 'string'
@@ -99,6 +101,11 @@ function RenderNavItemPath (props: Omit<ComponentProps<'button'>, 'children'> & 
     : isSelected
       ? icon.selected || icon.normal
       : icon.normal
+
+  const visible = useNavbarBusinessVisibleSuspenseQuery()
+  if (keyofBusiness && visible.data[AccountBusiness[keyofBusiness]] === false) {
+    return null
+  }
 
   return (
     <Tab

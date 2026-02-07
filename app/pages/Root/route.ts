@@ -3,6 +3,7 @@ import { QueryClient } from '@tanstack/react-query'
 import { createRootRouteWithContext } from '@tanstack/react-router'
 import AppCommands from '@/api/commands/app'
 import { DatabaseThemeStore, ThemeStore } from '@/contexts/Theme'
+import { ensureNavbarBusinessVisibleQueryData } from '@/pages/Root/queries/navbar'
 import RootLayout from './layout'
 
 export interface RootRouteContext {
@@ -19,6 +20,7 @@ const rootRoute = createRootRouteWithContext<RootRouteContext>()({
     console.debug('===== Root Route Loader =====')
     const environment = await AppCommands.environment()
     const themeData = await themeStore.load()
+    ensureNavbarBusinessVisibleQueryData()
     return {
       environment,
       themeData,

@@ -23,6 +23,10 @@
       "Title": "Language",
       "Subtitle": "Change the primary language used by the application."
     },
+    "NavbarBusinessVisible": {
+      "Title": "Navbar Business Item Visibility",
+      "Subtitle": "Control display status of business-related entries in the navigation bar."
+    },
     "GachaClientareaTabs": {
       "Title": "Business Startup Tab",
       "Subtitle": "Select the Startup tab for your default business client area.",
