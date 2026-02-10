@@ -1,4 +1,3 @@
-import { Spinner } from '@fluentui/react-components'
 import { QueryClient } from '@tanstack/react-query'
 import { createRootRouteWithContext } from '@tanstack/react-router'
 import AppCommands from '@/api/commands/app'
@@ -15,7 +14,6 @@ const themeStore: ThemeStore = new DatabaseThemeStore()
 const rootRoute = createRootRouteWithContext<RootRouteContext>()({
   shouldReload: false,
   component: RootLayout,
-  pendingComponent: Spinner,
   async loader () {
     console.debug('===== Root Route Loader =====')
     const environment = await AppCommands.environment()
