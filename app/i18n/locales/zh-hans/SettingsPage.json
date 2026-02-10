@@ -64,6 +64,18 @@
       "Subtitle": "检查应用的版本更新。",
       "CheckBtn": "检查更新"
     },
+    "Metadata": {
+      "Title": "元数据状态",
+      "Subtitle": "用于指示元数据更新程序的当前状态。",
+      "Status": {
+        "Away": "检查中...",
+        "Busy": "错误",
+        "Offline": "脱机",
+        "Available": "在线",
+        "Unknown": "未知"
+      },
+      "Retry": "重试"
+    },
     "Specification": {
       "Title": "设备规格",
       "Copy": "复制",

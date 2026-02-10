@@ -64,6 +64,18 @@
       "Subtitle": "Check for application version updates.",
       "CheckBtn": "Check Update"
     },
+    "Metadata": {
+      "Title": "Metadata Status",
+      "Subtitle": "Used to indicate the current status of the Metadata updater.",
+      "Status": {
+        "Away": "Checking...",
+        "Busy": "Error",
+        "Offline": "Offline",
+        "Available": "Online",
+        "Unknown": "Unknown"
+      },
+      "Retry": "Retry"
+    },
     "Specification": {
       "Title": "Device Specifications",
       "Copy": "Copy",

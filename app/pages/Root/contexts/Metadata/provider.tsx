@@ -1,21 +1,25 @@
-import { Button, ToastTrigger } from '@fluentui/react-components'
+import { PropsWithChildren } from 'react'
+import { Button } from '@fluentui/react-components'
 import { QueryKey, useQuery } from '@tanstack/react-query'
-import MetadataCommands, { MetadataUpdateKind } from '@/api/commands/metadata'
+import MetadataCommands, { MetadataUpdateKind, MetadataUpdateResult } from '@/api/commands/metadata'
 import errorTrans from '@/api/errorTrans'
 import { WithTransKnownNs, useI18n } from '@/i18n'
+import Notifier from '@/pages/Root/components/Notifier'
 import useNotifier, { DefaultNotifierTimeouts } from '@/pages/Root/hooks/useNotifier'
-import queryClient from '@/queryClient'
-import Notifier from './Notifier'
+import { MetadataContext, MetadataState } from './context'
 
 const MetadataToasterId = 'metadata-toaster'
 
-export default function Metadata () {
-  useMetadataUpdater()
+export default function MetadataProvider (props: PropsWithChildren) {
+  const state = useMetadataState()
   return (
-    <Notifier
-      toasterId={MetadataToasterId}
-      position="bottom"
-    />
+    <MetadataContext value={state}>
+      <Notifier
+        toasterId={MetadataToasterId}
+        position="bottom"
+      />
+      {props.children}
+    </MetadataContext>
   )
 }
 
@@ -27,27 +31,28 @@ const ErrorTimeout = 60 * 1000 // 1 Minute
 const RefetchInterval = 10 * 60 * 1000 // 10 Minutes
 const MaxAttempts = 3
 
-function useMetadataUpdater () {
-  const notifier = useNotifier(MetadataToasterId)
+function useMetadataState (): MetadataState {
   const { t } = useI18n(WithTransKnownNs.RootPage)
-
-  useQuery({
+  const notifier = useNotifier(MetadataToasterId)
+  return useQuery<
+    MetadataUpdateResult | 'offline'
+  >({
     gcTime: Infinity,
     staleTime: Infinity,
     networkMode: 'online',
     refetchOnReconnect: true,
     refetchInterval: RefetchInterval,
     queryKey: MetadataUpdaterQueryKey,
-    queryFn: () => {
+    queryFn: (context) => {
       if (!window.navigator.onLine) {
-        // Offline
-        return
+        return 'offline'
       }
 
       const promise = MetadataCommands.update({
         maxAttempts: MaxAttempts,
       })
 
+      notifier.dismissAll()
       return notifier.promise(promise, {
         loading: {
           title: t('Metadata.Loading'),
@@ -58,15 +63,16 @@ function useMetadataUpdater () {
             return
           }
 
-          const hash = typeof result == 'object'
+          const successHash = typeof result == 'object'
+            && MetadataUpdateKind.Success in result
             ? result[MetadataUpdateKind.Success]
             : undefined
 
           return {
             title: t('Metadata.Success.Title'),
             body: t('Metadata.Success.Body', {
-              hash,
-              context: hash
+              hash: successHash,
+              context: successHash
                 ? MetadataUpdateKind.Success
                 : MetadataUpdateKind.UpToDate,
             }),
@@ -79,19 +85,17 @@ function useMetadataUpdater () {
             title: t('Metadata.Error'),
             body: errorTrans(t, error),
             footer: (
-              <ToastTrigger>
-                <Button
-                  size="small"
-                  appearance="outline"
-                  onClick={() => {
-                    queryClient.fetchQuery({
-                      queryKey: MetadataUpdaterQueryKey,
-                    })
-                  }}
-                >
-                  {t('Metadata.Retry')}
-                </Button>
-              </ToastTrigger>
+              <Button
+                size="small"
+                appearance="outline"
+                onClick={() => {
+                  context.client.fetchQuery({
+                    queryKey: MetadataUpdaterQueryKey,
+                  })
+                }}
+              >
+                {t('Metadata.Retry')}
+              </Button>
             ),
             timeout: ErrorTimeout,
             dismissible: true,

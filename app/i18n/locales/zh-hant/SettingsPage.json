@@ -64,6 +64,18 @@
       "Subtitle": "檢查應用程式的版本更新。",
       "CheckBtn": "檢查更新"
     },
+    "Metadata": {
+      "Title": "元資料狀態",
+      "Subtitle": "用於指示元資料更新程序的目前狀態。",
+      "Status": {
+        "Away": "檢查中...",
+        "Busy": "錯誤",
+        "Offline": "離線",
+        "Available": "線上",
+        "Unknown": "未知"
+      },
+      "Retry": "重試"
+    },
     "Specification": {
       "Title": "裝置規格",
       "Copy": "複製",

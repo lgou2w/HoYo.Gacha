@@ -4,6 +4,7 @@ import { EnvironmentProvider } from '@/contexts/Environment'
 import { ThemeProvider } from '@/contexts/Theme'
 import AppLayout from './components/AppLayout'
 import ErrorBoundary from './components/ErrorBoundary'
+import { MetadataProvider } from './contexts/Metadata'
 import rootRoute from './route'
 
 export default function RootLayout () {
@@ -16,12 +17,14 @@ export default function RootLayout () {
         themeStore={themeStore}
         isSupportedMica={environment.windows?.isWindows11}
       >
-        <AppLayout>
-          <ErrorBoundary>
-            <Outlet />
-          </ErrorBoundary>
-        </AppLayout>
-        <ReactQueryDevtools />
+        <MetadataProvider>
+          <AppLayout>
+            <ErrorBoundary>
+              <Outlet />
+            </ErrorBoundary>
+          </AppLayout>
+          <ReactQueryDevtools />
+        </MetadataProvider>
       </ThemeProvider>
     </EnvironmentProvider>
   )
