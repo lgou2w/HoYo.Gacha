@@ -7,7 +7,7 @@ import BusinessCommands, { DataFolder, LocateDataFolderFactory, LocateDataFolder
 import errorTrans from '@/api/errorTrans'
 import { Account, AccountBusiness, CreateAccountArgs, UpdateAccountDataFolderAndPropertiesArgs } from '@/api/schemas/Account'
 import { WithTrans, withTrans } from '@/i18n'
-import { useCreateAccountMutation, useUpdateAccountDataFolderAndPropertiesMutation } from '../../queries/accounts'
+import { useCreateAccountMutation, useUpdateAccountDataFolderAndPropertiesMutation } from '@/pages/Gacha/queries/accounts'
 
 const DisplayNameMaxLength = 16
 
