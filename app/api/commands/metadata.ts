@@ -58,7 +58,7 @@ export enum MetadataUpdateKind {
 
 export type MetadataUpdateResult
   = | MetadataUpdateKind.Updating
-    | MetadataUpdateKind.UpToDate
+    | { [MetadataUpdateKind.UpToDate]: string }
     | { [MetadataUpdateKind.Success]: string }
     | null // 'Feature disabled' only
 

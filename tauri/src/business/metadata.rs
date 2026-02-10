@@ -215,7 +215,7 @@ impl ErrorDetails for MetadataUpdateError {
 #[derive(Debug, serde::Serialize, PartialEq, Eq)]
 pub enum MetadataUpdateKind {
   Updating,
-  UpToDate,
+  UpToDate(String),
   Success(String),
 }
 
@@ -312,7 +312,7 @@ impl Metadata {
       let guard = self.inner.read().await;
       if guard.hash == latest_hash {
         info!(message = "Metadata is already up-to-date", ?latest_hash);
-        return Ok(MetadataUpdateKind::UpToDate);
+        return Ok(MetadataUpdateKind::UpToDate(latest_hash));
       }
     }
 
