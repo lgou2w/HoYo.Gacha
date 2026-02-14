@@ -44,15 +44,19 @@ function MetadataAction ({ t }: Pick<WithTrans, 't'>) {
 
   let hash: string | undefined = undefined
   let status: 'away' | 'busy' | 'offline' | 'available' | 'unknown'
+  let canRefetch = false
+
   if (isFetching) {
     status = 'away'
   } else if (isError) {
     status = 'busy'
+    canRefetch = true
   } else if (isSuccess) {
     if (!data || data === 'offline') {
       status = 'offline'
     } else {
       status = 'available'
+      canRefetch = true
       hash = typeof data === 'object'
         ? MetadataUpdateKind.UpToDate in data
           ? data[MetadataUpdateKind.UpToDate]
@@ -80,12 +84,12 @@ function MetadataAction ({ t }: Pick<WithTrans, 't'>) {
           </Caption2>
         )}
       </div>
-      {isError && (
+      {canRefetch && (
         <Button
           onClick={() => refetch()}
           size="small"
         >
-          {t('About.Metadata.Retry')}
+          {t('About.Metadata.Refetch')}
         </Button>
       )}
     </div>

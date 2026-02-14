@@ -74,7 +74,7 @@
         "Available": "在线",
         "Unknown": "未知"
       },
-      "Retry": "重试"
+      "Refetch": "重新检查"
     },
     "Specification": {
       "Title": "设备规格",

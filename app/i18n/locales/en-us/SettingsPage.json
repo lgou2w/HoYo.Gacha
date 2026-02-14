@@ -74,7 +74,7 @@
         "Available": "Online",
         "Unknown": "Unknown"
       },
-      "Retry": "Retry"
+      "Refetch": "Refetch"
     },
     "Specification": {
       "Title": "Device Specifications",
