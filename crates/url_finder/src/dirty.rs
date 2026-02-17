@@ -107,6 +107,47 @@ impl DirtyGachaUrl {
   }
 }
 
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
+struct WebCachesVersion(u16, u16, u16, Option<u16>);
+
+impl fmt::Display for WebCachesVersion {
+  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    let Self(major, minor, patch, build) = self;
+
+    write!(f, "{major}.{minor}.{patch}")?;
+    if let Some(build) = build {
+      write!(f, ".{build}")?;
+    }
+
+    Ok(())
+  }
+}
+
+impl FromStr for WebCachesVersion {
+  type Err = ();
+
+  fn from_str(s: &str) -> Result<Self, Self::Err> {
+    /// `webCaches` version number. For example: `x.y.z` or `x.y.z.a`
+    static REGEX_WEBCACHES_VERSION: LazyLock<Regex> = LazyLock::new(|| {
+      Regex::new(r"^(?P<major>\d+)\.(?P<minor>\d+)\.(?P<patch>\d+)(\.(?P<build>\d+))?$").unwrap()
+    });
+
+    if let Some(captures) = REGEX_WEBCACHES_VERSION.captures(s) {
+      let major = captures["major"].parse().map_err(|_| ())?;
+      let minor = captures["minor"].parse().map_err(|_| ())?;
+      let patch = captures["patch"].parse().map_err(|_| ())?;
+      let build = captures
+        .name("build")
+        .map(|build| build.as_str().parse::<_>().map_err(|_| ()))
+        .transpose()?;
+
+      Ok(Self(major, minor, patch, build))
+    } else {
+      Err(())
+    }
+  }
+}
+
 impl DirtyGachaUrl {
   /// Find the latest version of the dirty Gacha URL from a webcaches directory.
   ///
@@ -119,46 +160,6 @@ impl DirtyGachaUrl {
     webcaches_folder: P,
     policy: CreationTimePolicy,
   ) -> Result<Vec<Self>, DirtyGachaUrlError> {
-    /// `webCaches` version number. For example: `x.y.z` or `x.y.z.a`
-    static REGEX_WEBCACHES_VERSION: LazyLock<Regex> = LazyLock::new(|| {
-      Regex::new(r"^(?P<major>\d+)\.(?P<minor>\d+)\.(?P<patch>\d+)(\.(?P<build>\d+))?$").unwrap()
-    });
-
-    #[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
-    struct WebCachesVersion(u8, u8, u8, Option<u8>);
-
-    impl fmt::Display for WebCachesVersion {
-      fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let Self(major, minor, patch, build) = self;
-
-        write!(f, "{major}.{minor}.{patch}")?;
-        if let Some(build) = build {
-          write!(f, ".{build}")?;
-        }
-
-        Ok(())
-      }
-    }
-
-    impl FromStr for WebCachesVersion {
-      type Err = ();
-
-      fn from_str(s: &str) -> Result<Self, Self::Err> {
-        if let Some(captures) = REGEX_WEBCACHES_VERSION.captures(s) {
-          let major = captures["major"].parse().unwrap();
-          let minor = captures["minor"].parse().unwrap();
-          let patch = captures["patch"].parse().unwrap();
-          let build = captures
-            .name("build")
-            .map(|build| build.as_str().parse::<u8>().unwrap());
-
-          Ok(Self(major, minor, patch, build))
-        } else {
-          Err(())
-        }
-      }
-    }
-
     // Traverse all valid version number subdir under the webCaches directory and collect them.
     let mut walk_dir = fs::read_dir(&webcaches_folder).context(OpenWebcachesSnafu)?;
     let mut versions = Vec::new();
@@ -184,5 +185,38 @@ impl DirtyGachaUrl {
       .join("Cache_Data");
 
     Self::from_disk_cache(data_folder, policy)
+  }
+}
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[test]
+  fn test_webcaches_version() {
+    macro_rules! case {
+      ($str:expr) => {
+        assert!(WebCachesVersion::from_str($str).is_ok())
+      };
+    }
+
+    // Valid cases
+    case! { "1.0.0" }
+    case! { "1.0.1.0" }
+    case! { &format!("{}.0.0", u16::MAX) }
+  }
+
+  #[test]
+  fn test_webcaches_version_invalid() {
+    macro_rules! case {
+      ($str:expr) => {
+        assert!(WebCachesVersion::from_str($str).is_err())
+      };
+    }
+
+    // Error cases
+    case! { "" }
+    case! { "1.x" }
+    case! { &format!("{}.0.0", u16::MAX as u32 + 1) } // Overflow
   }
 }
