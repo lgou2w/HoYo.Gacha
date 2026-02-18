@@ -34,3 +34,9 @@ export function extractErrorMessage (error: unknown): string {
     return String(error)
   }
 }
+
+// See: https://doc.rust-lang.org/std/io/struct.Error.html
+export interface NativeIOError {
+  kind: string // too many
+  message: string
+}

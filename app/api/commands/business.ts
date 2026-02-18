@@ -1,16 +1,10 @@
 import { Channel } from '@tauri-apps/api/core'
 import { Command, declareCommand } from '@/api/command'
-import { AppError, isAppError } from '@/api/error'
+import { AppError, NativeIOError, isAppError } from '@/api/error'
 import { Account, AccountBusiness } from '@/api/schemas/Account'
 import { GachaRecord, GachaType } from '@/api/schemas/GachaRecord'
 import { PrettizedCategory, PrettizedRecord, PrettizedRecords } from '@/pages/Gacha/contexts/PrettizedRecords/types'
 import { PickFileArgs } from './app'
-
-// See: https://doc.rust-lang.org/std/io/struct.Error.html
-export interface NativeIOError {
-  kind: string // too many
-  message: string
-}
 
 // #region: Error compat
 
