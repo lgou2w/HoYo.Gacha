@@ -22,7 +22,7 @@ backtrace = { version = "0.3.76", default-features = false, features = ["std"] }
 cfg-if = "1.0.4"
 exponential-backoff = { version = "2.1.0", default-features = false }
 form_urlencoded = { version = "1.2.2", default-features = false, features = ["std"] }
-futures-util = { version = "0.3.31", default-features = false }
+futures-util = { version = "0.3.32", default-features = false }
 os_info = { version = "3.14.0", default-features = false }
 raw-window-handle = { version = "0.6.2", default-features = false }
 regex = { version = "1.12.3", default-features = false, features = ["std"] }
