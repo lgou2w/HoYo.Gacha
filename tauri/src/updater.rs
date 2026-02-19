@@ -111,7 +111,7 @@ impl<'de> Deserialize<'de> for TagName {
     let s: &str = Deserialize::deserialize(deserializer)?;
     Self::from_str(s).map_err(|_| {
       serde::de::Error::custom(format!(
-        "Invalid tag name format: '{s}'. Expected format is 'major.minor.build'"
+        "Invalid tag name format: '{s}'. Expected format is 'major.minor.patch'"
       ))
     })
   }
