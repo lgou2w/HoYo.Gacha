@@ -1,6 +1,11 @@
 {
   "Unexpected": "An unexpected error occurred: {{message}}",
   "DatabaseError": "An unexpected database error occurred: {{message}}",
+  "UpdaterError": {
+    "Reqwest": "Failed to fetch app updates: {{cause}}",
+    "Io": "I/O error during app updates: {{cause.message}} ({{cause.kind}})",
+    "DownloadedMismatch": "Downloaded app updates size mismatch."
+  },
   "MetadataError": {
     "Deserialize": "Failed to deserialize metadata: {{cause}}",
     "Bake": "Failed to bake metadata: {{cause}}"

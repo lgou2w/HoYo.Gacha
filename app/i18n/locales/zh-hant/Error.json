@@ -1,6 +1,11 @@
 {
   "Unexpected": "發生意外錯誤：{{message}}",
   "DatabaseError": "發生資料庫意外錯誤：{{message}}",
+  "UpdaterError": {
+    "Reqwest": "請求應用程式更新時錯誤：{{cause}}",
+    "Io": "應用程式更新時 I/O 錯誤：{{cause.message}} ({{cause.kind}})",
+    "DownloadedMismatch": "已下載的應用程式更新大小不匹配。"
+  },
   "MetadataError": {
     "Deserialize": "反序列化元資料時錯誤：{{cause}}",
     "Bake": "處理和烘焙元資料時錯誤：{{cause}}"

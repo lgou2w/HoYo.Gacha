@@ -1,6 +1,11 @@
 {
   "Unexpected": "发生意外错误：{{message}}",
   "DatabaseError": "发生数据库意外错误：{{message}}",
+  "UpdaterError": {
+    "Reqwest": "请求应用更新时错误：{{cause}}",
+    "Io": "应用更新时 I/O 错误：{{cause.message}} ({{cause.kind}})",
+    "DownloadedMismatch": "已下载的应用更新大小不匹配。"
+  },
   "MetadataError": {
     "Deserialize": "反序列化元数据时错误：{{cause}}",
     "Bake": "处理和烘焙元数据时错误：{{cause}}"

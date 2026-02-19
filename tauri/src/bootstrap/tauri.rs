@@ -240,6 +240,9 @@ fn command_handlers() -> Box<dyn Fn(Invoke<Wry>) -> bool + Send + Sync + 'static
     crate::bootstrap::handlers::system_fonts,
     crate::bootstrap::handlers::pick_file,
     crate::bootstrap::handlers::pick_folder,
+    // Updater
+    crate::updater::updater_is_updating,
+    crate::updater::updater_update,
     // KeyValuePair
     crate::database::schemas::key_value_pair_handlers::database_find_kv_pair,
     crate::database::schemas::key_value_pair_handlers::database_create_kv_pair,
