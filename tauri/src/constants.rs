@@ -19,7 +19,7 @@ cfg_if! {if #[cfg(any(debug_assertions, test))] {
   // for Production
   pub const APP_NAME: &str = "HoYo.Gacha";
   pub const DATABASE: &str = "HoYo.Gacha.v1.db";
-  pub const USER_AGENT: &str = concat!("__DEV__HoYo.Gacha/v", env!("CARGO_PKG_VERSION"));
+  pub const USER_AGENT: &str = concat!("HoYo.Gacha/v", env!("CARGO_PKG_VERSION"));
 }}
 
 #[deprecated = "Legacy"]
