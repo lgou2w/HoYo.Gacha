@@ -3,7 +3,7 @@ use std::path::{Path, PathBuf};
 use std::str::FromStr;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, LazyLock};
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 use cfg_if::cfg_if;
 use exponential_backoff::Backoff;
@@ -149,7 +149,14 @@ impl LatestRelease {
 
 static UPDATING: AtomicBool = AtomicBool::new(false);
 static CURRENT_TAG_NAME: LazyLock<TagName> = LazyLock::new(|| constants::VERSION.parse().unwrap());
-static LATEST_RELEASE: LazyLock<Mutex<Option<Arc<LatestRelease>>>> = LazyLock::new(Mutex::default);
+
+// Used to cache the latest release info to avoid making a request every time.
+// Default TTL is 10 minutes, which should be a good balance between freshness and reducing unnecessary requests.
+const LATEST_RELEASE_CACHE_TTL: Duration = Duration::from_secs(10 * 60);
+
+#[allow(clippy::type_complexity)]
+static LATEST_RELEASE_CACHE: LazyLock<Mutex<Option<(Instant, Arc<LatestRelease>)>>> =
+  LazyLock::new(Mutex::default);
 
 pub struct Updater;
 
@@ -245,31 +252,9 @@ impl Updater {
 
     // 1. Check if the latest cached version exists
     //   to avoid making a request every time.
-    let latest = {
-      let mut guard = LATEST_RELEASE.lock().await;
-      if let Some(cached) = &*guard {
-        debug!("Using cached latest release");
-        Arc::clone(cached)
-      } else {
-        info!("Checking for app updates...");
-        let new_value = retry(LatestRelease::fetch, max_attempts, |err| {
-          // Retry on Reqwest errors
-          error!(
-            message = "Failed to fetch the latest release, retrying...",
-            ?err
-          );
-
-          true
-        })
-        .await
-        .context(ReqwestSnafu)?;
-
-        debug!("Fetched latest release: {new_value:?}");
-        let arc = Arc::new(new_value);
-        guard.replace(Arc::clone(&arc));
-        arc
-      }
-    };
+    let latest = Self::latest_release(max_attempts)
+      .await
+      .context(ReqwestSnafu)?;
 
     // 2. if greater than or equal to, return early
     debug!(
@@ -301,7 +286,7 @@ impl Updater {
 
     // 5. Reset cache to force reload the latest release info on next update check
     {
-      let mut guard = LATEST_RELEASE.lock().await;
+      let mut guard = LATEST_RELEASE_CACHE.lock().await;
       guard.take();
       debug!("Cleared latest release cache");
     }
@@ -316,6 +301,50 @@ impl Updater {
   }
 
   // region: private
+  #[tracing::instrument(skip_all)]
+  async fn latest_release(max_attempts: Option<u8>) -> Result<Arc<LatestRelease>, ReqwestError> {
+    // First, use cached
+    {
+      let mut guard = LATEST_RELEASE_CACHE.lock().await;
+      if let Some((fetch_time, cached)) = guard.as_ref() {
+        if fetch_time.elapsed() < LATEST_RELEASE_CACHE_TTL {
+          debug!(
+            "Using cached latest release (Age: {:?})",
+            fetch_time.elapsed()
+          );
+          return Ok(Arc::clone(cached));
+        } else {
+          debug!("Cached expired, will fetch");
+          guard.take();
+        }
+      } else {
+        debug!("No cached latest release found");
+      }
+    }
+
+    info!("Checking for app updates...");
+    let latest_release = retry(LatestRelease::fetch, max_attempts, |err| {
+      // Retry on Reqwest errors
+      error!(
+        message = "Failed to fetch the latest release, retrying...",
+        ?err
+      );
+
+      true
+    })
+    .await?;
+
+    let arc = Arc::new(latest_release);
+
+    // Update cached
+    {
+      let mut guard = LATEST_RELEASE_CACHE.lock().await;
+      guard.replace((Instant::now(), Arc::clone(&arc)));
+    }
+
+    Ok(arc)
+  }
+
   #[tracing::instrument(skip_all)]
   async fn download<P>(
     update_dir: &Path,
