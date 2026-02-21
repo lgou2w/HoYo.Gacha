@@ -57,7 +57,7 @@ export default function Hero () {
         <Button
           as="a"
           target="_blank"
-          rel="noreferre"
+          rel="noreferrer"
           href={__APP_HOMEPAGE__}
           icon={<HomeFilled />}
           appearance="subtle"
@@ -66,7 +66,7 @@ export default function Hero () {
         <Button
           as="a"
           target="_blank"
-          rel="noreferre"
+          rel="noreferrer"
           href={__APP_ISSUES__}
           icon={<ChatBubblesQuestionFilled />}
           appearance="subtle"
@@ -75,7 +75,7 @@ export default function Hero () {
         <Button
           as="a"
           target="_blank"
-          rel="noreferre"
+          rel="noreferrer"
           href={`mailto:${__APP_AUTHOR__}`}
           icon={<MailFilled />}
           appearance="subtle"

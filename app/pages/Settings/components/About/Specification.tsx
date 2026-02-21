@@ -69,7 +69,7 @@ export default withTrans.SettingsPage(function Specification ({ i18n, t }: WithT
                 {typeof value === 'string'
                   ? value
                   : (
-                      <Link href={value.link} target="_blank" rel="noreferre">
+                      <Link href={value.link} target="_blank" rel="noreferrer">
                         {`${value.text} (${dayjs(value.date).fromNow()})`}
                       </Link>
                     )}

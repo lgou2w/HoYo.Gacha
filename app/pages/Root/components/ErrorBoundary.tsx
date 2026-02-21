@@ -295,11 +295,11 @@ const ErrorComponent = withTrans.RootPage((
         <div className={styles.footer}>
           <Body1>
             {tE('Footer.Title')}
-            <Link href={__APP_ISSUES__} target="_blank" rel="noreferre">
+            <Link href={__APP_ISSUES__} target="_blank" rel="noreferrer">
               {tE('Footer.Faq')}
             </Link>
             {' · '}
-            <Link href={__APP_HOMEPAGE__} target="_blank" rel="noreferre">
+            <Link href={__APP_HOMEPAGE__} target="_blank" rel="noreferrer">
               {tE('Footer.Official')}
             </Link>
           </Body1>
