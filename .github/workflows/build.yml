@@ -2,9 +2,9 @@ name: Build
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, develop ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, develop ]
 
 env:
   CARGO_TERM_COLOR: always
@@ -55,10 +55,7 @@ jobs:
         run: pnpm test
 
       - name: Build app
-        run: pnpm build:offline
-
-      - name: Build artifact
-        run: pnpm build:artifact
+        run: pnpm tauri:build:cicd
 
       - name: Get short git commit sha
         id: short-sha
@@ -70,6 +67,9 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v6
         with:
-          name: HoYo.Gacha-git-${{ steps.short-sha.outputs.short_sha }}
+          name: HoYo.Gacha-artifact-git-${{ steps.short-sha.outputs.short_sha }}
           path: |
-            ${{ github.workspace }}/target/release/HoYo.Gacha.exe
+            ${{ github.workspace }}/README.md
+            ${{ github.workspace }}/LICENSE-APACHE
+            ${{ github.workspace }}/LICENSE-MIT
+            ${{ github.workspace }}/target/release/hoyo_gacha.*
