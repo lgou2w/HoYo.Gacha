@@ -46,6 +46,24 @@
       "Official": "官方网站"
     }
   },
+  "Updater": {
+    "Title": "应用更新",
+    "Subtitle": {
+      "Success": "新版本下载完成，请手动重启应用！",
+      "Error": "下载失败：{{message}}",
+      "Progress": "下载更新中..."
+    },
+    "Progress_indeterminate": "获取中...",
+    "Progress": "进度：{{value}}%",
+    "Confirm": "确认",
+    "Cancel": "取消",
+    "Retry": "重试",
+    "UpToDate": "应用已是最新版本。"
+  },
+  "UpdaterAlert": {
+    "Title": "新版本可用！",
+    "Download": "下载更新"
+  },
   "Metadata": {
     "Loading": "元数据检查更新中...",
     "Success": {

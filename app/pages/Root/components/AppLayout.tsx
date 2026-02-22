@@ -25,6 +25,7 @@ const useStyles = makeStyles({
     display: 'flex',
     flexDirection: 'column',
     flex: '1 0 auto',
+    rowGap: tokens.spacingVerticalL,
     margin: tokens.spacingVerticalL,
   },
 })

@@ -7,8 +7,8 @@ import Updater from './Updater'
 export default withTrans.SettingsPage(function About ({ t }: WithTrans) {
   return (
     <SectionGroup title={t('About.Title')}>
-      <Updater />
       <Metadata />
+      <Updater />
       <Specification />
     </SectionGroup>
   )

@@ -1,3 +1,6 @@
+use cfg_if::cfg_if;
+
+cfg_if! {if #[cfg(not(feature = "disable-app-updater"))] {
 use std::fmt;
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
@@ -5,11 +8,10 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, LazyLock};
 use std::time::{Duration, Instant};
 
-use cfg_if::cfg_if;
 use exponential_backoff::Backoff;
 use regex::Regex;
 use reqwest::{Client as Reqwest, Error as ReqwestError, StatusCode};
-use serde::{Deserialize, Deserializer, Serialize};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use snafu::{ResultExt, Snafu};
 use tauri::ipc::Channel;
 use time::OffsetDateTime;
@@ -82,7 +84,14 @@ where
 }
 
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
-struct TagName(u16, u16, u16);
+pub struct TagName(u16, u16, u16);
+
+impl fmt::Display for TagName {
+  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    let Self(major, minor, patch) = self;
+    f.write_fmt(format_args!("{major}.{minor}.{patch}"))
+  }
+}
 
 impl FromStr for TagName {
   type Err = ();
@@ -103,6 +112,15 @@ impl FromStr for TagName {
   }
 }
 
+impl Serialize for TagName {
+  fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+  where
+    S: Serializer,
+  {
+    self.to_string().serialize(serializer)
+  }
+}
+
 impl<'de> Deserialize<'de> for TagName {
   fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
   where
@@ -117,26 +135,25 @@ impl<'de> Deserialize<'de> for TagName {
   }
 }
 
-#[derive(Debug, Deserialize)]
-#[serde(rename_all = "PascalCase")]
-struct LatestRelease {
-  tag_name: TagName,
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all(serialize = "camelCase", deserialize = "PascalCase"))]
+pub struct LatestRelease {
+  pub tag_name: TagName,
   #[serde(with = "rfc3339")]
-  created_at: OffsetDateTime,
-  name: String,
-  size: u64,
-  download_url: String,
+  pub created_at: OffsetDateTime,
+  pub name: String,
+  pub size: u64,
+  pub download_url: String,
 }
-
-const API_TIMEOUT: Duration = Duration::from_secs(30);
 
 impl LatestRelease {
   async fn fetch() -> Result<Self, ReqwestError> {
     Reqwest::builder()
       .user_agent(constants::USER_AGENT)
+      .connect_timeout(Duration::from_secs(30))
+      .timeout(Duration::from_secs(60))
       .build()?
       .get("https://hoyo-gacha-v1.lgou2w.com/Version/Latest.json")
-      .timeout(API_TIMEOUT)
       .send()
       .await?
       .error_for_status()?
@@ -265,7 +282,11 @@ impl Updater {
     );
 
     if *CURRENT_TAG_NAME >= latest.tag_name {
-      info!(message = "App version is already up-to-date", ?latest.tag_name);
+      info!(
+        message = "App version is already up-to-date",
+        current = ?*CURRENT_TAG_NAME,
+        latest = ?latest.tag_name
+      );
       return Ok(UpdaterKind::UpToDate);
     }
 
@@ -275,14 +296,20 @@ impl Updater {
 
     // 4. Replace current exe
     //   Move the current exe to a backup file, then move the downloaded file to the exe path.
-    debug!("Replacing current exe...");
-    fs::rename(&*constants::EXE_PATH, current_exe_bak_path)
-      .await
-      .context(IoSnafu)?;
+    cfg_if! {if #[cfg(not(debug_assertions))] {
+      // (Production only)
+      debug!("Replacing current exe...");
+      fs::rename(&*constants::EXE_PATH, current_exe_bak_path)
+        .await
+        .context(IoSnafu)?;
 
-    fs::rename(downloaded, &*constants::EXE_PATH)
-      .await
-      .context(IoSnafu)?;
+      fs::rename(downloaded, &*constants::EXE_PATH)
+        .await
+        .context(IoSnafu)?;
+    } else {
+      // (Debug only)
+      let _ = fs::remove_file(downloaded).await;
+    }}
 
     // 5. Reset cache to force reload the latest release info on next update check
     {
@@ -300,9 +327,10 @@ impl Updater {
     Ok(UpdaterKind::Success)
   }
 
-  // region: private
   #[tracing::instrument(skip_all)]
-  async fn latest_release(max_attempts: Option<u8>) -> Result<Arc<LatestRelease>, ReqwestError> {
+  pub async fn latest_release(
+    max_attempts: Option<u8>,
+  ) -> Result<Arc<LatestRelease>, ReqwestError> {
     // First, use cached
     {
       let mut guard = LATEST_RELEASE_CACHE.lock().await;
@@ -345,6 +373,7 @@ impl Updater {
     Ok(arc)
   }
 
+  // region: private
   #[tracing::instrument(skip_all)]
   async fn download<P>(
     update_dir: &Path,
@@ -456,6 +485,8 @@ impl Updater {
       trace!(message = "Building request", current, retry_without_range);
       let mut request = Reqwest::builder()
         .user_agent(constants::USER_AGENT)
+        .connect_timeout(Duration::from_secs(30))
+        .timeout(Duration::from_secs(60))
         .build()
         .context(ReqwestSnafu)?
         .get(&latest_release.download_url);
@@ -467,7 +498,6 @@ impl Updater {
       }
 
       let mut response = request
-        .timeout(API_TIMEOUT)
         .send()
         .await
         .context(ReqwestSnafu)?
@@ -517,12 +547,12 @@ impl Updater {
         current += chunk.len() as u64;
         progress! { current as f32 / total_size as f32 };
 
-        // For debug
-        #[cfg(debug_assertions)]
-        trace!(
-          "Received chunk: {} bytes, total={current}/{total_size}",
-          chunk.len()
-        )
+        // // For debug
+        // #[cfg(debug_assertions)]
+        // trace!(
+        //   "Received chunk: {} bytes, total={current}/{total_size}",
+        //   chunk.len()
+        // )
       }
 
       // Ensure all data is flushed to disk before renaming the file.
@@ -550,6 +580,7 @@ impl Updater {
   }
   // endregion
 }
+}}
 
 // Handlers
 
@@ -573,6 +604,19 @@ cfg_if! {if #[cfg(not(feature = "disable-app-updater"))] {
       .await
       .map_err(AppError::from)
   }
+
+  #[tauri::command]
+  pub async fn updater_latest_release(
+    max_attempts: Option<u8>,
+  ) -> Result<(Arc<LatestRelease>, bool), AppError<UpdaterError>> {
+    let latest = Updater::latest_release(max_attempts)
+      .await
+      .context(ReqwestSnafu)
+      .map_err(AppError::from)?;
+
+    let can_update = latest.tag_name > *CURRENT_TAG_NAME;
+    Ok((latest, can_update))
+  }
 } else {
   // Feature disabled
 
@@ -581,4 +625,7 @@ cfg_if! {if #[cfg(not(feature = "disable-app-updater"))] {
 
   #[tauri::command]
   pub fn updater_update() {}
+
+  #[tauri::command]
+  pub async fn updater_latest_release() {}
 }}

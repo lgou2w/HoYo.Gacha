@@ -56,6 +56,7 @@ sha1 = { workspace = true }
 snafu = { workspace = true }
 sqlx = { workspace = true, features = ["runtime-tokio", "sqlite", "time", "tls-native-tls"] }
 tauri-plugin-clipboard-manager = { workspace = true }
+tauri-plugin-process = { workspace = true }
 tauri-plugin-shell = { workspace = true }
 time = { workspace = true, features = ["macros", "formatting", "parsing", "serde", "local-offset"] }
 tokio = { workspace = true, features = ["macros", "rt-multi-thread", "fs", "sync", "time"] }

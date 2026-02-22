@@ -50,6 +50,24 @@
       "Official": "Website"
     }
   },
+  "Updater": {
+    "Title": "App Update",
+    "Subtitle": {
+      "Success": "The new version has been downloaded. Please restart the application manually!",
+      "Error": "Download failed: {{message}}",
+      "Progress": "Downloading..."
+    },
+    "Progress_indeterminate": "Fetching...",
+    "Progress": "Progress: {{value}}%",
+    "Confirm": "Okay",
+    "Cancel": "Cancel",
+    "Retry": "Retry",
+    "UpToDate": "App already up to date."
+  },
+  "UpdaterAlert": {
+    "Title": "The new version is available!",
+    "Download": "Download"
+  },
   "Metadata": {
     "Loading": "Checking for metadata updates...",
     "Success": {

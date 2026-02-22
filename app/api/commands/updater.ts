@@ -42,6 +42,14 @@ export type UpdaterResult
     | UpdaterKind.Success
     | null // 'Feature disabled' only
 
+export interface LatestRelease {
+  tagName: string
+  createdAt: string
+  name: string
+  size: number
+  downloadUrl: string
+}
+
 const UpdaterCommands = {
   isUpdating:
     declareCommand<undefined, boolean>('updater_is_updating'),
@@ -54,6 +62,14 @@ const UpdaterCommands = {
       progressChannel: Channel<number>
       maxAttempts?: 0 | 1 | 2 | 3 | 4 | 5 | null
     }, UpdaterResult>('updater_update'),
+
+  /**
+   * @throws `UpdaterError`
+   */
+  latestRelease:
+    declareCommand<{
+      maxAttempts?: 0 | 1 | 2 | 3 | 4 | 5 | null
+    }, [LatestRelease, boolean] | null>('updater_latest_release'),
 } as const
 
 export default UpdaterCommands

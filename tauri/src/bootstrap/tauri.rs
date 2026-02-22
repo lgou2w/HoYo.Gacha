@@ -55,6 +55,7 @@ pub async fn run(context: Context) -> ! {
     let context_cloned = Arc::clone(&context);
     let app = TauriBuilder::default()
       .plugin(tauri_plugin_clipboard_manager::init())
+      .plugin(tauri_plugin_process::init())
       .plugin(tauri_plugin_shell::init())
       .setup(move |app| setup(app, context_cloned, color_scheme, window_state))
       .on_window_event(on_window_event)
@@ -243,6 +244,7 @@ fn command_handlers() -> Box<dyn Fn(Invoke<Wry>) -> bool + Send + Sync + 'static
     // Updater
     crate::updater::updater_is_updating,
     crate::updater::updater_update,
+    crate::updater::updater_latest_release,
     // KeyValuePair
     crate::database::schemas::key_value_pair_handlers::database_find_kv_pair,
     crate::database::schemas::key_value_pair_handlers::database_create_kv_pair,

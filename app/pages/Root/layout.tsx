@@ -4,6 +4,7 @@ import { EnvironmentProvider } from '@/contexts/Environment'
 import { ThemeProvider } from '@/contexts/Theme'
 import AppLayout from './components/AppLayout'
 import ErrorBoundary from './components/ErrorBoundary'
+import UpdaterAlert from './components/UpdaterAlert'
 import { MetadataProvider } from './contexts/Metadata'
 import rootRoute from './route'
 
@@ -19,6 +20,7 @@ export default function RootLayout () {
       >
         <MetadataProvider>
           <AppLayout>
+            <UpdaterAlert />
             <ErrorBoundary>
               <Outlet />
             </ErrorBoundary>

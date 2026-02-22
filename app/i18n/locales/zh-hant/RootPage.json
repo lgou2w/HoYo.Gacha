@@ -46,6 +46,24 @@
       "Official": "官方網站"
     }
   },
+  "Updater": {
+    "Title": "應用程式更新",
+    "Subtitle": {
+      "Success": "新版本下載完成，請手動重新啟動應用程式！",
+      "Error": "下載失敗：{{message}}",
+      "Progress": "下載更新中..."
+    },
+    "Progress_indeterminate": "取得中...",
+    "Progress": "進度：{{value}}%",
+    "Confirm": "確認",
+    "Cancel": "取消",
+    "Retry": "重試",
+    "UpToDate": "應用程式已是最新版本。"
+  },
+  "UpdaterAlert": {
+    "Title": "新版本可用！",
+    "Download": "下載更新"
+  },
   "Metadata": {
     "Loading": "元資料檢查更新中...",
     "Success": {
