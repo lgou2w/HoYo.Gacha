@@ -188,7 +188,7 @@ fn setup(
     }
   })?;
 
-  //
+  // Intersect the window state if it exists, otherwise update it with the current window state
   if has_window_state {
     window_state.intersects(&window)?;
   } else {

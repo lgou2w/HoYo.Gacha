@@ -28,12 +28,13 @@ impl WindowState {
 
   /// Load and evaluate the window state from the file
   #[tracing::instrument]
-  pub fn load_and_evaluate(&self) {
+  pub fn load_and_evaluate(&self) -> bool {
     let path = Self::window_state_path();
     if !path.is_file() {
-      return;
+      return false;
     }
 
+    let mut loaded = false;
     let state = match WindowStateInner::from_json(&path) {
       Err(err) => {
         error!(message = "Failed to load window state from file", ?err);
@@ -46,6 +47,7 @@ impl WindowState {
       }
       Ok(Ok(state)) => {
         info!(message = "Loaded window state from file", ?state);
+        loaded = true;
         state
       }
     };
@@ -53,6 +55,8 @@ impl WindowState {
     {
       *self.read() = state;
     }
+
+    loaded
   }
 
   pub fn update(&self, window: &WebviewWindow) -> Result<(), TauriError> {

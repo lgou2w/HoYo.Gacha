@@ -26,7 +26,10 @@ impl AppState {
 
   /// Load and evaluate the window state
   pub fn load_and_evaluate_window_state(&self) -> Option<WindowState> {
-    self.window_state.load_and_evaluate();
-    Some(self.window_state.clone())
+    if self.window_state.load_and_evaluate() {
+      Some(self.window_state.clone())
+    } else {
+      None
+    }
   }
 }
