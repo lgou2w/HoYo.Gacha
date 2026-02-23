@@ -20,7 +20,13 @@ export default withTrans.SettingsPage(function Updater ({ t }: WithTrans) {
       <UpdaterAction
         trigger={(
           <Button disabled={disabled} appearance="primary">
-            {t('About.Updater.CheckBtn')}
+            {t('About.Updater.CheckBtn', {
+              context: isFetching
+                ? 'fetching'
+                : !data || data === 'offline'
+                    ? 'offline'
+                    : undefined,
+            })}
           </Button>
         )}
       />

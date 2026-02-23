@@ -62,7 +62,9 @@
     "Updater": {
       "Title": "Application Update",
       "Subtitle": "Check for application version updates.",
-      "CheckBtn": "Check Update"
+      "CheckBtn": "Check Update",
+      "CheckBtn_fetching": "Fetching...",
+      "CheckBtn_offline": "Offline"
     },
     "Metadata": {
       "Title": "Metadata Status",
