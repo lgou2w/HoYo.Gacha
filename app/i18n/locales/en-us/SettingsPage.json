@@ -62,6 +62,7 @@
     "Updater": {
       "Title": "Application Update",
       "Subtitle": "Check for application version updates.",
+      "StartupCheck": "Check for updates on startup",
       "CheckBtn": "Check Update",
       "CheckBtn_fetching": "Fetching...",
       "CheckBtn_offline": "Offline"

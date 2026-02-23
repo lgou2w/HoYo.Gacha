@@ -1,5 +1,4 @@
-import { Button, Link, MessageBar, MessageBarActions, MessageBarBody, MessageBarTitle } from '@fluentui/react-components'
-import { DismissRegular } from '@fluentui/react-icons'
+import { Button, Link, MessageBar, MessageBarBody, MessageBarTitle } from '@fluentui/react-components'
 import { WithTrans, i18nDayjs, withTrans } from '@/i18n'
 import { useUpdaterLatestReleaseQuery } from '@/pages/Root/queries/updater'
 import Updater from './Updater'
@@ -8,8 +7,10 @@ export default withTrans.RootPage(function UpdaterAlert ({ i18n, t }: WithTrans)
   const dayjs = i18nDayjs(i18n.language)
   const { isSuccess, data } = useUpdaterLatestReleaseQuery()
 
-  // Failed | Fetching | Feature disable | Offline
-  if (!isSuccess || !data || data === 'offline') {
+  // Failed | Fetching | Feature disable | Offline | Disabled by user
+  if (!isSuccess
+    || !data || data === 'offline'
+    || data === 'disabledStartupCheck') {
     return null
   }
 
@@ -42,14 +43,6 @@ export default withTrans.RootPage(function UpdaterAlert ({ i18n, t }: WithTrans)
           )}
         />
       </MessageBarBody>
-      <MessageBarActions containerAction={(
-        <Button
-          aria-label="dismiss"
-          appearance="transparent"
-          icon={<DismissRegular />}
-        />
-      )}
-      />
     </MessageBar>
   )
 })

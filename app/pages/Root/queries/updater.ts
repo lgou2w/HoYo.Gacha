@@ -21,9 +21,25 @@ export function useUpdaterLatestReleaseQuery () {
         return 'offline'
       }
 
+      if (isDisabledStartupCheck()) {
+        return 'disabledStartupCheck'
+      }
+
       return UpdaterCommands.latestRelease({
         maxAttempts: MaxAttempts,
       })
     },
   })
+}
+
+// Startup checks are enabled by default.
+
+const KEY_DISABLED_STARTUP_CHECK = 'HG_DISABLED_STARTUP_CHECK'
+
+export function isDisabledStartupCheck (): boolean {
+  return localStorage.getItem(KEY_DISABLED_STARTUP_CHECK) === 'true'
+}
+
+export function setDisableStartupCheck (value: boolean) {
+  localStorage.setItem(KEY_DISABLED_STARTUP_CHECK, String(value))
 }

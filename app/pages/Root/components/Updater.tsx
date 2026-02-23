@@ -1,4 +1,4 @@
-import { useCallback, useRef } from 'react'
+import { MouseEventHandler, useCallback, useRef } from 'react'
 import { Body1, Button, Dialog, DialogActions, DialogBody, DialogContent, DialogProps, DialogSurface, DialogTitle, DialogTrigger, DialogTriggerProps, Field, ProgressBar, makeStyles, tokens } from '@fluentui/react-components'
 import { Channel } from '@tauri-apps/api/core'
 import { exit } from '@tauri-apps/plugin-process'
@@ -108,6 +108,17 @@ export default withTrans.RootPage(function Updater (
     }
   }, [produceState, update])
 
+  const handleConfirm = useCallback<MouseEventHandler>(() => {
+    // HACK: The development environment does not need to exit the application
+    if (import.meta.env.DEV) {
+      produceState((draft) => {
+        draft.open = false
+      })
+    } else {
+      exit(1)
+    }
+  }, [produceState])
+
   return (
     <Dialog
       open={open}
@@ -153,7 +164,7 @@ export default withTrans.RootPage(function Updater (
           <DialogActions>
             {success
               ? (
-                  <Button onClick={() => exit(1)} appearance="primary">
+                  <Button onClick={handleConfirm} appearance="primary">
                     {t('Updater.Confirm')}
                   </Button>
                 )

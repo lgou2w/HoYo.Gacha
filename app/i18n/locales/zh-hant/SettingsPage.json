@@ -63,6 +63,7 @@
       "Title": "應用程式更新",
       "Subtitle": "檢查應用程式的版本更新。",
       "CheckBtn": "檢查更新",
+      "StartupCheck": "啟動時檢查更新",
       "CheckBtn_fetching": "檢查中...",
       "CheckBtn_offline": "離線"
     },

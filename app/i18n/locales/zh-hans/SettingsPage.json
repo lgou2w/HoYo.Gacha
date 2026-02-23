@@ -62,6 +62,7 @@
     "Updater": {
       "Title": "应用更新",
       "Subtitle": "检查应用的版本更新。",
+      "StartupCheck": "启动时检查更新",
       "CheckBtn": "检查更新",
       "CheckBtn_fetching": "检查中...",
       "CheckBtn_offline": "脱机"
