@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import { Dropdown, Option, Spinner, makeStyles } from '@fluentui/react-components'
 import { TextFontRegular } from '@fluentui/react-icons'
 import { Await } from '@tanstack/react-router'
@@ -17,6 +18,9 @@ export default withTrans.SettingsPage(function Font ({ t }: WithTrans) {
   const { data: { font }, updateTheme } = useTheme()
   const noneFont = t('Appearance.Font.None')
 
+  const listBoxRef = useRef<HTMLDivElement>(null)
+  const isScrollIntoView = useRef(false)
+
   return (
     <SectionItem
       icon={<TextFontRegular />}
@@ -30,15 +34,35 @@ export default withTrans.SettingsPage(function Font ({ t }: WithTrans) {
           font: data.optionValue || null,
         })}
         style={{ minWidth: '12.5rem' }}
-        listbox={{ className: styles.listbox }}
+        listbox={{
+          ref: listBoxRef,
+          className: styles.listbox,
+        }}
       >
         <Option value="">{noneFont}</Option>
         <Await promise={AppCommands.systemFonts()} fallback={<Spinner />}>
-          {(fonts) => fonts.map((font) => (
-            <Option key={font} value={font} style={{ fontFamily: font }}>
-              {font}
-            </Option>
-          ))}
+          {(fonts) => {
+            // SAFETY: Because this is an inline component
+            // eslint-disable-next-line react-hooks/rules-of-hooks
+            useEffect(() => {
+              if (!listBoxRef.current || isScrollIntoView.current) {
+                return
+              }
+
+              let el: Element | null
+              if ((el = listBoxRef.current.querySelector('div[role="option"][aria-selected="true"]'))) {
+                console.debug('Fonts scrollIntoView')
+                el.scrollIntoView({ block: 'nearest' })
+                isScrollIntoView.current = true
+              }
+            }, [])
+
+            return fonts.map((font) => (
+              <Option key={font} value={font} style={{ fontFamily: font }}>
+                {font}
+              </Option>
+            ))
+          }}
         </Await>
       </Dropdown>
     </SectionItem>
