@@ -135,6 +135,17 @@ pub fn set_webview_accelerator_keys_enabled(
   unsafe { settings.SetAreBrowserAcceleratorKeysEnabled(value) }
 }
 
+/// Enable or disable the webview default context menus.
+pub fn set_webview_default_context_menus_enabled(
+  webview: &PlatformWebview,
+  value: bool,
+) -> Result<(), WindowsError> {
+  let controller = webview.controller();
+  let webview2 = unsafe { controller.CoreWebView2() }?;
+  let settings = unsafe { webview2.Settings() }?;
+  unsafe { settings.SetAreDefaultContextMenusEnabled(value) }
+}
+
 /// Get the Webview2 browser version string.
 pub fn webview_version(
   webview: &PlatformWebview,

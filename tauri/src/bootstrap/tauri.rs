@@ -180,11 +180,20 @@ fn setup(
     window.open_devtools();
   }
 
-  // Set Webview2 accelerator keys
+  // Set Webview2 specific settings if on Windows
   #[cfg(windows)]
   window.with_webview(move |webview| {
+    // Set Webview2 accelerator keys
     if let Err(err) = hg_ffi::set_webview_accelerator_keys_enabled(&webview, devtools) {
       error!(message = "Failed to set webview accelerator keys", ?err);
+    }
+
+    // Set Webview2 default context menus
+    if let Err(err) = hg_ffi::set_webview_default_context_menus_enabled(&webview, devtools) {
+      error!(
+        message = "Failed to set webview default context menus",
+        ?err
+      );
     }
   })?;
 
