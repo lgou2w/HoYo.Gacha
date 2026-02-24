@@ -154,13 +154,13 @@ fn setup(
     context.environment.hwnd.set(hwnd.0 as _).unwrap();
   }
 
-  // Store the Webview2 version in the context
+  // Store the WebView2 version in the context
   #[cfg(windows)]
   {
     let context_cloned = Arc::clone(&context);
     window.with_webview(move |webview| {
       if let Ok(Ok(value)) = hg_ffi::webview_version(&webview) {
-        info!("Webview2 version: {value:?}");
+        info!("WebView2 version: {value:?}");
         context_cloned
           .environment
           .webview_version
@@ -180,15 +180,15 @@ fn setup(
     window.open_devtools();
   }
 
-  // Set Webview2 specific settings if on Windows
+  // Set WebView2 specific settings if on Windows
   #[cfg(windows)]
   window.with_webview(move |webview| {
-    // Set Webview2 accelerator keys
+    // Set WebView2 accelerator keys
     if let Err(err) = hg_ffi::set_webview_accelerator_keys_enabled(&webview, devtools) {
       error!(message = "Failed to set webview accelerator keys", ?err);
     }
 
-    // Set Webview2 default context menus
+    // Set WebView2 default context menus
     if let Err(err) = hg_ffi::set_webview_default_context_menus_enabled(&webview, devtools) {
       error!(
         message = "Failed to set webview default context menus",

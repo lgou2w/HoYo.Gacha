@@ -85,7 +85,7 @@
       "Copied": "已复制",
       "OperatingSystem": "操作系统",
       "SystemVersion": "系统版本",
-      "Webview2": "Webview2",
+      "WebView2": "WebView2",
       "Tauri": "Tauri",
       "GitCommit": "Git 提交",
       "AppVersion": "应用版本"

@@ -35,7 +35,7 @@ export function deviceSpec (env: Environment) {
   return {
     OperatingSystem: env.os.edition,
     SystemVersion: env.windows?.version + ' ' + env.os.architecture,
-    Webview2: env.webviewVersion,
+    WebView2: env.webviewVersion,
     Tauri: env.tauriVersion,
     GitCommit: env.git.commitHash,
     AppVersion: {

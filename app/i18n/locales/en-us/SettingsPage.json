@@ -85,7 +85,7 @@
       "Copied": "Copied",
       "OperatingSystem": "Operating system",
       "SystemVersion": "System version",
-      "Webview2": "Webview2",
+      "WebView2": "WebView2",
       "Tauri": "Tauri",
       "GitCommit": "Git commit",
       "AppVersion": "Version"

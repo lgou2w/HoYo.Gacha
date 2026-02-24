@@ -146,7 +146,7 @@ pub fn set_webview_default_context_menus_enabled(
   unsafe { settings.SetAreDefaultContextMenusEnabled(value) }
 }
 
-/// Get the Webview2 browser version string.
+/// Get the WebView2 browser version string.
 pub fn webview_version(
   webview: &PlatformWebview,
 ) -> Result<Result<String, FromUtf16Error>, WindowsError> {
