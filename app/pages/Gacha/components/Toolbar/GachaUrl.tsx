@@ -6,6 +6,7 @@ import BusinessCommands, { FetchRecordsArgs, FetchRecordsEvent, FetchRecordsEven
 import errorTrans from '@/api/errorTrans'
 import { Account, AccountBusiness, KeyofAccountBusiness } from '@/api/schemas/Account'
 import CopyButton from '@/components/CopyButton'
+import useDialogOpenEffect from '@/hooks/useDialogOpenEffect'
 import useRecordsFetcher from '@/hooks/useRecordsFetcher'
 import { Language, TFunction, WithTrans, i18nDayjs, languageMetadata, withTrans } from '@/i18n'
 import ManuallyUrlDialog from '@/pages/Gacha/components/ManuallyUrl/Dialog'
@@ -177,6 +178,9 @@ const UserAction = withTrans.GachaPage(function ({ i18n, t }: WithTrans) {
     update,
   } = useUserAction(i18n.language, t)
 
+  const open = isFetching
+  useDialogOpenEffect(open)
+
   const manuallyUrlDialogRef = useRef<ComponentRef<typeof ManuallyUrlDialog>>(null)
   const handleManuallyUrl = useCallback<MouseEventHandler>(() => {
     if (selected && manuallyUrlDialogRef.current) {
@@ -230,7 +234,7 @@ const UserAction = withTrans.GachaPage(function ({ i18n, t }: WithTrans) {
           </MenuList>
         </MenuPopover>
       </Menu>
-      <Dialog modalType="alert" surfaceMotion={null} open={isFetching}>
+      <Dialog modalType="alert" surfaceMotion={null} open={open}>
         <DialogSurface className={styles.fetcher}>
           <div className={styles.fetcherWrapper}>
             <Spinner />

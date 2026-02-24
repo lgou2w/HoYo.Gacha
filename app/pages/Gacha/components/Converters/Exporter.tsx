@@ -7,6 +7,7 @@ import BusinessCommands, { ClassicSrgfWriterOptions, ClassicUigfWriterOptions, R
 import errorTrans from '@/api/errorTrans'
 import { Account, AccountBusiness } from '@/api/schemas/Account'
 import { GachaRecord } from '@/api/schemas/GachaRecord'
+import useDialogOpenEffect from '@/hooks/useDialogOpenEffect'
 import { WithTrans, WithTransKnownNs, i18nDayjs, languageMetadata, useI18n, withTrans } from '@/i18n'
 import useAppNotifier, { DefaultNotifierTimeouts } from '@/pages/Root/hooks/useAppNotifier'
 import capitalize from '@/utilities/capitalize'
@@ -409,6 +410,7 @@ const ConvertersExporter = forwardRef<
 >(function ConvertersExporter (props, ref) {
   const [open, setOpen] = useState(false)
 
+  useDialogOpenEffect(open)
   useImperativeHandle(ref, () => ({
     open: () => setOpen(true),
   }), [])

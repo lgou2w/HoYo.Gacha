@@ -10,6 +10,7 @@ import MetadataCommands from '@/api/commands/metadata'
 import errorTrans from '@/api/errorTrans'
 import { Account, AccountBusiness } from '@/api/schemas/Account'
 import { GachaRecord } from '@/api/schemas/GachaRecord'
+import useDialogOpenEffect from '@/hooks/useDialogOpenEffect'
 import { WithTrans, WithTransKnownNs, languageMetadata, useI18n, withTrans } from '@/i18n'
 import { invalidatePrettizedRecordsQuery } from '@/pages/Gacha/queries/prettizedRecords'
 import useAppNotifier, { DefaultNotifierTimeouts } from '@/pages/Root/hooks/useAppNotifier'
@@ -377,6 +378,7 @@ const ConvertersImporter = forwardRef<
 >(function ConvertersImporter (props, ref) {
   const [open, setOpen] = useState(false)
 
+  useDialogOpenEffect(open)
   useImperativeHandle(ref, () => ({
     open: () => setOpen(true),
   }), [])

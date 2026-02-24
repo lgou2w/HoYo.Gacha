@@ -2,6 +2,7 @@ import { forwardRef, useCallback, useImperativeHandle } from 'react'
 import { Dialog, DialogBody, DialogContent, DialogSurface, DialogTitle } from '@fluentui/react-components'
 import { useImmer } from 'use-immer'
 import { Account, AccountBusiness } from '@/api/schemas/Account'
+import useDialogOpenEffect from '@/hooks/useDialogOpenEffect'
 import { WithTransKnownNs, useI18n } from '@/i18n'
 import useAppNotifier from '@/pages/Root/hooks/useAppNotifier'
 import UpsertAccountForm, { UpsertAccountFormProps } from './Form'
@@ -15,6 +16,7 @@ const UpsertAccountDialog = forwardRef<
     open: false,
   })
 
+  useDialogOpenEffect(open)
   useImperativeHandle(ref, () => ({
     open: (owner) => produceState({
       owner,

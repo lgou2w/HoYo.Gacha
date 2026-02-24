@@ -2,6 +2,7 @@ import { ChangeEvent, MouseEventHandler, forwardRef, useCallback, useImperativeH
 import { Button, Checkbox, CheckboxOnChangeData, Dialog, DialogActions, DialogBody, DialogContent, DialogSurface, DialogTitle, Field, Input, Switch, makeStyles, tokens } from '@fluentui/react-components'
 import { useImmer } from 'use-immer'
 import { Account, AccountBusiness } from '@/api/schemas/Account'
+import useDialogOpenEffect from '@/hooks/useDialogOpenEffect'
 import { WithTransKnownNs, useI18n } from '@/i18n'
 import { useDeleteAccountWholeMutation } from '@/pages/Gacha/queries/accounts'
 
@@ -30,6 +31,7 @@ const DeleteAccountDialog = forwardRef<
     confirms: [false, false, false] as [boolean, boolean, boolean],
   })
 
+  useDialogOpenEffect(open)
   useImperativeHandle(ref, () => ({
     open: (owner) => produceState((draft) => {
       // Reset on open

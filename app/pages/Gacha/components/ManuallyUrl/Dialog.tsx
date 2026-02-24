@@ -6,6 +6,7 @@ import { useImmer } from 'use-immer'
 import BusinessCommands, { GachaUrl } from '@/api/commands/business'
 import errorTrans from '@/api/errorTrans'
 import { Account, AccountBusiness } from '@/api/schemas/Account'
+import useDialogOpenEffect from '@/hooks/useDialogOpenEffect'
 import { WithTrans, WithTransKnownNs, useI18n } from '@/i18n'
 import { useUpdateAccountPropertiesMutation } from '@/pages/Gacha/queries/accounts'
 import useAppNotifier from '@/pages/Root/hooks/useAppNotifier'
@@ -143,6 +144,7 @@ const ManuallyUrlDialog = forwardRef<
     open: false,
   })
 
+  useDialogOpenEffect(open)
   useImperativeHandle(ref, () => ({
     open: (owner) => produceState({
       owner,
