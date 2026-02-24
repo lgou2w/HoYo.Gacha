@@ -1,7 +1,7 @@
 name: 💡 Feature Request
 title: '[Feat]: '
 description: Provide suggestions and ideas through this issue
-labels: ['enhancement']
+labels: ['功能 (Enhancement)']
 
 body:
   - type: textarea
