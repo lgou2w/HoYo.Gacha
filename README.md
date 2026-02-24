@@ -11,7 +11,7 @@ An unofficial tool for managing and analyzing your miHoYo gacha records.
 
 **No need for any local proxy server**. Just read the `Chromium` [disk cache](docs/DiskCache.md) file and request the API endpoint.
 
-![Logo](src-tauri/icons/128x128.png)
+![Logo](tauri/icons/128x128.png)
 
 ## ✨ 功能 / Features
 
