@@ -1,7 +1,7 @@
 name: 💡 功能请求
 title: '[Feat]: '
 description: 通过这个议题提供建议和想法
-labels: ['enhancement']
+labels: ['功能 (Enhancement)']
 
 body:
   - type: textarea
