@@ -1,6 +1,7 @@
 import { FluentProviderCustomStyleHooks, Theme as FluentTheme } from '@fluentui/react-components'
 import useBadgeStyles from './useBadgeStyles'
 import useButtonStyles from './useButtonStyles'
+import useCheckboxStyles from './useCheckboxStyles'
 import useDialogBodyStyles from './useDialogBodyStyles'
 import useDialogContentStyles from './useDialogContentStyles'
 import useDialogSurfaceStyles from './useDialogSurfaceStyles'
@@ -42,6 +43,7 @@ type CustomStyleHook = (state: unknown) => void
 export const CustomStylesHooks: FluentProviderCustomStyleHooks = {
   useBadgeStyles_unstable: useBadgeStyles as CustomStyleHook,
   useButtonStyles_unstable: useButtonStyles as CustomStyleHook,
+  useCheckboxStyles_unstable: useCheckboxStyles as CustomStyleHook,
   useDialogContentStyles_unstable: useDialogContentStyles as CustomStyleHook,
   useDialogBodyStyles_unstable: useDialogBodyStyles as CustomStyleHook,
   useDialogSurfaceStyles_unstable: useDialogSurfaceStyles as CustomStyleHook,
