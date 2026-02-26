@@ -4,7 +4,7 @@ import { StackOffRegular } from '@fluentui/react-icons'
 import { AccountBusiness, AccountBusinessKeys, KeyofAccountBusiness } from '@/api/schemas/Account'
 import BusinessImages from '@/assets/images/BusinessImages'
 import { WithTrans, withTrans } from '@/i18n'
-import { useNavbarBusinessVisibleMutation, useNavbarBusinessVisibleSuspenseQuery } from '@/pages/Root/queries/navbar'
+import { useNavbarVisibleMutation, useNavbarVisibleSuspenseQuery } from '@/pages/Root/queries/business'
 import SectionCollapseItem from '@/pages/Settings/components/SectionCollapseItem'
 
 const useStyles = makeStyles({
@@ -25,8 +25,8 @@ const useStyles = makeStyles({
 
 export default withTrans.SettingsPage(function NavbarBusinessVisible ({ t }: WithTrans) {
   const styles = useStyles()
-  const { data } = useNavbarBusinessVisibleSuspenseQuery()
-  const mutation = useNavbarBusinessVisibleMutation()
+  const { data } = useNavbarVisibleSuspenseQuery()
+  const mutation = useNavbarVisibleMutation()
   const handleChange = useCallback<Required<CheckboxProps>['onChange']>((evt, data) => {
     const keyof = evt.currentTarget.value as KeyofAccountBusiness | undefined
     if (keyof) {

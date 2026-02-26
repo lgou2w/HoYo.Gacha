@@ -4,7 +4,7 @@ import { SettingsColor } from '@fluentui/react-icons'
 import { useLocation, useNavigate } from '@tanstack/react-router'
 import { AccountBusiness, AccountBusinessKeys, KeyofAccountBusiness } from '@/api/schemas/Account'
 import BusinessImages from '@/assets/images/BusinessImages'
-import { useNavbarBusinessVisibleSuspenseQuery } from '@/pages/Root/queries/navbar'
+import { useNavbarVisibleSuspenseQuery } from '@/pages/Root/queries/business'
 
 interface NavIcon { normal: ReactNode, selected?: ReactNode }
 interface NavItemPath { path: string, icon: NavIcon | string, keyofBusiness?: KeyofAccountBusiness }
@@ -102,7 +102,7 @@ function RenderNavItemPath (props: Omit<ComponentProps<'button'>, 'children'> & 
       ? icon.selected || icon.normal
       : icon.normal
 
-  const visible = useNavbarBusinessVisibleSuspenseQuery()
+  const visible = useNavbarVisibleSuspenseQuery()
   if (keyofBusiness && visible.data[AccountBusiness[keyofBusiness]] === false) {
     return null
   }
