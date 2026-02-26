@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 import { Checkbox, CheckboxProps, Image, makeStyles, tokens } from '@fluentui/react-components'
-import { WindowArrowUpRegular } from '@fluentui/react-icons'
+import { StackOffRegular } from '@fluentui/react-icons'
 import { AccountBusiness, AccountBusinessKeys, KeyofAccountBusiness } from '@/api/schemas/Account'
 import BusinessImages from '@/assets/images/BusinessImages'
 import { WithTrans, withTrans } from '@/i18n'
@@ -38,7 +38,7 @@ export default withTrans.SettingsPage(function NavbarBusinessVisible ({ t }: Wit
 
   return (
     <SectionCollapseItem
-      icon={<WindowArrowUpRegular />}
+      icon={<StackOffRegular />}
       title={t('General.NavbarBusinessVisible.Title')}
       subtitle={t('General.NavbarBusinessVisible.Subtitle')}
       defaultVisible
