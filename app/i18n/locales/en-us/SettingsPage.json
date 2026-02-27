@@ -27,6 +27,12 @@
       "Title": "Navbar Business Item Visibility",
       "Subtitle": "Control display status of business-related entries in the navigation bar."
     },
+    "MemoryBusinessRoute": {
+      "Title": "Remember Last Visited Business Item",
+      "Subtitle": "When enabled, automatically restores the last visited business item on app startup.",
+      "State_true": "Enable",
+      "State_false": "Disable"
+    },
     "GachaClientareaTabs": {
       "Title": "Business Startup Tab",
       "Subtitle": "Select the Startup tab for your default business client area.",

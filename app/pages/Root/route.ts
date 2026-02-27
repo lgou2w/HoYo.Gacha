@@ -2,7 +2,7 @@ import { QueryClient } from '@tanstack/react-query'
 import { createRootRouteWithContext } from '@tanstack/react-router'
 import AppCommands from '@/api/commands/app'
 import { DatabaseThemeStore, ThemeStore } from '@/contexts/Theme'
-import { ensureNavbarVisibleQueryData } from '@/pages/Root/queries/business'
+import { ensureMemoryRouteSwitchQueryData, ensureNavbarVisibleQueryData } from '@/pages/Root/queries/business'
 import RootLayout from './layout'
 
 export interface RootRouteContext {
@@ -19,6 +19,7 @@ const rootRoute = createRootRouteWithContext<RootRouteContext>()({
     const environment = await AppCommands.environment()
     const themeData = await themeStore.load()
     ensureNavbarVisibleQueryData()
+    ensureMemoryRouteSwitchQueryData()
     return {
       environment,
       themeData,

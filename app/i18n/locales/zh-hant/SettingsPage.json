@@ -27,6 +27,12 @@
       "Title": "導覽列業務項目可見性",
       "Subtitle": "控制導覽列中業務相關項目的顯示與隱藏狀態。"
     },
+    "MemoryBusinessRoute": {
+      "Title": "記住最後訪問的業務項",
+      "Subtitle": "啟用後，開啟應用程式時自動恢復上次最後訪問的業務項。",
+      "State_true": "啟用",
+      "State_false": "停用"
+    },
     "GachaClientareaTabs": {
       "Title": "業務起始標籤頁",
       "Subtitle": "選擇您預設的業務客戶區域的起始標籤頁。",
