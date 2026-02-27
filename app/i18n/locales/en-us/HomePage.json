@@ -1,0 +1,50 @@
+{
+  "Hero": {
+    "Title": "Manage & Analyze Your miHoYo Gacha Records",
+    "TitleBadge": "Unofficial · Open Source & Free",
+    "Subtitle": "Supports Genshin Impact, Honkai: Star Rail, Zenless Zone Zero and more. No local proxy server required. Simply read Chromium disk cache files to quickly fetch and analyze your gacha record.",
+    "UserGuide": "User Guide"
+  },
+  "Feature": {
+    "Title": "Core Features",
+    "Subtitle": "Providing you with a smooth and private gacha record management experience",
+    "MultiGame": {
+      "Title": "Multi-Game Support",
+      "Subtitle": "Supports Genshin Impact, Honkai: Star Rail, Zenless Zone Zero and more.",
+      "Tags": ["HK4E", "HKRPG", "NAP"]
+    },
+    "MultiAccount": {
+      "Title": "Multi-Account Management",
+      "Subtitle": "Manage multiple game accounts with data isolation.",
+      "Tags": ["Account Switching", "Data Sync"]
+    },
+    "NoProxy": {
+      "Title": "No Proxy Required",
+      "Subtitle": "Directly read Chromium disk cache links, fast and convenient.",
+      "Tags": ["Local Parsing", "Multi-Link Cache"]
+    },
+    "Analysis": {
+      "Title": "Gacha Analysis",
+      "Subtitle": "Statistics on pity, 5-star distribution, gacha trends.",
+      "Tags": ["Probability Stats", "Visualization"]
+    },
+    "Database": {
+      "Title": "Local Database",
+      "Subtitle": "All user data stored locally for privacy and security.",
+      "Tags": ["SQLite", "Offline Support"]
+    },
+    "Converters": {
+      "Title": "Import · Export",
+      "Subtitle": "Supports UIGF (v2.0 - v4.2) · SRGF v1.0 · CSV and more.",
+      "Tags": ["Unified Standardization", "File Backup"]
+    }
+  },
+  "Database": {
+    "Title": "Database File Location:",
+    "Subtitle": "HoYo.Gacha.v1.db in the application directory, containing all accounts and gacha records. Make sure to keep this file when migrating or reinstalling your system.",
+    "Open": "Open Folder"
+  },
+  "Footer": {
+    "Content": "Unofficial tool · Open source under MIT OR Apache-2.0 · For personal learning and communication only · Made with <tauri /> and <heart /> by <lgou2w />"
+  }
+}

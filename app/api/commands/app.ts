@@ -79,6 +79,9 @@ const AppCommands = {
   systemFonts:
     declareCommand<undefined, string[]>('system_fonts', true),
 
+  openDatabaseFolder:
+    declareCommand<undefined, void>('open_database_folder'),
+
   pickFile:
     declareCommand<PickFileArgs, string | null>('pick_file'),
 

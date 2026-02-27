@@ -2,8 +2,8 @@ use std::path::PathBuf;
 
 use tauri::{Error as TauriError, Theme, WebviewWindow};
 
-use crate::bootstrap::resolve_theme_or_system;
 use crate::bootstrap::{TauriAppState, TauriEnvironmentState};
+use crate::bootstrap::{TauriDatabaseState, resolve_theme_or_system};
 use crate::constants;
 
 #[cfg(debug_assertions)]
@@ -42,6 +42,11 @@ pub fn create_app_lnk() -> Result<(), String> {
 #[tauri::command]
 pub fn system_fonts() -> Result<Vec<String>, String> {
   hg_ffi::system_fonts(&constants::LOCALE).map_err(|err| format!("{err:?}"))
+}
+
+#[tauri::command]
+pub fn open_database_folder(state: TauriDatabaseState) {
+  let _ = hg_ffi::open_with_explorer(&state.filename);
 }
 
 #[tauri::command]

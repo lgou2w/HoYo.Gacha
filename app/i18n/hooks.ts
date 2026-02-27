@@ -47,6 +47,7 @@ export function useI18n (...args: UseI18nArgs) {
 
 export enum WithTransKnownNs {
   RootPage = 'RootPage',
+  HomePage = 'HomePage',
   GachaPage = 'GachaPage',
   SettingsPage = 'SettingsPage',
 }

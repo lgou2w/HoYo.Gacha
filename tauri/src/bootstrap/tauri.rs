@@ -248,6 +248,7 @@ fn command_handlers() -> Box<dyn Fn(Invoke<Wry>) -> bool + Send + Sync + 'static
     crate::bootstrap::handlers::change_color_scheme,
     crate::bootstrap::handlers::create_app_lnk,
     crate::bootstrap::handlers::system_fonts,
+    crate::bootstrap::handlers::open_database_folder,
     crate::bootstrap::handlers::pick_file,
     crate::bootstrap::handlers::pick_folder,
     // Updater
