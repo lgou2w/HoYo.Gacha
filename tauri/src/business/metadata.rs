@@ -1,5 +1,4 @@
 use std::ops::Deref;
-use std::path::PathBuf;
 
 use hg_metadata::def::{BakeMetadataError, bake as bake_metadata};
 use hg_metadata::raw::RawMetadata;
@@ -85,6 +84,7 @@ impl Metadata {
   async fn dump(&self) {
     use crate::constants::APP_NAME;
     use std::io::IoSlice;
+    use std::path::PathBuf;
     use tokio::fs::File;
     use tokio::io::AsyncWriteExt;
 
@@ -227,7 +227,7 @@ impl Metadata {
   const OUT_CACHES: &str = "LatestV2.json";
 
   // FIXME: Panics if directory creation fails
-  fn caches_file() -> PathBuf {
+  fn caches_file() -> std::path::PathBuf {
     let dir = crate::constants::APP_LOCAL_DATA_DIR.join(Self::OUT_DIRECTORY);
     std::fs::create_dir_all(&dir).expect("Failed to create gacha metadata directory");
     dir.join(Self::OUT_CACHES)
