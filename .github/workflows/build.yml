@@ -72,4 +72,5 @@ jobs:
             ${{ github.workspace }}/README.md
             ${{ github.workspace }}/LICENSE-APACHE
             ${{ github.workspace }}/LICENSE-MIT
-            ${{ github.workspace }}/target/release/hoyo_gacha.*
+            ${{ github.workspace }}/target/release/hoyo_gacha.exe
+            ${{ github.workspace }}/target/release/hoyo_gacha.pdb
