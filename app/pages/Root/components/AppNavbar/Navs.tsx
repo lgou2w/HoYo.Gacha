@@ -4,6 +4,7 @@ import { SettingsColor } from '@fluentui/react-icons'
 import { useLocation, useNavigate } from '@tanstack/react-router'
 import { AccountBusiness, AccountBusinessKeys, KeyofAccountBusiness } from '@/api/schemas/Account'
 import BusinessImages from '@/assets/images/BusinessImages'
+import { combineGachaPathname } from '@/pages/Gacha/route'
 import { useNavbarVisibleSuspenseQuery } from '@/pages/Root/queries/business'
 
 interface NavIcon { normal: ReactNode, selected?: ReactNode }
@@ -19,11 +20,11 @@ const NavItems: NavItem[] = [
   { path: '/', icon: '/Logo.avif' },
   { spacing: true },
   ...AccountBusinessKeys
-    .map<NavItemPath>((keyofBusiness) => {
+    .map<NavItemPath>((keyof) => {
       return {
-        path: `/Gacha/${keyofBusiness}`,
-        icon: BusinessImages[keyofBusiness as KeyofAccountBusiness].Material!.Icon!,
-        keyofBusiness,
+        path: combineGachaPathname(keyof),
+        icon: BusinessImages[keyof as KeyofAccountBusiness].Material!.Icon!,
+        keyofBusiness: keyof,
       }
     }),
   { divider: true },

@@ -7,6 +7,10 @@ import GachaLayout from './layout'
 import { ensureAccountsQueryData, ensureSelectedAccountUidQueryData } from './queries/accounts'
 import { prefetchPrettizedRecordsQuery } from './queries/prettizedRecords'
 
+export function combineGachaPathname (keyof: KeyofAccountBusiness) {
+  return `/Gacha/${keyof}` as const
+}
+
 const gachaRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/Gacha/$keyofAccountBusiness',
