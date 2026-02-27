@@ -55,7 +55,7 @@ jobs:
         run: pnpm test
 
       - name: Build app
-        run: pnpm tauri:build:cicd
+        run: pnpm build:cicd
 
       - name: Get short git commit sha
         id: short-sha
