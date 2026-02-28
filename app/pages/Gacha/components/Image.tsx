@@ -44,7 +44,7 @@ function resolveImage (props: GachaImageProps): ImageProps & { src: string | und
     src = BusinessImages[keyof]?.[itemCategory]?.[itemId]
   }
 
-  // FIXME: Genshin Impact: Miliastra Wonderland
+  // HACK: Genshin Impact: Miliastra Wonderland
   //   Currently, this is how it reuses icon resources.
   if (!src
     && keyof === KeyofMiliastraWonderland

@@ -148,7 +148,6 @@ export default function GachaImageItem (props: GachaImageItemProps) {
     [genshinImpactCharacter2, i18n, itemName, time, version],
   )
 
-  // TODO: docs
   const catalog = keyof === KeyofMiliastraWonderland
     && (itemCategory === ItemCategory.CosmeticCatalog
       || (itemId >= 270000 && itemId <= 279999))

@@ -21,7 +21,7 @@ impl ImageResolver {
     mut item_id: u32,
     online: Option<bool>,
   ) -> Result<impl IpcResponse, String> {
-    // FIXME: Genshin Impact: Miliastra Wonderland
+    // HACK: Genshin Impact: Miliastra Wonderland
     //   Currently, this is how it reuses icon resources.
     let mut item_category = item_category.as_str();
     if business == AccountBusiness::MiliastraWonderland
