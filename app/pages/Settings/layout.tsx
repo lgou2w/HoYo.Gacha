@@ -4,6 +4,7 @@ import Appearance from '@/pages/Settings/components/Appearance'
 import General from '@/pages/Settings/components/General'
 import Hero from '@/pages/Settings/components/Hero'
 import LegacyMigration from '@/pages/Settings/components/LegacyMigration'
+import Mihoyo from '@/pages/Settings/components/Mihoyo'
 
 const useStyles = makeStyles({
   root: {
@@ -21,7 +22,9 @@ const useStyles = makeStyles({
   },
   hero: {
     display: 'flex',
+    flexDirection: 'column',
     flex: 1,
+    gap: tokens.spacingVerticalL,
   },
 })
 
@@ -38,6 +41,7 @@ export default function SettingsLayout () {
       </div>
       <div className={styles.hero}>
         <Hero />
+        <Mihoyo />
       </div>
     </div>
   )
