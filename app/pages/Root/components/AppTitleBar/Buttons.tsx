@@ -75,6 +75,7 @@ function MaximizeButton () {
   useEffect(() => {
     let unlisten: UnlistenFn
     ;(async () => {
+      await updateMaximized()
       unlisten = await getCurrentWebviewWindow().onResized(
         debounce(updateMaximized, 500, { immediate: false }),
       )
