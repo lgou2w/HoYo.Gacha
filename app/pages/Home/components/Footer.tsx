@@ -4,7 +4,8 @@ import { Trans, WithTransKnownNs } from '@/i18n'
 const useStyles = makeStyles({
   root: {
     display: 'flex',
-    justifyContent: 'center',
+    flexDirection: 'column',
+    rowGap: tokens.spacingVerticalS,
   },
   content: {
     color: tokens.colorNeutralForeground2,
@@ -16,7 +17,7 @@ export default function Footer () {
 
   return (
     <div className={styles.root}>
-      <Caption1 className={styles.content} as="p" block>
+      <Caption1 className={styles.content} as="p" align="center" block>
         <Trans
           ns={WithTransKnownNs.HomePage}
           i18nKey="Footer.Content"
@@ -26,6 +27,9 @@ export default function Footer () {
             lgou2w: <Lgou2w />,
           }}
         />
+      </Caption1>
+      <Caption1 className={styles.content} as="p" align="center" block>
+        <Trans ns={WithTransKnownNs.HomePage} i18nKey="Footer.License" />
       </Caption1>
     </div>
   )

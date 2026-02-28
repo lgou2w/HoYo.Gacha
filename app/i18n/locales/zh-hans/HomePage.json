@@ -45,6 +45,7 @@
     "Open": "打开目录"
   },
   "Footer": {
-    "Content": "玩家自制工具 · 开源协议 MIT OR Apache-2.0 · 仅供个人学习交流使用 · Made with <tauri /> and <heart /> by <lgou2w />"
+    "Content": "玩家自制工具 · 开源协议 MIT OR Apache-2.0 · 仅供个人学习交流使用 · Made with <tauri /> and <heart /> by <lgou2w />",
+    "License": "游戏内容及资产归 ©miHoYo 版权所有。"
   }
 }

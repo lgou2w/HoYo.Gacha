@@ -45,6 +45,7 @@
     "Open": "Open Folder"
   },
   "Footer": {
-    "Content": "Fan-made tool · Open source under MIT OR Apache-2.0 · For personal learning and communication only · Made with <tauri /> and <heart /> by <lgou2w />"
+    "Content": "Fan-made tool · Open source under MIT OR Apache-2.0 · For personal learning and communication only · Made with <tauri /> and <heart /> by <lgou2w />",
+    "License": "Game content and assets ©miHoYo. All rights reserved."
   }
 }
