@@ -1,7 +1,7 @@
 {
   "Hero": {
     "Title": "Manage & Analyze Your miHoYo Gacha Records",
-    "TitleBadge": "Unofficial · Open Source & Free",
+    "TitleBadge": "Fan-made · Open Source & Free",
     "Subtitle": "Supports Genshin Impact, Honkai: Star Rail, Zenless Zone Zero and more. No local proxy server required. Simply read Chromium disk cache files to quickly fetch and analyze your gacha record.",
     "UserGuide": "User Guide"
   },
@@ -45,6 +45,6 @@
     "Open": "Open Folder"
   },
   "Footer": {
-    "Content": "Unofficial tool · Open source under MIT OR Apache-2.0 · For personal learning and communication only · Made with <tauri /> and <heart /> by <lgou2w />"
+    "Content": "Fan-made tool · Open source under MIT OR Apache-2.0 · For personal learning and communication only · Made with <tauri /> and <heart /> by <lgou2w />"
   }
 }

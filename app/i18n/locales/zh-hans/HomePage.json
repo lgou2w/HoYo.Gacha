@@ -1,7 +1,7 @@
 {
   "Hero": {
     "Title": "管理分析你的 miHoYo 抽卡记录",
-    "TitleBadge": "非官方 · 开源免费",
+    "TitleBadge": "玩家自制 · 开源免费",
     "Subtitle": "支持原神、崩坏：星穹铁道、绝区零等游戏。无需任何本地代理服务器。只需读取 Chromium 缓存文件，快速获取并分析你的抽卡记录。",
     "UserGuide": "使用教程"
   },
@@ -45,6 +45,6 @@
     "Open": "打开目录"
   },
   "Footer": {
-    "Content": "非官方工具 · 开源协议 MIT OR Apache-2.0 · 仅供个人学习交流使用 · Made with <tauri /> and <heart /> by <lgou2w />"
+    "Content": "玩家自制工具 · 开源协议 MIT OR Apache-2.0 · 仅供个人学习交流使用 · Made with <tauri /> and <heart /> by <lgou2w />"
   }
 }
