@@ -18,6 +18,11 @@ export default function Title (props: Omit<ComponentProps<'div'>, 'children'>) {
           CONTENT UNDER DEVELOPMENT, NOT FINAL.
         </Caption1>
       )}
+      {__CICD__ && (
+        <Caption1 style={{ margin: '0 0 0 auto', fontFamily: 'monaspace' }} as="pre">
+          Built by GitHub Actions (Incomplete Version)
+        </Caption1>
+      )}
     </div>
   )
 }

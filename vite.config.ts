@@ -8,6 +8,7 @@ import packageJson from './package.json'
 export default defineConfig ((env) => {
   const isDev = env.command === 'serve'
   const isProd = env.command === 'build'
+  const isCicd = env.mode === 'cicd'
 
   return {
     test: {
@@ -34,6 +35,7 @@ export default defineConfig ((env) => {
       react(),
     ],
     define: {
+      __CICD__: `${isCicd}`,
       __APP_NAME__: `"${packageJson.displayName}"`,
       __APP_VERSION__: `"${packageJson.version}"`,
       __APP_DESCRIPTION__: `"${packageJson.description}"`,
