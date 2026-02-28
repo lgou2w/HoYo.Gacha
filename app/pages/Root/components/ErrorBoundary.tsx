@@ -4,6 +4,7 @@ import { AlertUrgentRegular, ArrowClockwiseRegular, BugRegular, HomeRegular, Inf
 import { CatchBoundary, ErrorComponentProps, ErrorRouteComponent, createLink, useRouter } from '@tanstack/react-router'
 import { open } from '@tauri-apps/plugin-shell'
 import { Environment, deviceSpec } from '@/api/commands/app'
+import { extractErrorMessage } from '@/api/error'
 import CopyButton from '@/components/CopyButton'
 import { useEnvironment } from '@/contexts/Environment'
 import { Language, WithTrans, isChinese, withTrans } from '@/i18n'
@@ -169,6 +170,12 @@ const ErrorComponent = withTrans.RootPage((
   const styles = useStyles()
   const environment = useEnvironment()
 
+  const errorMessage = extractErrorMessage(error)
+  const stackTrace = error instanceof Error
+    || (typeof error === 'object' && error !== null && 'stack' in error)
+    ? String(error.stack)
+    : undefined
+
   function tE (subKey: string, options?: Parameters<typeof t>[2]) {
     return t(`ErrorBoundary.${subKey}`, options)
   }
@@ -181,17 +188,21 @@ const ErrorComponent = withTrans.RootPage((
 
     const title = t('ErrorBoundary.Feedback.Report.Title', {
       app: __APP_NAME__,
-      message: error.message,
+      message: errorMessage,
     })
 
     const deviceSpec = combineDeviceSpec(environment)
-    const stackTrace = error.stack || error.message
 
     ;(option === Feedback.GitHub
       ? openWithGitHubIssue
       : openWithMailto
-    )(i18n.language, title, deviceSpec, stackTrace)
-  }, [environment, error.message, error.stack, i18n.language, t])
+    )(
+      i18n.language,
+      title,
+      deviceSpec,
+      stackTrace || errorMessage,
+    )
+  }, [environment, errorMessage, stackTrace, i18n.language, t])
 
   return (
     <div className={styles.root}>
@@ -209,31 +220,33 @@ const ErrorComponent = withTrans.RootPage((
             {tE('Message.Title')}
           </Body2>
           <Body1 className={styles.sectionContent} as="p">
-            {error.message}
+            {errorMessage}
           </Body1>
         </div>
-        <div className={styles.sectionWrapper}>
-          <Body2 className={styles.sectionHeader} as="h4" block>
-            <BugRegular />
-            {tE('Stack.Title')}
-            <CopyButton
-              className={styles.stackCopy}
-              content={error.stack}
-              appearance="transparent"
-              size="small"
+        {stackTrace && (
+          <div className={styles.sectionWrapper}>
+            <Body2 className={styles.sectionHeader} as="h4" block>
+              <BugRegular />
+              {tE('Stack.Title')}
+              <CopyButton
+                className={styles.stackCopy}
+                content={stackTrace}
+                appearance="transparent"
+                size="small"
+              >
+                {(copied) => copied
+                  ? tE('Stack.Copied')
+                  : tE('Stack.Copy')}
+              </CopyButton>
+            </Body2>
+            <Body1
+              className={mergeClasses(styles.sectionContent, styles.stack)}
+              as="pre"
             >
-              {(copied) => copied
-                ? tE('Stack.Copied')
-                : tE('Stack.Copy')}
-            </CopyButton>
-          </Body2>
-          <Body1
-            className={mergeClasses(styles.sectionContent, styles.stack)}
-            as="pre"
-          >
-            {error.stack}
-          </Body1>
-        </div>
+              {stackTrace}
+            </Body1>
+          </div>
+        )}
         <div className={mergeClasses(styles.sectionWrapper, styles.feedbackWrapper)}>
           <Body2 className={styles.sectionHeader}>
             {tE('Feedback.Title')}
