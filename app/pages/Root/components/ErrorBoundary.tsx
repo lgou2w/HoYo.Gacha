@@ -22,7 +22,7 @@ export default function ErrorBoundary (props: PropsWithChildren) {
   //   https://tanstack.com/router/latest/docs/framework/react/api/router/catchBoundaryComponent
   //   https://github.com/TanStack/router/blob/main/packages/react-router/src/CatchBoundary.tsx
   useEffect(() => {
-    return router.subscribe('onBeforeNavigate', (event) => {
+    return router.subscribe('onBeforeLoad', (event) => {
       if (event.pathChanged) {
         setToken((n) => {
           if (import.meta.env.DEV) {

@@ -11,7 +11,7 @@ export default function AppNotifier () {
 
   // HACK: Dismiss all toasts when the path changes
   useEffect(() => {
-    return router.subscribe('onBeforeNavigate', (event) => {
+    return router.subscribe('onBeforeLoad', (event) => {
       if (event.pathChanged) {
         notifier.dismissAll()
       }
