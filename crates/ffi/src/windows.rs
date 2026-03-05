@@ -1,5 +1,5 @@
 use std::ffi::OsString;
-use std::mem::MaybeUninit;
+use std::mem::{self, MaybeUninit};
 use std::os::windows::ffi::OsStringExt;
 use std::os::windows::process::CommandExt;
 use std::path::{Path, PathBuf};
@@ -42,8 +42,8 @@ use windows::Win32::UI::Shell::{
   KF_FLAG_DEFAULT, SHGetKnownFolderPath, ShellLink,
 };
 use windows::Win32::UI::WindowsAndMessaging::{
-  FindWindowW, IDYES, IsWindow, MB_DEFBUTTON1, MB_ICONERROR, MB_YESNO, MessageBoxW, SW_SHOW,
-  SetForegroundWindow, ShowWindow,
+  FLASHW_ALL, FLASHW_TIMERNOFG, FLASHWINFO, FindWindowW, FlashWindowEx, IDYES, IsWindow,
+  MB_DEFBUTTON1, MB_ICONERROR, MB_YESNO, MessageBoxW, SW_SHOW, SetForegroundWindow, ShowWindow,
 };
 use windows::core::{BOOL, Error as WindowsError, GUID, HSTRING, Interface, PCWSTR, PWSTR, s, w};
 
@@ -608,6 +608,23 @@ impl Drop for Singleton {
 // SAFETY: HANDLE is safe to send and share between threads.
 unsafe impl Send for Singleton {}
 unsafe impl Sync for Singleton {}
+
+/// Flash the window until it is focused to notify the user. If `hwnd` is None, it will use the current window.
+pub fn flash_window(hwnd: Option<HWND>) -> BOOL {
+  let Some(hwnd) = hwnd.or_else(current_window_hwnd_t) else {
+    return false.into();
+  };
+
+  let pfwi = FLASHWINFO {
+    cbSize: mem::size_of::<FLASHWINFO>() as u32,
+    hwnd,
+    dwFlags: FLASHW_ALL | FLASHW_TIMERNOFG,
+    uCount: 0,
+    dwTimeout: 0,
+  };
+
+  unsafe { FlashWindowEx(&pfwi) }
+}
 
 #[cfg(test)]
 mod tests {

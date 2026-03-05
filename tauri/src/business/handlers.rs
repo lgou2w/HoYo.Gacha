@@ -192,7 +192,7 @@ pub async fn business_fetch_records(
   save_on_conflict: Option<GachaRecordSaveOnConflict>,
 ) -> Result<i64, AppError<GachaFetcherError>> {
   let metadata = { &*metadata.read().await };
-  crate::business::gacha_fetcher::fetch(
+  let result = crate::business::gacha_fetcher::fetch(
     &database,
     metadata,
     business,
@@ -203,7 +203,14 @@ pub async fn business_fetch_records(
     save_to_database,
     save_on_conflict,
   )
-  .await
+  .await;
+
+  // Flash the window and beep if unfocused to
+  // notify the user that the fetching is completed
+  #[cfg(windows)]
+  let _ = hg_ffi::flash_window(None);
+
+  result
 }
 
 #[tauri::command]
