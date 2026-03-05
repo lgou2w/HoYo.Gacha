@@ -98,6 +98,14 @@
       "Tauri": "Tauri",
       "GitCommit": "Git 提交",
       "AppVersion": "应用版本"
+    },
+    "Lnk": {
+      "Title": "快捷方式",
+      "Subtitle": "创建应用的桌面快捷方式。",
+      "Create": "创建",
+      "Loading": "创建快捷方式中...",
+      "Success": "创建成功。",
+      "Error": "创建失败："
     }
   }
 }
