@@ -34,7 +34,7 @@ An unofficial tool for managing and analyzing your miHoYo gacha records.
 
 Ensure your device meets the following requirements:
 
-- Windows 10 1809 (17763) 及更高版本。
+- Windows 10 x64 v1809 (17763+) 及更高版本。
 - [WebView2 Runtime](https://developer.microsoft.com/microsoft-edge/webview2/) 121+ 及更高版本。
 
 请在此仓库 [Releases](https://github.com/lgou2w/HoYo.Gacha/releases) 下载最新版。
