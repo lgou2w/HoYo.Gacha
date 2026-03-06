@@ -1,0 +1,51 @@
+{
+  "Hero": {
+    "Title": "管理分析你的 miHoYo 抽卡记录",
+    "TitleBadge": "玩家自制 · 开源免费",
+    "Subtitle": "支持原神、崩坏：星穹铁道、绝区零等游戏。无需任何本地代理服务器。只需读取 Chromium 缓存文件，快速获取并分析你的抽卡记录。",
+    "UserGuide": "使用教程"
+  },
+  "Feature": {
+    "Title": "核心功能",
+    "Subtitle": "为你提供流畅、私密的抽卡记录管理体验",
+    "MultiGame": {
+      "Title": "多游戏支持",
+      "Subtitle": "支持原神、崩坏：星穹铁道、绝区零等游戏。",
+      "Tags": ["GI", "HSR", "ZZZ"]
+    },
+    "MultiAccount": {
+      "Title": "多账号管理",
+      "Subtitle": "支持管理多个游戏账号，数据隔离。",
+      "Tags": ["账号切换", "数据同步"]
+    },
+    "NoProxy": {
+      "Title": "无需代理",
+      "Subtitle": "直接读取 Chromium 硬盘缓存链接，方便快捷。",
+      "Tags": ["本地解析", "多链接缓存"]
+    },
+    "Analysis": {
+      "Title": "抽卡分析",
+      "Subtitle": "统计保底、五星分布、抽卡趋势。",
+      "Tags": ["概率统计", "可视化"]
+    },
+    "Database": {
+      "Title": "本地数据库",
+      "Subtitle": "所有数据保存在本地，隐私安全。",
+      "Tags": ["SQLite", "离线支持"]
+    },
+    "Converters": {
+      "Title": "导入 · 导出",
+      "Subtitle": "支持 UIGF (v2.0 - v4.2) · SRGF v1.0 · CSV 等。",
+      "Tags": ["统一标准化", "文件备份"]
+    }
+  },
+  "Database": {
+    "Title": "数据库文件位置：",
+    "Subtitle": "运行目录下的 HoYo.Gacha.v1.db，包含所有账号和抽卡记录。迁移软件或重装系统时请务必保留此文件。",
+    "Open": "打开目录"
+  },
+  "Footer": {
+    "Content": "玩家自制工具 · 开源协议 MIT OR Apache-2.0 · 仅供个人学习交流使用 · Made with <tauri /> and <heart /> by <lgou2w />",
+    "License": "游戏内容及资产归 ©miHoYo 版权所有。"
+  }
+}

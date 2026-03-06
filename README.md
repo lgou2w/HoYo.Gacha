@@ -11,7 +11,7 @@ An unofficial tool for managing and analyzing your miHoYo gacha records.
 
 **No need for any local proxy server**. Just read the `Chromium` [disk cache](docs/DiskCache.md) file and request the API endpoint.
 
-![Logo](src-tauri/icons/128x128.png)
+![Logo](tauri/icons/128x128.png)
 
 ## ✨ 功能 / Features
 
@@ -19,11 +19,9 @@ An unofficial tool for managing and analyzing your miHoYo gacha records.
 - [x] 📁 支持游戏的多个账号。获取游戏的抽卡链接。 Support multiple accounts for the game. Get the gacha url.
 - [x] 📦 支持获取抽卡数据并保存到本地数据库。 Support fetch gacha data and saving it to the local database.
 - [x] 🔄 支持导入或导出的数据交换文件格式。 Support data exchange file formats for import or export.
-  - [x] [`UIGF`](https://uigf.org/zh/standards/uigf.html) 统一可交换抽卡记录标准：v2.0, v2.1, v2.2, v2.3, v2.4, v3.0, v4.0, v4.1
+  - [x] [`UIGF`](https://uigf.org/zh/standards/uigf.html) 统一可交换抽卡记录标准：v2.0, v2.1, v2.2, v2.3, v2.4, v3.0, v4.0, v4.1, v4.2
   - [x] [`SRGF`](https://uigf.org/zh/standards/srgf.html) 星穹铁道抽卡记录标准：v1.0
   - [x] `CSV` 逗号分隔值。（仅导出）
-  - [ ] `XLSX` Excel 表格文件格式。
-  - [ ] [`zzz.rng.moe`](https://zzz.rng.moe) 绝区零工具箱。
 
 ## ⚡️ 重要变化 / Important changes
 
@@ -32,16 +30,16 @@ An unofficial tool for managing and analyzing your miHoYo gacha records.
 
 ## 📥 下载 / Download
 
+确保您的设备满足以下要求：
+
+Ensure your device meets the following requirements:
+
+- Windows 10 1809 (17763) 及更高版本。
+- [WebView2 Runtime](https://developer.microsoft.com/microsoft-edge/webview2/) 121+ 及更高版本。
+
 请在此仓库 [Releases](https://github.com/lgou2w/HoYo.Gacha/releases) 下载最新版。
 
 Please download the latest version from this repository [Releases](https://github.com/lgou2w/HoYo.Gacha/releases).
-
-> [!IMPORTANT]
-> 如果运行软件后出现**白屏**等情况，请尝试安装或更新 **Webview2** 运行时。
->
-> If you get a **white screen** after running the software, etc., try installing or updating the **Webview2** runtime.
->
-> https://developer.microsoft.com/microsoft-edge/webview2/
 
 ### ‼️ 注意 / Notice
 
@@ -82,10 +80,13 @@ HoYo.Gacha is currently using sponsored software from the following service prov
 
 ## 🗃 部分资源 / Some assets
 
-©miHoYo | 上海米哈游影铁科技有限公司 版权所有
+玩家自制工具。游戏内容及资产归 ©miHoYo 版权所有。
+
+Fan-made tool. Game content and assets ©miHoYo. All rights reserved.
 
 - [public/Logo.avif](public/Logo.avif)
-- [src/assets/images/GenshinImpact/*](src/assets/images/GenshinImpact)
-- [src/assets/images/HonkaiStarRail/*](src/assets/images/HonkaiStarRail)
-- [src/assets/images/ZenlessZoneZero/*](src/assets/images/ZenlessZoneZero)
-- [src-tauri/icons/*](src-tauri/icons/)
+- [app/assets/images/GenshinImpact/*](app/assets/images/GenshinImpact)
+- [app/assets/images/MiliastraWonderland/*](app/assets/images/MiliastraWonderland)
+- [app/assets/images/HonkaiStarRail/*](app/assets/images/HonkaiStarRail)
+- [app/assets/images/ZenlessZoneZero/*](app/assets/images/ZenlessZoneZero)
+- [tauri/icons/*](tauri/icons/)

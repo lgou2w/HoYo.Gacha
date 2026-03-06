@@ -1,0 +1,82 @@
+{
+  "Unexpected": "發生意外錯誤：{{message}}",
+  "DatabaseError": "發生資料庫意外錯誤：{{message}}",
+  "UpdaterError": {
+    "Reqwest": "請求應用程式更新時錯誤：{{cause}}",
+    "Io": "應用程式更新時 I/O 錯誤：{{cause.message}} ({{cause.kind}})",
+    "DownloadedMismatch": "已下載的應用程式更新大小不匹配。",
+    "Aborted": "應用程式更新已被中止。"
+  },
+  "MetadataError": {
+    "Deserialize": "反序列化元資料時錯誤：{{cause}}",
+    "Bake": "處理和烘焙元資料時錯誤：{{cause}}"
+  },
+  "MetadataUpdateError": {
+    "Reqwest": "拉取元資料時錯誤：{{cause}}",
+    "DownloadedMismatch": "已下載的元資料雜湊值不匹配。"
+  },
+  "LegacyMigrationError": {
+    "NotFound": "舊資料庫不存在。",
+    "SamePath": "舊資料庫路徑不能與當前資料庫路徑相同。",
+    "InvalidUid": "無效的 $t(Common:{{keyof}}.Name) 帳號 UID 值：{{value}}",
+    "InvalidRecord": "無效的 $t(Common:{{keyof}}.Name) 資料記錄欄位 '{{field}}'：{{value}} (UID: {{uid}}, Id: {{id}})",
+    "MetadataLocale": "缺失元資料語言：$t(Common:{{keyof}}.Name)：{{lang}}",
+    "MetadataEntry": "缺失元資料條目：$t(Common:{{keyof}}.Name)，語言：{{lang}}，{{field}}：{{value}}"
+  },
+  "LocateDataFolderError": {
+    "InvalidUid": "無效的 $t(Common:{{keyof}}.Name) 帳號 UID 值：{{value}}",
+    "UnityLogNotFound": "Unity 日誌檔案不存在：{{path}}",
+    "OpenUnityLog": "開啟 Unity 日誌檔案時錯誤：'{{path}}'，原因：{{cause.message}} ({{cause.kind}})",
+    "Invalid": "無效的遊戲資料目錄。",
+    "Vacant": "空缺的遊戲資料目錄。"
+  },
+  "DirtyGachaUrlError": {
+    "OpenDiskCache": "開啟硬碟快取時錯誤：{{cause.message}} ({{cause.kind}})",
+    "ReadDiskCache": "讀取硬碟快取時錯誤：{{cause.message}} ({{cause.kind}})",
+    "OpenWebcaches": "開啟網頁快取時錯誤：{{cause.message}} ({{cause.kind}}) 遊戲資料目錄位置可能已被移動？請在「帳號列表」-「編輯帳號」中檢查並修改。",
+    "EmptyWebCaches": "未找到有效的網頁快取版本目錄。請嘗試至少啟動一次遊戲！"
+  },
+  "ParsedGachaUrlError": {
+    "InvalidUrl": "無效的抽卡連結。",
+    "RequiredParam": "抽卡連結缺少必需參數：{{name}}",
+    "UnsupportedGameBiz": "不支援的遊戲業務和區域組合：{{gameBiz}} / {{region}}"
+  },
+  "GachaUrlRequestError": {
+    "UnsupportedEndpoint": "遊戲業務 '{{gameBiz}}' 不支援的端點類型：{{endpoint}}",
+    "Reqwest": "請求抽卡連結時錯誤：{{cause}}",
+    "AuthkeyTimeout": "抽卡連結已經過期失效。請重新在遊戲內開啟抽卡歷史記錄介面！",
+    "VisitTooFrequently": "抽卡連結存取過於頻繁。請稍後重試！",
+    "UnexpectedResponse": "抽卡連結返回了意外回應：{{message}} (返回碼：{{retcode}})",
+    "ReachedMaxAttempts": "請求已達最大嘗試次數，請稍後重試！"
+  },
+  "GachaUrlError": {
+    "InvalidUid": "無效的 $t(Common:{{keyof}}.Name) 帳號 UID 值：{{value}}",
+    "EmptyData": "抽卡連結返回空資料。最新資料會有延遲，請稍後重試！",
+    "NotFound": "未找到有效的抽卡連結。請嘗試在遊戲內開啟歷史記錄介面！",
+    "InconsistentUid": "抽卡連結的擁有者 UID 不匹配。預期：{{expected}}，實際：{{actuals, list}}。請以目前帳號在遊戲內重新開啟歷史記錄介面後重試！"
+  },
+  "GachaFetcherError": {
+    "InvalidUid": "無效的 $t(Common:{{keyof}}.Name) 帳號 UID 值：{{value}}",
+    "MetadataEntry": "缺失元資料條目：$t(Common:{{keyof}}.Name)，語言：{{lang}}，物品名稱：{{itemName}}"
+  },
+  "UigfError": {
+    "UnsupportedVersion": "不支援的 UIGF 版本：{{actual}}。預期：{{expected, list}}",
+    "InvalidUid": "無效的 $t(Common:{{keyof}}.Name) 帳號 UID 值：{{value}}",
+    "MappingGachaType": "映射 UIGF 的 GachaType 失敗：{{value}} (游標：{{cursor}})",
+    "MetadataEntry": "缺失元資料條目：$t(Common:{{keyof}}.Name)，語言：{{lang}}，{{field}}：{{value}} (游標：{{cursor}})",
+    "CreateOutput": "建立輸出檔案時錯誤：{{cause.message}} ({{cause.kind}})：{{path}}",
+    "Serialize": "序列化 JSON 時錯誤：{{cause}}",
+    "OpenInput": "開啟輸入檔案時錯誤：{{cause.message}} ({{cause.kind}})：{{path}}",
+    "Deserialize": "反序列化 JSON 時錯誤：{{cause}}",
+    "InvalidVersion": "無效的 UIGF 版本字串：{{value}}",
+    "InconsistentUid": "UIGF 資料的擁有者 UID 不匹配。預期：{{expected}}，實際：{{actual}}",
+    "RequiredField": "資料不正確。缺失必選欄位：{{path}} (游標：{{cursor}})",
+    "MetadataLocale": "缺失元資料語言：$t(Common:{{keyof}}.Name)：{{lang}}",
+    "VacantAccount": "未提供帳號資訊：$t(Common:{{keyof}}.Name) 帳號 UID 值：{{uid}}"
+  },
+  "CsvError": {
+    "InvalidUid": "無效的 $t(Common:{{keyof}}.Name) 帳號 UID 值：{{value}}",
+    "CreateOutput": "建立輸出檔案時錯誤：{{cause.message}} ({{cause.kind}})：{{path}}",
+    "WriteOutput": "寫入輸出檔案時錯誤：{{cause.message}} ({{cause.kind}})：{{path}}"
+  }
+}

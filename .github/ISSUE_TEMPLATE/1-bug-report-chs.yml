@@ -13,7 +13,7 @@ body:
       placeholder: |
         操作系统 Windows 11 Professional
         系统版本 10.0.26100 x86_64
-        Webview2 138.0.3351.109
+        WebView2 138.0.3351.109
         Tauri 2.7.0
         Git 提交 ac9e08baa99764c415db08ace89e2319d8488aed
         应用版本 v1.0.0-git-ac9e08b

@@ -2,9 +2,9 @@ name: Build
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, develop ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, develop ]
 
 env:
   CARGO_TERM_COLOR: always
@@ -22,7 +22,7 @@ jobs:
     runs-on: ${{ matrix.platform }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Rust environment
         uses: dtolnay/rust-toolchain@stable
@@ -40,9 +40,9 @@ jobs:
           run_install: false
 
       - name: Install Node and setup cache
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
-          node-version: 20
+          node-version: 22
           cache: pnpm
 
       - name: Install app dependencies
@@ -55,10 +55,7 @@ jobs:
         run: pnpm test
 
       - name: Build app
-        run: pnpm build:offline
-
-      - name: Build artifact
-        run: pnpm build:artifact
+        run: pnpm build:cicd
 
       - name: Get short git commit sha
         id: short-sha
@@ -68,8 +65,12 @@ jobs:
           echo "short_sha=$SHORT_SHA" >> $GITHUB_OUTPUT
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
-          name: HoYo.Gacha-git-${{ steps.short-sha.outputs.short_sha }}
+          name: HoYo.Gacha-artifact-git-${{ steps.short-sha.outputs.short_sha }}
           path: |
-            ${{ github.workspace }}/target/release/HoYo.Gacha.exe
+            ${{ github.workspace }}/README.md
+            ${{ github.workspace }}/LICENSE-APACHE
+            ${{ github.workspace }}/LICENSE-MIT
+            ${{ github.workspace }}/target/release/hoyo_gacha.exe
+            ${{ github.workspace }}/target/release/hoyo_gacha.pdb

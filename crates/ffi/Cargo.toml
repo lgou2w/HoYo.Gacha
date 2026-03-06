@@ -1,0 +1,33 @@
+[package]
+name = "hoyo_gacha_ffi"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+description.workspace = true
+homepage.workspace = true
+repository.workspace = true
+readme.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+raw-window-handle = { workspace = true }
+rfd = { workspace = true }
+tauri = { workspace = true, features = ["wry"] }
+
+[target.'cfg(windows)'.dependencies]
+webview2-com = { workspace = true }
+
+[target.'cfg(windows)'.dependencies.windows]
+workspace = true
+features = [
+  "Win32_Globalization",
+  "Win32_Graphics_DirectWrite",
+  "Win32_Security",
+  "Win32_System_Console",
+  "Win32_System_Registry",
+  "Win32_System_Threading",
+  "Win32_UI_Shell",
+  "Win32_UI_WindowsAndMessaging",
+]
