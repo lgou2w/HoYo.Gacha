@@ -101,11 +101,11 @@ impl GachaUrlRequester for ParsedGachaUrl<'_> {
     // Send request
     let queries = self.as_queries_with(options);
     let response = Reqwest::builder()
+      .timeout(timeout.unwrap_or(DEFAULT_TIMEOUT))
       .build()
       .context(ReqwestSnafu)?
       .get(base_url)
       .query(&queries)
-      .timeout(timeout.unwrap_or(DEFAULT_TIMEOUT))
       .send()
       .await
       .context(ReqwestSnafu)?;

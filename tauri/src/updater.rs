@@ -146,12 +146,15 @@ pub struct LatestRelease {
   pub download_url: String,
 }
 
+const API_CONNECT_TIMEOUT: Duration = Duration::from_secs(30);
+const API_READ_TIMEOUT: Duration = Duration::from_secs(60);
+
 impl LatestRelease {
   async fn fetch() -> Result<Self, ReqwestError> {
     Reqwest::builder()
       .user_agent(constants::USER_AGENT)
-      .connect_timeout(Duration::from_secs(30))
-      .timeout(Duration::from_secs(60))
+      .connect_timeout(API_CONNECT_TIMEOUT)
+      .read_timeout(API_READ_TIMEOUT)
       .build()?
       .get("https://hoyo-gacha-v1.lgou2w.com/Version/Latest.json")
       .send()
@@ -485,8 +488,8 @@ impl Updater {
       trace!(message = "Building request", current, retry_without_range);
       let mut request = Reqwest::builder()
         .user_agent(constants::USER_AGENT)
-        .connect_timeout(Duration::from_secs(30))
-        .timeout(Duration::from_secs(60))
+        .connect_timeout(API_CONNECT_TIMEOUT)
+        .read_timeout(API_READ_TIMEOUT)
         .build()
         .context(ReqwestSnafu)?
         .get(&latest_release.download_url);

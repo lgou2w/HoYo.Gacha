@@ -222,7 +222,8 @@ pub enum MetadataUpdateKind {
 #[cfg(not(feature = "disable-metadata-updater"))]
 impl Metadata {
   const API_BASE_URL: &str = "https://hoyo-gacha-v1.lgou2w.com/GachaMetadata/v2";
-  const API_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(15);
+  const API_CONNECT_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(15);
+  const API_READ_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(30);
   const OUT_DIRECTORY: &str = "GachaMetadata";
   const OUT_CACHES: &str = "LatestV2.json";
 
@@ -435,9 +436,10 @@ impl Metadata {
 
     reqwest::Client::builder()
       .user_agent(constants::USER_AGENT)
+      .connect_timeout(Self::API_CONNECT_TIMEOUT)
+      .read_timeout(Self::API_READ_TIMEOUT)
       .build()?
       .get(format!("{}/{pathname}", Self::API_BASE_URL))
-      .timeout(Self::API_TIMEOUT)
       .send()
       .await?
       .error_for_status()
