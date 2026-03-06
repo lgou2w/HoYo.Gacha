@@ -28,6 +28,13 @@ An unofficial tool for managing and analyzing your miHoYo gacha records.
 - 应用标识符 (App Identifier): `com.lgou2w.hoyo.gacha` -> `com.lgou2w.hoyo.gacha.v1`。
 - 数据库文件 (Database File ): `HoYo.Gacha.db`         -> `HoYo.Gacha.v1.db`。
 
+### v1.2.0
+
+> [!IMPORTANT]
+> 从 **v1.2.0** 版本开始，应用更新不再是强制性的。但是，为了确保更好的用户体验和安全修复，请及时下载并更新到最新版。
+>
+> Starting with version **1.2.0**, application updates are no longer mandatory. However, to ensure a better user experience and security fixes, please download and update to the latest version promptly.
+
 ## 📥 下载 / Download
 
 确保您的设备满足以下要求：
