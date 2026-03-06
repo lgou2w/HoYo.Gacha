@@ -1,4 +1,5 @@
 use std::pin::Pin;
+use std::sync::LazyLock;
 use std::time::Duration;
 
 use exponential_backoff::Backoff;
@@ -89,6 +90,18 @@ impl GachaUrlRequester for ParsedGachaUrl<'_> {
   ) -> Result<GachaLogsResponse, GachaUrlRequestError> {
     const DEFAULT_TIMEOUT: Duration = Duration::from_secs(10);
 
+    static REQWEST: LazyLock<Reqwest> = LazyLock::new(|| {
+      Reqwest::builder()
+        .timeout(DEFAULT_TIMEOUT)
+        .user_agent(concat!(
+          env!("CARGO_PKG_NAME"),
+          "/",
+          env!("CARGO_PKG_VERSION"),
+        ))
+        .build()
+        .expect("Failed to build reqwest client")
+    });
+
     // Check if the game biz supports this endpoint type.
     let base_url = self
       .game_biz
@@ -100,12 +113,10 @@ impl GachaUrlRequester for ParsedGachaUrl<'_> {
 
     // Send request
     let queries = self.as_queries_with(options);
-    let response = Reqwest::builder()
-      .timeout(timeout.unwrap_or(DEFAULT_TIMEOUT))
-      .build()
-      .context(ReqwestSnafu)?
+    let response = REQWEST
       .get(base_url)
       .query(&queries)
+      .timeout(timeout.unwrap_or(DEFAULT_TIMEOUT))
       .send()
       .await
       .context(ReqwestSnafu)?;

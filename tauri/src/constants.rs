@@ -3,6 +3,7 @@ use std::path::PathBuf;
 use std::sync::LazyLock;
 
 use cfg_if::cfg_if;
+use reqwest::Client as Reqwest;
 use time::UtcOffset;
 
 // See: src-tauri/Tauri.toml - identifier
@@ -78,4 +79,11 @@ pub static LOCALE: LazyLock<String> = LazyLock::new(|| {
     tracing::warn!("Failed to get system locale, using default 'en-US'");
     String::from("en-US")
   })
+});
+
+pub static REQWEST: LazyLock<Reqwest> = LazyLock::new(|| {
+  Reqwest::builder()
+    .user_agent(USER_AGENT)
+    .build()
+    .expect("Failed to build reqwest client")
 });

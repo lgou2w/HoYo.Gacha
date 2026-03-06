@@ -433,12 +433,19 @@ impl Metadata {
   #[inline]
   async fn fetch_api(pathname: &str) -> reqwest::Result<reqwest::Response> {
     use crate::constants;
+    use reqwest::Client as Reqwest;
+    use std::sync::LazyLock;
 
-    reqwest::Client::builder()
-      .user_agent(constants::USER_AGENT)
-      .connect_timeout(Self::API_CONNECT_TIMEOUT)
-      .read_timeout(Self::API_READ_TIMEOUT)
-      .build()?
+    static REQWEST: LazyLock<Reqwest> = LazyLock::new(|| {
+      Reqwest::builder()
+        .user_agent(constants::USER_AGENT)
+        .connect_timeout(Metadata::API_CONNECT_TIMEOUT)
+        .read_timeout(Metadata::API_READ_TIMEOUT)
+        .build()
+        .expect("Failed to build reqwest client")
+    });
+
+    REQWEST
       .get(format!("{}/{pathname}", Self::API_BASE_URL))
       .send()
       .await?

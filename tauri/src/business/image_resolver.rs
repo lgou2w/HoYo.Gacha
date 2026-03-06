@@ -103,9 +103,7 @@ impl ImageResolver {
     #[inline]
     async fn fetch(url: String) -> reqwest::Result<Vec<u8>> {
       Ok(
-        reqwest::ClientBuilder::new()
-          .user_agent(constants::USER_AGENT)
-          .build()?
+        constants::REQWEST
           .get(url)
           .send()
           .await?

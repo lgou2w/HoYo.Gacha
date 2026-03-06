@@ -148,14 +148,18 @@ pub struct LatestRelease {
 
 const API_CONNECT_TIMEOUT: Duration = Duration::from_secs(30);
 const API_READ_TIMEOUT: Duration = Duration::from_secs(60);
+static REQWEST: LazyLock<Reqwest> = LazyLock::new(|| {
+  Reqwest::builder()
+    .user_agent(constants::USER_AGENT)
+    .connect_timeout(API_CONNECT_TIMEOUT)
+    .read_timeout(API_READ_TIMEOUT)
+    .build()
+    .expect("Failed to build reqwest client")
+});
 
 impl LatestRelease {
   async fn fetch() -> Result<Self, ReqwestError> {
-    Reqwest::builder()
-      .user_agent(constants::USER_AGENT)
-      .connect_timeout(API_CONNECT_TIMEOUT)
-      .read_timeout(API_READ_TIMEOUT)
-      .build()?
+    REQWEST
       .get("https://hoyo-gacha-v1.lgou2w.com/Version/Latest.json")
       .send()
       .await?
@@ -546,13 +550,7 @@ impl Updater {
       }
 
       trace!(message = "Building request", current, retry_without_range);
-      let mut request = Reqwest::builder()
-        .user_agent(constants::USER_AGENT)
-        .connect_timeout(API_CONNECT_TIMEOUT)
-        .read_timeout(API_READ_TIMEOUT)
-        .build()
-        .context(ReqwestSnafu)?
-        .get(&latest_release.download_url);
+      let mut request = REQWEST.get(&latest_release.download_url);
 
       // If we have already downloaded some bytes, add the Range header to request the remaining bytes.
       if current > 0 && !retry_without_range {
