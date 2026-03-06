@@ -57,8 +57,8 @@ importers:
         specifier: ^7.71.2
         version: 7.71.2(react@19.2.4)
       react-i18next:
-        specifier: ^16.5.4
-        version: 16.5.4(i18next@25.8.14(typescript@5.9.3))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(typescript@5.9.3)
+        specifier: ^16.5.5
+        version: 16.5.5(i18next@25.8.14(typescript@5.9.3))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(typescript@5.9.3)
       react-virtuoso:
         specifier: ^4.18.3
         version: 4.18.3(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -77,16 +77,16 @@ importers:
         version: 1.0.14
       '@griffel/vite-plugin':
         specifier: ^0.1.14
-        version: 0.1.14(@griffel/tag-processor@1.0.14)(typescript@5.9.3)(vite@7.3.1(@types/node@22.19.13))
+        version: 0.1.14(@griffel/tag-processor@1.0.14)(typescript@5.9.3)(vite@7.3.1(@types/node@22.19.15))
       '@stylistic/eslint-plugin':
-        specifier: ^5.9.0
-        version: 5.9.0(eslint@9.39.3)
+        specifier: ^5.10.0
+        version: 5.10.0(eslint@9.39.3)
       '@tauri-apps/cli':
         specifier: ^2.10.1
         version: 2.10.1
       '@types/node':
-        specifier: ^22.19.13
-        version: 22.19.13
+        specifier: ^22.19.15
+        version: 22.19.15
       '@types/react':
         specifier: ^19.2.14
         version: 19.2.14
@@ -95,7 +95,7 @@ importers:
         version: 19.2.3(@types/react@19.2.14)
       '@vitejs/plugin-react-swc':
         specifier: ^4.2.3
-        version: 4.2.3(@swc/helpers@0.5.19)(vite@7.3.1(@types/node@22.19.13))
+        version: 4.2.3(@swc/helpers@0.5.19)(vite@7.3.1(@types/node@22.19.15))
       concurrently:
         specifier: ^9.2.1
         version: 9.2.1
@@ -128,10 +128,10 @@ importers:
         version: 8.56.1(eslint@9.39.3)(typescript@5.9.3)
       vite:
         specifier: ^7.3.1
-        version: 7.3.1(@types/node@22.19.13)
+        version: 7.3.1(@types/node@22.19.15)
       vitest:
         specifier: ^4.0.18
-        version: 4.0.18(@types/node@22.19.13)(happy-dom@20.8.3)
+        version: 4.0.18(@types/node@22.19.15)(happy-dom@20.8.3)
 
 packages:
 
@@ -1249,8 +1249,8 @@ packages:
   '@standard-schema/spec@1.1.0':
     resolution: {integrity: sha512-l2aFy5jALhniG5HgqrD6jXLi/rUWrKvqN/qJx6yoJsgKhblVd+iqqU4RCXavm/jPityDo5TCvKMnpjKnOriy0w==}
 
-  '@stylistic/eslint-plugin@5.9.0':
-    resolution: {integrity: sha512-FqqSkvDMYJReydrMhlugc71M76yLLQWNfmGq+SIlLa7N3kHp8Qq8i2PyWrVNAfjOyOIY+xv9XaaYwvVW7vroMA==}
+  '@stylistic/eslint-plugin@5.10.0':
+    resolution: {integrity: sha512-nPK52ZHvot8Ju/0A4ucSX1dcPV2/1clx0kLcH5wDmrE4naKso7TUC/voUyU1O9OTKTrR6MYip6LP0ogEMQ9jPQ==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
     peerDependencies:
       eslint: ^9.0.0 || ^10.0.0
@@ -1484,8 +1484,8 @@ packages:
   '@types/json5@0.0.29':
     resolution: {integrity: sha512-dRLjCWHYg4oaA77cxO64oO+7JwCwnIzkZPdrrC71jQmQtlhM556pwKo5bUzqvZndkVbeFLIIi+9TC40JNF5hNQ==}
 
-  '@types/node@22.19.13':
-    resolution: {integrity: sha512-akNQMv0wW5uyRpD2v2IEyRSZiR+BeGuoB6L310EgGObO44HSMNT8z1xzio28V8qOrgYaopIDNA18YgdXd+qTiw==}
+  '@types/node@22.19.15':
+    resolution: {integrity: sha512-F0R/h2+dsy5wJAUe3tAU6oqa2qbWY5TpNfL/RGmo1y38hiyO1w3x2jPtt76wmuaJI4DQnOBu21cNXQ2STIUUWg==}
 
   '@types/react-dom@19.2.3':
     resolution: {integrity: sha512-jp2L/eY6fn+KgVVQAOqYItbF0VY/YApe5Mz2F0aykSO8gx31bYCZyvSeYxCHKvzHG5eZjc+zyaS5BrBWya2+kQ==}
@@ -1833,8 +1833,8 @@ packages:
     resolution: {integrity: sha512-P8BjAsXvZS+VIDUI11hHCQEv74YT67YUi5JJFNWIqL235sBmjX4+qx9Muvls5ivyNENctx46xQLQ3aTuE7ssaQ==}
     engines: {node: '>=6'}
 
-  caniuse-lite@1.0.30001776:
-    resolution: {integrity: sha512-sg01JDPzZ9jGshqKSckOQthXnYwOEP50jeVFhaSFbZcOy05TiuuaffDOfcwtCisJ9kNQuLBFibYywv2Bgm9osw==}
+  caniuse-lite@1.0.30001777:
+    resolution: {integrity: sha512-tmN+fJxroPndC74efCdp12j+0rk0RHwV5Jwa1zWaFVyw2ZxAuPeG8ZgWC3Wz7uSjT3qMRQ5XHZ4COgQmsCMJAQ==}
 
   chai@6.2.2:
     resolution: {integrity: sha512-NUPRluOfOiTKBKvWPtSD4PhFvWCqOi0BGStNWs57X9js7XGTprSmFoz5F0tWhR4WPjNeR9jXqdC7/UpSJTnlRg==}
@@ -2683,8 +2683,8 @@ packages:
     peerDependencies:
       react: ^16.8.0 || ^17 || ^18 || ^19
 
-  react-i18next@16.5.4:
-    resolution: {integrity: sha512-6yj+dcfMncEC21QPhOTsW8mOSO+pzFmT6uvU7XXdvM/Cp38zJkmTeMeKmTrmCMD5ToT79FmiE/mRWiYWcJYW4g==}
+  react-i18next@16.5.5:
+    resolution: {integrity: sha512-5Z35e2JMALNR16FK/LDNQoAatQTVuO/4m4uHrIzewOPXIyf75gAHzuNLSWwmj5lRDJxDvXRJDECThkxWSAReng==}
     peerDependencies:
       i18next: '>= 25.6.2'
       react: '>= 16.8.0'
@@ -4739,11 +4739,11 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@griffel/vite-plugin@0.1.14(@griffel/tag-processor@1.0.14)(typescript@5.9.3)(vite@7.3.1(@types/node@22.19.13))':
+  '@griffel/vite-plugin@0.1.14(@griffel/tag-processor@1.0.14)(typescript@5.9.3)(vite@7.3.1(@types/node@22.19.15))':
     dependencies:
       '@griffel/tag-processor': 1.0.14
-      '@wyw-in-js/vite': 0.8.1(typescript@5.9.3)(vite@7.3.1(@types/node@22.19.13))
-      vite: 7.3.1(@types/node@22.19.13)
+      '@wyw-in-js/vite': 0.8.1(typescript@5.9.3)(vite@7.3.1(@types/node@22.19.15))
+      vite: 7.3.1(@types/node@22.19.15)
     transitivePeerDependencies:
       - bufferutil
       - supports-color
@@ -4871,7 +4871,7 @@ snapshots:
 
   '@standard-schema/spec@1.1.0': {}
 
-  '@stylistic/eslint-plugin@5.9.0(eslint@9.39.3)':
+  '@stylistic/eslint-plugin@5.10.0(eslint@9.39.3)':
     dependencies:
       '@eslint-community/eslint-utils': 4.9.1(eslint@9.39.3)
       '@typescript-eslint/types': 8.56.1
@@ -5064,7 +5064,7 @@ snapshots:
 
   '@types/json5@0.0.29': {}
 
-  '@types/node@22.19.13':
+  '@types/node@22.19.15':
     dependencies:
       undici-types: 6.21.0
 
@@ -5080,7 +5080,7 @@ snapshots:
 
   '@types/ws@8.18.1':
     dependencies:
-      '@types/node': 22.19.13
+      '@types/node': 22.19.15
 
   '@typescript-eslint/eslint-plugin@8.56.1(@typescript-eslint/parser@8.56.1(eslint@9.39.3)(typescript@5.9.3))(eslint@9.39.3)(typescript@5.9.3)':
     dependencies:
@@ -5232,11 +5232,11 @@ snapshots:
   '@unrs/resolver-binding-win32-x64-msvc@1.11.1':
     optional: true
 
-  '@vitejs/plugin-react-swc@4.2.3(@swc/helpers@0.5.19)(vite@7.3.1(@types/node@22.19.13))':
+  '@vitejs/plugin-react-swc@4.2.3(@swc/helpers@0.5.19)(vite@7.3.1(@types/node@22.19.15))':
     dependencies:
       '@rolldown/pluginutils': 1.0.0-rc.2
       '@swc/core': 1.15.18(@swc/helpers@0.5.19)
-      vite: 7.3.1(@types/node@22.19.13)
+      vite: 7.3.1(@types/node@22.19.15)
     transitivePeerDependencies:
       - '@swc/helpers'
 
@@ -5249,13 +5249,13 @@ snapshots:
       chai: 6.2.2
       tinyrainbow: 3.0.3
 
-  '@vitest/mocker@4.0.18(vite@7.3.1(@types/node@22.19.13))':
+  '@vitest/mocker@4.0.18(vite@7.3.1(@types/node@22.19.15))':
     dependencies:
       '@vitest/spy': 4.0.18
       estree-walker: 3.0.3
       magic-string: 0.30.21
     optionalDependencies:
-      vite: 7.3.1(@types/node@22.19.13)
+      vite: 7.3.1(@types/node@22.19.15)
 
   '@vitest/pretty-format@4.0.18':
     dependencies:
@@ -5317,11 +5317,11 @@ snapshots:
       - typescript
       - utf-8-validate
 
-  '@wyw-in-js/vite@0.8.1(typescript@5.9.3)(vite@7.3.1(@types/node@22.19.13))':
+  '@wyw-in-js/vite@0.8.1(typescript@5.9.3)(vite@7.3.1(@types/node@22.19.15))':
     dependencies:
       '@wyw-in-js/shared': 0.8.1
       '@wyw-in-js/transform': 0.8.1(typescript@5.9.3)
-      vite: 7.3.1(@types/node@22.19.13)
+      vite: 7.3.1(@types/node@22.19.15)
     transitivePeerDependencies:
       - bufferutil
       - supports-color
@@ -5452,7 +5452,7 @@ snapshots:
   browserslist@4.28.1:
     dependencies:
       baseline-browser-mapping: 2.10.0
-      caniuse-lite: 1.0.30001776
+      caniuse-lite: 1.0.30001777
       electron-to-chromium: 1.5.307
       node-releases: 2.0.36
       update-browserslist-db: 1.2.3(browserslist@4.28.1)
@@ -5476,7 +5476,7 @@ snapshots:
 
   callsites@3.1.0: {}
 
-  caniuse-lite@1.0.30001776: {}
+  caniuse-lite@1.0.30001777: {}
 
   chai@6.2.2: {}
 
@@ -6022,7 +6022,7 @@ snapshots:
 
   happy-dom@20.8.3:
     dependencies:
-      '@types/node': 22.19.13
+      '@types/node': 22.19.15
       '@types/whatwg-mimetype': 3.0.2
       '@types/ws': 8.18.1
       entities: 7.0.1
@@ -6455,7 +6455,7 @@ snapshots:
     dependencies:
       react: 19.2.4
 
-  react-i18next@16.5.4(i18next@25.8.14(typescript@5.9.3))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(typescript@5.9.3):
+  react-i18next@16.5.5(i18next@25.8.14(typescript@5.9.3))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(typescript@5.9.3):
     dependencies:
       '@babel/runtime': 7.28.6
       html-parse-stringify: 3.0.1
@@ -6879,7 +6879,7 @@ snapshots:
     dependencies:
       react: 19.2.4
 
-  vite@7.3.1(@types/node@22.19.13):
+  vite@7.3.1(@types/node@22.19.15):
     dependencies:
       esbuild: 0.27.3
       fdir: 6.5.0(picomatch@4.0.3)
@@ -6888,13 +6888,13 @@ snapshots:
       rollup: 4.59.0
       tinyglobby: 0.2.15
     optionalDependencies:
-      '@types/node': 22.19.13
+      '@types/node': 22.19.15
       fsevents: 2.3.3
 
-  vitest@4.0.18(@types/node@22.19.13)(happy-dom@20.8.3):
+  vitest@4.0.18(@types/node@22.19.15)(happy-dom@20.8.3):
     dependencies:
       '@vitest/expect': 4.0.18
-      '@vitest/mocker': 4.0.18(vite@7.3.1(@types/node@22.19.13))
+      '@vitest/mocker': 4.0.18(vite@7.3.1(@types/node@22.19.15))
       '@vitest/pretty-format': 4.0.18
       '@vitest/runner': 4.0.18
       '@vitest/snapshot': 4.0.18
@@ -6911,10 +6911,10 @@ snapshots:
       tinyexec: 1.0.2
       tinyglobby: 0.2.15
       tinyrainbow: 3.0.3
-      vite: 7.3.1(@types/node@22.19.13)
+      vite: 7.3.1(@types/node@22.19.15)
       why-is-node-running: 2.3.0
     optionalDependencies:
-      '@types/node': 22.19.13
+      '@types/node': 22.19.15
       happy-dom: 20.8.3
     transitivePeerDependencies:
       - jiti
