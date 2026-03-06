@@ -302,13 +302,17 @@ impl Updater {
     cfg_if! {if #[cfg(not(debug_assertions))] {
       // (Production only)
       debug!("Replacing current exe...");
-      fs::rename(&*constants::EXE_PATH, current_exe_bak_path)
+      fs::rename(&*constants::EXE_PATH, &current_exe_bak_path)
         .await
         .context(IoSnafu)?;
 
-      fs::rename(downloaded, &*constants::EXE_PATH)
-        .await
-        .context(IoSnafu)?;
+      // Rollback to the original exe if renaming the downloaded file fails,
+      // to avoid leaving the app in a broken state.
+      if let Err(e) = fs::rename(downloaded, &*constants::EXE_PATH).await {
+        use snafu::IntoError;
+        let _ = fs::rename(&current_exe_bak_path, &*constants::EXE_PATH).await;
+        return Err(IoSnafu.into_error(e))
+      }
     } else {
       // (Debug only)
       let _ = fs::remove_file(downloaded).await;
