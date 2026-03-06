@@ -80,7 +80,9 @@ HoYo.Gacha is currently using sponsored software from the following service prov
 
 ## 🗃 部分资源 / Some assets
 
-©miHoYo | 上海米哈游影铁科技有限公司 版权所有
+玩家自制工具。游戏内容及资产归 ©miHoYo 版权所有。
+
+Fan-made tool. Game content and assets ©miHoYo. All rights reserved.
 
 - [public/Logo.avif](public/Logo.avif)
 - [app/assets/images/GenshinImpact/*](app/assets/images/GenshinImpact)
