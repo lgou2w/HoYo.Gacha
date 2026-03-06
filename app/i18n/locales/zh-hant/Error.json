@@ -4,7 +4,8 @@
   "UpdaterError": {
     "Reqwest": "請求應用程式更新時錯誤：{{cause}}",
     "Io": "應用程式更新時 I/O 錯誤：{{cause.message}} ({{cause.kind}})",
-    "DownloadedMismatch": "已下載的應用程式更新大小不匹配。"
+    "DownloadedMismatch": "已下載的應用程式更新大小不匹配。",
+    "Aborted": "應用程式更新已被中止。"
   },
   "MetadataError": {
     "Deserialize": "反序列化元資料時錯誤：{{cause}}",

@@ -58,6 +58,7 @@
     "Confirm": "确认",
     "Cancel": "取消",
     "Retry": "重试",
+    "Abort": "中止",
     "UpToDate": "应用已是最新版本。"
   },
   "UpdaterAlert": {

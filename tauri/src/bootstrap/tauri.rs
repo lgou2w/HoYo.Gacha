@@ -254,6 +254,7 @@ fn command_handlers() -> Box<dyn Fn(Invoke<Wry>) -> bool + Send + Sync + 'static
     // Updater
     crate::updater::updater_is_updating,
     crate::updater::updater_update,
+    crate::updater::updater_update_abort,
     crate::updater::updater_latest_release,
     // KeyValuePair
     crate::database::schemas::key_value_pair_handlers::database_find_kv_pair,

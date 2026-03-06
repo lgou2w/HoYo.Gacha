@@ -119,6 +119,10 @@ export default withTrans.RootPage(function Updater (
     }
   }, [produceState])
 
+  const handleAbort = useCallback<MouseEventHandler>(() => {
+    UpdaterCommands.updaterAbort()
+  }, [])
+
   return (
     <Dialog
       open={open}
@@ -168,18 +172,24 @@ export default withTrans.RootPage(function Updater (
                     {t('Updater.Confirm')}
                   </Button>
                 )
-              : lastError && (
-                <div className={styles.errorActions}>
-                  <DialogTrigger action="close">
-                    <Button>
-                      {t('Updater.Cancel')}
+              : lastError
+                ? (
+                    <div className={styles.errorActions}>
+                      <DialogTrigger action="close">
+                        <Button>
+                          {t('Updater.Cancel')}
+                        </Button>
+                      </DialogTrigger>
+                      <Button onClick={update}>
+                        {t('Updater.Retry')}
+                      </Button>
+                    </div>
+                  )
+                : (
+                    <Button onClick={handleAbort}>
+                      {t('Updater.Abort')}
                     </Button>
-                  </DialogTrigger>
-                  <Button onClick={update}>
-                    {t('Updater.Retry')}
-                  </Button>
-                </div>
-              )}
+                  )}
           </DialogActions>
         </DialogBody>
       </DialogSurface>

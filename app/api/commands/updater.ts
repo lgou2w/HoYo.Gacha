@@ -9,6 +9,7 @@ export enum UpdaterErrorKind {
   Reqwest = 'Reqwest',
   Io = 'Io',
   DownloadedMismatch = 'DownloadedMismatch',
+  Aborted = 'Aborted',
 }
 
 export type UpdaterError = AppError<NamedUpdaterError,
@@ -22,6 +23,9 @@ export type UpdaterError = AppError<NamedUpdaterError,
   }
   | {
     kind: UpdaterErrorKind.DownloadedMismatch
+  }
+  | {
+    kind: UpdaterErrorKind.Aborted
   }
 >
 
@@ -62,6 +66,9 @@ const UpdaterCommands = {
       progressChannel: Channel<number>
       maxAttempts?: 0 | 1 | 2 | 3 | 4 | 5 | null
     }, UpdaterResult>('updater_update'),
+
+  updaterAbort:
+    declareCommand<undefined, void>('updater_update_abort'),
 
   /**
    * @throws `UpdaterError`

@@ -4,7 +4,8 @@
   "UpdaterError": {
     "Reqwest": "Failed to fetch app updates: {{cause}}",
     "Io": "I/O error during app updates: {{cause.message}} ({{cause.kind}})",
-    "DownloadedMismatch": "Downloaded app updates size mismatch."
+    "DownloadedMismatch": "Downloaded app updates size mismatch.",
+    "Aborted": "App update has been aborted."
   },
   "MetadataError": {
     "Deserialize": "Failed to deserialize metadata: {{cause}}",

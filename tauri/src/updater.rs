@@ -18,7 +18,7 @@ use time::OffsetDateTime;
 use time::serde::rfc3339;
 use tokio::fs::{self, File as TokioFile};
 use tokio::io::AsyncWriteExt;
-use tokio::sync::Mutex;
+use tokio::sync::{watch, Mutex};
 use tracing::{debug, error, info, trace};
 
 use crate::constants;
@@ -178,6 +178,9 @@ const LATEST_RELEASE_CACHE_TTL: Duration = Duration::from_secs(10 * 60);
 static LATEST_RELEASE_CACHE: LazyLock<Mutex<Option<(Instant, Arc<LatestRelease>)>>> =
   LazyLock::new(Mutex::default);
 
+// Signal for manually cancelling download.
+static DOWNLOAD_ABORT: LazyLock<Mutex<Option<watch::Sender<bool>>>> = LazyLock::new(Mutex::default);
+
 pub struct Updater;
 
 #[derive(Debug, Snafu)]
@@ -190,6 +193,9 @@ pub enum UpdaterError {
 
   #[snafu(display("Downloaded size mismatch"))]
   DownloadedMismatch,
+
+  #[snafu(display("Download aborted by user"))]
+  Aborted,
 }
 
 impl ErrorDetails for UpdaterError {
@@ -213,7 +219,10 @@ impl ErrorDetails for UpdaterError {
         })
       }),
       Self::DownloadedMismatch => json!({
-        "kind": stringify!(DownloadedMismatch)
+        "kind": stringify!(DownloadedMismatch),
+      }),
+      Self::Aborted => json!({
+        "kind": stringify!(Aborted),
       }),
     })
   }
@@ -237,7 +246,7 @@ impl Updater {
     max_attempts: Option<u8>,
   ) -> Result<UpdaterKind, UpdaterError>
   where
-    P: Fn(f32),
+    P: Fn(f32) + Send + Sync + 'static,
   {
     if UPDATING.swap(true, Ordering::SeqCst) {
       debug!("App update already in progress...");
@@ -270,6 +279,28 @@ impl Updater {
       let _ = fs::remove_file(&current_exe_bak_path).await;
     }
 
+    // Create a cancellation channel that can be used to signal the download task
+    // to stop if the user initiates another update while a download is in progress.
+    let (abort_tx, abort_rx) = watch::channel(false);
+    {
+      let mut guard = DOWNLOAD_ABORT.lock().await;
+      *guard = Some(abort_tx);
+    }
+
+    // region: CancelGuard
+    // Ensure the cancellation channel is reset on function exit, so that it doesn't affect future updates.
+    struct AbortGuard;
+    impl Drop for AbortGuard {
+      fn drop(&mut self) {
+        tokio::spawn(async {
+          let mut guard = DOWNLOAD_ABORT.lock().await;
+          *guard = None;
+        });
+      }
+    }
+    let _abort_guard = AbortGuard;
+    // endregion
+
     // 1. Check if the latest cached version exists
     //   to avoid making a request every time.
     let latest = Self::latest_release(max_attempts)
@@ -295,7 +326,13 @@ impl Updater {
 
     // 3. Start download latest release
     debug!(message = "Starting download of latest release...", ?latest.download_url);
-    let downloaded = Self::download(&update_dir, &latest, progress_reporter, max_attempts).await?;
+    let downloaded = Self::download(
+      &update_dir,
+      &latest,
+      Arc::new(progress_reporter),
+      max_attempts,
+      Arc::new(Mutex::new(abort_rx)),
+    ).await?;
 
     // 4. Replace current exe
     //   Move the current exe to a backup file, then move the downloaded file to the exe path.
@@ -385,14 +422,22 @@ impl Updater {
   async fn download<P>(
     update_dir: &Path,
     latest_release: &LatestRelease,
-    progress_reporter: Option<P>,
+    progress_reporter: Arc<Option<P>>,
     max_attempts: Option<u8>,
+    abort_rx: Arc<Mutex<watch::Receiver<bool>>>,
   ) -> Result<PathBuf, UpdaterError>
   where
-    P: Fn(f32),
+    P: Fn(f32) + Send + Sync + 'static,
   {
     retry(
-      || Self::download_with_resume(update_dir, latest_release, &progress_reporter),
+      || {
+        let progress_reporter = Arc::clone(&progress_reporter);
+        let abort_rx = Arc::clone(&abort_rx);
+        async move {
+          let mut rx = abort_rx.lock().await;
+          Self::download_with_resume(update_dir, latest_release, progress_reporter, &mut rx).await
+        }
+      },
       max_attempts,
       |err| {
         let should_retry = matches!(err, UpdaterError::Reqwest { .. });
@@ -413,15 +458,16 @@ impl Updater {
   async fn download_with_resume<P>(
     update_dir: &Path,
     latest_release: &LatestRelease,
-    progress_reporter: &Option<P>,
+    progress_reporter: Arc<Option<P>>,
+    abort_rx: &mut watch::Receiver<bool>,
   ) -> Result<PathBuf, UpdaterError>
   where
-    P: Fn(f32),
+    P: Fn(f32) + Send + Sync + 'static,
   {
     // Helper macro to report progress if the callback is provided
     macro_rules! progress {
       ($value:expr) => {
-        if let Some(f) = progress_reporter {
+        if let Some(f) = progress_reporter.as_ref() {
           f($value);
         }
       };
@@ -489,6 +535,16 @@ impl Updater {
     let mut current = downloaded;
     let mut retry_without_range = false;
     loop {
+      // Check if the download has been cancelled by the user before making each request.
+      if *abort_rx.borrow_and_update() {
+        trace!("Download aborted by user");
+        // Don't remove the temp file here to allow resuming later, but we could also choose to remove it to free up space.
+        // if temp_path.exists() {
+        //   let _ = fs::remove_file(&temp_path).await;
+        // }
+        return Err(UpdaterError::Aborted);
+      }
+
       trace!(message = "Building request", current, retry_without_range);
       let mut request = Reqwest::builder()
         .user_agent(constants::USER_AGENT)
@@ -550,6 +606,15 @@ impl Updater {
       // Stream the response body and write it to the temporary file, while reporting progress.
       trace!("Starting body stream");
       while let Some(chunk) = response.chunk().await.context(ReqwestSnafu)? {
+        // Check if the download has been aborted by the user during streaming.
+        if *abort_rx.borrow_and_update() {
+          trace!("Download aborted by user during streaming");
+          // Don't remove the temp file here to allow resuming later, but we could also choose to remove it to free up space.
+          // let _ = fs::remove_file(&temp_path).await;
+          return Err(UpdaterError::Aborted);
+        }
+
+        // Write the chunk to the temporary file and update the progress.
         temp_file.write_all(&chunk).await.context(IoSnafu)?;
         current += chunk.len() as u64;
         progress! { current as f32 / total_size as f32 };
@@ -603,13 +668,23 @@ cfg_if! {if #[cfg(not(feature = "disable-app-updater"))] {
     max_attempts: Option<u8>,
   ) -> Result<UpdaterKind, AppError<UpdaterError>> {
     Updater::update(
-      Some(|progress| {
+      Some(move |progress| {
         let _ = progress_channel.send(progress);
       }),
       max_attempts
     )
       .await
       .map_err(AppError::from)
+  }
+
+  #[tauri::command]
+  pub async fn updater_update_abort() {
+    let mut guard = DOWNLOAD_ABORT.lock().await;
+    if let Some(tx) = guard.as_ref() {
+      let _ = tx.send(true);
+      *guard = None;
+      trace!("Sent abort signal for ongoing update");
+    }
   }
 
   #[tauri::command]
@@ -632,6 +707,9 @@ cfg_if! {if #[cfg(not(feature = "disable-app-updater"))] {
 
   #[tauri::command]
   pub fn updater_update() {}
+
+  #[tauri::command]
+  pub async fn updater_update_abort() {}
 
   #[tauri::command]
   pub async fn updater_latest_release() {}

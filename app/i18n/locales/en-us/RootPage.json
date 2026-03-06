@@ -62,6 +62,7 @@
     "Confirm": "Okay",
     "Cancel": "Cancel",
     "Retry": "Retry",
+    "Abort": "Abort",
     "UpToDate": "App already up to date."
   },
   "UpdaterAlert": {
