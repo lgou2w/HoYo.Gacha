@@ -31,6 +31,7 @@ export type Environment = Readonly<{
 export function deviceSpec (env: Environment) {
   const appVersion = env.app.version
   const shortHash = env.git.commitHash.substring(0, 7)
+  const repoUrl = env.git.remoteUrl.replace(/\.git$/, '')
 
   return {
     OperatingSystem: env.os.edition,
@@ -43,7 +44,7 @@ export function deviceSpec (env: Environment) {
       shortHash,
       date: env.git.commitDate,
       text: `${appVersion}-git-${shortHash}`,
-      link: `${env.git.remoteUrl}/commit/${env.git.commitHash}`,
+      link: `${repoUrl}/commit/${env.git.commitHash}`,
     },
   }
 }
