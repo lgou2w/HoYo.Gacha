@@ -1,5 +1,5 @@
 import { Dropdown, Option } from '@fluentui/react-components'
-import { ColorRegular } from '@fluentui/react-icons'
+import { LocalLanguageRegular } from '@fluentui/react-icons'
 import { KnownLanguages, SupportedLanguages, WithTransKnownNs, useI18n } from '@/i18n'
 import SectionItem from '@/pages/Settings/components/SectionItem'
 
@@ -8,7 +8,7 @@ export default function Language () {
 
   return (
     <SectionItem
-      icon={<ColorRegular />}
+      icon={<LocalLanguageRegular />}
       title={t('General.Language.Title')}
       subtitle={t('General.Language.Subtitle')}
     >
