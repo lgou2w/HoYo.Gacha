@@ -71,12 +71,13 @@ impl IndexFile {
     let last_file = reader.read_i32()?;
     let this_id = reader.read_i32()?;
     let stats = reader.read_addr()?;
-
-    let mut table_len = reader.read_i32()?;
-    if table_len > INDEX_TABLE_SIZE as i32 {
-      table_len = INDEX_TABLE_SIZE as _;
-    }
-
+    // https://github.com/chromium/chromium/blob/979cb11c4ee77b6b43f044294d705af4145056d2/net/disk_cache/blockfile/disk_format.h#L109
+    // Default size. Actual size controlled by header.table_len, and may be bigger
+    // or lower than this. Do not make this an std::array as the bound would be
+    // incorrect; see `BackendImpl::index_table_` for how boundary checking of
+    // this works.
+    // CacheAddr table[kIndexTablesize];
+    let table_len = reader.read_i32()?;
     let crash = reader.read_i32()?;
     let experiment = reader.read_i32()?;
     let create_time = reader.read_u64()?;
