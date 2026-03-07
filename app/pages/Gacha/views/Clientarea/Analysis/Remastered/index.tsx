@@ -254,8 +254,8 @@ const Card = withTrans.GachaPage(function (
           ? (
               ([
                 { row: 'AverageAndUp', value: `${golden.average} / ${golden.up.average}` },
-                { row: 'UpWin', value: `${golden.up.sum} [${golden.up.percentage}%]` },
-                { row: 'Up', value: `${golden.upWin.sum} [${golden.upWin.percentage}%]` },
+                { row: 'UpWin', value: `${golden.upWin.sum} [${golden.upWin.percentage}%]` },
+                { row: 'Up', value: `${golden.up.sum} [${golden.up.percentage}%]` },
               ] as const
               ).map(({ row, value }) => (
                 <div
