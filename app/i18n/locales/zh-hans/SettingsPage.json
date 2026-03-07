@@ -1,0 +1,111 @@
+{
+  "Hero": {
+    "License": "仅供个人学习交流使用。请勿用于任何商业或违法违规用途。本软件不会向您索要任何关于 ©miHoYo 账户的账号密码信息，也不会收集任何用户数据。 所产生的数据（包括但不限于使用数据、抽卡数据、UID 信息等）均保存在用户本地。"
+  },
+  "Mihoyo": {
+    "License": "玩家自制工具。游戏内容及资产归 ©miHoYo 版权所有。"
+  },
+  "LegacyMigration": {
+    "Title": "数据库迁移",
+    "Subtitle": "将旧版本 v0 的数据库迁移至此。",
+    "Migrate": "迁移",
+    "Pick": "请选择旧版本 v0 的数据库文件：",
+    "Loading": {
+      "Title": "迁移中...",
+      "Body": "请勿退出应用程序并等待迁移操作完成。"
+    },
+    "Success": {
+      "Title": "迁移成功：",
+      "Body": "耗时：{{elapsed}} 秒。账号数量：{{accounts}}，抽卡记录数据：$t(Common:GenshinImpact.Name)：{{GenshinImpact}}、$t(Common:HonkaiStarRail.Name)：{{HonkaiStarRail}}、$t(Common:ZenlessZoneZero.Name)：{{ZenlessZoneZero}}。"
+    },
+    "Error": "迁移失败："
+  },
+  "General": {
+    "Title": "常规",
+    "Language": {
+      "Title": "语言",
+      "Subtitle": "更改应用使用的主要语言。"
+    },
+    "NavbarBusinessVisible": {
+      "Title": "导航栏业务项可见性",
+      "Subtitle": "控制导航栏中业务相关条目的显示与隐藏状态。"
+    },
+    "MemoryBusinessRoute": {
+      "Title": "记住最后访问的业务项",
+      "Subtitle": "启用后，打开应用时自动恢复上次最后访问的业务项。",
+      "State_true": "启用",
+      "State_false": "禁用"
+    },
+    "GachaClientareaTabs": {
+      "Title": "业务启动标签页",
+      "Subtitle": "选择您的默认业务客户区域的启动标签页。",
+      "Overview": "概览",
+      "Analysis": "分析"
+    }
+  },
+  "Appearance": {
+    "Title": "外观",
+    "Namespace": {
+      "Title": "主题颜色",
+      "Subtitle": "更改应用中显示的主要颜色。"
+    },
+    "ColorScheme": {
+      "Title": "偏好配色方案",
+      "Subtitle": "切换应用使用浅色主题或深色主题。",
+      "Option_light": "浅色",
+      "Option_dark": "深色",
+      "Option_auto": "跟随系统"
+    },
+    "ScaleLevel": {
+      "Title": "界面缩放",
+      "Subtitle": "更改应用中界面的缩放等级。"
+    },
+    "Font": {
+      "Title": "界面字体",
+      "Subtitle": "更改应用中界面的字体。",
+      "None": "无"
+    }
+  },
+  "About": {
+    "Title": "关于",
+    "Updater": {
+      "Title": "应用更新",
+      "Subtitle": "检查应用的版本更新。",
+      "StartupCheck": "启动时检查更新",
+      "CheckBtn": "检查更新",
+      "CheckBtn_fetching": "检查中...",
+      "CheckBtn_offline": "脱机"
+    },
+    "Metadata": {
+      "Title": "元数据状态",
+      "Subtitle": "用于指示元数据更新程序的当前状态。",
+      "Status": {
+        "Away": "检查中...",
+        "Busy": "错误",
+        "Offline": "脱机",
+        "Available": "在线",
+        "Unknown": "未知"
+      },
+      "Refetch": "重新检查"
+    },
+    "Specification": {
+      "Title": "设备规格",
+      "Copy": "复制",
+      "Copied": "已复制",
+      "OperatingSystem": "操作系统",
+      "SystemVersion": "系统版本",
+      "WebView2": "WebView2",
+      "Tauri": "Tauri",
+      "GitCommit": "Git 提交",
+      "AppVersion": "应用版本"
+    },
+    "Lnk": {
+      "Title": "快捷方式",
+      "Subtitle": "创建应用的桌面快捷方式。",
+      "Create": "创建",
+      "Loading": "创建快捷方式中...",
+      "Success": "创建成功。",
+      "Error": "创建失败："
+    }
+  }
+}

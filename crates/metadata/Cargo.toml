@@ -1,0 +1,24 @@
+[package]
+name = "hoyo_gacha_metadata"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+description.workspace = true
+homepage.workspace = true
+repository.workspace = true
+readme.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[features]
+json = ["dep:serde_json"]
+
+[dependencies]
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true, optional = true }
+snafu = { workspace = true }
+time = { workspace = true, features = ["serde", "parsing"] }
+
+[dev-dependencies]
+time = { workspace = true, features = ["macros"] }

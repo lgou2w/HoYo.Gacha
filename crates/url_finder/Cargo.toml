@@ -1,0 +1,21 @@
+[package]
+name = "hoyo_gacha_url_finder"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+description.workspace = true
+homepage.workspace = true
+repository.workspace = true
+readme.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+hg_diskcache = { package = "hoyo_gacha_diskcache", path = "../diskcache" }
+hg_game_biz  = { package = "hoyo_gacha_game_biz" , path = "../game_biz" }
+
+form_urlencoded = { workspace = true }
+regex = { workspace = true, features = ["unicode-case", "unicode-perl"] }
+snafu = { workspace = true }
+time = { workspace = true }

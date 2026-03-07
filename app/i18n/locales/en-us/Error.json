@@ -1,0 +1,82 @@
+{
+  "Unexpected": "An unexpected error occurred: {{message}}",
+  "DatabaseError": "An unexpected database error occurred: {{message}}",
+  "UpdaterError": {
+    "Reqwest": "Failed to fetch app updates: {{cause}}",
+    "Io": "I/O error during app updates: {{cause.message}} ({{cause.kind}})",
+    "DownloadedMismatch": "Downloaded app updates size mismatch.",
+    "Aborted": "App update has been aborted."
+  },
+  "MetadataError": {
+    "Deserialize": "Failed to deserialize metadata: {{cause}}",
+    "Bake": "Failed to bake metadata: {{cause}}"
+  },
+  "MetadataUpdateError": {
+    "Reqwest": "Failed to fetch metadata: {{cause}}",
+    "DownloadedMismatch": "Downloaded metadata hash mismatch."
+  },
+  "LegacyMigrationError": {
+    "NotFound": "Legacy database does not exist.",
+    "SamePath": "Legacy database path cannot be the same as the current database path.",
+    "InvalidUid": "Invalid $t(Common:{{keyof}}.Name) account uid: {{value}}",
+    "InvalidRecord": "Invalid $t(Common:{{keyof}}.Name) record field '{{field}}': {{value}} (UID: {{uid}}, Id: {{id}})",
+    "MetadataLocale": "Missing metadata locale: $t(Common:{{keyof}}.Name): {{lang}}",
+    "MetadataEntry": "Missing metadata entry: $t(Common:{{keyof}}.Name), lang: {{lang}}, {{field}}: {{value}}"
+  },
+  "LocateDataFolderError": {
+    "InvalidUid": "Invalid $t(Common:{{keyof}}.Name) account uid: {{value}}",
+    "UnityLogNotFound": "Unity log file not found: {{path}}",
+    "OpenUnityLog": "Failed to opening Unity log file: '{{path}}', cause: {{cause.message}} ({{cause.kind}})",
+    "Invalid": "Invalid game data folder.",
+    "Vacant": "Game data folder is vacant."
+  },
+  "DirtyGachaUrlError": {
+    "OpenDiskCache": "Failed to opening disk cache: {{cause.message}} ({{cause.kind}})",
+    "ReadDiskCache": "Failed to reading disk cache: {{cause.message}} ({{cause.kind}})",
+    "OpenWebcaches": "Failed to opening webcaches: {{cause.message}} ({{cause.kind}}) The game data folder location may have been moved? Please check and modify it in Account List - Edit Account .",
+    "EmptyWebCaches": "No valid webCaches version directory found. Please try launching the game at least once!"
+  },
+  "ParsedGachaUrlError": {
+    "InvalidUrl": "Invalid Gacha url.",
+    "RequiredParam": "Gacha url missing required parameter: {{name}}",
+    "UnsupportedGameBiz": "Unsupported Game biz and region combination: {{gameBiz}} / {{region}}"
+  },
+  "GachaUrlRequestError": {
+    "UnsupportedEndpoint": "Game biz '{{gameBiz}}' does not support endpoint type: {{endpoint}}",
+    "Reqwest": "Error when requesting Gacha url: {{cause}}",
+    "AuthkeyTimeout": "The Gacha url has expired. Please reopen the history interface in the game!",
+    "VisitTooFrequently": "The Gacha url was visit too frequently, please try again later!",
+    "UnexpectedResponse": "The Gacha url returned an unexpected response: {{message}} (retcode: {{retcode}})",
+    "ReachedMaxAttempts": "Request reached max attempts, please try again later!"
+  },
+  "GachaUrlError": {
+    "InvalidUid": "Invalid $t(Common:{{keyof}}.Name) account uid: {{value}}",
+    "EmptyData": "Gacha url with empty data. The latest data will be delayed, please try again later!",
+    "NotFound": "No valid Gacha url found. Please try opening the history interface in the game!",
+    "InconsistentUid": "Owner uid of the Gacha url does not match. Expected: {{expected}}, Actuals: {{actuals, list}}. Please reopen the history interface in the game with your current account and try again!"
+  },
+  "GachaFetcherError": {
+    "InvalidUid": "Invalid $t(Common:{{keyof}}.Name) account uid: {{value}}",
+    "MetadataEntry": "Missing metadata entry: $t(Common:{{keyof}}.Name), lang: {{lang}}, itemName: {{itemName}}"
+  },
+  "UigfError": {
+    "UnsupportedVersion": "Unsupported UIGF version: {{actual}}. Expected: {{expected, list}}",
+    "InvalidUid": "Invalid $t(Common:{{keyof}}.Name) account uid: {{value}}",
+    "MappingGachaType": "Failed to mapping UIGF gacha type: {{value}} (Cursor: {{cursor}})",
+    "MetadataEntry": "Missing metadata entry: $t(Common:{{keyof}}.Name), lang: {{lang}}, {{field}}: {{value}} (Cursor: {{cursor}})",
+    "CreateOutput": "Failed to create output: {{cause.message}} ({{cause.kind}}): {{path}}",
+    "Serialize": "Serialization json error: {{cause}}",
+    "OpenInput": "Failed to open input: {{cause.message}} ({{cause.kind}}): {{path}}",
+    "Deserialize": "Deserialization json error: {{cause}}",
+    "InvalidVersion": "Invalid UIGF version: {{value}}",
+    "InconsistentUid": "Owner uid of the UIGF does not match. Expected: {{expected}}, Actual: {{actual}}",
+    "RequiredField": "Incorrect data. Missing required field: {{path}} (Cursor: {{cursor}})",
+    "MetadataLocale": "Missing metadata locale: $t(Common:{{keyof}}.Name): {{lang}}",
+    "VacantAccount": "No account information provided: $t(Common:{{keyof}}.Name) account uid: {{uid}}"
+  },
+  "CsvError": {
+    "InvalidUid": "Invalid $t(Common:{{keyof}}.Name) account uid: {{value}}",
+    "CreateOutput": "Failed to create output: {{cause.message}} ({{cause.kind}}): {{path}}",
+    "WriteOutput": "Failed to write output: {{cause.message}} ({{cause.kind}}): {{path}}"
+  }
+}

@@ -1,0 +1,111 @@
+{
+  "Hero": {
+    "License": "僅供個人學習交流使用。請勿用於任何商業或違法用途。本軟體不會向您索取任何關於 ©miHoYo 帳戶的帳號密碼資訊，也不會收集任何使用者資料。所有產生的資料（包括但不限於使用資料、抽卡資料、UID 資訊等）均儲存在使用者本機。"
+  },
+  "Mihoyo": {
+    "License": "玩家自製工具。遊戲內容及資產歸 ©miHoYo 版權所有。"
+  },
+  "LegacyMigration": {
+    "Title": "資料庫遷移",
+    "Subtitle": "將舊版本 v0 的資料庫遷移至此。",
+    "Migrate": "遷移",
+    "Pick": "請選擇舊版本 v0 的資料庫檔案：",
+    "Loading": {
+      "Title": "遷移中...",
+      "Body": "請勿關閉應用程式並等待遷移操作完成。"
+    },
+    "Success": {
+      "Title": "遷移成功：",
+      "Body": "耗時：{{elapsed}} 秒。帳號數量：{{accounts}}，抽卡記錄資料：$t(Common:GenshinImpact.Name)：{{GenshinImpact}}、$t(Common:HonkaiStarRail.Name)：{{HonkaiStarRail}}、$t(Common:ZenlessZoneZero.Name)：{{ZenlessZoneZero}}。"
+    },
+    "Error": "遷移失敗："
+  },
+  "General": {
+    "Title": "常規",
+    "Language": {
+      "Title": "語言",
+      "Subtitle": "變更應用程式的主要語言。"
+    },
+    "NavbarBusinessVisible": {
+      "Title": "導覽列業務項目可見性",
+      "Subtitle": "控制導覽列中業務相關項目的顯示與隱藏狀態。"
+    },
+    "MemoryBusinessRoute": {
+      "Title": "記住最後訪問的業務項",
+      "Subtitle": "啟用後，開啟應用程式時自動恢復上次最後訪問的業務項。",
+      "State_true": "啟用",
+      "State_false": "停用"
+    },
+    "GachaClientareaTabs": {
+      "Title": "業務起始標籤頁",
+      "Subtitle": "選擇您預設的業務客戶區域的起始標籤頁。",
+      "Overview": "概覽",
+      "Analysis": "分析"
+    }
+  },
+  "Appearance": {
+    "Title": "外觀",
+    "Namespace": {
+      "Title": "主題色彩",
+      "Subtitle": "變更應用程式顯示的主要顏色。"
+    },
+    "ColorScheme": {
+      "Title": "偏好配色方案",
+      "Subtitle": "切換應用程式使用淺色主題或深色主題。",
+      "Option_light": "淺色",
+      "Option_dark": "深色",
+      "Option_auto": "跟隨系統"
+    },
+    "ScaleLevel": {
+      "Title": "介面縮放",
+      "Subtitle": "變更應用程式介面的縮放等級。"
+    },
+    "Font": {
+      "Title": "介面字型",
+      "Subtitle": "變更應用程式介面的字型。",
+      "None": "無"
+    }
+  },
+  "About": {
+    "Title": "關於",
+    "Updater": {
+      "Title": "應用程式更新",
+      "Subtitle": "檢查應用程式的版本更新。",
+      "CheckBtn": "檢查更新",
+      "StartupCheck": "啟動時檢查更新",
+      "CheckBtn_fetching": "檢查中...",
+      "CheckBtn_offline": "離線"
+    },
+    "Metadata": {
+      "Title": "元資料狀態",
+      "Subtitle": "用於指示元資料更新程序的目前狀態。",
+      "Status": {
+        "Away": "檢查中...",
+        "Busy": "錯誤",
+        "Offline": "離線",
+        "Available": "線上",
+        "Unknown": "未知"
+      },
+      "Refetch": "重新檢查"
+    },
+    "Specification": {
+      "Title": "裝置規格",
+      "Copy": "複製",
+      "Copied": "已複製",
+      "OperatingSystem": "作業系統",
+      "SystemVersion": "系統版本",
+      "WebView2": "WebView2",
+      "Tauri": "Tauri",
+      "GitCommit": "Git 提交",
+      "AppVersion": "應用版本"
+    },
+    "Lnk": {
+      "Title": "桌面捷徑",
+      "Subtitle": "建立應用程式的桌面捷徑。",
+      "Create": "建立",
+      "Loading": "建立捷徑中...",
+      "Success": "建立成功。",
+      "Error": "建立失敗："
+    }
+  }
+}

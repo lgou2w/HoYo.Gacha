@@ -1,0 +1,111 @@
+{
+  "Hero": {
+    "License": "For personal study and communication use only. Please do not use it for any commercial or illegal purposes. This software will not ask you for any account password information about ©miHoYo account, nor will it collect any user data. The generated data (including but not limited to usage data, Gacha data, UID information, etc.) are all stored locally by the user."
+  },
+  "Mihoyo": {
+    "License": "Fan-made tool. Game content and assets ©miHoYo. All rights reserved."
+  },
+  "LegacyMigration": {
+    "Title": "Database Migration",
+    "Subtitle": "Migrate the old version v0 database to this.",
+    "Migrate": "Migrate",
+    "Pick": "Please select the database file from the older version:",
+    "Loading": {
+      "Title": "Migrating...",
+      "Body": "Do not exit the application and wait for the migration to complete."
+    },
+    "Success": {
+      "Title": "Migration success:",
+      "Body": "Elapsed: {{elapsed}}s. Accounts: {{accounts}}, Data Records: $t(Common:GenshinImpact.Name): {{GenshinImpact}}, $t(Common:HonkaiStarRail.Name): {{HonkaiStarRail}}, $t(Common:ZenlessZoneZero.Name): {{ZenlessZoneZero}}."
+    },
+    "Error": "Migration failed:"
+  },
+  "General": {
+    "Title": "General",
+    "Language": {
+      "Title": "Language",
+      "Subtitle": "Change the primary language used by the application."
+    },
+    "NavbarBusinessVisible": {
+      "Title": "Navbar Business Item Visibility",
+      "Subtitle": "Control display status of business-related entries in the navigation bar."
+    },
+    "MemoryBusinessRoute": {
+      "Title": "Remember Last Visited Business Item",
+      "Subtitle": "When enabled, automatically restores the last visited business item on app startup.",
+      "State_true": "Enable",
+      "State_false": "Disable"
+    },
+    "GachaClientareaTabs": {
+      "Title": "Business Startup Tab",
+      "Subtitle": "Select the Startup tab for your default business client area.",
+      "Overview": "Overview",
+      "Analysis": "Analysis"
+    }
+  },
+  "Appearance": {
+    "Title": "Appearance",
+    "Namespace": {
+      "Title": "Theme Color",
+      "Subtitle": "Change the primary colors displayed in the application."
+    },
+    "ColorScheme": {
+      "Title": "Preferred Color Scheme",
+      "Subtitle": "Toggle the application to use light theme or dark theme.",
+      "Option_light": "Light",
+      "Option_dark": "Dark",
+      "Option_auto": "System"
+    },
+    "ScaleLevel": {
+      "Title": "Interface Scaling",
+      "Subtitle": "Change the scale level of the interface in the application."
+    },
+    "Font": {
+      "Title": "Interface Font",
+      "Subtitle": "Change the font of the interface in the application.",
+      "None": "None"
+    }
+  },
+  "About": {
+    "Title": "About",
+    "Updater": {
+      "Title": "Application Update",
+      "Subtitle": "Check for application version updates.",
+      "StartupCheck": "Check for updates on startup",
+      "CheckBtn": "Check Update",
+      "CheckBtn_fetching": "Fetching...",
+      "CheckBtn_offline": "Offline"
+    },
+    "Metadata": {
+      "Title": "Metadata Status",
+      "Subtitle": "Used to indicate the current status of the Metadata updater.",
+      "Status": {
+        "Away": "Checking...",
+        "Busy": "Error",
+        "Offline": "Offline",
+        "Available": "Online",
+        "Unknown": "Unknown"
+      },
+      "Refetch": "Refetch"
+    },
+    "Specification": {
+      "Title": "Device Specifications",
+      "Copy": "Copy",
+      "Copied": "Copied",
+      "OperatingSystem": "Operating system",
+      "SystemVersion": "System version",
+      "WebView2": "WebView2",
+      "Tauri": "Tauri",
+      "GitCommit": "Git commit",
+      "AppVersion": "Version"
+    },
+    "Lnk": {
+      "Title": "Shortcut lnk",
+      "Subtitle": "Create an application desktop shortcut lnk.",
+      "Create": "Create",
+      "Loading": "Creating a Shortcut lnk...",
+      "Success": "Created successfully.",
+      "Error": "Creation failed:"
+    }
+  }
+}
