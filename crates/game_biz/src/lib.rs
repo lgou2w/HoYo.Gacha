@@ -198,7 +198,7 @@ impl GameBiz {
 
   // 'Zenless Zone Zero' variants
   impl_game_biz! { NAP_CN        { Nap, Official, PROD_GF_CN,  TIMEZONE_COMMON } }
-  impl_game_biz! { NAP_GLOBAL_JP { Nap, Official, PROD_GF_JP,  TIMEZONE_COMMON } } // Asia
+  impl_game_biz! { NAP_GLOBAL_JP { Nap, Oversea,  PROD_GF_JP,  TIMEZONE_COMMON } } // Asia
   impl_game_biz! { NAP_GLOBAL_EU { Nap, Oversea,  PROD_GF_EU,  TIMEZONE_EUROPE } }
   impl_game_biz! { NAP_GLOBAL_US { Nap, Oversea,  PROD_GF_US, TIMEZONE_AMERICA } }
   impl_game_biz! { NAP_GLOBAL_SG { Nap, Oversea,  PROD_GF_SG,  TIMEZONE_COMMON } }
