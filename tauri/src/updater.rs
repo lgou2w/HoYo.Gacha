@@ -271,10 +271,12 @@ impl Updater {
     let start = std::time::Instant::now();
 
     // First: ensure the update directory exists
-    let update_dir = constants::APP_LOCAL_DATA_DIR.join("Update");
-    if !update_dir.exists() {
-      fs::create_dir(&update_dir).await.context(IoSnafu)?;
-    }
+    // Using `rename` might result in 'CrossesDevices',
+    //   while using `copy` might result in 'Uncategorized'.
+    //   Revert to the old method and download the update using the current executable directory.
+    // See:
+    //   https://github.com/lgou2w/HoYo.Gacha/issues/153
+    let update_dir = &*constants::EXE_WORKING_DIR;
 
     // Delete the old version exe file after the previous update.
     let current_exe_bak_path = update_dir.join(format!("{}.HGBAK", constants::APP_NAME));
@@ -331,7 +333,7 @@ impl Updater {
     // 3. Start download latest release
     debug!(message = "Starting download of latest release...", ?latest.download_url);
     let downloaded = Self::download(
-      &update_dir,
+      update_dir,
       &latest,
       Arc::new(progress_reporter),
       max_attempts,
