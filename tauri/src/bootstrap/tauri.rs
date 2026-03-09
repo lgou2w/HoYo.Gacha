@@ -3,7 +3,7 @@ use std::error::Error as StdError;
 use std::sync::Arc;
 
 use tauri::ipc::Invoke;
-use tauri::webview::WebviewWindowBuilder;
+use tauri::webview::{ScrollBarStyle, WebviewWindowBuilder};
 use tauri::{App, Builder as TauriBuilder, Manager, Theme, WebviewUrl, Window, WindowEvent, Wry};
 use tauri::{generate_context, generate_handler};
 use tracing::{debug, error, info};
@@ -140,6 +140,11 @@ fn setup(
   .resizable(MAIN_WINDOW_RESIZABLE)
   .decorations(MAIN_WINDOW_DECORATIONS)
   .transparent(!MAIN_WINDOW_DECORATIONS)
+  .scroll_bar_style(if cfg!(windows) {
+    ScrollBarStyle::FluentOverlay
+  } else {
+    ScrollBarStyle::Default
+  })
   .theme(Some(color_scheme))
   .visible(false) // Later shown when ready
   .center()
