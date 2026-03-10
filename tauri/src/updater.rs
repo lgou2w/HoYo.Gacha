@@ -274,9 +274,13 @@ impl Updater {
     // Using `rename` might result in 'CrossesDevices',
     //   while using `copy` might result in 'Uncategorized'.
     //   Revert to the old method and download the update using the current executable directory.
+    //   Join `HGUpdate` to avoid conflicts with the current executable, which might cause issues when trying to replace the exe file on Windows.
     // See:
     //   https://github.com/lgou2w/HoYo.Gacha/issues/153
-    let update_dir = &*constants::EXE_WORKING_DIR;
+    let update_dir = &*constants::EXE_WORKING_DIR.join("HGUpdate");
+    if !update_dir.exists() {
+      fs::create_dir(&update_dir).await.context(IoSnafu)?;
+    }
 
     // Delete the old version exe file after the previous update.
     let current_exe_bak_path = update_dir.join(format!("{}.HGBAK", constants::APP_NAME));
