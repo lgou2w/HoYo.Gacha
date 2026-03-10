@@ -449,11 +449,6 @@ const useRecordsStyles = makeStyles({
     display: 'flex',
     width: '100%',
     height: '100%',
-    '& [data-testid="virtuoso-item-list"]': {
-      '& > :not([data-index="0"])': {
-        marginTop: tokens.spacingVerticalSNudge,
-      },
-    },
   },
 })
 
@@ -496,9 +491,27 @@ function Records (props: RecordsProps) {
       className={styles.root}
       data={computedData}
       itemContent={(_, props) => (
-        <RecordsEntry {...props} />
+        <RecordsEntryWrapper {...props} />
       )}
     />
+  )
+}
+
+// See: https://github.com/lgou2w/HoYo.Gacha/issues/155
+const RecordsEntryHeight = '2.25rem'
+
+const useRecordsEntryWrapperStyles = makeStyles({
+  root: {
+    height: `calc(${RecordsEntryHeight} + ${tokens.spacingVerticalSNudge})`,
+  },
+})
+
+function RecordsEntryWrapper (props: RecordsEntryProps) {
+  const styles = useRecordsEntryWrapperStyles()
+  return (
+    <div className={styles.root}>
+      <RecordsEntry {...props} />
+    </div>
   )
 }
 
@@ -507,7 +520,7 @@ const useRecordsEntryStyles = makeStyles({
     display: 'flex',
     alignItems: 'center',
     width: '100%',
-    height: '2.25rem',
+    height: RecordsEntryHeight,
     position: 'relative',
     paddingRight: tokens.spacingHorizontalS,
     borderRadius: tokens.borderRadiusMedium,
