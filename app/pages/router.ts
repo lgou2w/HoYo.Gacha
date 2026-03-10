@@ -1,6 +1,7 @@
 import { createRouter } from '@tanstack/react-router'
 import gachaRoute from '@/pages/Gacha/route'
 import homeRoute from '@/pages/Home/route'
+import { MainScrollableAreaId } from '@/pages/Root/components/consts'
 import rootRoute from '@/pages/Root/route'
 import settingsRoute from '@/pages/Settings/route'
 import queryClient from '@/queryClient'
@@ -16,6 +17,8 @@ const router = createRouter({
   defaultGcTime: Infinity,
   defaultPendingMs: 0,
   defaultPendingMinMs: 0,
+  scrollRestoration: true,
+  scrollToTopSelectors: [`#${MainScrollableAreaId}`],
   context: {
     queryClient,
   },

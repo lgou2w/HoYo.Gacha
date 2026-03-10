@@ -3,7 +3,7 @@ import { makeStyles, tokens } from '@fluentui/react-components'
 import AppNavbar from './AppNavbar'
 import AppNotifier from './AppNotifier'
 import AppTitleBar from './AppTitleBar'
-import { NavbarWidth, TitleBarHeight } from './consts'
+import { MainScrollableAreaId, NavbarWidth, TitleBarHeight } from './consts'
 
 const useStyles = makeStyles({
   root: {
@@ -36,7 +36,7 @@ export default function AppLayout (props: PropsWithChildren) {
   return (
     <div className={styles.root}>
       <AppNavbar />
-      <main className={styles.content}>
+      <main id={MainScrollableAreaId} className={styles.content}>
         <AppTitleBar />
         <AppNotifier />
         <div className={styles.wrapper}>
