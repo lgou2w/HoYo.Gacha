@@ -1,9 +1,14 @@
+import { fileURLToPath } from 'node:url'
+import { includeIgnoreFile } from '@eslint/compat'
 import stylistic from '@stylistic/eslint-plugin'
 import { defineConfig } from 'eslint/config'
 import importPlugin from 'eslint-plugin-import'
 import react from 'eslint-plugin-react'
 import reactHooks from 'eslint-plugin-react-hooks'
 import * as tseslint from 'typescript-eslint'
+
+const gitignorePath = fileURLToPath(new URL('.gitignore', import.meta.url))
+const gitignoreConfig = includeIgnoreFile(gitignorePath, 'Imported .gitignore patterns')
 
 const baseConfig = {
   plugins: {
@@ -99,6 +104,7 @@ const baseConfig = {
 }
 
 export default defineConfig([
+  gitignoreConfig,
   {
     name: 'App',
     basePath: './',
