@@ -5,6 +5,7 @@ import { exit } from '@tauri-apps/plugin-process'
 import { useImmer } from 'use-immer'
 import UpdaterCommands, { UpdaterKind, UpdaterResult } from '@/api/commands/updater'
 import errorTrans from '@/api/errorTrans'
+import useDialogOpenEffect from '@/hooks/useDialogOpenEffect'
 import { WithTrans, withTrans } from '@/i18n'
 import useAppNotifier from '@/pages/Root/hooks/useAppNotifier'
 
@@ -45,6 +46,7 @@ export default withTrans.RootPage(function Updater (
     success: false,
   })
 
+  useDialogOpenEffect(open)
   const notifier = useAppNotifier()
 
   const updating = useRef(false)
