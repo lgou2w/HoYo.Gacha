@@ -8,6 +8,8 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
+  TAURI_RAW_NAME: "hoyo_gacha"
+  TAURI_PRODUCT_NAME: "HoYo.Gacha"
 
 jobs:
   build:
@@ -64,13 +66,55 @@ jobs:
           SHORT_SHA=$(git rev-parse --short HEAD)
           echo "short_sha=$SHORT_SHA" >> $GITHUB_OUTPUT
 
+      - name: Prepare executable files
+        shell: bash
+        run: |
+          mkdir -p ${{ github.workspace }}/unsigned
+          cp \
+            ${{ github.workspace }}/target/release/${{ env.TAURI_RAW_NAME }}.exe \
+            ${{ github.workspace }}/unsigned/${{ env.TAURI_PRODUCT_NAME }}.exe
+          echo "Executable files prepared in unsigned directory"
+          ls -la ${{ github.workspace }}/unsigned
+
+      - name: Upload unsigned executable
+        uses: actions/upload-artifact@v6
+        id: upload-unsigned
+        with:
+          name: HoYo.Gacha-unsigned-git-${{ steps.short-sha.outputs.short_sha }}
+          path: ${{ github.workspace }}/unsigned/${{ env.TAURI_PRODUCT_NAME }}.exe
+          retention-days: 1
+
+      - name: Submit signing request to SignPath
+        uses: signpath/github-action-submit-signing-request@v2
+        with:
+          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+          organization-id: ${{ secrets.SIGNPATH_ORGANIZATION_ID }}
+          project-slug: ${{ secrets.SIGNPATH_PROJECT_SLUG }}
+          signing-policy-slug: ${{ secrets.SIGNPATH_SIGNING_POLICY_SLUG }}
+          artifact-configuration-slug: 'initial'
+          github-artifact-id: ${{ steps.upload-unsigned.outputs.artifact-id }}
+          output-artifact-directory: ${{ github.workspace }}/signed
+          wait-for-completion: true
+
+      - name: Copy signed executable and PDB files to Workspace root
+        shell: bash
+        run: |
+          cp \
+            ${{ github.workspace }}/signed/${{ env.TAURI_PRODUCT_NAME }}.exe \
+            ${{ github.workspace }}/${{ env.TAURI_PRODUCT_NAME }}.exe
+          cp \
+            ${{ github.workspace }}/target/release/${{ env.TAURI_RAW_NAME }}.pdb \
+            ${{ github.workspace }}/${{ env.TAURI_PRODUCT_NAME }}.pdb
+          echo "Signed executable and PDB files copied to workspace root"
+          ls -la ${{ github.workspace }}/${{ env.TAURI_PRODUCT_NAME }}.*
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v6
         with:
-          name: HoYo.Gacha-artifact-git-${{ steps.short-sha.outputs.short_sha }}
+          name: HoYo.Gacha-signed-git-${{ steps.short-sha.outputs.short_sha }}
           path: |
             ${{ github.workspace }}/README.md
             ${{ github.workspace }}/LICENSE-APACHE
             ${{ github.workspace }}/LICENSE-MIT
-            ${{ github.workspace }}/target/release/hoyo_gacha.exe
-            ${{ github.workspace }}/target/release/hoyo_gacha.pdb
+            ${{ github.workspace }}/${{ env.TAURI_PRODUCT_NAME }}.exe
+            ${{ github.workspace }}/${{ env.TAURI_PRODUCT_NAME }}.pdb
