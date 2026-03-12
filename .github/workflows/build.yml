@@ -69,12 +69,12 @@ jobs:
       - name: Prepare executable files
         shell: bash
         run: |
-          mkdir -p ${{ github.workspace }}/unsigned
+          mkdir -p "${{ github.workspace }}/unsigned"
           cp \
-            ${{ github.workspace }}/target/release/${{ env.TAURI_RAW_NAME }}.exe \
-            ${{ github.workspace }}/unsigned/${{ env.TAURI_PRODUCT_NAME }}.exe
+            "${{ github.workspace }}/target/release/${{ env.TAURI_RAW_NAME }}.exe" \
+            "${{ github.workspace }}/unsigned/${{ env.TAURI_PRODUCT_NAME }}.exe"
           echo "Executable files prepared in unsigned directory"
-          ls -la ${{ github.workspace }}/unsigned
+          find "${{ github.workspace }}/unsigned"
 
       - name: Upload unsigned executable
         uses: actions/upload-artifact@v6
@@ -100,13 +100,13 @@ jobs:
         shell: bash
         run: |
           cp \
-            ${{ github.workspace }}/signed/${{ env.TAURI_PRODUCT_NAME }}.exe \
-            ${{ github.workspace }}/${{ env.TAURI_PRODUCT_NAME }}.exe
+            "${{ github.workspace }}/signed/${{ env.TAURI_PRODUCT_NAME }}.exe" \
+            "${{ github.workspace }}/${{ env.TAURI_PRODUCT_NAME }}.exe"
           cp \
-            ${{ github.workspace }}/target/release/${{ env.TAURI_RAW_NAME }}.pdb \
-            ${{ github.workspace }}/${{ env.TAURI_PRODUCT_NAME }}.pdb
+            "${{ github.workspace }}/target/release/${{ env.TAURI_RAW_NAME }}.pdb" \
+            "${{ github.workspace }}/${{ env.TAURI_PRODUCT_NAME }}.pdb"
           echo "Signed executable and PDB files copied to workspace root"
-          ls -la ${{ github.workspace }}/${{ env.TAURI_PRODUCT_NAME }}.*
+          find "${{ github.workspace }}" -maxdepth 1 -type f -name "${{ env.TAURI_PRODUCT_NAME }}.*"
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v6
