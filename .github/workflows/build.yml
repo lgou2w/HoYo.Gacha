@@ -3,6 +3,8 @@ name: Build
 on:
   push:
     branches: [ main, develop ]
+    tags-ignore:
+      - '**'
   pull_request:
     branches: [ main, develop ]
 
@@ -13,15 +15,8 @@ env:
 
 jobs:
   build:
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - name: Windows
-            platform: windows-latest
-
-    name: ${{ matrix.name }}
-    runs-on: ${{ matrix.platform }}
+    name: Windows Build
+    runs-on: windows-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -56,6 +51,7 @@ jobs:
       - name: Run tests
         run: pnpm test
 
+      # 'cicd' build, not release build
       - name: Build app
         run: pnpm build:cicd
 
@@ -66,52 +62,23 @@ jobs:
           SHORT_SHA=$(git rev-parse --short HEAD)
           echo "short_sha=$SHORT_SHA" >> $GITHUB_OUTPUT
 
-      - name: Prepare executable files
+      - name: Copy executable and PDB files to Workspace root
         shell: bash
         run: |
-          mkdir -p "${{ github.workspace }}/unsigned"
           cp \
             "${{ github.workspace }}/target/release/${{ env.TAURI_RAW_NAME }}.exe" \
-            "${{ github.workspace }}/unsigned/${{ env.TAURI_PRODUCT_NAME }}.exe"
-          echo "Executable files prepared in unsigned directory"
-          find "${{ github.workspace }}/unsigned"
-
-      - name: Upload unsigned executable
-        uses: actions/upload-artifact@v6
-        id: upload-unsigned
-        with:
-          name: HoYo.Gacha-unsigned-git-${{ steps.short-sha.outputs.short_sha }}
-          path: ${{ github.workspace }}/unsigned/${{ env.TAURI_PRODUCT_NAME }}.exe
-          retention-days: 1
-
-      - name: Submit signing request to SignPath
-        uses: signpath/github-action-submit-signing-request@v2
-        with:
-          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
-          organization-id: ${{ secrets.SIGNPATH_ORGANIZATION_ID }}
-          project-slug: ${{ secrets.SIGNPATH_PROJECT_SLUG }}
-          signing-policy-slug: ${{ secrets.SIGNPATH_SIGNING_POLICY_SLUG }}
-          artifact-configuration-slug: ${{ secrets.SIGNPATH_ARTIFACT_CONFIGURATION_SLUG }}
-          github-artifact-id: ${{ steps.upload-unsigned.outputs.artifact-id }}
-          output-artifact-directory: ${{ github.workspace }}/signed
-          wait-for-completion: true
-
-      - name: Copy signed executable and PDB files to Workspace root
-        shell: bash
-        run: |
-          cp \
-            "${{ github.workspace }}/signed/${{ env.TAURI_PRODUCT_NAME }}.exe" \
             "${{ github.workspace }}/${{ env.TAURI_PRODUCT_NAME }}.exe"
           cp \
             "${{ github.workspace }}/target/release/${{ env.TAURI_RAW_NAME }}.pdb" \
             "${{ github.workspace }}/${{ env.TAURI_PRODUCT_NAME }}.pdb"
-          echo "Signed executable and PDB files copied to workspace root"
+          echo "Executable and PDB files copied to workspace root"
           find "${{ github.workspace }}" -maxdepth 1 -type f -name "${{ env.TAURI_PRODUCT_NAME }}.*"
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
-          name: HoYo.Gacha-signed-git-${{ steps.short-sha.outputs.short_sha }}
+          name: HoYo.Gacha-git-${{ steps.short-sha.outputs.short_sha }}
+          archive: true
           path: |
             ${{ github.workspace }}/README.md
             ${{ github.workspace }}/LICENSE-APACHE
