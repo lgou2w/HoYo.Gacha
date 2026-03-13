@@ -78,10 +78,11 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: HoYo.Gacha-git-${{ steps.short-sha.outputs.short_sha }}
-          archive: true
           path: |
             ${{ github.workspace }}/README.md
             ${{ github.workspace }}/LICENSE-APACHE
             ${{ github.workspace }}/LICENSE-MIT
             ${{ github.workspace }}/${{ env.TAURI_PRODUCT_NAME }}.exe
             ${{ github.workspace }}/${{ env.TAURI_PRODUCT_NAME }}.pdb
+          archive: true
+          retention-days: 7
