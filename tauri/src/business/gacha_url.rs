@@ -4,6 +4,7 @@ use std::path::PathBuf;
 use hg_game_biz::{GachaLogEndpointType, Uid};
 use hg_url_finder::dirty::{CreationTimePolicy, DirtyGachaUrl, DirtyGachaUrlError};
 use hg_url_finder::parse::{AsQueriesOptions, ParsedGachaUrl, ParsedGachaUrlError};
+use hg_url_scraper::GachaLogsResponse;
 use hg_url_scraper::requester::{GachaUrlRequestError, GachaUrlRequester, RetryOptions};
 use serde::Serialize;
 use snafu::{OptionExt, ResultExt, Snafu};
@@ -11,7 +12,7 @@ use time::OffsetDateTime;
 use time::serde::rfc3339;
 use tracing::{debug, error, info, warn};
 
-use crate::business::prettized::permanent_gacha_type;
+use crate::business::prettized::{available_gacha_types, permanent_gacha_type};
 use crate::constants;
 use crate::database::schemas::AccountBusiness;
 use crate::error::{AppError, ErrorDetails};
@@ -142,7 +143,11 @@ impl GachaUrl {
     })?;
 
     info!("Find owner consistency gacha url...");
-    let is_miliastra_wonderland = business == AccountBusiness::MiliastraWonderland;
+    let endpoint = if business == AccountBusiness::MiliastraWonderland {
+      GachaLogEndpointType::Beyond
+    } else {
+      GachaLogEndpointType::Standard
+    };
     let mut actuals = HashSet::<u32>::with_capacity(urls.len());
     let mut contains_empty = false;
 
@@ -174,21 +179,8 @@ impl GachaUrl {
         continue;
       }
 
-      let response = parsed
-        .request_with_retry(
-          if is_miliastra_wonderland {
-            GachaLogEndpointType::Beyond
-          } else {
-            GachaLogEndpointType::Standard
-          },
-          AsQueriesOptions {
-            size: Some(1),
-            gacha_type: Some(permanent_gacha_type(business)),
-            ..Default::default()
-          },
-          RetryOptions::default(),
-          tokio::time::sleep,
-        )
+      // See: https://github.com/lgou2w/HoYo.Gacha/issues/159
+      let response = fast_request_valid_gacha_type(business, &parsed, endpoint)
         .await
         .inspect_err(|err| error!("Error requesting gacha url: {err:?}"))
         .context(ScrapeSnafu)?;
@@ -256,4 +248,75 @@ impl GachaUrl {
       .fail()?
     }
   }
+}
+
+async fn fast_request_valid_gacha_type(
+  business: AccountBusiness,
+  parsed: &ParsedGachaUrl<'_>,
+  endpoint: GachaLogEndpointType,
+) -> Result<GachaLogsResponse, GachaUrlRequestError> {
+  #[inline(always)]
+  fn is_empty(response: &GachaLogsResponse) -> bool {
+    response
+      .data
+      .as_ref()
+      .and_then(|data| data.list.first())
+      .is_none()
+  }
+
+  // First, try the permanent gacha type because it is the most likely to be valid and has a higher priority.
+  let permanent_gacha_type = permanent_gacha_type(business);
+  let mut response = parsed
+    .request_with_retry(
+      endpoint,
+      AsQueriesOptions {
+        size: Some(1),
+        gacha_type: Some(permanent_gacha_type),
+        ..Default::default()
+      },
+      RetryOptions::default(),
+      tokio::time::sleep,
+    )
+    .await?;
+
+  // If the permanent gacha type does not return any record, then try the non-permanent gacha type.
+  // This is a workaround for the accounts that have no record in the permanent gacha type.
+  // See:
+  //   https://github.com/HoYo.Gacha/issues/159
+  if is_empty(&response) {
+    warn!("The permanent gacha type does not return any record, try other gacha types...");
+
+    let available_gacha_types = available_gacha_types(business);
+    for gacha_type in available_gacha_types {
+      // Skip the permanent gacha type because it has been requested.
+      if *gacha_type == permanent_gacha_type {
+        continue;
+      }
+
+      response = parsed
+        .request_with_retry(
+          endpoint,
+          AsQueriesOptions {
+            size: Some(1),
+            gacha_type: Some(*gacha_type),
+            ..Default::default()
+          },
+          RetryOptions::default(),
+          tokio::time::sleep,
+        )
+        .await?;
+
+      // Return early if the response is not empty,
+      // which means the gacha url is valid and can be used to scrape gacha records.
+      if !is_empty(&response) {
+        info!(
+          message = "The gacha url is valid with another gacha type",
+          ?gacha_type
+        );
+        return Ok(response);
+      }
+    }
+  }
+
+  Ok(response)
 }
