@@ -92,6 +92,10 @@ impl GachaUrlRequester for ParsedGachaUrl<'_> {
 
     static REQWEST: LazyLock<Reqwest> = LazyLock::new(|| {
       Reqwest::builder()
+        // The target is the miHoYo API endpoint; do not use any proxies.
+        // To avoid sending the Gacha URL to the proxy server without the user's knowledge,
+        // no proxy is used here. (Include system proxy)
+        .no_proxy()
         .timeout(DEFAULT_TIMEOUT)
         .user_agent(concat!(
           env!("CARGO_PKG_NAME"),
