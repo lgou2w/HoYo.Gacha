@@ -28,8 +28,6 @@ An unofficial tool for managing and analyzing your miHoYo gacha records.
 - 应用标识符 (App Identifier): `com.lgou2w.hoyo.gacha` -> `com.lgou2w.hoyo.gacha.v1`。
 - 数据库文件 (Database File ): `HoYo.Gacha.db`         -> `HoYo.Gacha.v1.db`。
 
-### v1.2.0
-
 > [!IMPORTANT]
 > 从 **v1.2.0** 版本开始，应用更新不再是强制性的。但是，为了确保更好的用户体验和安全修复，请及时下载并更新到最新版。
 >
@@ -64,15 +62,18 @@ Open the new version of the tool app. Click the gear-shaped `Settings` button in
 
 ## 💞 赞助商 / Sponsorship
 
-HoYo.Gacha is currently using sponsored software from the following service providers:
+感谢以下赞助商对本项目的支持！HoYo.Gacha is currently using sponsored software from the following service providers:
 
-<a href="https://www.netlify.com">
-  <img src="https://www.netlify.com/assets/badges/netlify-badge-color-accent.svg" alt="Deploys by Netlify" />
-</a>
-<br />
-<br />
-
-* [Netlify](https://www.netlify.com/) provides document and home page hosting service for HoYo.Gacha
+<table>
+  <tr>
+    <td width="64">
+      <img src="https://www.netlify.com/assets/logos/monogram/lightmode/logo-netlify-monogram-fullcolor-lightmode.svg" alt="Netlify" />
+    </td>
+    <td>
+      <a href="https://www.netlify.com">Netlify</a> provides document and home page hosting service.
+    </td>
+  </tr>
+</table>
 
 ## 📜 协议 / License
 
