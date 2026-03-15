@@ -1597,7 +1597,7 @@ dependencies = [
 
 [[package]]
 name = "hoyo_gacha"
-version = "1.2.4"
+version = "1.2.5"
 dependencies = [
  "backtrace",
  "cfg-if",
@@ -1634,11 +1634,11 @@ dependencies = [
 
 [[package]]
 name = "hoyo_gacha_diskcache"
-version = "1.2.4"
+version = "1.2.5"
 
 [[package]]
 name = "hoyo_gacha_ffi"
-version = "1.2.4"
+version = "1.2.5"
 dependencies = [
  "raw-window-handle",
  "rfd",
@@ -1649,14 +1649,14 @@ dependencies = [
 
 [[package]]
 name = "hoyo_gacha_game_biz"
-version = "1.2.4"
+version = "1.2.5"
 dependencies = [
  "time",
 ]
 
 [[package]]
 name = "hoyo_gacha_metadata"
-version = "1.2.4"
+version = "1.2.5"
 dependencies = [
  "serde",
  "serde_json",
@@ -1666,14 +1666,14 @@ dependencies = [
 
 [[package]]
 name = "hoyo_gacha_serde_helper"
-version = "1.2.4"
+version = "1.2.5"
 dependencies = [
  "serde",
 ]
 
 [[package]]
 name = "hoyo_gacha_url_finder"
-version = "1.2.4"
+version = "1.2.5"
 dependencies = [
  "form_urlencoded",
  "hoyo_gacha_diskcache",
@@ -1685,7 +1685,7 @@ dependencies = [
 
 [[package]]
 name = "hoyo_gacha_url_scraper"
-version = "1.2.4"
+version = "1.2.5"
 dependencies = [
  "exponential-backoff",
  "hoyo_gacha_diskcache",
