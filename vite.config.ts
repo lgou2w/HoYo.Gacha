@@ -1,7 +1,8 @@
 /// <reference types="vitest/config" />
 import path from 'node:path'
 import griffel from '@griffel/vite-plugin'
-import react from '@vitejs/plugin-react-swc'
+import babel from '@rolldown/plugin-babel'
+import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 import packageJson from './package.json'
 
@@ -9,6 +10,17 @@ export default defineConfig ((env) => {
   const isDev = env.command === 'serve'
   const isProd = env.command === 'build'
   const isCicd = env.mode === 'cicd'
+
+  // Babel options for both griffel and @rollup/plugin-babel
+  const babelOptions = {
+    compact: false,
+    include: ['app\/**\/*.{ts,tsx}'],
+    exclude: ['**\/node_modules\/**'],
+    presets: [
+      '@babel/preset-typescript',
+      '@babel/preset-react',
+    ],
+  }
 
   return {
     test: {
@@ -18,21 +30,22 @@ export default defineConfig ((env) => {
     build: {
       outDir: 'dist',
       target: 'baseline-widely-available',
-      minify: isProd ? 'esbuild' : false,
+      minify: isProd ? 'oxc' : false,
       sourcemap: isDev,
     },
     plugins: [
       isProd && griffel({
-        include: ['app\/**\/*.{ts,tsx}'],
-        exclude: ['**\/node_modules\/**'],
+        include: babelOptions.include,
+        exclude: babelOptions.exclude,
         babelOptions: {
-          presets: [
-            '@babel/preset-typescript',
-            '@babel/preset-react',
-          ],
+          compact: babelOptions.compact,
+          presets: babelOptions.presets,
         },
       }),
       react(),
+      babel({
+        ...babelOptions,
+      }),
     ],
     define: {
       __CICD__: `${isCicd}`,
