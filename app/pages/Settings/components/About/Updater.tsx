@@ -23,7 +23,7 @@ const useActionStyles = makeStyles({
     display: 'flex',
     flexDirection: 'row',
     alignItems: 'center',
-    columnGap: tokens.spacingHorizontalL,
+    columnGap: tokens.spacingHorizontalM,
   },
 })
 

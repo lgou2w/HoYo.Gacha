@@ -52,12 +52,19 @@ pub const GENSHIN_IMPACT_CHARACTER2: u32 = 400;
 pub const GENSHIN_IMPACT_WEAPON: u32 = 302;
 pub const GENSHIN_IMPACT_CHRONICLED: u32 = 500;
 
+pub const HONKAI_STAR_RAIL_BEGINNER: u32 = 2;
 pub const HONKAI_STAR_RAIL_PERMANENT: u32 = 1;
+pub const HONKAI_STAR_RAIL_CHARACTER: u32 = 11;
+pub const HONKAI_STAR_RAIL_WEAPON: u32 = 12;
 pub const HONKAI_STAR_RAIL_COLLABORATION_CHARACTER: u32 = 21;
 pub const HONKAI_STAR_RAIL_COLLABORATION_WEAPON: u32 = 22;
 
 pub const ZENLESS_ZONE_ZERO_PERMANENT: u32 = 1;
+pub const ZENLESS_ZONE_ZERO_CHARACTER: u32 = 2;
+pub const ZENLESS_ZONE_ZERO_WEAPON: u32 = 3;
 pub const ZENLESS_ZONE_ZERO_BANGBOO: u32 = 5;
+pub const ZENLESS_ZONE_ZERO_EXCLUSIVE_RESCREENING: u32 = 102;
+pub const ZENLESS_ZONE_ZERO_WENGINE_REVERBERATION: u32 = 103;
 
 pub const MILIASTRA_WONDERLAND_PERMANENT_ODE: u32 = 1000;
 pub const MILIASTRA_WONDERLAND_EVENT_ODE: u32 = 2000; // Includes: 20011, 20021, 20012, 20022
@@ -66,12 +73,47 @@ pub const MILIASTRA_WONDERLAND_EVENT_ODE1_2: u32 = 20021;
 pub const MILIASTRA_WONDERLAND_EVENT_ODE2_1: u32 = 20012;
 pub const MILIASTRA_WONDERLAND_EVENT_ODE2_2: u32 = 20022;
 
+/// Get the permanent gacha type of the given business.
 pub const fn permanent_gacha_type(business: AccountBusiness) -> u32 {
   match business {
     AccountBusiness::GenshinImpact => GENSHIN_IMPACT_PERMANENT,
     AccountBusiness::MiliastraWonderland => MILIASTRA_WONDERLAND_PERMANENT_ODE,
     AccountBusiness::HonkaiStarRail => HONKAI_STAR_RAIL_PERMANENT,
     AccountBusiness::ZenlessZoneZero => ZENLESS_ZONE_ZERO_PERMANENT,
+  }
+}
+
+/// Get the available gacha types of the given business.
+pub const fn available_gacha_types(business: AccountBusiness) -> &'static [u32] {
+  match business {
+    AccountBusiness::GenshinImpact => &[
+      GENSHIN_IMPACT_PERMANENT,
+      GENSHIN_IMPACT_CHARACTER,
+      GENSHIN_IMPACT_CHARACTER2,
+      GENSHIN_IMPACT_WEAPON,
+      GENSHIN_IMPACT_CHRONICLED,
+      GENSHIN_IMPACT_BEGINNER, // Low priority
+    ],
+    AccountBusiness::MiliastraWonderland => &[
+      MILIASTRA_WONDERLAND_PERMANENT_ODE,
+      MILIASTRA_WONDERLAND_EVENT_ODE,
+    ],
+    AccountBusiness::HonkaiStarRail => &[
+      HONKAI_STAR_RAIL_PERMANENT,
+      HONKAI_STAR_RAIL_CHARACTER,
+      HONKAI_STAR_RAIL_WEAPON,
+      HONKAI_STAR_RAIL_COLLABORATION_CHARACTER,
+      HONKAI_STAR_RAIL_COLLABORATION_WEAPON,
+      HONKAI_STAR_RAIL_BEGINNER, // Low priority
+    ],
+    AccountBusiness::ZenlessZoneZero => &[
+      ZENLESS_ZONE_ZERO_PERMANENT,
+      ZENLESS_ZONE_ZERO_CHARACTER,
+      ZENLESS_ZONE_ZERO_WEAPON,
+      ZENLESS_ZONE_ZERO_BANGBOO,
+      ZENLESS_ZONE_ZERO_EXCLUSIVE_RESCREENING,
+      ZENLESS_ZONE_ZERO_WENGINE_REVERBERATION,
+    ],
   }
 }
 
@@ -92,10 +134,10 @@ static KNOWN_CATEGORIZEDS: LazyLock<HashMap<AccountBusiness, HashMap<u32, Pretti
       (
         AccountBusiness::HonkaiStarRail,
         HashMap::from_iter([
-          (2, PrettizedCategory::Beginner),
+          (HONKAI_STAR_RAIL_BEGINNER, PrettizedCategory::Beginner),
           (HONKAI_STAR_RAIL_PERMANENT, PrettizedCategory::Permanent),
-          (11, PrettizedCategory::Character),
-          (12, PrettizedCategory::Weapon),
+          (HONKAI_STAR_RAIL_CHARACTER, PrettizedCategory::Character),
+          (HONKAI_STAR_RAIL_WEAPON, PrettizedCategory::Weapon),
           (
             HONKAI_STAR_RAIL_COLLABORATION_CHARACTER,
             PrettizedCategory::CollaborationCharacter,
@@ -110,11 +152,17 @@ static KNOWN_CATEGORIZEDS: LazyLock<HashMap<AccountBusiness, HashMap<u32, Pretti
         AccountBusiness::ZenlessZoneZero,
         HashMap::from_iter([
           (ZENLESS_ZONE_ZERO_PERMANENT, PrettizedCategory::Permanent),
-          (2, PrettizedCategory::Character),
-          (3, PrettizedCategory::Weapon),
+          (ZENLESS_ZONE_ZERO_CHARACTER, PrettizedCategory::Character),
+          (ZENLESS_ZONE_ZERO_WEAPON, PrettizedCategory::Weapon),
           (ZENLESS_ZONE_ZERO_BANGBOO, PrettizedCategory::Bangboo),
-          (102, PrettizedCategory::ExclusiveRescreening),
-          (103, PrettizedCategory::WEngineReverberation),
+          (
+            ZENLESS_ZONE_ZERO_EXCLUSIVE_RESCREENING,
+            PrettizedCategory::ExclusiveRescreening,
+          ),
+          (
+            ZENLESS_ZONE_ZERO_WENGINE_REVERBERATION,
+            PrettizedCategory::WEngineReverberation,
+          ),
         ]),
       ),
       (
