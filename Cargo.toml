@@ -30,7 +30,7 @@ reqwest = { version = "0.13.2", default-features = false }
 rfd = { version = "0.17.2", default-features = false }
 serde = { version = "1.0.228", default-features = false, features = ["std"] }
 serde_json = { version = "1.0.149", default-features = false, features = ["std"] }
-sha1 = { version = "0.10.6", default-features = false }
+sha1 = { version = "0.11.0", default-features = false }
 snafu = { version = "0.9.0", default-features = false, features = ["std", "rust_1_81", "backtraces-impl-backtrace-crate"] }
 sqlx = { version = "0.8.6", default-features = false }
 time = { version = "0.3.47", default-features = false, features = ["std"] }
@@ -40,7 +40,7 @@ tauri-plugin-process = { version = "2.3.1", default-features = false }
 tauri-plugin-shell = { version = "2.3.5", default-features = false }
 tauri-build = { version = "2.5.6", default-features = false }
 tempfile = { version = "3.27.0", default-features = false }
-tokio = { version = "1.50.0", default-features = false }
+tokio = { version = "1.51.0", default-features = false }
 tracing = { version = "0.1.44", default-features = false, features = ["std"] }
 tracing-appender = { version = "0.2.4", default-features = false }
 tracing-subscriber = { version = "0.3.23", default-features = false }
