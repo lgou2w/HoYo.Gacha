@@ -62,7 +62,9 @@ Open the new version of the tool app. Click the gear-shaped `Settings` button in
 
 ## 💞 赞助商 / Sponsorship
 
-感谢以下赞助商对本项目的支持！HoYo.Gacha is currently using sponsored software from the following service providers:
+感谢以下赞助商对本项目的支持！
+
+HoYo.Gacha is currently using sponsored software from the following service providers:
 
 <table>
   <tr>
@@ -71,6 +73,14 @@ Open the new version of the tool app. Click the gear-shaped `Settings` button in
     </td>
     <td>
       <a href="https://www.netlify.com">Netlify</a> provides document and home page hosting service.
+    </td>
+  </tr>
+  <tr>
+    <td width="64">
+      <img src="https://signpath.org/assets/favicon.png" alt="SignPath" />
+    </td>
+    <td>
+      Free code signing on Windows provided by <a href="https://signpath.io">SignPath.io</a>, certficate by <a href="https://signpath.org/">SignPath Foundation</a>
     </td>
   </tr>
 </table>
