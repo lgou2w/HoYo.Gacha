@@ -27,7 +27,7 @@ env:
 
 jobs:
   build:
-    name: Build and Upload Unsigned Artifacts
+    name: Build and Upload
     if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.test_signing == 'true')
     runs-on: windows-latest
     steps:
