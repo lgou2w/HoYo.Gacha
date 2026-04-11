@@ -5,17 +5,6 @@ on:
     tags:
       # Match tags in the format of "major.minor.patch", e.g., "1.2.3"
       - '[0-9]+.[0-9]+.[0-9]+'
-  workflow_dispatch:
-    inputs:
-      tag:
-        description: 'The tag to release (e.g., 1.2.3)'
-        required: true
-        type: string
-      test_signing:
-        description: 'Whether to perform a test signing (true/false)'
-        required: false
-        type: boolean
-        default: false
 
 permissions:
   contents: write
@@ -26,15 +15,12 @@ env:
   TAURI_PRODUCT_NAME: "HoYo.Gacha"
 
 jobs:
-  build:
-    name: Build and Upload
-    if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.test_signing == 'true')
+  release:
+    name: Build, Sign and Release
     runs-on: windows-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v6
-        with:
-          ref: ${{ github.event.inputs.tag || github.ref }}
 
       - name: Setup Rust environment
         uses: dtolnay/rust-toolchain@stable
@@ -67,71 +53,35 @@ jobs:
         run: pnpm test
 
       # Release build, not 'cicd'
-      - name: Build app
+      - name: Build app (release)
         run: pnpm build
-
-      - name: Set version
-        id: version
-        shell: bash
-        run: |
-          VERSION="${{ github.event.inputs.tag || github.ref_name }}"
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
 
       - name: Prepare executable and PDB files
         shell: bash
         run: |
           cp \
             "${{ github.workspace }}/target/release/${{ env.TAURI_RAW_NAME }}.exe" \
-            "${{ github.workspace }}/${{ env.TAURI_PRODUCT_NAME }}-${{ steps.version.outputs.version }}-unsigned.exe"
+            "${{ github.workspace }}/${{ env.TAURI_PRODUCT_NAME }}-${{ github.ref_name }}-unsigned.exe"
           cp \
             "${{ github.workspace }}/target/release/${{ env.TAURI_RAW_NAME }}.pdb" \
-            "${{ github.workspace }}/${{ env.TAURI_PRODUCT_NAME }}-${{ steps.version.outputs.version }}.pdb"
+            "${{ github.workspace }}/${{ env.TAURI_PRODUCT_NAME }}-${{ github.ref_name }}.pdb"
           echo "Executable and PDB files prepared in workspace root"
           find "${{ github.workspace }}" -maxdepth 1 -type f -name "${{ env.TAURI_PRODUCT_NAME }}*.*"
 
       - name: Upload unsigned executable
         uses: actions/upload-artifact@v7
+        id: upload-unsigned-exe
         with:
-          path: ${{ github.workspace }}/${{ env.TAURI_PRODUCT_NAME }}-${{ steps.version.outputs.version }}-unsigned.exe
+          path: ${{ github.workspace }}/${{ env.TAURI_PRODUCT_NAME }}-${{ github.ref_name }}-unsigned.exe
           archive: false
           retention-days: 7
 
       - name: Upload PDB file
         uses: actions/upload-artifact@v7
         with:
-          path: ${{ github.workspace }}/${{ env.TAURI_PRODUCT_NAME }}-${{ steps.version.outputs.version }}.pdb
+          path: ${{ github.workspace }}/${{ env.TAURI_PRODUCT_NAME }}-${{ github.ref_name }}.pdb
           archive: false
           retention-days: 7
-
-  sign:
-    name: Sign and Create Release
-    if: github.event_name == 'workflow_dispatch'
-    runs-on: windows-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-        with:
-          ref: ${{ github.event.inputs.tag }}
-
-      - name: Get artifact id by name
-        id: get-artifact-id
-        shell: bash
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          REPO: ${{ github.repository }}
-          ARTIFACT_NAME: ${{ env.TAURI_PRODUCT_NAME }}-${{ github.event.inputs.tag }}-unsigned.exe
-        run: |
-          echo "Searching for artifact with name: $ARTIFACT_NAME"
-          ARTIFACT_INFO=$(gh api /repos/$REPO/actions/artifacts?name=$ARTIFACT_NAME --jq '.artifacts[0]')
-
-          if [ "$ARTIFACT_INFO" = "null" ] || [ -z "$ARTIFACT_INFO" ]; then
-            echo "::error::Artifact with name '$ARTIFACT_NAME' not found. Please ensure the tag is correct and the build workflow has completed."
-            exit 1
-          fi
-
-          ARTIFACT_ID=$(echo "$ARTIFACT_INFO" | jq -r '.id')
-          echo "exe-artifact-id=$ARTIFACT_ID" >> $GITHUB_OUTPUT
-          echo "Found artifact ID: $ARTIFACT_ID for artifact name: $ARTIFACT_NAME"
 
       - name: Submit signing request to SignPath
         uses: signpath/github-action-submit-signing-request@v2
@@ -139,9 +89,9 @@ jobs:
           api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
           organization-id: ${{ secrets.SIGNPATH_ORGANIZATION_ID }}
           project-slug: ${{ secrets.SIGNPATH_PROJECT_SLUG }}
-          signing-policy-slug: ${{ github.event.inputs.test_signing == 'true' && 'test-signing' || secrets.SIGNPATH_SIGNING_POLICY_SLUG }}
+          signing-policy-slug: ${{  secrets.SIGNPATH_SIGNING_POLICY_SLUG }}
           artifact-configuration-slug: ${{ secrets.SIGNPATH_ARTIFACT_CONFIGURATION_SLUG }}
-          github-artifact-id: ${{ steps.get-artifact-id.outputs.exe-artifact-id }}
+          github-artifact-id: ${{ steps.upload-unsigned-exe.outputs.artifact-id }}
           output-artifact-directory: ${{ github.workspace }}/signed
           wait-for-completion: true
           wait-for-completion-timeout-in-seconds: 3600 # Wait up to 1 hour for signing to complete
@@ -151,10 +101,10 @@ jobs:
         run: |
           echo "Looking for signed artifact in: ${{ github.workspace }}/signed"
           mv \
-            "${{ github.workspace }}/signed/${{ env.TAURI_PRODUCT_NAME }}-${{ github.event.inputs.tag }}-unsigned.exe" \
-            "${{ github.workspace }}/signed/${{ env.TAURI_PRODUCT_NAME }}-${{ github.event.inputs.tag }}.exe"
+            "${{ github.workspace }}/signed/${{ env.TAURI_PRODUCT_NAME }}-${{ github.ref_name }}-unsigned.exe" \
+            "${{ github.workspace }}/signed/${{ env.TAURI_PRODUCT_NAME }}-${{ github.ref_name }}.exe"
           cp \
-            "${{ github.workspace }}/signed/${{ env.TAURI_PRODUCT_NAME }}-${{ github.event.inputs.tag }}.exe" \
+            "${{ github.workspace }}/signed/${{ env.TAURI_PRODUCT_NAME }}-${{ github.ref_name }}.exe" \
             "${{ github.workspace }}/${{ env.TAURI_PRODUCT_NAME }}.exe"
           echo "Signed executable copied to workspace root"
           find "${{ github.workspace }}" -maxdepth 1 -type f -name "${{ env.TAURI_PRODUCT_NAME }}.*"
@@ -162,17 +112,16 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v7
         with:
-          path: ${{ github.workspace }}/signed/${{ env.TAURI_PRODUCT_NAME }}-${{ github.event.inputs.tag }}.exe
+          path: ${{ github.workspace }}/signed/${{ env.TAURI_PRODUCT_NAME }}-${{ github.ref_name }}.exe
           archive: false
           retention-days: 7
 
       - name: Create Release Draft
-        if: ${{ github.event.inputs.test_signing == 'false' }}
         uses: softprops/action-gh-release@v2
         with:
           draft: true
           generate_release_notes: true
-          tag_name: ${{ github.event.inputs.tag }}
+          tag_name: ${{ github.ref_name }}
           files: |
             ${{ github.workspace }}/${{ env.TAURI_PRODUCT_NAME }}.exe
         env:
