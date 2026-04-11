@@ -56,32 +56,20 @@ jobs:
       - name: Build app (release)
         run: pnpm build
 
-      - name: Prepare executable and PDB files
+      - name: Prepare executable file
         shell: bash
         run: |
           cp \
             "${{ github.workspace }}/target/release/${{ env.TAURI_RAW_NAME }}.exe" \
-            "${{ github.workspace }}/${{ env.TAURI_PRODUCT_NAME }}-${{ github.ref_name }}-unsigned.exe"
-          cp \
-            "${{ github.workspace }}/target/release/${{ env.TAURI_RAW_NAME }}.pdb" \
-            "${{ github.workspace }}/${{ env.TAURI_PRODUCT_NAME }}-${{ github.ref_name }}.pdb"
-          echo "Executable and PDB files prepared in workspace root"
-          find "${{ github.workspace }}" -maxdepth 1 -type f -name "${{ env.TAURI_PRODUCT_NAME }}*.*"
+            "${{ github.workspace }}/${{ env.TAURI_PRODUCT_NAME }}-${{ github.ref_name }}.exe"
 
       - name: Upload unsigned executable
         uses: actions/upload-artifact@v7
         id: upload-unsigned-exe
         with:
-          path: ${{ github.workspace }}/${{ env.TAURI_PRODUCT_NAME }}-${{ github.ref_name }}-unsigned.exe
-          archive: false
-          retention-days: 7
-
-      - name: Upload PDB file
-        uses: actions/upload-artifact@v7
-        with:
-          path: ${{ github.workspace }}/${{ env.TAURI_PRODUCT_NAME }}-${{ github.ref_name }}.pdb
-          archive: false
-          retention-days: 7
+          path: ${{ github.workspace }}/${{ env.TAURI_PRODUCT_NAME }}-${{ github.ref_name }}.exe
+          archive: true
+          retention-days: 1
 
       - name: Submit signing request to SignPath
         uses: signpath/github-action-submit-signing-request@v2
@@ -100,9 +88,6 @@ jobs:
         shell: bash
         run: |
           echo "Looking for signed artifact in: ${{ github.workspace }}/signed"
-          mv \
-            "${{ github.workspace }}/signed/${{ env.TAURI_PRODUCT_NAME }}-${{ github.ref_name }}-unsigned.exe" \
-            "${{ github.workspace }}/signed/${{ env.TAURI_PRODUCT_NAME }}-${{ github.ref_name }}.exe"
           cp \
             "${{ github.workspace }}/signed/${{ env.TAURI_PRODUCT_NAME }}-${{ github.ref_name }}.exe" \
             "${{ github.workspace }}/${{ env.TAURI_PRODUCT_NAME }}.exe"
