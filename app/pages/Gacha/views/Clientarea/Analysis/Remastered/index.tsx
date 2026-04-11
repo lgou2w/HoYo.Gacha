@@ -580,7 +580,12 @@ const useRecordsEntryStyles = makeStyles({
     color: tokens.colorPaletteGreenForeground1,
   },
   labelUp: {
-    color: tokens.colorPaletteMarigoldForeground1,
+    [`&[data-ranking="${CategorizedRecordsRanking.Golden}"]`]: {
+      color: tokens.colorPaletteMarigoldForeground1,
+    },
+    [`&[data-ranking="${CategorizedRecordsRanking.Purple}"]`]: {
+      color: tokens.colorPaletteBerryForeground1,
+    },
   },
 })
 
@@ -681,6 +686,7 @@ function RecordsEntry (props: RecordsEntryProps) {
             {record.isUp && (
               <Caption1
                 className={mergeClasses(styles.label, styles.labelUp)}
+                data-ranking={ranking}
                 wrap={false}
               >
                 {i18n.t('Clientarea.Analysis.Remastered.Up')}

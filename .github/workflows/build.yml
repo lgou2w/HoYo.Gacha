@@ -3,23 +3,20 @@ name: Build
 on:
   push:
     branches: [ main, develop ]
+    tags-ignore:
+      - '**'
   pull_request:
     branches: [ main, develop ]
 
 env:
   CARGO_TERM_COLOR: always
+  TAURI_RAW_NAME: "hoyo_gacha"
+  TAURI_PRODUCT_NAME: "HoYo.Gacha"
 
 jobs:
   build:
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - name: Windows
-            platform: windows-latest
-
-    name: ${{ matrix.name }}
-    runs-on: ${{ matrix.platform }}
+    name: Windows Build
+    runs-on: windows-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -54,6 +51,7 @@ jobs:
       - name: Run tests
         run: pnpm test
 
+      # 'cicd' build, not release build
       - name: Build app
         run: pnpm build:cicd
 
@@ -64,13 +62,27 @@ jobs:
           SHORT_SHA=$(git rev-parse --short HEAD)
           echo "short_sha=$SHORT_SHA" >> $GITHUB_OUTPUT
 
+      - name: Copy executable and PDB files to Workspace root
+        shell: bash
+        run: |
+          cp \
+            "${{ github.workspace }}/target/release/${{ env.TAURI_RAW_NAME }}.exe" \
+            "${{ github.workspace }}/${{ env.TAURI_PRODUCT_NAME }}.exe"
+          cp \
+            "${{ github.workspace }}/target/release/${{ env.TAURI_RAW_NAME }}.pdb" \
+            "${{ github.workspace }}/${{ env.TAURI_PRODUCT_NAME }}.pdb"
+          echo "Executable and PDB files copied to workspace root"
+          find "${{ github.workspace }}" -maxdepth 1 -type f -name "${{ env.TAURI_PRODUCT_NAME }}.*"
+
       - name: Upload artifacts
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
-          name: HoYo.Gacha-artifact-git-${{ steps.short-sha.outputs.short_sha }}
+          name: HoYo.Gacha-git-${{ steps.short-sha.outputs.short_sha }}
           path: |
             ${{ github.workspace }}/README.md
             ${{ github.workspace }}/LICENSE-APACHE
             ${{ github.workspace }}/LICENSE-MIT
-            ${{ github.workspace }}/target/release/hoyo_gacha.exe
-            ${{ github.workspace }}/target/release/hoyo_gacha.pdb
+            ${{ github.workspace }}/${{ env.TAURI_PRODUCT_NAME }}.exe
+            ${{ github.workspace }}/${{ env.TAURI_PRODUCT_NAME }}.pdb
+          archive: true
+          retention-days: 7

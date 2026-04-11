@@ -15,7 +15,7 @@ export default function Title (props: Omit<ComponentProps<'div'>, 'children'>) {
       </Subtitle2>
       {import.meta.env.DEV && (
         <Caption1 style={{ margin: '0 auto', fontFamily: 'monaspace' }} as="pre">
-          CONTENT UNDER DEVELOPMENT, NOT FINAL.
+          (Running in Development Mode)
         </Caption1>
       )}
       {__CICD__ && (
