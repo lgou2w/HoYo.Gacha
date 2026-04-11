@@ -83,23 +83,23 @@ impl Metadata {
   #[tracing::instrument(skip(self))]
   async fn dump(&self) {
     use crate::constants::APP_NAME;
-    use std::io::IoSlice;
     use std::path::PathBuf;
     use tokio::fs::File;
-    use tokio::io::AsyncWriteExt;
+    use tokio::io::{AsyncWriteExt, BufWriter};
 
     let output =
       PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(format!("{APP_NAME}.Metadata.Dump.txt"));
 
     tracing::debug!(message = "Dumping metadata...", ?output);
-    if let Ok(mut file) = File::create(output).await {
+    if let Ok(file) = File::create(output).await {
       let inner = { &*self.inner.read().await };
-      let _ = file
-        .write_vectored(&[
-          IoSlice::new(format!("Hash: {:?}\n", inner.hash).as_bytes()),
-          IoSlice::new(format!("{:#?}", inner.metadata).as_bytes()),
-        ])
-        .await;
+      {
+        let mut writer = BufWriter::new(file);
+        let data1 = format!("Hash: {:?}\n", inner.hash);
+        let data2 = format!("{:#?}", inner.metadata);
+        let _ = writer.write_all(data1.as_bytes()).await;
+        let _ = writer.write_all(data2.as_bytes()).await;
+      }
     }
   }
 }
