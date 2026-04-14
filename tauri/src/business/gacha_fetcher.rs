@@ -231,22 +231,55 @@ pub async fn fetch(
   }
 
   for log in logs {
-    // HACK: Genshin Impact only
-    //   Mandatory mapping of item ids.
-    //   If metadata is outdated, this error will be thrown.
+    // HACK:
+    //   Genshin Impact:
+    //       item_id    :   None
+    //       item_name  :   √
+    //
+    //   Miliastra Wonderland:
+    //   Honkai: Star Rail:
+    //   Zenless Zone Zero:
+    //       item_id                          :   √
+    //       rank_type, item_type, item_name  :   Maybe empty
+    //     See:
+    //       https://github.com/lgou2w/HoYo.Gacha/issues/59
+    //       https://github.com/lgou2w/HoYo.Gacha/issues/163
+    //       https://github.com/lgou2w/HoYo.Gacha/issues/166
+
+    let mut rank_type = log.rank_type;
+    let mut item_type = log.item_type;
+    let mut item_name = log.item_name;
+
     let item_id = if let Some(item_id) = log.item_id {
       item_id
     } else {
+      // HACK: Genshin Impact only
+      //   Mandatory mapping of item ids.
+      //   If metadata is outdated, this error will be thrown.
+
+      // It definitely will. If `item_name` is empty, then there's really nothing we can do.
+      // Please report this to the official support.
+      if item_name.as_ref().is_none_or(|s| s.is_empty()) {
+        // Security checks to avoid unwrap panic
+        MetadataEntrySnafu {
+          business,
+          lang: lang.clone(),
+          item_name: "".to_owned(),
+        }
+        .fail()?
+      }
+
+      let item_name = item_name.as_deref().unwrap(); // SAFETY, See above
       metadata
         .locale(business as _, &lang)
-        .and_then(|locale| locale.entry_from_name_first(&log.item_name))
+        .and_then(|locale| locale.entry_from_name_first(item_name))
         .with_context(|| {
           tracing::error!(
             message = "Failed to map item name to item id, outdated metadata?",
             ?business,
             ?lang,
             ?log.id,
-            ?log.item_name,
+            ?item_name,
             ?log.gacha_type,
             ?log.rank_type,
           );
@@ -254,11 +287,55 @@ pub async fn fetch(
           MetadataEntrySnafu {
             business,
             lang: lang.clone(),
-            item_name: log.item_name.clone(),
+            item_name: item_name.to_owned(),
           }
         })?
         .item_id
     };
+
+    // See above, issues
+    //   Ah yes, an empty string where the real data should live. :(
+    if rank_type.is_none()
+      || item_type.as_ref().is_none_or(|s| s.is_empty())
+      || item_name.as_ref().is_none_or(|s| s.is_empty())
+    {
+      let entry = metadata
+        .locale(business as _, &lang)
+        .and_then(|locale| locale.entry_from_id(item_id))
+        .with_context(|| {
+          tracing::error!(
+            message = "Failed to map item id, outdated metadata?",
+            ?business,
+            ?lang,
+            ?log.id,
+            ?item_name,
+            ?log.gacha_type,
+            ?log.rank_type,
+          );
+
+          let mut item_name_combine = format!("{item_id}");
+          if let Some(s) = &item_name {
+            item_name_combine.push_str(&format!("({s})"));
+          }
+
+          MetadataEntrySnafu {
+            business,
+            lang: lang.clone(),
+            item_name: item_name_combine,
+          }
+        })?;
+
+      // Use valid values ​​first, then use fallback.
+      if rank_type.is_none() {
+        rank_type = Some(entry.rank_type as _);
+      }
+      if item_type.as_ref().is_none_or(|s| s.is_empty()) {
+        item_type = Some(entry.category_name.to_owned());
+      }
+      if item_name.as_ref().is_none_or(|s| s.is_empty()) {
+        item_name = Some(entry.item_name.to_owned());
+      }
+    }
 
     // HACK: 'Genshin Impact: Miliastra Wonderland' needs to retain some special field values,
     //   which may be used in the future.
@@ -288,12 +365,12 @@ pub async fn fetch(
       id: log.id,
       gacha_type: log.gacha_type,
       gacha_id: log.gacha_id,
-      rank_type: log.rank_type,
+      rank_type: rank_type.unwrap(), // SAFETY, See above
       count: log.count,
       lang: lang.clone(),
       time: log.time.assume_offset(uid.game_biz().timezone()),
-      item_name: log.item_name,
-      item_type: log.item_type,
+      item_name: item_name.unwrap(), // SAFETY, See above
+      item_type: item_type.unwrap(), // SAFETY, See above
       item_id,
       properties,
     };

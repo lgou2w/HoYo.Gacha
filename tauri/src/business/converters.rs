@@ -9,7 +9,9 @@ use std::{fmt, io};
 use hg_game_biz::Uid;
 use hg_metadata::Metadata;
 use hg_serde_helper::string_number_into;
-use hg_url_scraper::{GACHA_LOG_TIME_FORMAT, gacha_log_gacha_id_or_item_id, gacha_log_time_format};
+use hg_url_scraper::{
+  GACHA_LOG_TIME_FORMAT, gacha_log_empty_string_number_into, gacha_log_time_format,
+};
 use regex::Regex;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use snafu::{OptionExt, ResultExt, Snafu, ensure};
@@ -330,7 +332,7 @@ pub struct ClassicUigfItem {
   /// UIGF v2.2: is null or empty string.
   /// UIGF v2.3: required.
   #[serde(
-    with = "gacha_log_gacha_id_or_item_id::option",
+    with = "gacha_log_empty_string_number_into",
     default = "Option::default"
   )]
   pub item_id: Option<u32>,
