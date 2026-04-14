@@ -18,8 +18,8 @@ use webview2_com::Microsoft::Web::WebView2::Win32::{
   ICoreWebView2_2, ICoreWebView2_13, ICoreWebView2Settings4,
 };
 use windows::Win32::Foundation::{
-  CloseHandle, ERROR_ALREADY_EXISTS, GetLastError, HANDLE, HWND, NO_ERROR, WAIT_EVENT, WAIT_FAILED,
-  WAIT_OBJECT_0,
+  CloseHandle, ERROR_ALREADY_EXISTS, ERROR_FILE_NOT_FOUND, GetLastError, HANDLE, HWND, NO_ERROR,
+  WAIT_EVENT, WAIT_FAILED, WAIT_OBJECT_0,
 };
 use windows::Win32::Globalization::{GetUserPreferredUILanguages, MUI_LANGUAGE_NAME};
 use windows::Win32::Graphics::DirectWrite::{
@@ -179,7 +179,7 @@ pub fn apply_window_color_scheme(window: &WebviewWindow, value: Theme) -> Result
 /// Get the current Windows theme (dark or light).
 #[inline]
 pub fn apps_use_theme() -> Result<Theme, WindowsError> {
-  AppsUseThemeKey::new(KEY_READ)?.read()
+  Ok(AppsUseThemeKey::new(KEY_READ)?.read())
 }
 
 struct AppsUseThemeKey(HKEY);
@@ -219,10 +219,11 @@ impl AppsUseThemeKey {
     Ok(Self(hkey))
   }
 
-  fn read(&self) -> Result<Theme, WindowsError> {
+  fn read(&self) -> Theme {
     let bytes = &mut [0; 4];
-    let mut len = bytes.len().try_into()?;
-    unsafe {
+    let mut len = 4_u32;
+
+    if unsafe {
       RegQueryValueExA(
         self.0,
         s!("AppsUseLightTheme"),
@@ -231,14 +232,18 @@ impl AppsUseThemeKey {
         Some(bytes.as_mut_ptr()),
         Some(&mut len),
       )
-    }
-    .ok()?;
+    } == ERROR_FILE_NOT_FOUND
+    {
+      // Failed to initialize AppsUseThemeMonitor: Error { code: HRESULT(0x80070002), message: \"系统找不到指定的文件。\" },
+      // Under what circumstances, or when, was this DWORD value deleted using a third-party tool?
+      return Theme::Light;
+    };
 
-    Ok(if u32::from_le_bytes(*bytes) != 0 {
+    if u32::from_le_bytes(*bytes) != 0 {
       Theme::Light
     } else {
       Theme::Dark
-    })
+    }
   }
 }
 
@@ -283,7 +288,7 @@ impl AppsUseThemeMonitor {
     let htheme = AppsUseThemeKey::new(KEY_READ | KEY_NOTIFY)?;
     let running = Arc::new(AtomicBool::new(true));
 
-    let mut last_theme = htheme.read()?;
+    let mut last_theme = htheme.read();
     let visitor_boxed = Box::new(visitor);
     let running_cloned = Arc::clone(&running);
 
@@ -329,16 +334,14 @@ impl AppsUseThemeMonitor {
         // Check which event was signaled
         match wait_event {
           // Registry change event signaled
-          WAIT_OBJECT_0 => match htheme.read() {
-            Err(err) => visitor_boxed(Err(err)),
-            Ok(new_theme) => {
-              // Notify only if the theme has changed
-              if last_theme != new_theme {
-                last_theme = new_theme;
-                visitor_boxed(Ok(new_theme));
-              }
+          WAIT_OBJECT_0 => {
+            // Notify only if the theme has changed
+            let new_theme = htheme.read();
+            if last_theme != new_theme {
+              last_theme = new_theme;
+              visitor_boxed(Ok(new_theme));
             }
-          },
+          }
           // Shutdown event signaled
           WAIT_EVENT(1) => break,
           // Function failed

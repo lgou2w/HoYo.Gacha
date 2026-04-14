@@ -86,7 +86,9 @@ pub async fn run(context: Context) -> ! {
           }
         }
       })
-      .expect("Failed to initialize AppsUseThemeMonitor")
+      .inspect_err(|err| {
+        error!(message = "Failed to initialize AppsUseThemeMonitor", ?err);
+      })
     };
 
     // Wait for it to exit
@@ -95,7 +97,9 @@ pub async fn run(context: Context) -> ! {
 
     // Stop the monitor when the app exits
     #[cfg(windows)]
-    monitor.stop();
+    if let Ok(monitor) = monitor {
+      monitor.stop();
+    };
 
     // Return the exit code
     exit_code
