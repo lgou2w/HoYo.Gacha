@@ -16,33 +16,31 @@ time::serde::format_description! {
   pub gacha_log_time_format, PrimitiveDateTime, GACHA_LOG_TIME_FORMAT
 }
 
-pub mod gacha_log_gacha_id_or_item_id {
-  pub mod option {
-    use std::fmt::Display;
+pub mod gacha_log_empty_string_number_into {
+  use std::fmt::Display;
 
-    use serde::de::IntoDeserializer;
-    use serde::{Deserializer, Serializer};
+  use serde::de::IntoDeserializer;
+  use serde::{Deserializer, Serializer};
 
-    pub fn serialize<T, S>(num: &Option<T>, ser: S) -> Result<S::Ok, S::Error>
-    where
-      T: Display,
-      S: Serializer,
-    {
-      hg_serde_helper::string_number_into::option::serialize(num, ser)
-    }
+  pub fn serialize<T, S>(num: &Option<T>, ser: S) -> Result<S::Ok, S::Error>
+  where
+    T: Display,
+    S: Serializer,
+  {
+    hg_serde_helper::string_number_into::option::serialize(num, ser)
+  }
 
-    pub fn deserialize<'de, D>(de: D) -> Result<Option<u32>, D::Error>
-    where
-      D: Deserializer<'de>,
-    {
-      let opt: Option<String> = hg_serde_helper::de::empty_string_as_none(de)?;
-      match opt {
-        None => Ok(None),
-        Some(str) => {
-          let num: u64 = hg_serde_helper::string_number_into::deserialize(str.into_deserializer())?;
-          let res = u32::try_from(num).map_err(serde::de::Error::custom)?;
-          Ok(Some(res))
-        }
+  pub fn deserialize<'de, D>(de: D) -> Result<Option<u32>, D::Error>
+  where
+    D: Deserializer<'de>,
+  {
+    let opt: Option<String> = hg_serde_helper::de::empty_string_as_none(de)?;
+    match opt {
+      None => Ok(None),
+      Some(str) => {
+        let num: u64 = hg_serde_helper::string_number_into::deserialize(str.into_deserializer())?;
+        let res = u32::try_from(num).map_err(serde::de::Error::custom)?;
+        Ok(Some(res))
       }
     }
   }
@@ -85,14 +83,18 @@ pub struct GachaLog {
 
   // 'Honkai: Star Rail', 'Zenless Zone Zero' only
   #[serde(
-    with = "gacha_log_gacha_id_or_item_id::option",
+    with = "gacha_log_empty_string_number_into",
     skip_serializing_if = "Option::is_none",
     default = "Option::default"
   )]
   pub gacha_id: Option<u32>,
 
-  #[serde(with = "hg_serde_helper::string_number_into")]
-  pub rank_type: u32,
+  #[serde(
+    with = "gacha_log_empty_string_number_into",
+    skip_serializing_if = "Option::is_none",
+    default = "Option::default"
+  )]
+  pub rank_type: Option<u32>,
 
   // Except for 'Genshin Impact: Miliastra Wonderland'
   // See the default function above.
@@ -111,14 +113,24 @@ pub struct GachaLog {
 
   // `name`      -> Normally
   // `item_name` -> 'Genshin Impact: Miliastra Wonderland'
-  #[serde(alias = "name")]
-  pub item_name: String,
+  #[serde(
+    alias = "name",
+    deserialize_with = "hg_serde_helper::de::empty_string_as_none",
+    skip_serializing_if = "Option::is_none",
+    default = "Option::default"
+  )]
+  pub item_name: Option<String>,
 
-  pub item_type: String,
+  #[serde(
+    deserialize_with = "hg_serde_helper::de::empty_string_as_none",
+    skip_serializing_if = "Option::is_none",
+    default = "Option::default"
+  )]
+  pub item_type: Option<String>,
 
   // Except for 'Genshin Impact'
   #[serde(
-    with = "gacha_log_gacha_id_or_item_id::option",
+    with = "gacha_log_empty_string_number_into",
     skip_serializing_if = "Option::is_none",
     default = "Option::default"
   )]
