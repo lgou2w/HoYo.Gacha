@@ -26,7 +26,7 @@ futures-util = { version = "0.3.32", default-features = false }
 os_info = { version = "3.14.0", default-features = false }
 raw-window-handle = { version = "0.6.2", default-features = false }
 regex = { version = "1.12.3", default-features = false, features = ["std"] }
-reqwest = { version = "0.13.2", default-features = false }
+reqwest = { version = "0.13.3", default-features = false }
 rfd = { version = "0.17.2", default-features = false }
 serde = { version = "1.0.228", default-features = false, features = ["std"] }
 serde_json = { version = "1.0.149", default-features = false, features = ["std"] }
@@ -40,9 +40,9 @@ tauri-plugin-process = { version = "2.3.1", default-features = false }
 tauri-plugin-shell = { version = "2.3.5", default-features = false }
 tauri-build = { version = "2.5.6", default-features = false }
 tempfile = { version = "3.27.0", default-features = false }
-tokio = { version = "1.51.1", default-features = false }
+tokio = { version = "1.52.1", default-features = false }
 tracing = { version = "0.1.44", default-features = false, features = ["std"] }
-tracing-appender = { version = "0.2.4", default-features = false }
+tracing-appender = { version = "0.2.5", default-features = false }
 tracing-subscriber = { version = "0.3.23", default-features = false }
 windows = { version = "0.61.3", default-features = false, features = ["std"] }
 windows-version = { version = "0.1.7", default-features = false }
