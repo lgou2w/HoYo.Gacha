@@ -15,7 +15,6 @@ i18n
     supportedLngs: SupportedLanguages,
     interpolation: { escapeValue: false },
     resources: KnownLanguages,
-    showSupportNotice: false,
   })
 
 export default i18n
