@@ -261,7 +261,9 @@
       }
     },
     "Analysis": {
-      "VersionSwitcher": "Use the Classic version",
+      "Personalization": "Personalization",
+      "ClassicSwitcher": "Use the Classic version",
+      "VersionLabelSwitcher": "Show version label",
       "Classic": {
         "Table": {
           "Title": "Proportion of Data",

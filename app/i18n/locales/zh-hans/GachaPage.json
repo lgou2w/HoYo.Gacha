@@ -257,7 +257,9 @@
       }
     },
     "Analysis": {
-      "VersionSwitcher": "使用经典版",
+      "Personalization": "个性化",
+      "ClassicSwitcher": "使用经典版",
+      "VersionLabelSwitcher": "显示版本标签",
       "Classic": {
         "Table": {
           "Title": "$t(Common:{{keyof}}.Gacha.Name)数据占比",
