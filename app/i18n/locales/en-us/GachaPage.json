@@ -268,6 +268,7 @@
         "Table": {
           "Title": "Proportion of Data",
           "RowLabels": {
+            "Average": "Average",
             "AverageAndUp": "Average / $t(ImageItem.Up)",
             "UpWin": "$t(ImageItem.Up) Win",
             "Up": "$t(ImageItem.Up)",

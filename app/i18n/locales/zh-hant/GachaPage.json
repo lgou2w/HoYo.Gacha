@@ -264,6 +264,7 @@
         "Table": {
           "Title": "$t(Common:{{keyof}}.Gacha.Name)資料佔比",
           "RowLabels": {
+            "Average": "平均",
             "AverageAndUp": "平均 / $t(ImageItem.Up)",
             "UpWin": "$t(ImageItem.Up)不歪",
             "Up": "$t(ImageItem.Up)",

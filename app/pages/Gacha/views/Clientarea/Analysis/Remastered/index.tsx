@@ -174,6 +174,7 @@ const useCardStyles = makeStyles({
     justifyContent: 'space-between',
   },
   labelsValue: { fontFamily: tokens.fontFamilyNumeric },
+  labelsGroupAverage: { color: tokens.colorPaletteGreenForeground1 },
   labelsGroupAverageAndUp: { color: tokens.colorPaletteGreenForeground1 },
   labelsGroupUpWin: { color: tokens.colorPaletteRedForeground1 },
   labelsGroupUp: { color: tokens.colorPaletteRedForeground1 },
@@ -279,7 +280,22 @@ const Card = withTrans.GachaPage(function (
             )
           : !isPermanentOde && !isEventOde && (
               <>
-                <Caption1><Placeholder /></Caption1>
+                <div
+                  className={mergeClasses(
+                    styles.labelsGroup,
+                    styles.labelsGroupAverage,
+                  )}
+                  key="Average"
+                >
+                  <Caption1>
+                    {t(`Common:${business.keyof}.Gacha.Ranking.Golden`)}
+                    <Placeholder />
+                    {t(`Clientarea.Analysis.Classic.Table.RowLabels.Average`)}
+                  </Caption1>
+                  <Caption1 className={styles.labelsValue}>
+                    {golden.average}
+                  </Caption1>
+                </div>
                 <Caption1><Placeholder /></Caption1>
                 <Caption1><Placeholder /></Caption1>
               </>
