@@ -17,6 +17,7 @@ import useMenuListStyles from './useMenuListStyles'
 import useMenuPopoverStyles from './useMenuPopoverStyles'
 import useMenuSplitGroupStyles from './useMenuSplitGroupStyles'
 import useMessageBarStyles from './useMessageBarStyles'
+import usePopoverSurfaceStyles from './usePopoverSurfaceStyles'
 import useProgressBarStyles from './useProgressBarStyles'
 import useRadioStyles from './useRadioStyles'
 import useSelectStyles from './useSelectStyles'
@@ -59,6 +60,7 @@ export const CustomStylesHooks: FluentProviderCustomStyleHooks = {
   useMenuPopoverStyles_unstable: useMenuPopoverStyles as CustomStyleHook,
   useMenuSplitGroupStyles_unstable: useMenuSplitGroupStyles as CustomStyleHook,
   useMessageBarStyles_unstable: useMessageBarStyles as CustomStyleHook,
+  usePopoverSurfaceStyles_unstable: usePopoverSurfaceStyles as CustomStyleHook,
   useProgressBarStyles_unstable: useProgressBarStyles as CustomStyleHook,
   useRadioStyles_unstable: useRadioStyles as CustomStyleHook,
   useSelectStyles_unstable: useSelectStyles as CustomStyleHook,
