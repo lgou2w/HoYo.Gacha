@@ -289,28 +289,6 @@ impl Updater {
       let _ = fs::remove_file(&current_exe_bak_path).await;
     }
 
-    // Create a cancellation channel that can be used to signal the download task
-    // to stop if the user initiates another update while a download is in progress.
-    let (abort_tx, abort_rx) = watch::channel(false);
-    {
-      let mut guard = DOWNLOAD_ABORT.lock().await;
-      *guard = Some(abort_tx);
-    }
-
-    // region: CancelGuard
-    // Ensure the cancellation channel is reset on function exit, so that it doesn't affect future updates.
-    struct AbortGuard;
-    impl Drop for AbortGuard {
-      fn drop(&mut self) {
-        tokio::spawn(async {
-          let mut guard = DOWNLOAD_ABORT.lock().await;
-          *guard = None;
-        });
-      }
-    }
-    let _abort_guard = AbortGuard;
-    // endregion
-
     // 1. Check if the latest cached version exists
     //   to avoid making a request every time.
     let latest = Self::latest_release(max_attempts)
@@ -336,6 +314,29 @@ impl Updater {
 
     // 3. Start download latest release
     debug!(message = "Starting download of latest release...", ?latest.download_url);
+
+    // Create a cancellation channel that can be used to signal the download task
+    // to stop if the user initiates another update while a download is in progress.
+    let (abort_tx, abort_rx) = watch::channel(false);
+    {
+      let mut guard = DOWNLOAD_ABORT.lock().await;
+      *guard = Some(abort_tx);
+    }
+
+    // region: CancelGuard
+    // Ensure the cancellation channel is reset on function exit, so that it doesn't affect future updates.
+    struct AbortGuard;
+    impl Drop for AbortGuard {
+      fn drop(&mut self) {
+        tokio::spawn(async {
+          let mut guard = DOWNLOAD_ABORT.lock().await;
+          *guard = None;
+        });
+      }
+    }
+    let _abort_guard = AbortGuard;
+    // endregion
+
     let downloaded = Self::download(
       update_dir,
       &latest,
