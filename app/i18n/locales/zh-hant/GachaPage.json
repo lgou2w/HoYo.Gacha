@@ -257,11 +257,14 @@
       }
     },
     "Analysis": {
-      "VersionSwitcher": "使用經典版",
+      "Personalization": "個人化",
+      "ClassicSwitcher": "使用經典版",
+      "VersionLabelSwitcher": "顯示版本標籤",
       "Classic": {
         "Table": {
           "Title": "$t(Common:{{keyof}}.Gacha.Name)資料佔比",
           "RowLabels": {
+            "Average": "平均",
             "AverageAndUp": "平均 / $t(ImageItem.Up)",
             "UpWin": "$t(ImageItem.Up)不歪",
             "Up": "$t(ImageItem.Up)",

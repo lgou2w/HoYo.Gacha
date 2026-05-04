@@ -261,11 +261,14 @@
       }
     },
     "Analysis": {
-      "VersionSwitcher": "Use the Classic version",
+      "Personalization": "Personalization",
+      "ClassicSwitcher": "Use the Classic version",
+      "VersionLabelSwitcher": "Show version label",
       "Classic": {
         "Table": {
           "Title": "Proportion of Data",
           "RowLabels": {
+            "Average": "Average",
             "AverageAndUp": "Average / $t(ImageItem.Up)",
             "UpWin": "$t(ImageItem.Up) Win",
             "Up": "$t(ImageItem.Up)",

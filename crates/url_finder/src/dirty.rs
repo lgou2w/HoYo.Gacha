@@ -101,7 +101,7 @@ impl DirtyGachaUrl {
 
     // Sort by creation time DESC
     // If valid, then the first one is the latest.
-    results.sort_by(|a, b| b.creation_time.cmp(&a.creation_time));
+    results.sort_by_key(|b| std::cmp::Reverse(b.creation_time));
 
     Ok(results)
   }

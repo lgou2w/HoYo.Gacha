@@ -10,13 +10,12 @@ dayjs.extend(localizedFormat)
 dayjs.extend(relativeTime)
 dayjs.extend(updateLocale)
 
-// See: https://github.com/iamkun/dayjs/blob/dev/src/plugin/updateLocale/index.js
-// The original format must be assigned; otherwise, other properties will be lost.
+// dayjs v1.11.20 Fixed the merge issue
 dayjs.updateLocale(zhCN.name, {
-  formats: Object.assign(zhCN.formats, {
+  formats: {
     // YYYY年M月D日ddddAh点mm分 -> 24 hours
     LLLL: 'YYYY年M月D日dddd HH点mm分',
-  }),
+  },
 })
 
 export default dayjs

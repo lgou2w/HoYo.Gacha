@@ -10,6 +10,7 @@ import GachaTicket from '@/pages/Gacha/components/Ticket'
 import { PrettizedCategoryFlexOrderDataset, PrettizedCategoryFlexOrders } from '@/pages/Gacha/components/consts'
 import { useBusiness } from '@/pages/Gacha/contexts/Business'
 import { CategorizedRecords, CategorizedRecordsRanking, CategorizedRecordsRankings, PrettizedCategory, PrettizedRecord, PrettizedRecords, UsedPity, usePrettizedRecords } from '@/pages/Gacha/contexts/PrettizedRecords'
+import { useAnalysisVersionLabelSuspenseQuery } from '@/pages/Gacha/queries/analysis'
 
 const useStyles = makeStyles({
   root: {
@@ -173,6 +174,7 @@ const useCardStyles = makeStyles({
     justifyContent: 'space-between',
   },
   labelsValue: { fontFamily: tokens.fontFamilyNumeric },
+  labelsGroupAverage: { color: tokens.colorPaletteGreenForeground1 },
   labelsGroupAverageAndUp: { color: tokens.colorPaletteGreenForeground1 },
   labelsGroupUpWin: { color: tokens.colorPaletteRedForeground1 },
   labelsGroupUp: { color: tokens.colorPaletteRedForeground1 },
@@ -278,7 +280,22 @@ const Card = withTrans.GachaPage(function (
             )
           : !isPermanentOde && !isEventOde && (
               <>
-                <Caption1><Placeholder /></Caption1>
+                <div
+                  className={mergeClasses(
+                    styles.labelsGroup,
+                    styles.labelsGroupAverage,
+                  )}
+                  key="Average"
+                >
+                  <Caption1>
+                    {t(`Common:${business.keyof}.Gacha.Ranking.Golden`)}
+                    <Placeholder />
+                    {t(`Clientarea.Analysis.Classic.Table.RowLabels.Average`)}
+                  </Caption1>
+                  <Caption1 className={styles.labelsValue}>
+                    {golden.average}
+                  </Caption1>
+                </div>
                 <Caption1><Placeholder /></Caption1>
                 <Caption1><Placeholder /></Caption1>
               </>
@@ -460,31 +477,45 @@ interface RecordsProps {
 function Records (props: RecordsProps) {
   const { ranking, dataset } = props
   const styles = useRecordsStyles()
+  const { data: useVersionLabel } = useAnalysisVersionLabelSuspenseQuery()
 
   const computedData = useMemo(() => {
-    const data: ComponentProps<typeof RecordsEntry>[] = dataset
-      .rankings[ranking]
-      .values
+    const records = dataset.rankings[ranking].values
+    const recordsWithPrev = records
       .map((record, index, arrayRef) => ({
         category: dataset.category,
-        ranking,
-        dataRef: [record, arrayRef[index - 1]],
+        ranking: ranking as RecordsRanking,
+        record,
+        prevRecord: arrayRef[index - 1],
       }))
 
+    const data: RecordsEntryProps[] = []
+
+    let i = 0
+    while (i < recordsWithPrev.length) {
+      const currentVersion = recordsWithPrev[i].record.version
+      while (i < recordsWithPrev.length && recordsWithPrev[i].record.version === currentVersion) {
+        data.push(recordsWithPrev[i])
+        i++
+      }
+
+      if (useVersionLabel && currentVersion) {
+        data.push({ version: currentVersion })
+      }
+    }
+
     // Next pity
+    const nextPity = dataset.rankings[ranking].nextPity
     data.push({
-      category: dataset.category,
-      ranking,
-      dataRef: {
-        ...dataset.rankings[ranking].nextPity,
-        time: dataset.endTime,
-      },
+      value: nextPity.value,
+      progress: nextPity.progress,
+      time: dataset.endTime,
     })
 
     // DESC
     data.reverse()
     return data
-  }, [dataset.category, dataset.endTime, dataset.rankings, ranking])
+  }, [dataset.category, dataset.endTime, dataset.rankings, ranking, useVersionLabel])
 
   return (
     <Virtuoso
@@ -497,20 +528,32 @@ function Records (props: RecordsProps) {
   )
 }
 
+type RecordsEntryProps = ComponentProps<typeof RecordsEntryNextPity | typeof RecordsEntryItem | typeof RecordsEntryVersion>
+
 // See: https://github.com/lgou2w/HoYo.Gacha/issues/155
 const RecordsEntryHeight = '2.25rem'
+const RecordsEntryVersionHeight = '1rem'
 
 const useRecordsEntryWrapperStyles = makeStyles({
   root: {
     height: `calc(${RecordsEntryHeight} + ${tokens.spacingVerticalSNudge})`,
   },
+  rootVersion: {
+    height: `calc(${RecordsEntryVersionHeight} + ${tokens.spacingVerticalSNudge})`,
+  },
 })
 
 function RecordsEntryWrapper (props: RecordsEntryProps) {
   const styles = useRecordsEntryWrapperStyles()
+  const isVersion = 'version' in props
+
   return (
-    <div className={styles.root}>
-      <RecordsEntry {...props} />
+    <div className={isVersion ? styles.rootVersion : styles.root}>
+      {'value' in props
+        ? <RecordsEntryNextPity {...props} />
+        : isVersion
+          ? <RecordsEntryVersion {...props} />
+          : <RecordsEntryItem {...props} />}
     </div>
   )
 }
@@ -589,47 +632,52 @@ const useRecordsEntryStyles = makeStyles({
   },
 })
 
-interface RecordsEntryProps {
-  category: PrettizedCategory
-  ranking: RecordsRanking
-  dataRef:
-    | [PrettizedRecord, PrettizedRecord | null | undefined]
-    | UsedPity & { time?: string | null } // Next pity & Latest time
+interface RecordsEntryNextPityProps {
+  value: UsedPity['value']
+  progress: UsedPity['progress']
+  time?: string | null
 }
 
-function RecordsEntry (props: RecordsEntryProps) {
-  const { category, ranking, dataRef } = props
+function RecordsEntryNextPity (props: RecordsEntryNextPityProps) {
+  const { value, progress, time } = props
+  const styles = useRecordsEntryStyles()
+  const i18n = useI18n(WithTransKnownNs.GachaPage)
+
+  return (
+    <div
+      className={mergeClasses(styles.root, styles.rootNextPity)}
+      title={time ? i18n.dayjs(time).format('LLLL') : undefined}
+      style={{
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        '--progress': progress + '%',
+      }}
+    >
+      <Image className={styles.icon} src={GachaImageNone} />
+      <Body1 className={styles.itemName}>
+        {i18n.t('Clientarea.Analysis.Remastered.NextPity')}
+      </Body1>
+      <div className={styles.labels}>
+        <Caption1 className={styles.label}>
+          {value}
+        </Caption1>
+      </div>
+    </div>
+  )
+}
+
+interface RecordsEntryItemProps {
+  category: PrettizedCategory
+  ranking: RecordsRanking
+  record: PrettizedRecord
+  prevRecord?: PrettizedRecord | null
+}
+
+function RecordsEntryItem (props: RecordsEntryItemProps) {
+  const { category, ranking, record, prevRecord } = props
   const styles = useRecordsEntryStyles()
   const business = useBusiness()
   const i18n = useI18n(WithTransKnownNs.GachaPage)
-
-  // Next pity & Latest time
-  if (!Array.isArray(dataRef)) {
-    return (
-      <div
-        className={mergeClasses(styles.root, styles.rootNextPity)}
-        title={dataRef.time ? i18n.dayjs(dataRef.time).format('LLLL') : undefined}
-        style={{
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore
-          '--progress':
-            dataRef.progress + '%',
-        }}
-      >
-        <Image className={styles.icon} src={GachaImageNone} />
-        <Body1 className={styles.itemName}>
-          {i18n.t('Clientarea.Analysis.Remastered.NextPity')}
-        </Body1>
-        <div className={styles.labels}>
-          <Caption1 className={styles.label}>
-            {dataRef.value}
-          </Caption1>
-        </div>
-      </div>
-    )
-  }
-
-  const [record, prevRecord] = dataRef
 
   const title = [
     record.itemName,
@@ -698,6 +746,24 @@ function RecordsEntry (props: RecordsEntryProps) {
           {record.usedPity?.value || 0}
         </Caption1>
       </div>
+    </div>
+  )
+}
+
+interface RecordsEntryVersionProps {
+  version: NonNullable<PrettizedRecord['version']>
+}
+
+function RecordsEntryVersion (props: RecordsEntryVersionProps) {
+  const { version } = props
+
+  if (!version) {
+    return null
+  }
+
+  return (
+    <div>
+      <Divider inset>{`v${props.version}`}</Divider>
     </div>
   )
 }
