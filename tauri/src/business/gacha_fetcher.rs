@@ -246,6 +246,7 @@ pub async fn fetch(
     //       https://github.com/lgou2w/HoYo.Gacha/issues/163
     //       https://github.com/lgou2w/HoYo.Gacha/issues/166
 
+    let gacha_type = log.gacha_type();
     let mut rank_type = log.rank_type;
     let mut item_type = log.item_type;
     let mut item_name = log.item_name;
@@ -363,7 +364,7 @@ pub async fn fetch(
       business,
       uid: uid.value(),
       id: log.id,
-      gacha_type: log.gacha_type,
+      gacha_type,
       gacha_id: log.gacha_id,
       rank_type: rank_type.unwrap(), // SAFETY, See above
       count: log.count,

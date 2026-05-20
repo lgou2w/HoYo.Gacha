@@ -76,10 +76,23 @@ pub struct GachaLog {
   #[serde(with = "hg_serde_helper::string_number_into")]
   pub uid: u32,
 
-  // `gacha_type`    -> Normally
-  // `op_gacha_type` -> 'Genshin Impact: Miliastra Wonderland'
-  #[serde(with = "hg_serde_helper::string_number_into", alias = "op_gacha_type")]
-  pub gacha_type: u32,
+  // Except for 'Genshin Impact: Miliastra Wonderland'
+  #[serde(
+    with = "hg_serde_helper::string_number_into::option",
+    skip_serializing_if = "Option::is_none",
+    default = "Option::default"
+  )]
+  pub gacha_type: Option<u32>,
+
+  // 'Genshin Impact: Miliastra Wonderland' first
+  // 'Genshin Impact' since v6.6 (2026/05/20)
+  //   See: https://github.com/lgou2w/HoYo.Gacha/issues/172
+  #[serde(
+    with = "hg_serde_helper::string_number_into::option",
+    skip_serializing_if = "Option::is_none",
+    default = "Option::default"
+  )]
+  pub op_gacha_type: Option<u32>,
 
   // 'Honkai: Star Rail', 'Zenless Zone Zero' only
   #[serde(
@@ -149,6 +162,15 @@ pub struct GachaLog {
 }
 
 impl GachaLog {
+  /// Returns the gacha type. If both `gacha_type` and `op_gacha_type` are present, `gacha_type` is returned.
+  /// Except for 'Genshin Impact: Miliastra Wonderland', which only has `gacha_type`.
+  /// 'Genshin Impact' since v6.6 (2026/05/20) has both `gacha_type` and `op_gacha_type`, but they are the same.
+  /// Returns 0 if both fields are missing, which should not happen in normal cases.
+  #[inline]
+  pub fn gacha_type(&self) -> u32 {
+    self.gacha_type.or(self.op_gacha_type).unwrap_or(0)
+  }
+
   /// Returns `true` if the `item_id` field is present.
   /// Except for 'Genshin Impact'.
   #[inline]
