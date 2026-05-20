@@ -88,7 +88,7 @@ impl GachaUrlRequester for ParsedGachaUrl<'_> {
     options: AsQueriesOptions<'_>,
     timeout: Option<Duration>,
   ) -> Result<GachaLogsResponse, GachaUrlRequestError> {
-    const DEFAULT_TIMEOUT: Duration = Duration::from_secs(10);
+    const DEFAULT_TIMEOUT: Duration = Duration::from_secs(15);
 
     static REQWEST: LazyLock<Reqwest> = LazyLock::new(|| {
       Reqwest::builder()
@@ -170,26 +170,28 @@ impl GachaUrlRequester for ParsedGachaUrl<'_> {
   {
     let f = async move {
       let backoff = retry.into_backoff();
-      let timeout = *backoff.max() + Duration::from_secs(5);
-
       for duration in &backoff {
-        match self.request(endpoint, options.clone(), Some(timeout)).await {
+        match self.request(endpoint, options.clone(), None).await {
           Ok(response) => return Ok(response),
+          Err(error) => {
+            // Wait and retry only if the error is VisitTooFrequently or Timeout
+            let should_retry = matches!(error, GachaUrlRequestError::VisitTooFrequently)
+              || matches!(&error, GachaUrlRequestError::Reqwest { source } if source.is_timeout());
 
-          // Wait and retry only if the error is VisitTooFrequently.
-          Err(GachaUrlRequestError::VisitTooFrequently) => {
-            if let Some(dur) = duration {
-              // Sleep and retry
-              sleeper(dur).await;
-              continue;
+            if should_retry {
+              if let Some(dur) = duration {
+                // Sleep and retry
+                sleeper(dur).await;
+                continue;
+              } else {
+                // Reached max retries
+                break;
+              }
             } else {
-              // Reached max retries
-              break;
+              // Other errors are returned
+              return Err(error);
             }
           }
-
-          // Other errors are returned
-          Err(error) => return Err(error),
         }
       }
 
