@@ -57,8 +57,8 @@ pub trait RecordsReader {
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct UigfVersion {
-  pub major: u8,
-  pub minor: u8,
+  pub major: u16,
+  pub minor: u16,
 }
 
 impl UigfVersion {
@@ -74,7 +74,7 @@ impl UigfVersion {
   pub const V4_2: Self = Self::new(4, 2);
 
   #[inline]
-  pub const fn new(major: u8, minor: u8) -> Self {
+  pub const fn new(major: u16, minor: u16) -> Self {
     Self { major, minor }
   }
 }
@@ -92,10 +92,14 @@ impl FromStr for UigfVersion {
     static UIGF_VERSION_REGEX: LazyLock<Regex> =
       LazyLock::new(|| Regex::new(r"^v(?P<major>\d+)\.(?P<minor>\d+)$").unwrap());
 
-    let caps = UIGF_VERSION_REGEX.captures(s).ok_or(())?;
-    let major = caps["major"].parse().unwrap();
-    let minor = caps["minor"].parse().unwrap();
-    Ok(Self { major, minor })
+    if let Some(captures) = UIGF_VERSION_REGEX.captures(s) {
+      let major = captures["major"].parse().map_err(|_| ())?;
+      let minor = captures["minor"].parse().map_err(|_| ())?;
+
+      Ok(Self { major, minor })
+    } else {
+      Err(())
+    }
   }
 }
 
