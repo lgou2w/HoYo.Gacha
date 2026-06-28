@@ -253,7 +253,8 @@
         "First": "總計{{title}} <1>{{total, number}}</1> 次，總價值：<2>{{value, number}}</2>",
         "Second": "$t(Common:{{keyof}}.Gacha.Name)記錄日期涵蓋範圍：<time>{{start}}</time> - <time>{{end}}</time>",
         "Third": "因官方設定，僅可取得<1>最近 6 個月</1>的$t(Common:{{keyof}}.Gacha.Name)資料記錄。最新資料查詢有 <1>1 小時</1>左右延遲，若無資料請稍後再來。如遇到新卡池高峰期延遲可能更久。具體時間請以遊戲內資料為準。",
-        "Third_one_year": "因官方設定，僅可取得<1>最近 1 年</1>的$t(Common:{{keyof}}.Gacha.Name)資料記錄。最新資料查詢有 <1>1 小時</1>左右延遲，若無資料請稍後再來。如遇到新卡池高峰期延遲可能更久。具體時間請以遊戲內資料為準。"
+        "Third_one_year": "因官方設定，僅可取得<1>最近 1 年</1>的$t(Common:{{keyof}}.Gacha.Name)資料記錄。最新資料查詢有 <1>1 小時</1>左右延遲，若無資料請稍後再來。如遇到新卡池高峰期延遲可能更久。具體時間請以遊戲內資料為準。",
+        "Third_one_year_and_collaboration": "因官方設定，僅可取得<1>最近 1 年</1>的$t(Common:{{keyof}}.Gacha.Name)資料記錄，<1>最近 2 年</1>的聯動$t(Common:{{keyof}}.Gacha.Name)資料記錄。最新資料查詢有 <1>1 小時</1>左右延遲，若無資料請稍後再來。如遇到新卡池高峰期延遲可能更久。具體時間請以遊戲內資料為準。"
       }
     },
     "Analysis": {

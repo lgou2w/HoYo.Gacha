@@ -1,6 +1,6 @@
 import { Body1, Image, makeStyles, tokens } from '@fluentui/react-components'
 import { InfoRegular } from '@fluentui/react-icons'
-import { AccountBusiness, MiliastraWonderland, ZenlessZoneZero } from '@/api/schemas/Account'
+import { AccountBusiness, GenshinImpact, HonkaiStarRail, MiliastraWonderland, ZenlessZoneZero } from '@/api/schemas/Account'
 import Placeholder from '@/components/Placeholder'
 import { Trans, WithTransKnownNs, useI18n } from '@/i18n'
 import { currencySrc } from '@/pages/Gacha/components/Ticket'
@@ -57,6 +57,19 @@ export default function OverviewTooltips () {
   const start = i18n.dayjs(data?.startTime || now).format('LLLL')
   const end = i18n.dayjs(data?.endTime || now).format('LLLL')
 
+  let thirdContext: string | undefined
+  if (business.toBe(GenshinImpact) || isMiliastraWonderland) {
+    // Genshin Impact
+    //   v4.5 (2024-03-13): 6 Months -> 1 Year
+    //   https://www.miyoushe.com/ys/article/50244890
+    thirdContext = 'one_year'
+  } else if (business.toBe(HonkaiStarRail)) {
+    // Honkai: Star Rail
+    //   v4.3 (2026-06-01): 6 Months -> 1 Year, Collaboration always 2 Years
+    //   https://www.miyoushe.com/sr/article/75730947
+    thirdContext = 'one_year_and_collaboration'
+  }
+
   return (
     <div className={styles.root}>
       <Body1 as="p" block>
@@ -104,7 +117,7 @@ export default function OverviewTooltips () {
           ns={WithTransKnownNs.GachaPage}
           i18nKey="Clientarea.Overview.Tooltips.Third"
           values={{ keyof: business.keyof }}
-          context={isMiliastraWonderland ? 'one_year' : undefined}
+          context={thirdContext}
           components={{
             1: <span className={styles.danger} />,
           }}
