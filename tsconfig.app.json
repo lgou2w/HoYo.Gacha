@@ -21,7 +21,7 @@
     "noFallthroughCasesInSwitch": true,
 
     /* User custom */
-    "baseUrl": "./",
+    // "baseUrl": "./", Option 'baseUrl' is deprecated and will stop functioning in TypeScript 7.0
     "paths": {
       "@/*": ["./app/*"]
     }
