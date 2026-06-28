@@ -25,9 +25,11 @@ const useStyles = makeStyles({
     flexDirection: 'column',
     flexGrow: 1,
   },
-  title: {},
+  title: {
+    color: tokens.colorNeutralForeground1,
+  },
   subtitle: {
-    opacity: 0.8,
+    color: tokens.colorNeutralForeground3,
   },
   actions: {
     display: 'flex',
