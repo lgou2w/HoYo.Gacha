@@ -91,7 +91,7 @@ function useCards (styles: ReturnType<typeof useStyles>): ReactNode[] {
 
         const required = category === PrettizedCategory.CollaborationCharacter
           || category === PrettizedCategory.CollaborationWeapon
-          || category === PrettizedCategory.Chronicled
+          || category === PrettizedCategory.ChronicledAndLightrace
           || category === PrettizedCategory.Bangboo
           || category === PrettizedCategory.ExclusiveRescreening
           || category === PrettizedCategory.WEngineReverberation
@@ -195,7 +195,7 @@ const Card = withTrans.GachaPage(function (
   const category = dataset.category
   const isBeginner = category === PrettizedCategory.Beginner
   const isPermanent = category === PrettizedCategory.Permanent
-  const isChronicled = category === PrettizedCategory.Chronicled
+  const isChronicledAndLightrace = category === PrettizedCategory.ChronicledAndLightrace
   const isBangboo = category === PrettizedCategory.Bangboo
   const isPermanentOde = category === PrettizedCategory.PermanentOde
   const isEventOde = category === PrettizedCategory.EventOde
@@ -216,7 +216,7 @@ const Card = withTrans.GachaPage(function (
   const hasUp
     = !isBeginner
       && !isPermanent
-      && !isChronicled
+      && !isChronicledAndLightrace
       && !isBangboo
       && !isPermanentOde
       && !isEventOde

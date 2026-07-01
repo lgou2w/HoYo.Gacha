@@ -56,7 +56,7 @@ export enum PrettizedCategory {
   //
 
   // 'Genshin Impact' only
-  Chronicled = 'Chronicled',
+  ChronicledAndLightrace = 'ChronicledAndLightrace',
   //
 
   // 'Honkai: Star Rail' only

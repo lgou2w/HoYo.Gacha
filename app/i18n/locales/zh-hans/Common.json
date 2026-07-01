@@ -28,6 +28,10 @@
         "Weapon_title": "神铸赋形",
         "Chronicled": "集录祈愿",
         "Chronicled_simplicity": "集录",
+        "Lightrace": "溯光祈愿",
+        "Lightrace_simplicity": "溯光",
+        "ChronicledAndLightrace": "集录 & 溯光祈愿",
+        "ChronicledAndLightrace_simplicity": "集录 & 溯光",
         "Aggregated": "总计"
       }
     },

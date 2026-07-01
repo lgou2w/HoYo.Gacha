@@ -28,6 +28,10 @@
         "Weapon_title": "Epitome Invocation",
         "Chronicled": "Chronicled Wish",
         "Chronicled_simplicity": "Chronicled",
+        "Lightrace": "Lightrace Wish",
+        "Lightrace_simplicity": "Lightrace",
+        "ChronicledAndLightrace": "Chronicled & Lightrace Wish",
+        "ChronicledAndLightrace_simplicity": "Chronicled & Lightrace",
         "Aggregated": "Aggregated"
       },
       "Ranking": {
