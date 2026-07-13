@@ -25,7 +25,7 @@ form_urlencoded = { version = "1.2.2", default-features = false, features = ["st
 futures-util = { version = "0.3.32", default-features = false }
 os_info = { version = "3.15.0", default-features = false }
 raw-window-handle = { version = "0.6.2", default-features = false }
-regex = { version = "1.12.4", default-features = false, features = ["std"] }
+regex = { version = "1.13.0", default-features = false, features = ["std"] }
 reqwest = { version = "0.13.4", default-features = false }
 rfd = { version = "0.17.2", default-features = false }
 serde = { version = "1.0.228", default-features = false, features = ["std"] }
@@ -33,8 +33,8 @@ serde_json = { version = "1.0.150", default-features = false, features = ["std"]
 sha1 = { version = "0.11.0", default-features = false }
 snafu = { version = "0.9.1", default-features = false, features = ["std", "rust_1_81", "backtraces-impl-backtrace-crate"] }
 sqlx = { version = "0.8.6", default-features = false }
-time = { version = "0.3.51", default-features = false, features = ["std"] }
-tauri = { version = "2.11.3", default-features = false }
+time = { version = "0.3.53", default-features = false, features = ["std"] }
+tauri = { version = "2.11.5", default-features = false }
 tauri-plugin-clipboard-manager = { version = "2.3.2", default-features = false }
 tauri-plugin-process = { version = "2.3.1", default-features = false }
 tauri-plugin-shell = { version = "2.3.5", default-features = false }
