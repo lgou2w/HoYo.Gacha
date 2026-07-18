@@ -289,7 +289,11 @@
         "Pull": "pulls",
         "NextPity": "Pity Count",
         "HardPity": "Hard!",
-        "Up": "$t(ImageItem.Up)"
+        "Up": "$t(ImageItem.Up)",
+        "NoPurpleUp": {
+          "Text": "Why is there no $t(ImageItem.Up) badge?",
+          "Tooltip": "Since v3.1, the <1>Custom Search</1> function has been added, allowing you to customize the banners of rate-up <2>$t(Common:{{keyof}}.Gacha.Ranking.Purple)</2> Signals. Therefore, a fixed <2>$t(ImageItem.Up)</2> status is no longer displayed."
+        }
       }
     }
   }

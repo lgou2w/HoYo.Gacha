@@ -1,10 +1,10 @@
 import { ComponentProps, ReactNode, WheelEventHandler, useCallback, useMemo, useState } from 'react'
 import { Virtuoso } from 'react-virtuoso'
-import { Body1, Caption1, Divider, Image, Subtitle2, Tab, TabList, Title1, makeStyles, mergeClasses, tabClassNames, tokens } from '@fluentui/react-components'
-import { AccountBusiness } from '@/api/schemas/Account'
+import { Body1, Caption1, Divider, Image, Subtitle2, Tab, TabList, Title1, Tooltip, makeStyles, mergeClasses, tabClassNames, tokens } from '@fluentui/react-components'
+import { AccountBusiness, ZenlessZoneZero } from '@/api/schemas/Account'
 import GachaImageNone from '@/assets/images/Gacha/None.avif'
 import Placeholder from '@/components/Placeholder'
-import { WithTrans, WithTransKnownNs, i18nDayjs, useI18n, withTrans } from '@/i18n'
+import { Trans, WithTrans, WithTransKnownNs, i18nDayjs, useI18n, withTrans } from '@/i18n'
 import GachaImage from '@/pages/Gacha/components/Image'
 import GachaTicket from '@/pages/Gacha/components/Ticket'
 import { PrettizedCategoryFlexOrderDataset, PrettizedCategoryFlexOrders } from '@/pages/Gacha/components/consts'
@@ -386,6 +386,20 @@ const useCardRecordsTabsStyles = makeStyles({
       color: tokens.colorPaletteBlueBorderActive,
     },
   },
+  noPurpleUpWrapper: {
+    textAlign: 'right',
+  },
+  noPurpleUpText: {
+    color: tokens.colorBrandForeground2,
+    borderBottom: `${tokens.strokeWidthThin} dashed ${tokens.colorBrandStroke2}`,
+    cursor: 'help',
+  },
+  brand: {
+    color: tokens.colorBrandForeground1,
+  },
+  purple: {
+    color: tokens.colorPaletteBerryForeground1,
+  },
 })
 
 type RecordsRanking = keyof Omit<CategorizedRecordsRankings, 'green'>
@@ -416,6 +430,17 @@ const CardRecordsTabs = withTrans.GachaPage(function (
         isPremanentOde && <Records ranking={CategorizedRecordsRanking.Blue} dataset={dataset} />,
     }
   }, [dataset, isPremanentOde])
+
+  // Zenless Zone Zero:
+  //   Since v3.1 (2026/07/29): Custom Search (定制调频)
+  //   https://www.miyoushe.com/zzz/article/76756493
+  //   https://www.hoyolab.com/article/45889814
+  const shouldRenderNoPurpleUpTooltip = business.toBe(ZenlessZoneZero)
+    && ranking === CategorizedRecordsRanking.Purple
+    && (dataset.category === PrettizedCategory.Character
+      || dataset.category === PrettizedCategory.Weapon
+      || dataset.category === PrettizedCategory.ExclusiveRescreening
+      || dataset.category === PrettizedCategory.WEngineReverberation)
 
   return (
     <div className={styles.root}>
@@ -455,6 +480,30 @@ const CardRecordsTabs = withTrans.GachaPage(function (
           </>
         )}
       </TabList>
+      {shouldRenderNoPurpleUpTooltip && (
+        <div className={styles.noPurpleUpWrapper}>
+          <Tooltip
+            content={(
+              <Trans
+                ns={WithTransKnownNs.GachaPage}
+                i18nKey="Clientarea.Analysis.Remastered.NoPurpleUp.Tooltip"
+                values={{ keyof: business.keyof }}
+                components={{
+                  1: <span className={styles.brand} />,
+                  2: <span className={styles.purple} />,
+                }}
+              />
+            )}
+            relationship="label"
+            positioning="above-end"
+            withArrow
+          >
+            <Caption1 className={styles.noPurpleUpText}>
+              {t('Clientarea.Analysis.Remastered.NoPurpleUp.Text')}
+            </Caption1>
+          </Tooltip>
+        </div>
+      )}
       {records[ranking]}
     </div>
   )
