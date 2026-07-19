@@ -1,5 +1,5 @@
-import { ComponentProps, ReactNode, WheelEventHandler, useCallback, useMemo, useState } from 'react'
-import { Virtuoso } from 'react-virtuoso'
+import { ComponentProps, ReactNode, Ref, WheelEventHandler, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Virtuoso, VirtuosoHandle } from 'react-virtuoso'
 import { Body1, Caption1, Divider, Image, Subtitle2, Tab, TabList, Title1, Tooltip, makeStyles, mergeClasses, tabClassNames, tokens } from '@fluentui/react-components'
 import { AccountBusiness, ZenlessZoneZero } from '@/api/schemas/Account'
 import GachaImageNone from '@/assets/images/Gacha/None.avif'
@@ -417,19 +417,54 @@ const CardRecordsTabs = withTrans.GachaPage(function (
 
   const [ranking, setRanking] = useState<RecordsRanking>(initialRanking)
   const handleSelect = useCallback<Required<ComponentProps<typeof TabList>>['onTabSelect']>((_, data) => {
-    setRanking(data.value as typeof ranking)
+    setRanking(data.value as RecordsRanking)
   }, [])
+
+  const recordsRefs = useRef<Record<RecordsRanking, VirtuosoHandle | null>>({
+    [CategorizedRecordsRanking.Golden]: null,
+    [CategorizedRecordsRanking.Purple]: null,
+    [CategorizedRecordsRanking.Blue]: null,
+  })
 
   const records: Record<RecordsRanking, ReactNode> = useMemo(() => {
     return {
-      [CategorizedRecordsRanking.Golden]:
-        !isPremanentOde && <Records ranking={CategorizedRecordsRanking.Golden} dataset={dataset} />,
-      [CategorizedRecordsRanking.Purple]:
-        <Records ranking={CategorizedRecordsRanking.Purple} dataset={dataset} />,
-      [CategorizedRecordsRanking.Blue]:
-        isPremanentOde && <Records ranking={CategorizedRecordsRanking.Blue} dataset={dataset} />,
+      [CategorizedRecordsRanking.Golden]: !isPremanentOde && (
+        <Records
+          ref={(handle) => {
+            recordsRefs.current[CategorizedRecordsRanking.Golden] = handle
+          }}
+          ranking={CategorizedRecordsRanking.Golden}
+          dataset={dataset}
+        />
+      ),
+      [CategorizedRecordsRanking.Purple]: (
+        <Records
+          ref={(handle) => {
+            recordsRefs.current[CategorizedRecordsRanking.Purple] = handle
+          }}
+          ranking={CategorizedRecordsRanking.Purple}
+          dataset={dataset}
+        />
+      ),
+      [CategorizedRecordsRanking.Blue]: isPremanentOde && (
+        <Records
+          ref={(handle) => {
+            recordsRefs.current[CategorizedRecordsRanking.Blue] = handle
+          }}
+          ranking={CategorizedRecordsRanking.Blue}
+          dataset={dataset}
+        />
+      ),
     }
   }, [dataset, isPremanentOde])
+
+  // When switching ranking tabs, scroll to the top
+  useEffect(() => {
+    const recordsRef = recordsRefs.current[ranking]
+    if (recordsRef) {
+      recordsRef.scrollTo({ top: 0 })
+    }
+  }, [ranking])
 
   // Zenless Zone Zero:
   //   Since v3.1 (2026/07/29): Custom Search (定制调频)
@@ -519,12 +554,13 @@ const useRecordsStyles = makeStyles({
 })
 
 interface RecordsProps {
+  ref?: Ref<VirtuosoHandle>
   ranking: RecordsRanking
   dataset: CategorizedRecords<AccountBusiness>
 }
 
 function Records (props: RecordsProps) {
-  const { ranking, dataset } = props
+  const { ref, ranking, dataset } = props
   const styles = useRecordsStyles()
   const { data: useVersionLabel } = useAnalysisVersionLabelSuspenseQuery()
 
@@ -568,6 +604,7 @@ function Records (props: RecordsProps) {
 
   return (
     <Virtuoso
+      ref={ref}
       className={styles.root}
       data={computedData}
       itemContent={(_, props) => (
