@@ -22,25 +22,25 @@ backtrace = { version = "0.3.76", default-features = false, features = ["std"] }
 cfg-if = "1.0.4"
 exponential-backoff = { version = "2.1.0", default-features = false }
 form_urlencoded = { version = "1.2.2", default-features = false, features = ["std"] }
-futures-util = { version = "0.3.32", default-features = false }
+futures-util = { version = "0.3.33", default-features = false }
 os_info = { version = "3.15.0", default-features = false }
 raw-window-handle = { version = "0.6.2", default-features = false }
 regex = { version = "1.13.1", default-features = false, features = ["std"] }
 reqwest = { version = "0.13.4", default-features = false }
 rfd = { version = "0.17.2", default-features = false }
-serde = { version = "1.0.228", default-features = false, features = ["std"] }
-serde_json = { version = "1.0.150", default-features = false, features = ["std"] }
+serde = { version = "1.0.229", default-features = false, features = ["std"] }
+serde_json = { version = "1.0.151", default-features = false, features = ["std"] }
 sha1 = { version = "0.11.0", default-features = false }
-snafu = { version = "0.9.1", default-features = false, features = ["std", "rust_1_81", "backtraces-impl-backtrace-crate"] }
+snafu = { version = "0.9.2", default-features = false, features = ["std", "rust_1_81", "backtraces-impl-backtrace-crate"] }
 sqlx = { version = "0.8.6", default-features = false }
-time = { version = "0.3.53", default-features = false, features = ["std"] }
+time = { version = "0.3.54", default-features = false, features = ["std"] }
 tauri = { version = "2.11.5", default-features = false }
 tauri-plugin-clipboard-manager = { version = "2.3.2", default-features = false }
 tauri-plugin-process = { version = "2.3.1", default-features = false }
 tauri-plugin-shell = { version = "2.3.5", default-features = false }
 tauri-build = { version = "2.6.3", default-features = false }
 tempfile = { version = "3.27.0", default-features = false }
-tokio = { version = "1.53.0", default-features = false }
+tokio = { version = "1.53.1", default-features = false }
 tracing = { version = "0.1.44", default-features = false, features = ["std"] }
 tracing-appender = { version = "0.2.5", default-features = false }
 tracing-subscriber = { version = "0.3.23", default-features = false }
