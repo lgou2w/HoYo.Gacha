@@ -28,6 +28,10 @@
         "Weapon_title": "神鑄賦形",
         "Chronicled": "集錄祈願",
         "Chronicled_simplicity": "集錄",
+        "Lightrace": "溯光祈願",
+        "Lightrace_simplicity": "溯光",
+        "ChronicledAndLightrace": "集錄 & 溯光祈願",
+        "ChronicledAndLightrace_simplicity": "集錄 & 溯光",
         "Aggregated": "總計"
       }
     },

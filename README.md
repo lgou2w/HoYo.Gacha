@@ -2,6 +2,7 @@
 
 [![Actions](https://img.shields.io/github/actions/workflow/status/lgou2w/HoYo.Gacha/build.yml?branch=main&logo=github&style=flat-square)](https://github.com/lgou2w/HoYo.Gacha/actions)
 [![Releases](https://img.shields.io/github/v/release/lgou2w/HoYo.Gacha?logo=github&style=flat-square&include_prereleases)](https://github.com/lgou2w/HoYo.Gacha/releases)
+[![Downloads](https://img.shields.io/github/downloads/lgou2w/HoYo.Gacha/total?logo=github&style=flat-square)](https://github.com/lgou2w/HoYo.Gacha/releases)
 
 一个非官方的工具，用于管理和分析你的 miHoYo 抽卡记录。
 

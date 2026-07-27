@@ -28,6 +28,7 @@ export default function AnalysisView () {
       <div className={styles.root}>
         <div className={styles.topbar}>
           <ClientareaLastUpdated />
+          <div aria-label="spacing" aria-hidden />
           <Personalization />
         </div>
         <AnalysisComponent />

@@ -253,7 +253,8 @@
         "First": "总计{{title}} <1>{{total, number}}</1> 次，总价值：<2>{{value, number}}</2>",
         "Second": "$t(Common:{{keyof}}.Gacha.Name)记录日期覆盖范围：<time>{{start}}</time> - <time>{{end}}</time>",
         "Third": "因官方设定，仅可获取到<1>最近 6 个月</1>的$t(Common:{{keyof}}.Gacha.Name)数据记录。最新数据查询有 <1>1 小时</1>左右延迟，若无数据请稍后再来。如遇到新卡池高峰期延迟可能更久。具体时间请以游戏内数据为准。",
-        "Third_one_year": "因官方设定，仅可获取到<1>最近 1 年</1>的$t(Common:{{keyof}}.Gacha.Name)数据记录。最新数据查询有 <1>1 小时</1>左右延迟，若无数据请稍后再来。如遇到新卡池高峰期延迟可能更久。具体时间请以游戏内数据为准。"
+        "Third_one_year": "因官方设定，仅可获取到<1>最近 1 年</1>的$t(Common:{{keyof}}.Gacha.Name)数据记录。最新数据查询有 <1>1 小时</1>左右延迟，若无数据请稍后再来。如遇到新卡池高峰期延迟可能更久。具体时间请以游戏内数据为准。",
+        "Third_one_year_and_collaboration": "因官方设定，仅可获取到<1>最近 1 年</1>的$t(Common:{{keyof}}.Gacha.Name)数据记录，<1>最近 2 年</1>的联动$t(Common:{{keyof}}.Gacha.Name)数据记录。最新数据查询有 <1>1 小时</1>左右延迟，若无数据请稍后再来。如遇到新卡池高峰期延迟可能更久。具体时间请以游戏内数据为准。"
       }
     },
     "Analysis": {
@@ -284,7 +285,11 @@
         "Pull": "抽",
         "NextPity": "已垫",
         "HardPity": "保底!",
-        "Up": "$t(ImageItem.Up)"
+        "Up": "$t(ImageItem.Up)",
+        "NoPurpleUp": {
+          "Text": "为什么没有 $t(ImageItem.Up) 标识？",
+          "Tooltip": "自 v3.1 起新增<1>『定制调频』</1>功能，可自定概率提升 <2>$t(Common:{{keyof}}.Gacha.Ranking.Purple)</2> 信号的获取范围，因此不再显示固定的 <2>$t(ImageItem.Up)</2> 状态。"
+        }
       }
     }
   }

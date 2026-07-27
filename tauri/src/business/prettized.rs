@@ -22,7 +22,7 @@ pub enum PrettizedCategory {
   //
 
   // 'Genshin Impact' only
-  Chronicled,
+  ChronicledAndLightrace,
   //
 
   // 'Honkai: Star Rail' only
@@ -51,6 +51,7 @@ pub const GENSHIN_IMPACT_CHARACTER: u32 = 301;
 pub const GENSHIN_IMPACT_CHARACTER2: u32 = 400;
 pub const GENSHIN_IMPACT_WEAPON: u32 = 302;
 pub const GENSHIN_IMPACT_CHRONICLED: u32 = 500;
+// pub const GENSHIN_IMPACT_LIGHTRACE: u32 = 5001; // op_gacha_type = 5001, gacha_type = 500
 
 pub const HONKAI_STAR_RAIL_BEGINNER: u32 = 2;
 pub const HONKAI_STAR_RAIL_PERMANENT: u32 = 1;
@@ -92,6 +93,7 @@ pub const fn available_gacha_types(business: AccountBusiness) -> &'static [u32] 
       GENSHIN_IMPACT_CHARACTER2,
       GENSHIN_IMPACT_WEAPON,
       GENSHIN_IMPACT_CHRONICLED,
+      // GENSHIN_IMPACT_LIGHTRACE,
       GENSHIN_IMPACT_BEGINNER, // Low priority
     ],
     AccountBusiness::MiliastraWonderland => &[
@@ -128,7 +130,14 @@ static KNOWN_CATEGORIZEDS: LazyLock<HashMap<AccountBusiness, HashMap<u32, Pretti
           (GENSHIN_IMPACT_CHARACTER, PrettizedCategory::Character),
           (GENSHIN_IMPACT_CHARACTER2, PrettizedCategory::Character),
           (GENSHIN_IMPACT_WEAPON, PrettizedCategory::Weapon),
-          (GENSHIN_IMPACT_CHRONICLED, PrettizedCategory::Chronicled),
+          (
+            GENSHIN_IMPACT_CHRONICLED,
+            PrettizedCategory::ChronicledAndLightrace,
+          ),
+          // (
+          //   GENSHIN_IMPACT_LIGHTRACE,
+          //   PrettizedCategory::ChronicledAndLightrace,
+          // ),
         ]),
       ),
       (
@@ -200,7 +209,7 @@ impl PrettizedCategory {
       RankLevel::Golden => match self {
         Self::Character
         | Self::Permanent
-        | Self::Chronicled
+        | Self::ChronicledAndLightrace
         | Self::CollaborationCharacter
         | Self::ExclusiveRescreening => 90,
         Self::Weapon | Self::Bangboo | Self::CollaborationWeapon | Self::WEngineReverberation => 80,
@@ -536,10 +545,14 @@ fn compute_categorieds<'a>(
   let is_miliastra_wonderland = business == AccountBusiness::MiliastraWonderland;
   let mut categorizeds = HashMap::with_capacity(gacha_type_categories.len());
 
-  for (gacha_type, category) in gacha_type_categories
-    .iter() // See below
-    .filter(|(gacha_type, _)| !(is_genshin_impact && **gacha_type == GENSHIN_IMPACT_CHARACTER2))
-  {
+  for (gacha_type, category) in gacha_type_categories.iter().filter(|(gacha_type, _)| {
+    // See below
+    // Genshin Impact:
+    //   Merge Character and Character-2
+    //   because they share pity.
+    !(is_genshin_impact
+      && (**gacha_type == GENSHIN_IMPACT_CHARACTER2/*  || **gacha_type == GENSHIN_IMPACT_LIGHTRACE */))
+  }) {
     let records = {
       macro_rules! result_merge {
         (
@@ -568,6 +581,7 @@ fn compute_categorieds<'a>(
       let mut result = gacha_type_records.remove(gacha_type).unwrap_or_default();
       result_merge! { result,
         is_genshin_impact && *category == PrettizedCategory::Character => { &GENSHIN_IMPACT_CHARACTER2, },
+        // is_genshin_impact && *category == PrettizedCategory::ChronicledAndLightrace => { &GENSHIN_IMPACT_LIGHTRACE, },
         is_miliastra_wonderland && *category == PrettizedCategory::EventOde => {
           &MILIASTRA_WONDERLAND_EVENT_ODE1_1,
           &MILIASTRA_WONDERLAND_EVENT_ODE1_2,

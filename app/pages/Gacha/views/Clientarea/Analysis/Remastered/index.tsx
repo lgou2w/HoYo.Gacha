@@ -1,10 +1,10 @@
-import { ComponentProps, ReactNode, WheelEventHandler, useCallback, useMemo, useState } from 'react'
-import { Virtuoso } from 'react-virtuoso'
-import { Body1, Caption1, Divider, Image, Subtitle2, Tab, TabList, Title1, makeStyles, mergeClasses, tabClassNames, tokens } from '@fluentui/react-components'
-import { AccountBusiness } from '@/api/schemas/Account'
+import { ComponentProps, ReactNode, Ref, WheelEventHandler, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Virtuoso, VirtuosoHandle } from 'react-virtuoso'
+import { Body1, Caption1, Divider, Image, Subtitle2, Tab, TabList, Title1, Tooltip, makeStyles, mergeClasses, tabClassNames, tokens } from '@fluentui/react-components'
+import { AccountBusiness, ZenlessZoneZero } from '@/api/schemas/Account'
 import GachaImageNone from '@/assets/images/Gacha/None.avif'
 import Placeholder from '@/components/Placeholder'
-import { WithTrans, WithTransKnownNs, i18nDayjs, useI18n, withTrans } from '@/i18n'
+import { Trans, WithTrans, WithTransKnownNs, i18nDayjs, useI18n, withTrans } from '@/i18n'
 import GachaImage from '@/pages/Gacha/components/Image'
 import GachaTicket from '@/pages/Gacha/components/Ticket'
 import { PrettizedCategoryFlexOrderDataset, PrettizedCategoryFlexOrders } from '@/pages/Gacha/components/consts'
@@ -91,7 +91,7 @@ function useCards (styles: ReturnType<typeof useStyles>): ReactNode[] {
 
         const required = category === PrettizedCategory.CollaborationCharacter
           || category === PrettizedCategory.CollaborationWeapon
-          || category === PrettizedCategory.Chronicled
+          || category === PrettizedCategory.ChronicledAndLightrace
           || category === PrettizedCategory.Bangboo
           || category === PrettizedCategory.ExclusiveRescreening
           || category === PrettizedCategory.WEngineReverberation
@@ -195,7 +195,7 @@ const Card = withTrans.GachaPage(function (
   const category = dataset.category
   const isBeginner = category === PrettizedCategory.Beginner
   const isPermanent = category === PrettizedCategory.Permanent
-  const isChronicled = category === PrettizedCategory.Chronicled
+  const isChronicledAndLightrace = category === PrettizedCategory.ChronicledAndLightrace
   const isBangboo = category === PrettizedCategory.Bangboo
   const isPermanentOde = category === PrettizedCategory.PermanentOde
   const isEventOde = category === PrettizedCategory.EventOde
@@ -216,7 +216,7 @@ const Card = withTrans.GachaPage(function (
   const hasUp
     = !isBeginner
       && !isPermanent
-      && !isChronicled
+      && !isChronicledAndLightrace
       && !isBangboo
       && !isPermanentOde
       && !isEventOde
@@ -386,6 +386,20 @@ const useCardRecordsTabsStyles = makeStyles({
       color: tokens.colorPaletteBlueBorderActive,
     },
   },
+  noPurpleUpWrapper: {
+    textAlign: 'right',
+  },
+  noPurpleUpText: {
+    color: tokens.colorBrandForeground2,
+    borderBottom: `${tokens.strokeWidthThin} dashed ${tokens.colorBrandStroke2}`,
+    cursor: 'help',
+  },
+  brand: {
+    color: tokens.colorBrandForeground1,
+  },
+  purple: {
+    color: tokens.colorPaletteBerryForeground1,
+  },
 })
 
 type RecordsRanking = keyof Omit<CategorizedRecordsRankings, 'green'>
@@ -403,19 +417,65 @@ const CardRecordsTabs = withTrans.GachaPage(function (
 
   const [ranking, setRanking] = useState<RecordsRanking>(initialRanking)
   const handleSelect = useCallback<Required<ComponentProps<typeof TabList>>['onTabSelect']>((_, data) => {
-    setRanking(data.value as typeof ranking)
+    setRanking(data.value as RecordsRanking)
   }, [])
+
+  const recordsRefs = useRef<Record<RecordsRanking, VirtuosoHandle | null>>({
+    [CategorizedRecordsRanking.Golden]: null,
+    [CategorizedRecordsRanking.Purple]: null,
+    [CategorizedRecordsRanking.Blue]: null,
+  })
 
   const records: Record<RecordsRanking, ReactNode> = useMemo(() => {
     return {
-      [CategorizedRecordsRanking.Golden]:
-        !isPremanentOde && <Records ranking={CategorizedRecordsRanking.Golden} dataset={dataset} />,
-      [CategorizedRecordsRanking.Purple]:
-        <Records ranking={CategorizedRecordsRanking.Purple} dataset={dataset} />,
-      [CategorizedRecordsRanking.Blue]:
-        isPremanentOde && <Records ranking={CategorizedRecordsRanking.Blue} dataset={dataset} />,
+      [CategorizedRecordsRanking.Golden]: !isPremanentOde && (
+        <Records
+          ref={(handle) => {
+            recordsRefs.current[CategorizedRecordsRanking.Golden] = handle
+          }}
+          ranking={CategorizedRecordsRanking.Golden}
+          dataset={dataset}
+        />
+      ),
+      [CategorizedRecordsRanking.Purple]: (
+        <Records
+          ref={(handle) => {
+            recordsRefs.current[CategorizedRecordsRanking.Purple] = handle
+          }}
+          ranking={CategorizedRecordsRanking.Purple}
+          dataset={dataset}
+        />
+      ),
+      [CategorizedRecordsRanking.Blue]: isPremanentOde && (
+        <Records
+          ref={(handle) => {
+            recordsRefs.current[CategorizedRecordsRanking.Blue] = handle
+          }}
+          ranking={CategorizedRecordsRanking.Blue}
+          dataset={dataset}
+        />
+      ),
     }
   }, [dataset, isPremanentOde])
+
+  // When switching ranking tabs, scroll to the top
+  useEffect(() => {
+    const recordsRef = recordsRefs.current[ranking]
+    if (recordsRef) {
+      recordsRef.scrollTo({ top: 0 })
+    }
+  }, [ranking])
+
+  // Zenless Zone Zero:
+  //   Since v3.1 (2026/07/29): Custom Search (定制调频)
+  //   https://www.miyoushe.com/zzz/article/76756493
+  //   https://www.hoyolab.com/article/45889814
+  const shouldRenderNoPurpleUpTooltip = business.toBe(ZenlessZoneZero)
+    && ranking === CategorizedRecordsRanking.Purple
+    && (dataset.category === PrettizedCategory.Character
+      || dataset.category === PrettizedCategory.Weapon
+      || dataset.category === PrettizedCategory.ExclusiveRescreening
+      || dataset.category === PrettizedCategory.WEngineReverberation)
 
   return (
     <div className={styles.root}>
@@ -455,6 +515,30 @@ const CardRecordsTabs = withTrans.GachaPage(function (
           </>
         )}
       </TabList>
+      {shouldRenderNoPurpleUpTooltip && (
+        <div className={styles.noPurpleUpWrapper}>
+          <Tooltip
+            content={(
+              <Trans
+                ns={WithTransKnownNs.GachaPage}
+                i18nKey="Clientarea.Analysis.Remastered.NoPurpleUp.Tooltip"
+                values={{ keyof: business.keyof }}
+                components={{
+                  1: <span className={styles.brand} />,
+                  2: <span className={styles.purple} />,
+                }}
+              />
+            )}
+            relationship="label"
+            positioning="above-end"
+            withArrow
+          >
+            <Caption1 className={styles.noPurpleUpText}>
+              {t('Clientarea.Analysis.Remastered.NoPurpleUp.Text')}
+            </Caption1>
+          </Tooltip>
+        </div>
+      )}
       {records[ranking]}
     </div>
   )
@@ -470,12 +554,13 @@ const useRecordsStyles = makeStyles({
 })
 
 interface RecordsProps {
+  ref?: Ref<VirtuosoHandle>
   ranking: RecordsRanking
   dataset: CategorizedRecords<AccountBusiness>
 }
 
 function Records (props: RecordsProps) {
-  const { ranking, dataset } = props
+  const { ref, ranking, dataset } = props
   const styles = useRecordsStyles()
   const { data: useVersionLabel } = useAnalysisVersionLabelSuspenseQuery()
 
@@ -519,6 +604,7 @@ function Records (props: RecordsProps) {
 
   return (
     <Virtuoso
+      ref={ref}
       className={styles.root}
       data={computedData}
       itemContent={(_, props) => (
@@ -582,7 +668,7 @@ const useRecordsEntryStyles = makeStyles({
     '::before': {
       borderRadius: tokens.borderRadiusMedium,
       width: '100%',
-      opacity: 0.25,
+      opacity: 0.15,
     },
     '::after': {
       borderTopLeftRadius: tokens.borderRadiusMedium,
@@ -590,7 +676,7 @@ const useRecordsEntryStyles = makeStyles({
       borderTopRightRadius: tokens.borderRadiusSmall,
       borderBottomRightRadius: tokens.borderRadiusSmall,
       width: 'var(--progress)',
-      opacity: 0.3,
+      opacity: 0.45,
     },
   },
   rootNextPity: {

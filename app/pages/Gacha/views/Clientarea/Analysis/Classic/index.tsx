@@ -172,7 +172,7 @@ function useTableEntries (): TableEntry[] {
       .forEach((category) => {
         const required = category === PrettizedCategory.CollaborationCharacter
           || category === PrettizedCategory.CollaborationWeapon
-          || category === PrettizedCategory.Chronicled
+          || category === PrettizedCategory.ChronicledAndLightrace
           || category === PrettizedCategory.Bangboo
           || category === PrettizedCategory.Beginner
           || category === PrettizedCategory.ExclusiveRescreening
@@ -223,7 +223,7 @@ function createTableEntry (
 
   const isBeginner = category === PrettizedCategory.Beginner
   const isPermanent = category === PrettizedCategory.Permanent
-  const isChronicled = category === PrettizedCategory.Chronicled
+  const isChronicledAndLightrace = category === PrettizedCategory.ChronicledAndLightrace
   const isBangboo = category === PrettizedCategory.Bangboo
   const isPermanentOde = category === PrettizedCategory.PermanentOde
   const isEventOde = category === PrettizedCategory.EventOde
@@ -232,7 +232,7 @@ function createTableEntry (
   const hasUp
     = !isBeginner
       && !isPermanent
-      && !isChronicled
+      && !isChronicledAndLightrace
       && !isBangboo
       && !isPermanentOde
       && !isEventOde
@@ -509,7 +509,7 @@ const AnalysisHistory = withTrans.GachaPage(function (
   const hasUp
     = category !== PrettizedCategory.Beginner
       && category !== PrettizedCategory.Permanent
-      && category !== PrettizedCategory.Chronicled
+      && category !== PrettizedCategory.ChronicledAndLightrace
       && category !== PrettizedCategory.Bangboo
       && category !== PrettizedCategory.PermanentOde
       && category !== PrettizedCategory.EventOde

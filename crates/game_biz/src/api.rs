@@ -39,11 +39,11 @@ impl_gacha_log_api_endpoints! {
   ((Hk4e, Oversea)  , Beyond)        -> "https://public-operation-hk4e-sg.hoyoverse.com/gacha_info/api/getBeyondGachaLog",
 
   // 'Honkai: Star Rail'
-  ((Hkrpg, Official), Standard)      -> "https://public-operation-hkrpg.mihoyo.com/common/gacha_record/api/getGachaLog",
-  ((Hkrpg, Oversea) , Standard)      -> "https://public-operation-hkrpg-sg.hoyoverse.com/common/gacha_record/api/getGachaLog",
+  ((Hkrpg, Official), Standard)      -> "https://public-operation-hkrpg.mihoyo.com/common/hkrpg_gacha_record/api/getGachaLog",
+  ((Hkrpg, Oversea) , Standard)      -> "https://public-operation-hkrpg-sg.hoyoverse.com/common/hkrpg_gacha_record/api/getGachaLog",
   // 'Honkai: Star Rail' Collaboration
-  ((Hkrpg, Official), Collaboration) -> "https://public-operation-hkrpg.mihoyo.com/common/gacha_record/api/getLdGachaLog",
-  ((Hkrpg, Oversea) , Collaboration) -> "https://public-operation-hkrpg-sg.hoyoverse.com/common/gacha_record/api/getLdGachaLog",
+  ((Hkrpg, Official), Collaboration) -> "https://public-operation-hkrpg.mihoyo.com/common/hkrpg_gacha_record/api/getLdGachaLog",
+  ((Hkrpg, Oversea) , Collaboration) -> "https://public-operation-hkrpg-sg.hoyoverse.com/common/hkrpg_gacha_record/api/getLdGachaLog",
 
   // 'Zenless Zone Zero'
   ((Nap, Official)  , Standard)      -> "https://public-operation-nap.mihoyo.com/common/gacha_record/api/getGachaLog",
