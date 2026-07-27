@@ -668,7 +668,7 @@ const useRecordsEntryStyles = makeStyles({
     '::before': {
       borderRadius: tokens.borderRadiusMedium,
       width: '100%',
-      opacity: 0.25,
+      opacity: 0.15,
     },
     '::after': {
       borderTopLeftRadius: tokens.borderRadiusMedium,
@@ -676,7 +676,7 @@ const useRecordsEntryStyles = makeStyles({
       borderTopRightRadius: tokens.borderRadiusSmall,
       borderBottomRightRadius: tokens.borderRadiusSmall,
       width: 'var(--progress)',
-      opacity: 0.3,
+      opacity: 0.45,
     },
   },
   rootNextPity: {
