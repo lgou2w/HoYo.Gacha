@@ -1,10 +1,11 @@
 use std::collections::HashMap;
 use std::sync::LazyLock;
 
+use hg_game_biz::Uid;
 use hg_metadata::Metadata;
 use serde::Serialize;
 use time::serde::rfc3339;
-use time::{Date, OffsetDateTime};
+use time::{Date, OffsetDateTime, UtcOffset};
 
 use crate::database::schemas::{AccountBusiness, GachaRecord};
 
@@ -509,7 +510,7 @@ impl<'a> PrettizedRecords<'a> {
       });
 
     let categorizeds = compute_categorieds(metadata, business, gacha_type_records, custom_locale);
-    let aggregated = compute_aggregated(business, records, &categorizeds);
+    let aggregated = compute_aggregated(business, uid, records, &categorizeds);
     let gacha_type_categories = categorizeds.values().fold(
       HashMap::with_capacity(categorizeds.len()),
       |mut acc, categorized| {
@@ -842,6 +843,7 @@ fn compute_rankings<'a>(
 
 fn compute_aggregated<'a>(
   business: AccountBusiness,
+  uid: u32,
   records: &'a [GachaRecord],
   categorizeds: &HashMap<PrettizedCategory, CategorizedRecords<'a>>,
 ) -> Option<AggregatedRecords<'a>> {
@@ -934,7 +936,7 @@ fn compute_aggregated<'a>(
   compute_ranking! { &purple.values, purple };
   compute_ranking! { &golden.values, golden, golden.up_win };
 
-  let tags = compute_aggregated_tags(records, &golden);
+  let tags = compute_aggregated_tags(business, uid, records, &golden);
 
   Some(AggregatedRecords {
     total,
@@ -951,10 +953,18 @@ fn compute_aggregated<'a>(
 }
 
 fn compute_aggregated_tags<'a>(
+  business: AccountBusiness,
+  uid: u32,
   records: Vec<&'a GachaRecord>,
   golden: &GoldenRanking<'a>,
 ) -> AggregatedGoldenTags<'a> {
   let mut tags = AggregatedGoldenTags::default();
+
+  let server_timezone = if let Some(uid) = Uid::validate(business.as_game(), uid) {
+    uid.game_biz().timezone()
+  } else {
+    UtcOffset::UTC
+  };
 
   // Luck & Unluck
   {
@@ -1016,22 +1026,22 @@ fn compute_aggregated_tags<'a>(
       .collect();
 
     #[inline]
-    fn into_date((date, sum): &(Date, u64)) -> (u64, u64) {
+    fn into_date((date, sum): &(Date, u64), server_timezone: UtcOffset) -> (u64, u64) {
       let timestamp = date
-        .with_hms(0, 0, 0)
-        .unwrap() // SAFETY
-        .assume_utc()
+        .with_time(time::macros::time!(00:00))
+        .assume_offset(server_timezone)
+        .to_offset(UtcOffset::UTC)
         .unix_timestamp();
 
       (timestamp as _, *sum)
     }
 
     dates.sort_by_key(|(_, sum)| *sum);
-    tags.crazy = dates.last().map(into_date);
+    tags.crazy = dates.last().map(|it| into_date(it, server_timezone));
 
     // Re-sort by date
     dates.sort_by_key(|(date, _)| *date);
-    tags.recent = dates.last().map(into_date);
+    tags.recent = dates.last().map(|it| into_date(it, server_timezone));
   }
 
   tags

@@ -10,8 +10,18 @@ export default {
   matches: /^en/,
   constants: {
     text: 'English (US)',
-    dayjs: 'en',
     gacha: 'en-us',
+    dayjs: 'en',
+    dayjsFormats: {
+      GachaOverviewTagsGridRecentCalendar: {
+        lastDay: '[Yesterday]',
+        sameDay: '[Today]',
+        nextDay: '[Tomorrow]',
+        nextWeek: '[Next] dddd',
+        lastWeek: '[Last] dddd',
+        sameElse: 'DD/MM/YYYY',
+      },
+    },
   },
   Common,
   Error,

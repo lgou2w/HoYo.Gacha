@@ -10,8 +10,18 @@ export default {
   matches: ['zh-CN', 'zh-SG'],
   constants: {
     text: '简体中文',
-    dayjs: 'zh-cn',
     gacha: 'zh-cn',
+    dayjs: 'zh-cn',
+    dayjsFormats: {
+      GachaOverviewTagsGridRecentCalendar: {
+        lastDay: '[昨天]',
+        sameDay: '[今天]',
+        nextDay: '[明天]',
+        nextWeek: '[下周]dd',
+        lastWeek: '[上周]dd',
+        sameElse: 'YYYY/MM/DD',
+      },
+    },
   },
   Common,
   Error,

@@ -3,7 +3,7 @@ import { Badge, BadgeProps, Caption1, Title3, makeStyles, mergeClasses, tokens }
 import { ArrowTrendingLinesFilled, CalendarFilled, EmojiMehFilled, EmojiSparkleFilled, SparkleFilled } from '@fluentui/react-icons'
 import { AccountBusiness, KeyofZenlessZoneZero, ZenlessZoneZero } from '@/api/schemas/Account'
 import Placeholder from '@/components/Placeholder'
-import { Trans, WithTrans, WithTransKnownNs, i18nDayjs, withTrans } from '@/i18n'
+import { Trans, WithTrans, WithTransKnownNs, i18nDayjs, languageMetadata, withTrans } from '@/i18n'
 import GachaImageItem from '@/pages/Gacha/components/ImageItem'
 import GachaTicket from '@/pages/Gacha/components/Ticket'
 import { PrettizedCategoryFlexOrderDataset, PrettizedCategoryFlexOrders } from '@/pages/Gacha/components/consts'
@@ -444,7 +444,7 @@ const TagsGrid = withTrans.GachaPage(function (
 ) {
   const styles = useGridStyles()
   const business = useBusiness()
-  const dayjs = i18nDayjs(i18n.language)
+  const i18nMetadata = languageMetadata(i18n.language)
   const { luck, unluck, relation, crazy, recent } = dataset.tags
 
   function tTags (subKey: string, options?: Parameters<typeof t>[2]) {
@@ -462,7 +462,12 @@ const TagsGrid = withTrans.GachaPage(function (
         {recent && (
           <GridLabel color="brand" appearance="tint" size="extra-large" icon={<ArrowTrendingLinesFilled />}>
             {tTags('Recent', {
-              date: dayjs(recent[0] * 1000).fromNow(),
+              date: i18nMetadata.dayjs(recent[0] * 1000)
+                .calendar(null, i18nMetadata
+                  .constants
+                  .dayjsFormats
+                  .GachaOverviewTagsGridRecentCalendar,
+                ),
               count: recent[1],
             })}
           </GridLabel>
@@ -514,7 +519,7 @@ const TagsGrid = withTrans.GachaPage(function (
               ns={WithTransKnownNs.GachaPage}
               i18nKey="Clientarea.Overview.Grid.Tags.Crazy"
               values={{
-                date: dayjs(crazy[0] * 1000).format('L'),
+                date: i18nMetadata.dayjs(crazy[0] * 1000).format('L'),
                 count: crazy[1],
               }}
               components={{
