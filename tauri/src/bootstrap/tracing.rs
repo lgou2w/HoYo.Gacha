@@ -1,18 +1,12 @@
 use cfg_if::cfg_if;
 use time::format_description::FormatItem;
 use time::macros::format_description;
-use tracing::Level;
+use tracing::{Level, debug};
 use tracing_appender::non_blocking::WorkerGuard;
 use tracing_subscriber::EnvFilter;
 use tracing_subscriber::fmt::time::LocalTime;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
-
-// For Unit test only
-#[cfg(test)]
-pub fn init_tracing() {
-  Tracing::new();
-}
 
 pub struct Tracing {
   // Keep the guards to ensure logs are flushed on drop
@@ -45,12 +39,12 @@ impl Tracing {
       .from_env_lossy()
       .add_directive("h2=error".parse().unwrap())
       .add_directive("hyper=error".parse().unwrap())
-      .add_directive("sqlx=error".parse().unwrap())
+      // .add_directive("sqlx=error".parse().unwrap())
       .add_directive("tao=error".parse().unwrap())
       .add_directive("wry=error".parse().unwrap());
 
     // Initialize the tracing subscriber
-    cfg_if! {if #[cfg(debug_assertions)] {
+    cfg_if! {if #[cfg(any(debug_assertions, test))] {
       // Development logging to stdout
       tracing_subscriber::registry()
         .with(filter)
@@ -106,7 +100,7 @@ impl Tracing {
     }};
 
     // Log that tracing has been initialized
-    tracing::debug!("Tracing initialized");
+    debug!("Tracing initialized");
 
     Self { appenders }
   }

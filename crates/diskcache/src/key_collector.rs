@@ -24,7 +24,6 @@ pub struct KeyCollector {
 }
 
 impl KeyCollector {
-  #[inline]
   pub fn long_key_only<P: AsRef<Path>>(data_folder: P) -> Result<Self> {
     Self::new(data_folder, true)
   }

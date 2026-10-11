@@ -5,7 +5,7 @@ import { SpinnerState, getSlotClassNameProp_unstable, makeStyles, mergeClasses }
 // This component reimplemented the Fluent UI rendering in order to override some of the default styles.
 // See:
 //  https://github.com/microsoft/fluentui/tree/master/packages/react-components/react-spinner/library/src/components/Spinner
-//  https://react.fluentui.dev/?path=/docs/components-spinner--docs
+//  https://storybooks.fluentui.dev/react/?path=/docs/components-spinner--docs
 
 const useStyles = makeStyles({
   root: {

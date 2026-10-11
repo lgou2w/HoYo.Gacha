@@ -1,5 +1,5 @@
+import { isTauri } from '@tauri-apps/api/core'
 import { LanguageDetectorAsyncModule } from 'i18next'
-import AppCommands from '@/api/commands/app'
 import { DefaultLanguage, KnownLanguages, Language, SupportedLanguages } from './locales'
 
 export const LanguageDetectorModuleLocalStorageKey = 'HG_LANGUAGE'
@@ -7,25 +7,26 @@ export const LanguageDetectorModule: LanguageDetectorAsyncModule = {
   type: 'languageDetector',
   async: true,
   async detect (): Promise<string | readonly string[] | undefined> {
-    const dirty = window.localStorage.getItem(LanguageDetectorModuleLocalStorageKey)
+    const dirty = localStorage.getItem(LanguageDetectorModuleLocalStorageKey)
+
     if (dirty && SupportedLanguages.includes(dirty as Language)) {
-      console.debug('Use cached user language:', dirty)
+      console.debug('[LanguageDetector] Use cached user language:', dirty)
       return dirty
     } else if (dirty) {
-      console.warn('Invalid cached user language:', dirty)
-      window.localStorage.removeItem(LanguageDetectorModuleLocalStorageKey)
+      console.warn('[LanguageDetector] Invalid cached user language:', dirty)
+      localStorage.removeItem(LanguageDetectorModuleLocalStorageKey)
     }
 
-    if (!('__TAURI__' in window)) {
-      console.warn('Not the Tauri runtime environment.')
+    if (!isTauri()) {
+      console.warn('[LanguageDetector] Not the Tauri runtime environment.')
       return DefaultLanguage
     }
 
     let locale: string | null = null
     try {
-      locale = (await AppCommands.environment()).locale
+      locale = await readLocale()
     } catch (error) {
-      console.error('Failed to get locale:', error)
+      console.error('[LanguageDetector] Failed to get locale:', error)
     }
 
     return locale
@@ -33,8 +34,8 @@ export const LanguageDetectorModule: LanguageDetectorAsyncModule = {
       : DefaultLanguage
   },
   cacheUserLanguage (lng: string): void | Promise<void> {
-    console.debug('Cache user language:', lng)
-    window.localStorage.setItem(LanguageDetectorModuleLocalStorageKey, lng)
+    console.debug('[LanguageDetector] Cache user language:', lng)
+    localStorage.setItem(LanguageDetectorModuleLocalStorageKey, lng)
   },
 }
 
@@ -42,6 +43,10 @@ export const LanguageDetectorModule: LanguageDetectorAsyncModule = {
 // https://github.com/1Password/sys-locale/blob/main/src/windows.rs
 // https://learn.microsoft.com/windows/win32/api/winnls/nf-winnls-getuserpreferreduilanguages
 // https://en.wikipedia.org/wiki/Locale_(computer_software)#Specifics_for_Microsoft_platforms
+
+async function readLocale (): Promise<string> {
+  return 'zh-cn'
+}
 
 const KnownLanguageMappings = Object
   .entries(KnownLanguages)
@@ -74,11 +79,11 @@ function mappingLocale (locale: string): Language | undefined {
   })
 
   if (!mapping) {
-    console.warn(`Unsupported locale: ${locale}`)
+    console.warn(`[LanguageDetector] Unsupported locale: ${locale}`)
     return undefined
   } else {
     const [language] = mapping
-    console.debug(`Mapping locale: ${locale} -> ${language}`)
+    console.debug(`[LanguageDetector] Mapping locale: ${locale} -> ${language}`)
     return language
   }
 }

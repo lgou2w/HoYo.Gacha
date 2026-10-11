@@ -1,57 +1,49 @@
-use std::ops::Deref;
+use std::fmt;
 use std::path::{Path, PathBuf};
-use std::time::Instant;
-use std::{env, fmt};
+use std::sync::Arc;
 
+use deadpool::managed::PoolError;
+use deadpool_sync::InteractError;
+use rusqlite::{Connection, Error as RusqliteError};
 use snafu::{ResultExt, Snafu};
-use sqlx::sqlite::{SqliteConnectOptions, SqliteQueryResult};
-use sqlx::{Executor, SqlitePool};
-use tracing::{debug, info};
+use tracing::info;
 
 use crate::constants;
-use crate::error::ErrorDetails;
+use crate::error::DetailedError;
 
-pub mod legacy;
-pub mod migrations;
+mod connection;
+mod extends;
+mod macros;
+mod migrations;
 pub mod schemas;
 
+pub use extends::*;
+pub(crate) use macros::*;
+
 #[derive(Debug, Snafu)]
-#[snafu(visibility, display("{source}"))] // Display -> source
-pub struct DatabaseError {
-  pub(crate) source: sqlx::Error,
+#[snafu(context(suffix(false)))]
+pub enum DatabaseError {
+  #[snafu(display("{source}"))]
+  Pool { source: PoolError<RusqliteError> },
+
+  #[snafu(display("{source}"))]
+  Interact { source: InteractError },
+
+  #[snafu(display("{source}"))]
+  Sqlite { source: RusqliteError },
 }
 
-impl From<sqlx::Error> for DatabaseError {
-  fn from(value: sqlx::Error) -> Self {
-    Self { source: value }
-  }
-}
-
-impl ErrorDetails for DatabaseError {
+impl DetailedError for DatabaseError {
   fn name(&self) -> &'static str {
     stringify!(DatabaseError)
   }
-
-  fn details(&self) -> Option<serde_json::Value> {
-    let sqlx_database = self.source.as_database_error()?;
-    Some(serde_json::json!({
-      "code": sqlx_database.code(),
-      "kind": format_args!("{:?}", sqlx_database.kind()),
-    }))
-  }
 }
 
+pub type TauriDatabaseState<'r> = tauri::State<'r, Arc<Database>>;
+
+#[derive(Debug)]
 pub struct Database {
-  pub(crate) inner: SqlitePool,
-  pub filename: PathBuf,
-}
-
-impl Deref for Database {
-  type Target = SqlitePool;
-
-  fn deref(&self) -> &Self::Target {
-    &self.inner
-  }
+  pub(crate) pool: connection::ConnectionPool,
 }
 
 impl Database {
@@ -59,69 +51,53 @@ impl Database {
     // Database storage folder
     //   In debug mode  : is in the tauri folder
     //   In release mode: Current executable folder
-    let filename = if cfg!(debug_assertions) {
+    let path = if cfg!(debug_assertions) || cfg!(test) {
       PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(constants::DATABASE)
     } else {
       constants::EXE_WORKING_DIR.join(constants::DATABASE)
     };
 
-    Self::new_with(filename).await
+    Self::new_with(path).await
   }
 
   #[tracing::instrument]
-  pub async fn new_with<P: AsRef<Path> + fmt::Debug>(filename: P) -> Result<Self, DatabaseError> {
+  pub async fn new_with<P: AsRef<Path> + fmt::Debug>(path: P) -> Result<Self, DatabaseError> {
     info!("Connecting to database...");
 
-    let sqlite = SqlitePool::connect_with(
-      SqliteConnectOptions::new()
-        .filename(&filename)
-        .create_if_missing(true)
-        .read_only(false)
-        .immutable(false)
-        .shared_cache(false),
-    )
-    .await
-    .context(DatabaseSnafu)?;
-
     Ok(Self {
-      inner: sqlite,
-      filename: filename.as_ref().to_path_buf(),
+      pool: connection::create_pool(path.as_ref().to_path_buf()).await,
     })
   }
 
-  /// Initialize database and apply migrations
+  #[tracing::instrument(skip_all)]
+  pub fn close(&self) {
+    info!("Closing database...");
+    self.pool.close();
+  }
+
+  #[tracing::instrument(skip_all)]
+  pub async fn interact<F, R>(&self, f: F) -> Result<R, DatabaseError>
+  where
+    F: FnOnce(&mut Connection) -> Result<R, RusqliteError> + Send + 'static,
+    R: Send + 'static,
+  {
+    let conn = self.pool.get().await.context(Pool)?;
+    conn.interact(f).await.context(Interact)?.context(Sqlite)
+  }
+
+  // #[tracing::instrument(skip_all)]
+  // pub async fn interact_infallible<F, R>(&self, f: F) -> Result<R, DatabaseError>
+  // where
+  //   F: FnOnce(&mut Connection) -> R + Send + 'static,
+  //   R: Send + 'static,
+  // {
+  //   let conn = self.pool.get().await.context(Pool)?;
+  //   conn.interact(f).await.context(Interact)
+  // }
+
   #[inline]
-  #[tracing::instrument(skip(self))]
+  #[tracing::instrument(skip_all)]
   pub async fn apply_migrations(&self) -> Result<(), DatabaseError> {
     migrations::apply_migrations(self).await
-  }
-
-  #[tracing::instrument(skip(self))]
-  pub async fn close(&self) {
-    debug!("Closing database...");
-    self.inner.close().await
-  }
-}
-
-impl Database {
-  #[tracing::instrument(skip(self))]
-  pub async fn execute<Q: AsRef<str> + fmt::Debug>(
-    &self,
-    query: Q,
-  ) -> Result<SqliteQueryResult, DatabaseError> {
-    let start = Instant::now();
-    let ret = self
-      .inner
-      .execute(query.as_ref())
-      .await
-      .context(DatabaseSnafu);
-
-    debug!(
-      message = "Executed database query",
-      elapsed = ?start.elapsed(),
-      ?ret
-    );
-
-    ret
   }
 }

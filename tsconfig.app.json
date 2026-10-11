@@ -22,9 +22,10 @@
 
     /* User custom */
     // "baseUrl": "./", Option 'baseUrl' is deprecated and will stop functioning in TypeScript 7.0
+    "allowSyntheticDefaultImports": true,
     "paths": {
-      "@/*": ["./app/*"]
-    }
+      "@/*": ["./app/*"],
+    },
   },
   "include": ["app"],
   "exclude": ["node_modules"],

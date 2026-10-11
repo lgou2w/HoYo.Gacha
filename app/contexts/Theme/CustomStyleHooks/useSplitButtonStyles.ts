@@ -5,7 +5,7 @@ import { SplitButtonState, getSlotClassNameProp_unstable, makeStyles, mergeClass
 // This component reimplemented the Fluent UI rendering in order to override some of the default styles.
 // See:
 //  https://github.com/microsoft/fluentui/tree/master/packages/react-components/react-button/library/src/components/SplitButton
-//  https://react.fluentui.dev/?path=/docs/components-button-splitbutton--docs
+//  https://storybooks.fluentui.dev/react/?path=/docs/components-button-splitbutton--docs
 
 const useStyles = makeStyles({
   root: {

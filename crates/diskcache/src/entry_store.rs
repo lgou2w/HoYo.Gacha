@@ -64,6 +64,7 @@ impl EntryStore {
 }
 
 impl EntryStore {
+  #[inline]
   pub const fn has_long_key(&self) -> bool {
     self.long_key.is_initialized()
   }

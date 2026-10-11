@@ -1,26 +1,21 @@
 /// <reference types="vitest/config" />
+
 import path from 'node:path'
-import griffel from '@griffel/vite-plugin'
-import babel from '@rolldown/plugin-babel'
+import { createResolverFactory, griffel } from '@griffel/vite-plugin'
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
-import packageJson from './package.json'
+import packageJson from './package.json' with { type: 'json' }
 
-export default defineConfig ((env) => {
+// https://github.com/microsoft/griffel/issues/1106
+const griffelResolver = createResolverFactory()({
+  alias: {
+    '@/*': [path.resolve(import.meta.dirname, 'app')],
+  },
+})
+
+export default defineConfig((env) => {
   const isDev = env.command === 'serve'
   const isProd = env.command === 'build'
-  const isCicd = env.mode === 'cicd'
-
-  // Babel options for both griffel and @rollup/plugin-babel
-  const babelOptions = {
-    compact: false,
-    include: ['app\/**\/*.{ts,tsx}'],
-    exclude: ['**\/node_modules\/**'],
-    presets: [
-      '@babel/preset-typescript',
-      '@babel/preset-react',
-    ],
-  }
 
   return {
     test: {
@@ -34,21 +29,13 @@ export default defineConfig ((env) => {
       sourcemap: isDev,
     },
     plugins: [
-      isProd && griffel({
-        include: babelOptions.include,
-        exclude: babelOptions.exclude,
-        babelOptions: {
-          compact: babelOptions.compact,
-          presets: babelOptions.presets,
-        },
+      griffel({
+        include: ['app\/**\/*.{ts,tsx}'],
+        resolverFactory: () => griffelResolver,
       }),
       react(),
-      babel({
-        ...babelOptions,
-      }),
     ],
     define: {
-      __CICD__: `${isCicd}`,
       __APP_NAME__: `"${packageJson.displayName}"`,
       __APP_VERSION__: `"${packageJson.version}"`,
       __APP_DESCRIPTION__: `"${packageJson.description}"`,
@@ -58,16 +45,13 @@ export default defineConfig ((env) => {
       __APP_ISSUES__: `"${packageJson.bugs}"`,
     },
     resolve: {
+      tsconfigPaths: true,
       extensions: ['.js', '.jsx', '.ts', '.tsx'],
       alias: {
-        '@': path.resolve(__dirname, 'app'),
+        '@/*': path.resolve(import.meta.dirname, 'app'),
       },
     },
-    // Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`
-    //
-    // 1. prevent Vite from obscuring rust errors
     clearScreen: false,
-    // 2. tauri expects a fixed port, fail if that port is not available
     server: {
       port: 1420,
       strictPort: true,
@@ -76,8 +60,11 @@ export default defineConfig ((env) => {
         port: 1421,
       },
       watch: {
-        // 3. tell Vite to ignore watching `src-tauri`
-        ignored: ['**/tauri/**'],
+        ignored: [
+          '**/node_modules/**',
+          '**/target/**',
+          '**/tauri/**',
+        ],
       },
     },
   }

@@ -1,19 +1,12 @@
-mod context;
-mod environment;
-mod handlers;
-mod panic_hook;
-mod state;
-mod tauri;
-mod tracing;
-
-pub(crate) use tauri::prelude::*;
-
-#[cfg(test)]
-pub(crate) use tracing::init_tracing;
-
+use crate::bootstrap::context::Context;
 use crate::constants;
 
-// Bootstrap the application
+mod context;
+mod tauri;
+mod tracing;
+mod window_state;
+
+/// Bootstrap application
 pub async fn start() -> ! {
   hg_ffi::attach_console();
 
@@ -36,10 +29,7 @@ pub async fn start() -> ! {
     homepage = constants::HOMEPAGE,
   );
 
-  // Install panic hook
-  panic_hook::install();
-
   // Create application context and run Tauri
-  let context = context::Context::new().await;
-  tauri::run(context).await;
+  let context = Context::new().await;
+  tauri::run(context).await
 }

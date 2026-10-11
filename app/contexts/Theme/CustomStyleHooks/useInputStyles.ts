@@ -5,7 +5,7 @@ import { InputState, getSlotClassNameProp_unstable, makeStyles, mergeClasses } f
 // This component reimplemented the Fluent UI rendering in order to override some of the default styles.
 // See:
 //  https://github.com/microsoft/fluentui/tree/master/packages/react-components/react-input/library/src/components/Input
-//  https://react.fluentui.dev/?path=/docs/components-input--docs
+//  https://storybooks.fluentui.dev/react/?path=/docs/components-input--docs
 
 const useStyles = makeStyles({
   small: {

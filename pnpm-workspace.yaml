@@ -1,3 +1,7 @@
 allowBuilds:
-  esbuild: true
   unrs-resolver: true
+
+overrides:
+  # Do not upgrade; this will cause...
+  # Keyborg instance k1 is being disposed incorrectly.
+  "tabster": "8.8.0"

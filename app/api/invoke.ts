@@ -1,10 +1,11 @@
-import { invoke as _ } from '@tauri-apps/api/core'
+import { invoke as n } from '@tauri-apps/api/core'
+
+const invoke: typeof n = import.meta.env.PROD
+  ? n
+  : (...rest) => {
+      console.debug('Invoke Tauri:', ...rest)
+      return n(...rest)
+    }
 
 export type { InvokeArgs, InvokeOptions } from '@tauri-apps/api/core'
-
-const invoke: typeof _ = function invoke (...rest) {
-  console.debug('Invoke tauri:', ...rest) // For trace
-  return _(...rest)
-}
-
 export default invoke

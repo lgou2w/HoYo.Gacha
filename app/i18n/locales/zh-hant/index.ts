@@ -1,9 +1,7 @@
-import Common from './Common.json'
-import Error from './Error.json'
-import GachaPage from './GachaPage.json'
-import HomePage from './HomePage.json'
-import RootPage from './RootPage.json'
-import SettingsPage from './SettingsPage.json'
+import Common from './Common.json' with { type: 'json' }
+import GachaPage from './GachaPage.json' with { type: 'json' }
+import HomePage from './HomePage.json' with { type: 'json' }
+import RootPage from './RootPage.json' with { type: 'json' }
 
 export default {
   code: 'zh-Hant',
@@ -14,9 +12,7 @@ export default {
     gacha: 'zh-tw',
   },
   Common,
-  Error,
   GachaPage,
   HomePage,
   RootPage,
-  SettingsPage,
 } as const

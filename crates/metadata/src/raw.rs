@@ -1,8 +1,6 @@
 use std::collections::{HashMap, HashSet};
 
-use serde::Deserialize;
 use time::OffsetDateTime;
-use time::serde::rfc3339;
 
 // Raw JSON Schema (PascalCase)
 //
@@ -12,13 +10,13 @@ use time::serde::rfc3339;
 //     Categories: [
 //       {
 //         Category: String,     // Category
-//         Entries: [            // Entries
+//         Items: [              // Items
 //           [u32, u8]           // Item id : Rank type
 //         ],
 //         I18n: {
 //           [String]: {         // Locale
 //             Category: String, // Category local name
-//             Entries: [String] // The count and index correspond one-to-one with the Entries
+//             Items: [String]   // The count and index correspond one-to-one with the Items
 //           }
 //         }
 //       }
@@ -37,90 +35,87 @@ use time::serde::rfc3339;
 // ]
 //
 
-#[derive(Debug, Deserialize)]
-#[serde(transparent)]
-pub struct RawMetadata(Vec<RawMetadataBusiness>);
+#[derive(Debug)]
+#[cfg_attr(feature = "json", derive(serde::Deserialize), serde(transparent))]
+pub struct RawMetadata(Vec<RawBusiness>);
 
 impl RawMetadata {
-  /// 'Genshin Impact'
-  pub const BUSINESS_HK4E: u8 = 0;
-  /// 'Honkai: Star Rail'
-  pub const BUSINESS_HKRPG: u8 = 1;
-  /// 'Zenless Zone Zero'
-  pub const BUSINESS_NAP: u8 = 2;
-  /// 'Genshin Impact: Miliastra Wonderland'
-  pub const BUSINESS_BEYOND: u8 = 3;
-
   #[inline]
-  pub fn into_inner(self) -> Vec<RawMetadataBusiness> {
+  pub fn into_inner(self) -> Vec<RawBusiness> {
     self.0
   }
 }
 
-impl AsRef<Vec<RawMetadataBusiness>> for RawMetadata {
-  fn as_ref(&self) -> &Vec<RawMetadataBusiness> {
+impl AsRef<[RawBusiness]> for RawMetadata {
+  #[inline]
+  fn as_ref(&self) -> &[RawBusiness] {
     &self.0
   }
 }
 
-impl From<Vec<RawMetadataBusiness>> for RawMetadata {
-  fn from(value: Vec<RawMetadataBusiness>) -> Self {
+impl From<Vec<RawBusiness>> for RawMetadata {
+  #[inline]
+  fn from(value: Vec<RawBusiness>) -> Self {
     Self(value)
   }
 }
 
-#[derive(Debug, Deserialize)]
-#[serde(rename_all = "PascalCase")]
-pub struct RawMetadataBusiness {
+#[derive(Debug)]
+#[cfg_attr(
+  feature = "json",
+  derive(serde::Deserialize),
+  serde(rename_all = "PascalCase")
+)]
+pub struct RawBusiness {
   pub id: u8,
-  pub categories: Vec<RawMetadataCategorization>,
-  pub banners: Vec<RawMetadataBanner>,
+  pub categories: Vec<RawCategory>,
+  pub banners: Vec<RawBanner>,
 }
 
-#[derive(Debug, Deserialize)]
-#[serde(rename_all = "PascalCase")]
-pub struct RawMetadataCategorization {
-  pub category: String,                       // category
-  pub entries: Vec<(u32, u8)>,                // (item_id, rank_type)
-  pub i18n: HashMap<String, RawMetadataI18n>, // (locale: i18n)
+#[derive(Debug)]
+#[cfg_attr(
+  feature = "json",
+  derive(serde::Deserialize),
+  serde(rename_all = "PascalCase")
+)]
+pub struct RawCategory {
+  /// Category key (e.g. `Character`, `Weapon`).
+  pub category: String,
+  /// `(item_id, rank_type)` pairs.
+  #[cfg_attr(feature = "json", serde(alias = "Entries"))] // For Legacy
+  pub items: Vec<(u32, u8)>,
+  /// `locale` → localized names.
+  pub i18n: HashMap<String, RawLocale>,
 }
 
-#[derive(Debug, Deserialize)]
-#[serde(rename_all = "PascalCase")]
-pub struct RawMetadataI18n {
-  pub category: String,     // category local name
-  pub entries: Vec<String>, // entries name
+#[derive(Debug)]
+#[cfg_attr(
+  feature = "json",
+  derive(serde::Deserialize),
+  serde(rename_all = "PascalCase")
+)]
+pub struct RawLocale {
+  /// Localized category name.
+  pub category: String,
+  /// Localized item names. Index-aligned with `RawCategory::items`.
+  #[cfg_attr(feature = "json", serde(alias = "Entries"))] // For Legacy
+  pub items: Vec<String>,
 }
 
-#[derive(Debug, Deserialize)]
-#[serde(rename_all = "PascalCase")]
-pub struct RawMetadataBanner {
+#[derive(Debug)]
+#[cfg_attr(
+  feature = "json",
+  derive(serde::Deserialize),
+  serde(rename_all = "PascalCase")
+)]
+pub struct RawBanner {
   pub gacha_type: u32,
   //pub gacha_id: Option<u32>, // 'Honkai: Star Rail' only // Deprecated since v1.2.0
-  #[serde(with = "rfc3339")]
+  #[cfg_attr(feature = "json", serde(with = "time::serde::rfc3339"))]
   pub start_time: OffsetDateTime,
-  #[serde(with = "rfc3339")]
+  #[cfg_attr(feature = "json", serde(with = "time::serde::rfc3339"))]
   pub end_time: OffsetDateTime,
   pub up_golden: HashSet<u32>,
   pub up_purple: HashSet<u32>,
   pub version: Option<String>,
-}
-
-#[cfg(feature = "json")]
-impl RawMetadata {
-  #[inline]
-  pub fn from_slice(bytes: &[u8]) -> serde_json::Result<Self> {
-    serde_json::from_slice(bytes)
-  }
-
-  #[allow(clippy::should_implement_trait)]
-  #[inline]
-  pub fn from_str(s: &str) -> serde_json::Result<Self> {
-    serde_json::from_str(s)
-  }
-
-  #[inline]
-  pub fn from_reader<R: std::io::Read>(rdr: R) -> serde_json::Result<Self> {
-    serde_json::from_reader(rdr)
-  }
 }

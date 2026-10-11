@@ -1,153 +1,84 @@
 {
   "GenshinImpact": {
     "Name": "Genshin Impact",
-    "Player": {
-      "Name": "Traveler",
-      "Girl": "Lumine",
-      "Boy": "Aether"
-    },
-    "Currency": {
-      "Name01": "Primogem",
-      "Name02": "Genesis Crystal"
-    },
+    "Player": "Traveler",
     "Gacha": {
       "Name": "Wish",
-      "Ticket01": "Acquaint Fate",
-      "Ticket02": "Intertwined Fate",
-      "Category": {
+      "Banner": {
         "Beginner": "Novice Wish",
-        "Beginner_simplicity": "Novice",
+        "Beginner_short": "Novice",
         "Beginner_title": "Beginners' Wish",
         "Permanent": "Standard Wish",
-        "Permanent_simplicity": "Standard",
+        "Permanent_short": "Standard",
         "Permanent_title": "Wanderlust Invocation",
         "Character": "Character Event Wish",
-        "Character_simplicity": "Character Event",
+        "Character_short": "Character Event",
         "Weapon": "Weapon Event Wish",
-        "Weapon_simplicity": "Weapon Event",
+        "Weapon_short": "Weapon Event",
         "Weapon_title": "Epitome Invocation",
         "Chronicled": "Chronicled Wish",
-        "Chronicled_simplicity": "Chronicled",
+        "Chronicled_short": "Chronicled",
         "Lightrace": "Lightrace Wish",
-        "Lightrace_simplicity": "Lightrace",
+        "Lightrace_short": "Lightrace",
         "ChronicledAndLightrace": "Chronicled & Lightrace Wish",
-        "ChronicledAndLightrace_simplicity": "Chronicled & Lightrace",
-        "Aggregated": "Aggregated"
-      },
-      "Ranking": {
-        "Golden": "5★",
-        "Purple": "4★",
-        "Blue": "3★"
+        "ChronicledAndLightrace_short": "Chronicled & Lightrace"
       }
-    },
-    "DataFolder": "X:/Genshin Impact/Genshin Impact Game/GenshinImpact_Data"
+    }
   },
   "MiliastraWonderland": {
     "Name": "Genshin Impact: Miliastra Wonderland",
-    "Player": {
-      "Name": "$t(GenshinImpact.Player.Name)"
-    },
-    "Currency": {
-      "Name02": "Chronal Nexus"
-    },
+    "Player": "Traveler",
     "Gacha": {
       "Name": "Ode",
-      "Ticket01": "Geode of Replication",
-      "Ticket02": "Arcane Keystone",
-      "Category": {
+      "Banner": {
         "PermanentOde": "Standard Ode",
         "PermanentOde_title": "Encounter Echoes",
-        "EventOde": "Event Ode",
-        "Aggregated": "Aggregated"
-      },
-      "Ranking": {
-        "Golden": "Legendary (5-Star)",
-        "Purple": "Elite (4-Star)",
-        "Blue": "Exceptional (3-Star)",
-        "Green": "Excellent (2-Star)"
+        "EventOde": "Event Ode"
       }
-    },
-    "DataFolder": "$t(Common:GenshinImpact.DataFolder)"
+    }
   },
   "HonkaiStarRail": {
     "Name": "Honkai: Star Rail",
-    "Player": {
-      "Name": "Trailblazer",
-      "Girl": "Stelle",
-      "Boy": "Caelus"
-    },
-    "Currency": {
-      "Name01": "Stellar Jade",
-      "Name02": "Oneiric Shard"
-    },
+    "Player": "Trailblazer",
     "Gacha": {
       "Name": "Wrap",
-      "Ticket01": "Star Rail Pass",
-      "Ticket02": "Star Rail Special Pass",
-      "Category": {
+      "Banner": {
         "Beginner": "Starter Warp",
-        "Beginner_simplicity": "Starter",
+        "Beginner_short": "Starter",
         "Beginner_title": "Departure Warp",
         "Permanent": "Regular Warp",
-        "Permanent_simplicity": "Regular",
+        "Permanent_short": "Regular",
         "Permanent_title": "Stellar Warp",
         "Character": "Character Event Wrap",
-        "Character_simplicity": "Character Event",
+        "Character_short": "Character Event",
         "Weapon": "Light Cone Event Warp",
-        "Weapon_simplicity": "Light Cone Event",
-        "CollaborationCharacter": "Character Collaboration Warp",
-        "CollaborationCharacter_simplicity": "Character Collaboration",
-        "CollaborationWeapon": "Light Cone Collaboration Warp",
-        "CollaborationWeapon_simplicity": "Light Cone Collaboration",
-        "Aggregated": "Aggregated"
-      },
-      "Ranking": {
-        "Golden": "5★",
-        "Purple": "4★",
-        "Blue": "3★"
+        "Weapon_short": "Light Cone Event",
+        "CollabCharacter": "Character Collab Warp",
+        "CollabCharacter_short": "Character Collab",
+        "CollabWeapon": "Light Cone Collab Warp",
+        "CollabWeapon_short": "Light Cone Collab"
       }
-    },
-    "DataFolder": "X:/Star Rail/Game/StarRail_Data"
+    }
   },
   "ZenlessZoneZero": {
     "Name": "Zenless Zone Zero",
-    "Player": {
-      "Name": "Proxy",
-      "Girl": "Belle",
-      "Boy": "Wise"
-    },
-    "Currency": {
-      "Name01": "Polychrome",
-      "Name02": "Monochrome"
-    },
+    "Player": "Proxy",
     "Gacha": {
       "Name": "Signal Search",
-      "Ticket01": "Master Tape",
-      "Ticket02": "Encrypted Master Tape",
-      "Ticket03": "Boopon",
-      "Category": {
+      "Banner": {
         "Permanent": "Stable Channel",
-        "Permanent_simplicity": "Stable",
+        "Permanent_short": "Stable",
         "Permanent_title": "Star-Studded Cast",
         "Character": "Exclusive Channel",
-        "Character_simplicity": "Exclusive",
+        "Character_short": "Exclusive",
         "Weapon": "W-Engine Channel",
-        "Weapon_simplicity": "W-Engine",
+        "Weapon_short": "W-Engine",
         "Bangboo": "Bangboo Channel",
-        "Bangboo_simplicity": "Bangboo",
+        "Bangboo_short": "Bangboo",
         "Bangboo_title": "An Outstanding Partner",
         "ExclusiveRescreening": "Exclusive Rescreening",
-        "WEngineReverberation": "W-Engine Reverberation",
-        "Aggregated": "Aggregated",
-        "Aggregated_tooltip": "(Excluding Bangboo Channel)",
-        "Aggregated_tooltip_simplicity": "(Excluding Bangboo)"
-      },
-      "Ranking": {
-        "Golden": "S-Rank",
-        "Purple": "A-Rank",
-        "Blue": "B-Rank"
+        "WEngineReverberation": "W-Engine Reverberation"
       }
-    },
-    "DataFolder": "X:/ZenlessZoneZero Game/ZenlessZoneZero_Data"
+    }
   }
 }

@@ -5,7 +5,7 @@ import { TooltipState, getSlotClassNameProp_unstable, makeStyles, mergeClasses }
 // This component reimplemented the Fluent UI rendering in order to override some of the default styles.
 // See:
 //  https://github.com/microsoft/fluentui/tree/master/packages/react-components/react-tooltip/library/src/components/Tooltip
-//  https://react.fluentui.dev/?path=/docs/components-tooltip--docs
+//  https://storybooks.fluentui.dev/react/?path=/docs/components-tooltip--docs
 
 const useStyles = makeStyles({
   root: {

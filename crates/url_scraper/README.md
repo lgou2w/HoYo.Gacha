@@ -1,3 +1,0 @@
-# Gacha Url Scraper
-
-TODO

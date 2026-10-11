@@ -2,18 +2,16 @@ use std::env;
 use std::error::Error as StdError;
 use std::sync::Arc;
 
-use tauri::ipc::Invoke;
 use tauri::webview::WebviewWindowBuilder;
-use tauri::{App, Builder as TauriBuilder, Manager, Theme, WebviewUrl, Window, WindowEvent, Wry};
-use tauri::{generate_context, generate_handler};
+use tauri::{
+  App, Builder as TauriBuilder, Manager, Theme, WebviewUrl, Window, WindowEvent, generate_context,
+  generate_handler,
+};
 use tracing::{debug, error, info};
 
 use crate::bootstrap::context::Context;
-use crate::bootstrap::environment::Environment;
-use crate::bootstrap::state::{AppState, WindowState};
-use crate::business::metadata::Metadata;
+use crate::bootstrap::window_state::WindowState;
 use crate::constants;
-use crate::database::Database;
 
 // Main window configuration
 const MAIN_WINDOW_LABEL: &str = "main";
@@ -26,27 +24,16 @@ const MAIN_WINDOW_FULLSCREEN: bool = false;
 const MAIN_WINDOW_RESIZABLE: bool = true;
 const MAIN_WINDOW_DECORATIONS: bool = false;
 
-// KeyPairs
-const KEY_THEME_DATA: &str = "HG_THEME_DATA";
-
-// Events
-const EVENT_THEME_CHANGED: &str = "HG_THEME_CHANGED";
-
-// Tauri application lifecycle
+/// Tauri application lifecycle
 pub async fn run(context: Context) -> ! {
   info!("Running Tauri application...");
+  tauri::async_runtime::set(tokio::runtime::Handle::current());
 
   // Wrap the context in an Arc for shared ownership
   let context = Arc::new(context);
 
-  // Set the async runtime handle for Tauri
-  tauri::async_runtime::set(tokio::runtime::Handle::current());
-
-  // Load and evaluate the theme data
-  let color_scheme = load_and_evaluate_theme(&context).await;
-
-  // Load and evaluate the window state
-  let window_state = context.state.load_and_evaluate_window_state();
+  // Load color scheme
+  let color_scheme = context.load_color_scheme().await;
 
   // Build and run the Tauri application
   let exit_code = {
@@ -54,55 +41,38 @@ pub async fn run(context: Context) -> ! {
 
     let context_cloned = Arc::clone(&context);
     let app = TauriBuilder::default()
-      .plugin(tauri_plugin_clipboard_manager::init())
-      .plugin(tauri_plugin_process::init())
-      .plugin(tauri_plugin_shell::init())
-      .setup(move |app| setup(app, context_cloned, color_scheme, window_state))
+      .setup(move|app| setup(app, context_cloned, color_scheme))
       .on_window_event(on_window_event)
-      .invoke_handler(command_handlers())
+      .invoke_handler(generate_handler![
+        // KValue
+        crate::database::schemas::kvalue_handlers::database_find_kvalue,
+        crate::database::schemas::kvalue_handlers::database_create_kvalue,
+        crate::database::schemas::kvalue_handlers::database_update_kvalue,
+        crate::database::schemas::kvalue_handlers::database_upsert_kvalue,
+        crate::database::schemas::kvalue_handlers::database_delete_kvalue,
+        // Account
+        crate::database::schemas::account_handlers::database_find_accounts,
+        crate::database::schemas::account_handlers::database_find_account,
+        crate::database::schemas::account_handlers::database_create_account,
+        crate::database::schemas::account_handlers::database_update_account_data_folder,
+        crate::database::schemas::account_handlers::database_update_account_properties,
+        crate::database::schemas::account_handlers::database_update_account_data_folder_and_properties,
+        crate::database::schemas::account_handlers::database_delete_account,
+        // GachaRecord
+        crate::database::schemas::gacha_record_handlers::database_find_gacha_records,
+        crate::database::schemas::gacha_record_handlers::database_find_gacha_records_with_limit,
+        crate::database::schemas::gacha_record_handlers::database_delete_gacha_records,
+        crate::database::schemas::gacha_record_handlers::database_delete_gacha_records_with_newer_than_end_id,
+        // Business
+        crate::business::handlers::business_resolve_image,
+        crate::business::handlers::business_analyze_records,
+      ])
       .build(generate_context!())
       .expect("error while building Tauri application");
 
-    // Initialize AppsUseThemeMonitor
-    #[cfg(windows)]
-    let monitor = {
-      info!("Initializing AppsUseThemeMonitor...");
-
-      let app_handle_cloned = app.handle().clone(); // Internal arc
-      let app_state_cloned = Arc::clone(&context.state);
-      hg_ffi::AppsUseThemeMonitor::new(move |result| match result {
-        Err(err) => error!(message = "Error in monitoring AppsUseTheme", ?err),
-        Ok(theme) => {
-          // Apply the new theme to the main window
-          // Only if the app state is set to follow system theme
-          // Also emit an event to notify the frontend
-          if let Some(window) = app_handle_cloned.get_webview_window(MAIN_WINDOW_LABEL)
-            && app_state_cloned.is_follow_system_theme()
-          {
-            use tauri::Emitter;
-            info!(message = "Detected system theme change", ?theme);
-            let _ = hg_ffi::apply_window_color_scheme(&window, theme);
-            let _ = window.emit(EVENT_THEME_CHANGED, theme);
-          }
-        }
-      })
-      .inspect_err(|err| {
-        error!(message = "Failed to initialize AppsUseThemeMonitor", ?err);
-      })
-    };
-
     // Wait for it to exit
     debug!("Starting Tauri application...");
-    let exit_code = app.run_return(|_, _| {});
-
-    // Stop the monitor when the app exits
-    #[cfg(windows)]
-    if let Ok(monitor) = monitor {
-      monitor.stop();
-    };
-
-    // Return the exit code
-    exit_code
+    app.run_return(|_, _| ())
   };
 
   // Close the context and exit the process
@@ -118,20 +88,19 @@ pub async fn run(context: Context) -> ! {
 fn setup(
   app: &mut App,
   context: Arc<Context>,
-  color_scheme: Theme,
-  window_state: Option<WindowState>,
+  color_scheme: Option<Theme>,
 ) -> Result<(), Box<dyn StdError + 'static>> {
   debug!("Setting up Tauri application...");
 
-  // Shared to Tauri state
-  let has_window_state = window_state.is_some();
-  let window_state = window_state.unwrap_or_default();
-  app.manage(Arc::clone(&context.environment));
+  // Load window state
+  let (has_window_state, window_state) = context.load_window_state();
+
+  // Shared context states
   app.manage(Arc::clone(&context.metadata));
   app.manage(Arc::clone(&context.database));
-  app.manage(Arc::clone(&context.state));
-  app.manage(window_state.clone());
+  app.manage(window_state.clone()); // Because it's Arc
 
+  // Create main window
   let window = WebviewWindowBuilder::new(
     app,
     MAIN_WINDOW_LABEL,
@@ -144,38 +113,86 @@ fn setup(
   .resizable(MAIN_WINDOW_RESIZABLE)
   .decorations(MAIN_WINDOW_DECORATIONS)
   .transparent(!MAIN_WINDOW_DECORATIONS)
-  .theme(Some(color_scheme))
+  .theme(color_scheme)
   .visible(false) // Later shown when ready
   .center()
   .build()?;
 
-  // Store the window handle in the context
-  #[cfg(windows)]
-  {
-    let hwnd = window.hwnd()?;
-    info!(message = "Main window created", ?hwnd);
-    hg_ffi::set_current_window_hwnd(hwnd.0 as _);
-    context.environment.hwnd.set(hwnd.0 as _).unwrap();
-  }
+  hg_ffi::on_tauri_setup(app, &window)?;
 
-  // Store the WebView2 version in the context
-  #[cfg(windows)]
-  {
-    let context_cloned = Arc::clone(&context);
-    window.with_webview(move |webview| {
-      if let Ok(Ok(value)) = hg_ffi::webview_version(&webview) {
-        info!("WebView2 version: {value:?}");
-        context_cloned
-          .environment
-          .webview_version
-          .set(value)
-          .unwrap();
-      }
-    })?;
-  }
-
-  // Apply window color scheme
-  hg_ffi::apply_window_color_scheme(&window, color_scheme)?;
+  // ---------------------------------------------------------------------------
+  // Windows: force a frame recalculation BEFORE applying the saved geometry.
+  // ---------------------------------------------------------------------------
+  //
+  // ## Symptom
+  //
+  // On Windows, with `decorations(false)` + `transparent(true)` + `effects(Mica)`
+  // (or any similar combination that keeps a `WS_THICKFRAME`-like style), the
+  // main window's client area grows by roughly one title-bar height (~30px at
+  // 100% DPI, ~56px at 200% DPI) on EVERY launch when the window state is
+  // restored by `WindowState::intersects` / `update`.
+  //
+  // The saved value in `WindowState.json` is incremented by that delta each
+  // session, so the window drifts larger and larger:
+  //
+  //     Loaded:  height = 1067
+  //     update:  inner  = 1097 (already +30)
+  //     next:    height = 1097 → inner = 1127 (+30 again)
+  //
+  // ## Root cause
+  //
+  // `tao` (Tauri's winit fork) caches the "window rect → client rect" offset
+  // derived from the frame styles at creation time. When the window is
+  // created with `visible(false)`, `WM_NCCALCSIZE` is not (re)emitted with
+  // the final style, so the cached offset reflects the *initial* frame
+  // instead of the decorated/undecorated one. Later, `tao`'s `set_inner_size`
+  // compensates using that stale offset, and the error is written back into
+  // our persisted state via the `Resized` event handler.
+  //
+  // Verified against:
+  //   * Tauri 2.12.x  — the regression was introduced here.
+  //   * Tauri 2.11.6  — last known-good release (this is what we pinned).
+  //
+  // ## Fix
+  //
+  // Send `SetWindowPos` with `SWP_FRAMECHANGED` while the window is still
+  // hidden. Windows re-emits `WM_NCCALCSIZE`, `tao` updates its cached
+  // offset, and subsequent `set_size` calls land on the correct client area.
+  // The flags `SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE` keep
+  // the window untouched apart from the frame recalculation.
+  //
+  // This must run BEFORE the first `intersects()` / `update()` call, i.e.
+  // before any `set_size`, so that the corrected offset is in place by the
+  // time the saved geometry is applied.
+  //
+  // ## When to remove this
+  //
+  // Fixed upstream in tao 0.37.2:
+  //
+  //   * https://github.com/tauri-apps/tao/pull/1361
+  //     "fix(windows): keep hidden window client sizes consistent (fix #1359)"
+  //     Released as part of tao 0.37.2 (PR #1357):
+  //     https://github.com/tauri-apps/tao/pull/1357
+  //
+  // Once Tauri depends on tao >= 0.37.2, this workaround becomes a no-op and
+  // can be deleted together with `force_frame_recalculation`. Track:
+  //
+  //   * https://github.com/tauri-apps/tao/issues       — WM_NCCALCSIZE
+  //   * https://github.com/tauri-apps/tauri/issues     — "window grows on launch"
+  //   * https://github.com/tauri-apps/plugins-workspace/issues/2717
+  //     ("window-state plugin records bogus width/height values")
+  //
+  // Downstream fixes documenting the same root cause:
+  //
+  //   * https://github.com/readest/readest/pull/6546
+  //     "fix(windows): stop the main window from growing on every launch"
+  //
+  // SAFETY: `force_frame_recalculation` only touches the HWND of the current
+  // window, and only with flags that tell the OS to recompute the frame.
+  // It does not move, resize, reorder, or activate the window.
+  // ---------------------------------------------------------------------------
+  hg_ffi::force_frame_recalculation(&window);
+  //
 
   // Open devtools in debug or when specifying environment variable
   let devtools = cfg!(debug_assertions) || env::var(constants::ENV_DEVTOOLS).is_ok();
@@ -184,24 +201,40 @@ fn setup(
     window.open_devtools();
   }
 
-  // Set WebView2 specific settings if on Windows
   #[cfg(windows)]
-  window.with_webview(move |webview| {
-    // Set WebView2 accelerator keys
-    if let Err(err) = hg_ffi::set_webview_accelerator_keys_enabled(&webview, devtools) {
-      error!(message = "Failed to set webview accelerator keys", ?err);
-    }
+  {
+    let context_cloned = Arc::clone(&context);
+    window.with_webview(move |webview| {
+      // Store the WebView2 version in the context
+      if let Ok(Ok(value)) = hg_ffi::webview::version(&webview) {
+        info!("Webview2 version: {value:?}");
+        let _ = context_cloned.webview_version.set(value);
+      }
 
-    // Set WebView2 default context menus
-    if let Err(err) = hg_ffi::set_webview_default_context_menus_enabled(&webview, devtools) {
-      error!(
-        message = "Failed to set webview default context menus",
-        ?err
-      );
-    }
-  })?;
+      // Set WebView2 accelerator keys
+      if let Err(err) = hg_ffi::webview::set_accelerator_keys_enabled(&webview, devtools) {
+        error!(message = "Failed to set webview accelerator keys", ?err);
+      }
 
-  // Intersect the window state if it exists, otherwise update it with the current window state
+      // Set WebView2 default context menus
+      if let Err(err) = hg_ffi::webview::set_default_context_menus_enabled(&webview, devtools) {
+        error!(
+          message = "Failed to set webview default context menus",
+          ?err
+        );
+      }
+    })?;
+  }
+
+  #[cfg(windows)]
+  window.set_effects(
+    tauri::window::EffectsBuilder::new()
+      .effect(tauri::window::Effect::Mica)
+      .build(),
+  )?;
+
+  // Intersect the window state if it success,
+  // otherwise update it with the current window state
   if has_window_state {
     window_state.intersects(&window)?;
   } else {
@@ -233,135 +266,11 @@ fn on_window_event(window: &Window, event: &WindowEvent) {
       }
     }
     WindowEvent::Moved(position) => {
-      window.state::<WindowState>().r#move(position);
+      window.state::<WindowState>().moving(position);
     }
     WindowEvent::Resized(size) => {
-      window.state::<WindowState>().resized(window, size);
+      window.state::<WindowState>().resizing(window, size);
     }
     _ => {}
-  }
-}
-
-// Expose Tauri command handlers
-fn command_handlers() -> Box<dyn Fn(Invoke<Wry>) -> bool + Send + Sync + 'static> {
-  Box::new(generate_handler![
-    // App
-    #[cfg(debug_assertions)]
-    crate::bootstrap::handlers::panic,
-    crate::bootstrap::handlers::environment,
-    crate::bootstrap::handlers::change_color_scheme,
-    crate::bootstrap::handlers::create_app_lnk,
-    crate::bootstrap::handlers::system_fonts,
-    crate::bootstrap::handlers::open_database_folder,
-    crate::bootstrap::handlers::pick_file,
-    crate::bootstrap::handlers::pick_folder,
-    // Updater
-    crate::updater::updater_is_updating,
-    crate::updater::updater_update,
-    crate::updater::updater_update_abort,
-    crate::updater::updater_latest_release,
-    // KeyValuePair
-    crate::database::schemas::key_value_pair_handlers::database_find_kv_pair,
-    crate::database::schemas::key_value_pair_handlers::database_create_kv_pair,
-    crate::database::schemas::key_value_pair_handlers::database_update_kv_pair,
-    crate::database::schemas::key_value_pair_handlers::database_upsert_kv_pair,
-    crate::database::schemas::key_value_pair_handlers::database_delete_kv_pair,
-    // Account
-    crate::database::schemas::account_handlers::database_find_accounts,
-    crate::database::schemas::account_handlers::database_find_account,
-    crate::database::schemas::account_handlers::database_create_account,
-    crate::database::schemas::account_handlers::database_update_account_data_folder,
-    crate::database::schemas::account_handlers::database_update_account_properties,
-    crate::database::schemas::account_handlers::database_update_account_data_folder_and_properties,
-    crate::database::schemas::account_handlers::database_delete_account,
-    // GachaRecord
-    crate::database::schemas::gacha_record_handlers::database_find_gacha_records_with_limit,
-    crate::database::schemas::gacha_record_handlers::database_delete_gacha_records,
-    // Business
-    crate::business::handlers::metadata_hash,
-    crate::business::handlers::metadata_locales,
-    crate::business::handlers::metadata_entries,
-    crate::business::handlers::metadata_is_updating,
-    crate::business::handlers::metadata_update,
-    crate::business::handlers::business_validate_uid,
-    crate::business::handlers::business_locate_data_folder,
-    crate::business::handlers::business_from_webcaches_gacha_url,
-    crate::business::handlers::business_from_dirty_gacha_url,
-    crate::business::handlers::business_resolve_image_mime,
-    crate::business::handlers::business_resolve_image,
-    crate::business::handlers::business_pretty_records,
-    crate::business::handlers::business_fetch_records,
-    crate::business::handlers::business_legacy_migration,
-    crate::business::handlers::business_export_records,
-    crate::business::handlers::business_import_records,
-  ])
-}
-
-// Load and evaluate the theme from the database
-#[tracing::instrument(skip(context))]
-async fn load_and_evaluate_theme(context: &Arc<Context>) -> Theme {
-  use crate::database::schemas::{KeyValuePair, KeyValuePairQuestioner};
-  use serde::Deserialize;
-
-  #[derive(Debug, Deserialize)]
-  #[serde(rename_all = "camelCase")]
-  #[allow(unused)]
-  struct ThemeData {
-    namespace: String,
-    color_scheme: Option<Theme>,
-    scale: Option<u32>,
-    font: Option<String>,
-  }
-
-  let mut theme: Option<Theme> = None;
-  if let Some(KeyValuePair { val, .. }) = context
-    .database
-    .find_kv_pair(KEY_THEME_DATA)
-    .await
-    .inspect_err(|err| error!(message = "Failed to load theme data from database", ?err))
-    .ok()
-    .flatten()
-  {
-    match serde_json::from_str::<ThemeData>(&val) {
-      Err(err) => {
-        error!(message = "Failed to deserialize theme data", ?err);
-        let _ = context.database.delete_kv_pair(KEY_THEME_DATA).await; // Delete corrupted data
-      }
-      Ok(data) => {
-        info!(message = "Loaded theme data from database", ?data);
-        theme = data.color_scheme;
-      }
-    }
-  }
-
-  prelude::resolve_theme_or_system(&context.state, theme)
-}
-
-// prelude
-pub mod prelude {
-  use tauri::State;
-
-  use super::*;
-
-  pub(crate) type TauriEnvironmentState<'r> = State<'r, Arc<Environment>>;
-  pub(crate) type TauriMetadataState<'r> = State<'r, Arc<Metadata>>;
-  pub(crate) type TauriDatabaseState<'r> = State<'r, Arc<Database>>;
-  pub(crate) type TauriAppState<'r> = State<'r, Arc<AppState>>;
-  // pub(crate) type TauriWindowState<'r> = State<'r, WindowState>;
-
-  #[tracing::instrument(skip(state))]
-  pub(crate) fn resolve_theme_or_system(state: &AppState, theme: Option<Theme>) -> Theme {
-    // If no theme is set, follow the system theme
-    state.set_follow_system_theme(theme.is_none());
-    theme.unwrap_or_else(|| {
-      if cfg!(windows) {
-        // Get current system theme
-        hg_ffi::apps_use_theme()
-          .inspect_err(|err| error!(message = "Failed to get current Windows theme", ?err))
-          .unwrap_or(Theme::Light)
-      } else {
-        Theme::Light
-      }
-    })
   }
 }

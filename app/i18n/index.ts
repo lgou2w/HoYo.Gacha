@@ -3,7 +3,7 @@ import i18n, { changeLanguage } from 'i18next'
 import { DefaultLanguage, KnownLanguages, SupportedLanguages } from './locales'
 import { LanguageDetectorModule } from './modules'
 
-// eslint-disable-next-line import/no-named-as-default-member
+// eslint-disable-next-line import-x/no-named-as-default-member
 i18n
   .use(LanguageDetectorModule)
   .use(initReactI18next)

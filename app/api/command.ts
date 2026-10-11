@@ -1,80 +1,126 @@
-import invoke, { InvokeArgs } from './invoke'
+import invoke, { InvokeArgs } from '@/api/invoke'
 
-export type ArgsCommand<Args extends InvokeArgs | undefined, Result = void> = (args: Args) => Promise<Result>
+export type ArgsCommand<Args extends InvokeArgs | undefined, Result = void>
+  = (args: Args) => Promise<Result>
 
-export type NonArgsCommand<Result = void> = () => Promise<Result>
+export type NonArgsCommand<Result = void>
+  = () => Promise<Result>
 
 export type Command<Args extends InvokeArgs | undefined, Result = void>
-  = Args extends undefined
+  = [Args] extends [undefined]
     ? NonArgsCommand<Result>
     : ArgsCommand<Args, Result>
 
-export type CacheableCommand<Args extends InvokeArgs | undefined, Result = void> = Command<Args, Result> & {
-  __cached?: Promise<Result>
-  readonly hasCached: boolean
-  invalidate (): void
+export type OnceCommand<Args extends InvokeArgs | undefined, Result = void>
+  = Command<Args, Result> & {
+    /** Indicates whether the command has been initialized */
+    readonly initialized: boolean
+    /** Resets the command to its initial state */
+    reset(): void
+  }
+
+export interface DeclareCommandOptions {
+  /**
+   * Indicates whether the command should be executed only once. If set to true, the command will be executed only on the first invocation and subsequent invocations will return the same result without re-executing the command.
+   */
+  once?: boolean | null
 }
 
-export function declareCommand<Args extends InvokeArgs | undefined, Result = void> (name: string): Command<Args, Result>
-export function declareCommand<Args extends InvokeArgs | undefined, Result = void> (name: string, cacheable: true): CacheableCommand<Args, Result>
+/**
+ * Declares a command with the specified name. The command can be executed with the provided arguments and will return a promise that resolves to the result of the command execution.
+ * @param name The name of the command to declare.
+ */
 export function declareCommand<Args extends InvokeArgs | undefined, Result = void> (
   name: string,
-  cacheable?: boolean,
-): Command<Args, Result> | CacheableCommand<Args, Result> {
+): Command<Args, Result>
+
+/**
+ * Declares a once command with the specified name. The command can be executed with the provided arguments and will return a promise that resolves to the result of the command execution. The command will be executed only on the first invocation and subsequent invocations will return the same result without re-executing the command.
+ * @param name The name of the command to declare.
+ * @param options The options for the command, which must include `once: true`.
+ */
+export function declareCommand<Args extends InvokeArgs | undefined, Result = void> (
+  name: string,
+  options: { once: true },
+): OnceCommand<Args, Result>
+
+/**
+ * Declares a normal command with the specified name and options. The command can be executed with the provided arguments and will return a promise that resolves to the result of the command execution.
+ * @param name The name of the command to declare.
+ * @param options The options for the command.
+ */
+export function declareCommand<Args extends InvokeArgs | undefined, Result = void> (
+  name: string,
+  options: { once?: false },
+): Command<Args, Result>
+
+/**
+ * Declares a command with the specified name and options. The command can be executed with the provided arguments and will return a promise that resolves to the result of the command execution. If the `once` option is set to true, the command will be executed only on the first invocation and subsequent invocations will return the same result without re-executing the command.
+ * @param name The name of the command to declare.
+ * @param options The options for the command.
+ * @returns The declared command.
+ */
+export function declareCommand<Args extends InvokeArgs | undefined, Result = void> (
+  name: string,
+  options?: DeclareCommandOptions,
+): Command<Args, Result> | OnceCommand<Args, Result> {
+  const once = options?.once ?? false
+
   if (import.meta.env.DEV) {
-    console.debug(`Declaration ${!cacheable ? '' : 'cacheable '}command:`, name)
+    console.debug(`[Command] Declaration ${once ? 'once ' : ''}command:`, name)
   }
 
   const command = invoke.bind(undefined, name) as Command<Args, Result>
+  return once ? withOnce(command) : command
+}
 
-  if (!cacheable) {
-    return command
-  }
+function withOnce<Args extends InvokeArgs | undefined, Result = void> (
+  command: Command<Args, Result>,
+): OnceCommand<Args, Result> {
+  let initialized = false
+  let promise: Promise<Result> | undefined
 
-  const cacheableCommand = function (this: unknown, ...args: unknown[]) {
-    if (!cacheableCommand.hasCached) {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore: 2556
-      const promise = (cacheableCommand.__cached = command.call(this, args))
+  const onceCommand = function (this: unknown, ...args: unknown[]) {
+    if (!initialized) {
+      initialized = true
+      promise = command.apply(this, args as [Args]).catch((error) => {
+        console.warn('[Command] The promise of the cached command %s is not resolved: %o', command.name, error)
+        initialized = false
+        promise = undefined
 
-      if (import.meta.env.DEV) {
-        promise.then((result) => {
-          console.debug('Cache the promise result of command: %s, result = %o', name, result)
-          return result
-        }).catch((error) => {
-          console.debug('Command %s failed with error: %o', name, error)
-          throw error
-        })
-      }
-
-      // It is possible that the result of this command is not idempotent.
-      // If the promise doesn't resolved, then remove the cache.
-      return promise.catch((error) => {
-        console.warn('The promise of the cached command %s is not resolved: %o', name, error)
-        cacheableCommand.invalidate()
-
-        const enhancedError = new Error(`Command "${name}" execution failed`)
+        const enhancedError = new Error(`Command "${command.name}" execution failed: ${error.message}`)
         enhancedError.cause = error
         throw enhancedError
       })
+
+      if (import.meta.env.DEV) {
+        promise.then(
+          (result) => {
+            console.debug('[Command] Once command %s resolved with result: %o', command.name, result)
+          },
+          (error) => {
+            console.debug('[Command] Once command %s execution failed: %o', command.name, error)
+          },
+        )
+      }
     }
+    return promise
+  } as OnceCommand<Args, Result>
 
-    return cacheableCommand.__cached!
-  } as CacheableCommand<Args, Result>
-
-  return Object.defineProperties(cacheableCommand, {
-    hasCached: {
+  Object.defineProperties(onceCommand, {
+    initialized: {
       configurable: false,
       enumerable: true,
-      get () {
-        return !!cacheableCommand.__cached
-      },
+      get: () => initialized,
     },
-    invalidate: {
+    reset: {
       configurable: false,
-      value () {
-        delete cacheableCommand.__cached
+      value: () => {
+        initialized = false
+        promise = undefined
       },
     },
   })
+
+  return onceCommand
 }

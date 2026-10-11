@@ -5,7 +5,7 @@ import { FieldState, getSlotClassNameProp_unstable, makeStyles, mergeClasses, to
 // This component reimplemented the Fluent UI rendering in order to override some of the default styles.
 // See:
 //  https://github.com/microsoft/fluentui/tree/master/packages/react-components/react-field/library/src/components/Field
-//  https://react.fluentui.dev/?path=/docs/components-field--docs
+//  https://storybooks.fluentui.dev/react/?path=/docs/components-field--docs
 
 const useValidationMessageStyles = makeStyles({
   root: {

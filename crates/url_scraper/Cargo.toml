@@ -12,11 +12,11 @@ license.workspace = true
 publish.workspace = true
 
 [dependencies]
-hg_diskcache    = { package = "hoyo_gacha_diskcache"   , path = "../diskcache" }
-hg_game_biz     = { package = "hoyo_gacha_game_biz"    , path = "../game_biz" }
-hg_serde_helper = { package = "hoyo_gacha_serde_helper", path = "../serde_helper" }
-hg_url_finder   = { package = "hoyo_gacha_url_finder"  , path = "../url_finder" }
+# HoYo.Gacha crates
+hg_gamebiz    = { workspace = true }
+hg_url_parser = { workspace = true }
 
+# Other crates
 exponential-backoff = { workspace = true }
 reqwest = { workspace = true, features = ["native-tls", "http2", "json", "query"] }
 serde = { workspace = true, features = ["derive"] }

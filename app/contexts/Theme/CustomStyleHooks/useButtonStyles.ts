@@ -5,7 +5,7 @@ import { ButtonState, getSlotClassNameProp_unstable, makeStyles, mergeClasses, t
 // This component reimplemented the Fluent UI rendering in order to override some of the default styles.
 // See:
 //  https://github.com/microsoft/fluentui/tree/master/packages/react-components/react-button/library/src/components/Button
-//  https://react.fluentui.dev/?path=/docs/components-button-button--docs
+//  https://storybooks.fluentui.dev/react/?path=/docs/components-button-button--docs
 
 const useStyles = makeStyles({
   small: {

@@ -6,7 +6,7 @@ use cfg_if::cfg_if;
 use reqwest::Client as Reqwest;
 use time::UtcOffset;
 
-// See: src-tauri/Tauri.toml - identifier
+// See: tauri/Tauri.toml - identifier
 // pub const ID: &str = "com.lgou2w.hoyo.gacha"; // Legacy
 pub const ID: &str = "com.lgou2w.hoyo.gacha.v1";
 
@@ -26,6 +26,8 @@ cfg_if! {if #[cfg(any(debug_assertions, test))] {
 #[deprecated = "Legacy"]
 pub const DATABASE_LEGACY: &str = "HoYo.Gacha.db";
 
+pub const API_URL: &str = "https://hoyo-gacha-v1.lgou2w.com";
+
 // Package info
 pub const PKG_NAME: &str = env!("CARGO_PKG_NAME");
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
@@ -34,12 +36,6 @@ pub const AUTHORS: &str = env!("CARGO_PKG_AUTHORS");
 pub const DESCRIPTION: &str = env!("CARGO_PKG_DESCRIPTION");
 pub const HOMEPAGE: &str = env!("CARGO_PKG_HOMEPAGE");
 pub const REPOSITORY: &str = env!("CARGO_PKG_REPOSITORY");
-
-// Embedded Environment Variables
-// See: src-tauri/build.rs
-pub const GIT_COMMIT_HASH: &str = env!("GIT_COMMIT_HASH");
-pub const GIT_COMMIT_DATE: &str = env!("GIT_COMMIT_DATE");
-pub const GIT_REMOTE_URL: &str = env!("GIT_REMOTE_URL");
 
 // Environment variable keys
 pub const ENV_DEVTOOLS: &str = "HG_DEVTOOLS";

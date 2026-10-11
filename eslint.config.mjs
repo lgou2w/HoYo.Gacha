@@ -1,16 +1,20 @@
-import { fileURLToPath } from 'node:url'
-import { includeIgnoreFile } from '@eslint/compat'
+import path from 'node:path'
 import stylistic from '@stylistic/eslint-plugin'
-import { defineConfig } from 'eslint/config'
-import importPlugin from 'eslint-plugin-import'
+import { defineConfig, includeIgnoreFile } from 'eslint/config'
+import { createTypeScriptImportResolver } from 'eslint-import-resolver-typescript'
+import { createNodeResolver, importX } from 'eslint-plugin-import-x'
 import react from 'eslint-plugin-react'
 import reactHooks from 'eslint-plugin-react-hooks'
-import * as tseslint from 'typescript-eslint'
+import { reactRefresh } from 'eslint-plugin-react-refresh'
+import tseslint from 'typescript-eslint'
 
-const gitignorePath = fileURLToPath(new URL('.gitignore', import.meta.url))
-const gitignoreConfig = includeIgnoreFile(gitignorePath, 'Imported .gitignore patterns')
+const gitignorePath = path.join(import.meta.dirname, '.gitignore')
+const gitignoreConfig = includeIgnoreFile(gitignorePath, {
+  name: 'Imported .gitignore patterns',
+  gitignoreResolution: true,
+})
 
-const baseConfig = {
+const baseConfigs = defineConfig({
   plugins: {
     '@stylistic': stylistic,
   },
@@ -21,10 +25,11 @@ const baseConfig = {
     react.configs.flat.recommended,
     react.configs.flat['jsx-runtime'],
     reactHooks.configs.flat.recommended,
+    reactRefresh.configs.vite(),
 
-    importPlugin.flatConfigs.recommended,
-    importPlugin.flatConfigs.typescript,
-    importPlugin.flatConfigs.react,
+    importX.flatConfigs.recommended,
+    importX.flatConfigs.typescript,
+    importX.flatConfigs.react,
 
     stylistic.configs.customize({
       indent: 2,
@@ -46,12 +51,13 @@ const baseConfig = {
     react: {
       version: '19',
     },
-    'import/resolver': {
-      typescript: {
+    'import-x/resolver-next': [
+      createNodeResolver(),
+      createTypeScriptImportResolver({
         alwaysTryTypes: true,
         project: 'tsconfig.json',
-      },
-    },
+      }),
+    ],
   },
   rules: {
     '@stylistic/space-before-function-paren': ['error', 'always'],
@@ -66,7 +72,7 @@ const baseConfig = {
         memberSyntaxSortOrder: ['none', 'all', 'multiple', 'single'],
       },
     ],
-    'import/order': [
+    'import-x/order': [
       'error',
       {
         groups: [
@@ -101,7 +107,7 @@ const baseConfig = {
       },
     ],
   },
-}
+})
 
 export default defineConfig([
   gitignoreConfig,
@@ -114,6 +120,6 @@ export default defineConfig([
       'app/**/*.ts',
       'app/**/*.tsx',
     ],
-    ...baseConfig,
+    extends: baseConfigs,
   },
 ])

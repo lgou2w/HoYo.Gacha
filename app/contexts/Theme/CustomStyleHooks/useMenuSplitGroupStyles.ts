@@ -5,7 +5,7 @@ import { MenuSplitGroupState, getSlotClassNameProp_unstable, makeStyles, menuIte
 // This component reimplemented the Fluent UI rendering in order to override some of the default styles.
 // See:
 //  https://github.com/microsoft/fluentui/tree/master/packages/react-components/react-menu/library/src/components/MenuSplitGroup
-//  https://react.fluentui.dev/?path=/docs/components-menu-menu--docs
+//  https://storybooks.fluentui.dev/react/?path=/docs/components-menu-menu--docs
 
 const useStyles = makeStyles({
   root: {

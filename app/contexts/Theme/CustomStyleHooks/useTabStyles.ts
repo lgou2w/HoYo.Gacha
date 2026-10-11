@@ -5,7 +5,7 @@ import { TabState, getSlotClassNameProp_unstable, makeStyles, mergeClasses } fro
 // This component reimplemented the Fluent UI rendering in order to override some of the default styles.
 // See:
 //  https://github.com/microsoft/fluentui/tree/master/packages/react-components/react-tabs/library/src/components/Tab
-//  https://react.fluentui.dev/?path=/docs/components-tablist--docs
+//  https://storybooks.fluentui.dev/react/?path=/docs/components-tablist--docs
 
 const useIconStyles = makeStyles({
   small: {

@@ -2,8 +2,9 @@
   "editor.tabSize": 2,
   "editor.indentSize": "tabSize",
 
-  "typescript.tsdk": "./node_modules/typescript/lib",
-  "typescript.preferences.importModuleSpecifier": "shortest",
+  "js/ts.tsdk.path": "./node_modules/typescript/lib",
+  "js/ts.tsdk.promptToUseWorkspaceVersion": true,
+  "js/ts.preferences.importModuleSpecifier": "shortest",
 
   "eslint.format.enable": true,
   "eslint.useFlatConfig": true,

@@ -5,14 +5,13 @@ import { MenuItemState, getSlotClassNameProp_unstable, makeStyles, mergeClasses 
 // This component reimplemented the Fluent UI rendering in order to override some of the default styles.
 // See:
 //  https://github.com/microsoft/fluentui/tree/master/packages/react-components/react-menu/library/src/components/MenuItem
-//  https://react.fluentui.dev/?path=/docs/components-menu-menu--docs
+//  https://storybooks.fluentui.dev/react/?path=/docs/components-menu-menu--docs
 
 const useStyles = makeStyles({
   root: {
     maxWidth: '18.125rem',
     minHeight: '2rem',
     gap: '0.25rem',
-    alignItems: 'center', // HACK: start -> center
   },
 })
 
@@ -33,7 +32,7 @@ const useContentStyles = makeStyles({
 
 const useCheckmarkStyles = makeStyles({
   root: {
-    marginTop: 0, // HACK: 2px -> 0
+    marginTop: '0.125rem',
     width: '1rem',
     height: '1rem',
     '> svg': { // HACK: Apply to svg

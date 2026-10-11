@@ -1,10 +1,8 @@
 #![forbid(unsafe_code)]
 
-pub mod requester;
+pub mod request;
 pub mod scraper;
 mod types;
+pub mod validate;
 
 pub use types::*;
-
-#[cfg(test)]
-mod tests;

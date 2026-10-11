@@ -1,7 +1,7 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-#[tokio::main]
+#[tokio::main(name = "hoyo_gacha", flavor = "multi_thread")]
 async fn main() {
-  hoyo_gacha::bootstrap::start().await;
+  hoyo_gacha::bootstrap::start().await
 }

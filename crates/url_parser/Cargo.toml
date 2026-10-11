@@ -1,0 +1,23 @@
+[package]
+name = "hoyo_gacha_url_parser"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+description.workspace = true
+homepage.workspace = true
+repository.workspace = true
+readme.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+# HoYo.Gacha crates
+hg_diskcache = { workspace = true }
+hg_gamebiz   = { workspace = true }
+
+# Other crates
+form_urlencoded = { workspace = true }
+regex = { workspace = true, features = ["unicode-case", "unicode-perl"] }
+snafu = { workspace = true }
+time = { workspace = true }
