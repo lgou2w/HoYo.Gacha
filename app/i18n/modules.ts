@@ -1,5 +1,6 @@
 import { isTauri } from '@tauri-apps/api/core'
 import { LanguageDetectorAsyncModule } from 'i18next'
+import { AppCommands } from '@/api/App'
 import { DefaultLanguage, KnownLanguages, Language, SupportedLanguages } from './locales'
 
 export const LanguageDetectorModuleLocalStorageKey = 'HG_LANGUAGE'
@@ -45,7 +46,7 @@ export const LanguageDetectorModule: LanguageDetectorAsyncModule = {
 // https://en.wikipedia.org/wiki/Locale_(computer_software)#Specifics_for_Microsoft_platforms
 
 async function readLocale (): Promise<string> {
-  return 'zh-cn'
+  return AppCommands.locale()
 }
 
 const KnownLanguageMappings = Object

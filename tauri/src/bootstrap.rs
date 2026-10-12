@@ -2,6 +2,7 @@ use crate::bootstrap::context::Context;
 use crate::constants;
 
 mod context;
+mod handlers;
 mod tauri;
 mod tracing;
 mod window_state;

@@ -44,6 +44,8 @@ pub async fn run(context: Context) -> ! {
       .setup(move|app| setup(app, context_cloned, color_scheme))
       .on_window_event(on_window_event)
       .invoke_handler(generate_handler![
+        // App
+        crate::bootstrap::handlers::locale,
         // KValue
         crate::database::schemas::kvalue_handlers::database_find_kvalue,
         crate::database::schemas::kvalue_handlers::database_create_kvalue,
