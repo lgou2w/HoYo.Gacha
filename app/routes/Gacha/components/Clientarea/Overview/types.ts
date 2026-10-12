@@ -42,6 +42,8 @@ interface GridItemDerivedBase {
   [Rarity.Golden]: BannerStats<AccountBusiness>['rarity'][Rarity.Golden]
   [Rarity.Purple]: BannerStats<AccountBusiness>['rarity'][Rarity.Purple]
   hasUp: boolean
+
+  rarityContext: Rarity
   total: number
   sum: number
   usedPitySum: number
@@ -50,7 +52,6 @@ interface GridItemDerivedBase {
   nextPity: UsedPity
   up: GridItemDerivedBase[Rarity.Golden]['up'] | null
   showcase: StatsRecord | null
-  showcaseRarity: Rarity
 }
 
 export interface BannerGridItemDerived extends GridItemDerivedBase {
@@ -99,6 +100,8 @@ export function deriveGridItem (
       && !isPermanentOde
       && !isEventOde
 
+  const rarityContext = (isPermanentOde ? Rarity.Purple : Rarity.Golden)
+
   const total = dataset.total
   const sum = (isPermanentOde ? purple : golden).sum
   const usedPitySum = (isPermanentOde ? purple : golden).usedPitySum
@@ -115,10 +118,10 @@ export function deriveGridItem (
 
   const percentage = (isPermanentOde ? purple : golden).percentage
   const up = hasUp ? golden.up : null
-  const [showcase, showcaseRarity]: [StatsRecord | null, Rarity]
+  const showcase: StatsRecord | null
     = isPermanentOde
-      ? [purple.values[purple.values.length - 1] ?? null, Rarity.Purple]
-      : [golden.values[golden.values.length - 1] ?? null, Rarity.Golden]
+      ? purple.values[purple.values.length - 1]
+      : golden.values[golden.values.length - 1]
 
   const base = {
     isBeginner,
@@ -131,6 +134,7 @@ export function deriveGridItem (
     [Rarity.Golden]: golden,
     [Rarity.Purple]: purple,
     hasUp,
+    rarityContext,
     total,
     sum,
     usedPitySum,
@@ -139,7 +143,6 @@ export function deriveGridItem (
     nextPity,
     up,
     showcase,
-    showcaseRarity,
   }
 
   if (isBanner) {

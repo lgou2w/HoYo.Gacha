@@ -44,6 +44,23 @@
     },
     "Overview": {
       "GridItem": {
+        "Aggregated": "总计",
+        "Total": "共 {{count, number}} 抽",
+        "Sum_golden_zero": "暂无出金",
+        "Sum_golden": "已出 {{count, number}} 金",
+        "Sum_purple_zero": "暂无出紫",
+        "Sum_purple": "已出 {{count, number}} 紫",
+        "NextPity": "已垫 {{count}} 抽",
+        "Average_golden": "平均每金：",
+        "Average_purple": "平均每紫：",
+        "Percentage_golden": "出金率：",
+        "Percentage_purple": "出紫率：",
+        "UpAverage_golden": "$t(Up)平均每金：",
+        "UpAverage_purple": "$t(Up)平均每紫：",
+        "UpPercentage_golden": "$t(Up)出金率：",
+        "UpPercentage_purple": "$t(Up)出金率：",
+        "Last_golden": "最近出金：",
+        "Last_purple": "最近出紫："
       }
     },
     "Analysis": {

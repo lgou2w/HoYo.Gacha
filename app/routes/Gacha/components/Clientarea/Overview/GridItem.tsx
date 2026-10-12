@@ -4,12 +4,12 @@ import { KeyofAccountBusiness, KeyofZenlessZoneZero } from '@/api/Account'
 import Placeholder from '@/components/Placeholder'
 import { KnownI18nNs, useI18n } from '@/i18n'
 import { BannerCategory } from '@/routes/Gacha/api/stats'
-import BannerCategoryName, { BannerCategoryNameProps } from '@/routes/Gacha/components/Banner/CategoryName'
+import BannerCategoryName from '@/routes/Gacha/components/Banner/CategoryName'
 import BannerDragIcon from '@/routes/Gacha/components/Banner/DragIcon'
 import GachaImageItem from '@/routes/Gacha/components/ImageItem'
 import GachaTicket from '@/routes/Gacha/components/Ticket'
 import { useBusiness } from '@/routes/Gacha/contexts/Business/hooks'
-import { Aggregated, GridItemDataset, GridItemDerived, deriveGridItem } from './types'
+import { Aggregated, GridItemDataset, deriveGridItem } from './types'
 
 const useStyles = makeStyles({
   root: {
@@ -71,11 +71,16 @@ const useStyles = makeStyles({
   label: {
     flex: '0 0 auto',
     boxShadow: tokens.shadow2,
+    whiteSpace: 'pre-wrap',
   },
   labelPercentage: {
     marginLeft: tokens.spacingHorizontalXXS,
     fontFamily: tokens.fontFamilyMonospace,
     fontStyle: 'normal',
+  },
+  labelLast: {
+    marginLeft: tokens.spacingHorizontalXS,
+    fontFamily: tokens.fontFamilyMonospace,
   },
   showcase: {
     position: 'absolute',
@@ -103,7 +108,9 @@ export default memo(function OverviewGridItem (props: OverviewGridItemProps) {
   return (
     <div className={styles.root}>
       <div className={mergeClasses(styles.badge, d.isAggregated && styles.badgeAggregated)}>
-        <CategoryName derived={d} />
+        {d.isBanner
+          ? <BannerCategoryName category={d.category} />
+          : t(Aggregated)}
         {d.isBanner && dragHandleRef && (
           <BannerDragIcon
             className={styles.badgeDragIcon}
@@ -114,7 +121,9 @@ export default memo(function OverviewGridItem (props: OverviewGridItemProps) {
       </div>
       <div className={styles.header}>
         <Title3 as="h2">
-          <CategoryName derived={d} context="title" />
+          {d.isBanner
+            ? <BannerCategoryName category={d.category} context="title" />
+            : t(Aggregated)}
         </Title3>
         <Caption1 as="p">
           {d.timeRange || <Placeholder />}
@@ -123,21 +132,21 @@ export default memo(function OverviewGridItem (props: OverviewGridItemProps) {
       <div className={styles.labels}>
         <div className={styles.labelsGroup}>
           <GroupLabel className={styles.label} color="brand" appearance="tint">
-            {`共 ${d.total} 抽`}
+            {t('Total', { count: d.total })}
           </GroupLabel>
           <GroupLabel className={styles.label} color="success" appearance="tint">
-            {`已出 ${d.sum} 金`}
+            {t('Sum', { count: d.sum, context: d.rarityContext })}
           </GroupLabel>
           {d.isBanner && (
             <GroupLabel className={styles.label} color="severe" appearance="tint">
-              {`已垫 ${d.nextPity.value} 抽`}
+              {t('NextPity', { count: d.nextPity.value })}
             </GroupLabel>
           )}
         </div>
         <div className={styles.labelsGroup}>
           <StatLabel
             className={styles.label}
-            label="平均每金："
+            label={t('Average', { context: d.rarityContext })}
             value={d.average}
             tooltip={d.average > 0 && `${d.usedPitySum} / ${d.sum} ≈ ${d.average}`}
             suffix={d.isBanner && <StatLabelTicket keyof={business.keyof} category={d.category} />}
@@ -145,7 +154,7 @@ export default memo(function OverviewGridItem (props: OverviewGridItemProps) {
           />
           <StatLabel
             className={styles.label}
-            label="出金率："
+            label={t('Percentage', { context: d.rarityContext })}
             value={d.percentage}
             tooltip={d.percentage > 0 && `${d.sum} / ${d.total} ≈ ${d.percentage} %`}
             suffix={<i className={styles.labelPercentage}>%</i>}
@@ -156,7 +165,7 @@ export default memo(function OverviewGridItem (props: OverviewGridItemProps) {
           <div className={styles.labelsGroup}>
             <StatLabel
               className={styles.label}
-              label="UP平均每金："
+              label={t('UpAverage', { context: d.rarityContext })}
               value={d.up.average}
               tooltip={d.up.average > 0 && `${d.up.usedPitySum} / ${d.up.sum} ≈ ${d.up.average}`}
               suffix={d.isBanner && <StatLabelTicket keyof={business.keyof} category={d.category} />}
@@ -164,7 +173,7 @@ export default memo(function OverviewGridItem (props: OverviewGridItemProps) {
             />
             <StatLabel
               className={styles.label}
-              label="UP出金率："
+              label={t('UpPercentage', { context: d.rarityContext })}
               value={d.up.percentage}
               tooltip={d.up.percentage > 0 && `${d.up.sum} / ${d.total} ≈ ${d.up.percentage} %`}
               suffix={<i className={styles.labelPercentage}>%</i>}
@@ -172,19 +181,26 @@ export default memo(function OverviewGridItem (props: OverviewGridItemProps) {
             />
           </div>
         )}
-        <div className={styles.labelsGroup}>
-          <StatLabel
-            className={styles.label}
-            label="最近出金："
-            value={d.showcase?.itemName || '无'}
-          />
-        </div>
+        {d.showcase && (
+          <div className={styles.labelsGroup}>
+            <StatLabel
+              className={styles.label}
+              label={t('Last', { context: d.rarityContext })}
+              value={d.showcase.itemName}
+              suffix={d.showcase.usedPity && (
+                <span className={styles.labelLast}>
+                  {`(${d.showcase.usedPity.value})`}
+                </span>
+              )}
+            />
+          </div>
+        )}
       </div>
       <div className={styles.showcase}>
         {d.showcase && (
           <GachaImageItem
             keyof={business.keyof}
-            rarity={d.showcaseRarity}
+            rarity={d.rarityContext}
             record={d.showcase}
             noUpBadge={!d.up}
             tooltipPositioning="before"
@@ -194,26 +210,6 @@ export default memo(function OverviewGridItem (props: OverviewGridItemProps) {
     </div>
   )
 })
-
-interface CategoryNameProps {
-  derived: GridItemDerived
-  context?: BannerCategoryNameProps['context']
-}
-
-function CategoryName (props: CategoryNameProps) {
-  const { derived: d, context } = props
-
-  if (d.isAggregated) {
-    return Aggregated
-  } else {
-    return (
-      <BannerCategoryName
-        category={d.category}
-        context={context}
-      />
-    )
-  }
-}
 
 function GroupLabel (props: BadgeProps) {
   const {

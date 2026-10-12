@@ -44,6 +44,27 @@
     },
     "Overview": {
       "GridItem": {
+        "Aggregated": "Aggregated",
+        "Total_zero": "No pulls record yet",
+        "Total_one": "{{count}} pull in total",
+        "Total": "{{count, number}} pulls in total",
+        "Sum_golden_zero": "No gold pulled yet",
+        "Sum_golden": "Pulled {{count, number}} gold",
+        "Sum_purple_zero": "No purple pulled yet",
+        "Sum_purple": "Pulled {{count, number}} purple",
+        "NextPity_zero": "No pulls into pity yet",
+        "NextPity_one": "{{count}} pull into pity",
+        "NextPity": "{{count}} pulls into pity",
+        "Average_golden": "Average rate per gold: ",
+        "Average_purple": "Average rate per purple: ",
+        "Percentage_golden": "Gold rate: ",
+        "Percentage_purple": "Purple rate: ",
+        "UpAverage_golden": "Average $t(Up) gold: ",
+        "UpAverage_purple": "Average $t(Up) purple: ",
+        "UpPercentage_golden": "$t(Up) gold rate: ",
+        "UpPercentage_purple": "$t(Up) purple rate: ",
+        "Last_golden": "Last gold: ",
+        "Last_purple": "Last purple: "
       }
     },
     "Analysis": {
