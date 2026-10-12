@@ -157,10 +157,21 @@ export interface AggregatedStats {
   tags: AggregatedTags
 }
 
+export interface RelationTag {
+  record: StatsRecord
+  count: number
+}
+
+export interface DailyTag {
+  /** Unix timestamp in seconds (UTC). */
+  timestamp: number
+  count: number
+}
+
 export interface AggregatedTags {
   luck?: StatsRecord | null
   unluck?: StatsRecord | null
-  relation?: [StatsRecord, number] | null
-  crazy?: [number, number] | null /* Unix timestamp in seconds, sum */
-  recent?: [number, number] | null /* Unix timestamp in seconds, sum */
+  relation?: RelationTag | null
+  crazy?: DailyTag | null
+  recent?: DailyTag | null
 }

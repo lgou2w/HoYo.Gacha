@@ -579,9 +579,29 @@ pub struct UpWinStats {
 pub struct AggregatedTags<'a> {
   pub luck: Option<StatsRecord<'a>>,
   pub unluck: Option<StatsRecord<'a>>,
-  pub relation: Option<(StatsRecord<'a>, u64)>, // _, sum
-  pub crazy: Option<(u64, u64)>,                // Unix timestamp in seconds, sum
-  pub recent: Option<(u64, u64)>,               // Unix timestamp in seconds, sum
+  pub relation: Option<RelationTag<'a>>,
+  pub crazy: Option<DailyTag>,
+  pub recent: Option<DailyTag>,
+}
+
+/// A record that appears the most times among the aggregated golden pulls.
+#[derive(Clone, Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RelationTag<'a> {
+  pub record: StatsRecord<'a>,
+  /// How many times `record` appears.
+  pub count: u64,
+}
+
+/// A calendar day paired with the number of pulls made on it.
+#[derive(Clone, Copy, Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DailyTag {
+  /// Midnight of the day in the server timezone, as a Unix timestamp in
+  /// seconds (UTC).
+  pub timestamp: u64,
+  /// Number of pulls made on that day.
+  pub count: u64,
 }
 
 // region: Compute
@@ -1091,7 +1111,11 @@ fn compute_aggregated_tags<'a>(
 
     let mut counts: Vec<_> = counts.into_values().collect();
     counts.sort_by_key(|(_, sum)| *sum);
-    tags.relation = counts.last().map(|(e, sum)| ((*e).clone(), *sum));
+
+    tags.relation = counts.last().map(|(record, count)| RelationTag {
+      record: (*record).clone(),
+      count: *count,
+    });
   }
 
   // Crazy & Recent
@@ -1105,7 +1129,7 @@ fn compute_aggregated_tags<'a>(
       *dates.entry(record.time.date()).or_insert(0) += 1;
     }
 
-    fn into_date((date, sum): &(Date, u64), server_timezone: UtcOffset) -> (u64, u64) {
+    fn into_date((date, sum): &(Date, u64), server_timezone: UtcOffset) -> DailyTag {
       const MIDNIGHT: time::Time = time::macros::time!(00:00);
 
       let timestamp = date
@@ -1114,7 +1138,10 @@ fn compute_aggregated_tags<'a>(
         .to_offset(UtcOffset::UTC)
         .unix_timestamp();
 
-      (timestamp as _, *sum)
+      DailyTag {
+        timestamp: timestamp as u64,
+        count: *sum,
+      }
     }
 
     let mut dates: Vec<_> = dates.into_iter().collect();
