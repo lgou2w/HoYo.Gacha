@@ -39,7 +39,7 @@
     "BannerVisibilityMenu": {
       "Button": "卡池可见性"
     },
-    "BannerDragButton": {
+    "BannerDragIcon": {
       "Tooltip": "拖动以重新排序"
     },
     "Overview": {

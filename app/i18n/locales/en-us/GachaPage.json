@@ -39,7 +39,7 @@
     "BannerVisibilityMenu": {
       "Button": "Banner Visibility"
     },
-    "BannerDragButton": {
+    "BannerDragIcon": {
       "Tooltip": "Drag to reorder"
     },
     "Overview": {

@@ -14,7 +14,7 @@ export default function BannerDragIcon (props: BannerDragIconProps) {
 
   return (
     <Tooltip
-      content={t('Clientarea.BannerDragButton.Tooltip')}
+      content={t('Clientarea.BannerDragIcon.Tooltip')}
       positioning={tooltipPositioning}
       relationship="label"
       withArrow
