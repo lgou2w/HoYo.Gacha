@@ -3,6 +3,7 @@ import { Tooltip, TooltipProps, makeStyles, mergeClasses, tokens } from '@fluent
 import { KeyofAccountBusiness } from '@/api/Account'
 import { KnownI18nNs, useI18n } from '@/i18n'
 import { Rarity, StatsRecord } from '@/routes/Gacha/api/stats'
+import useStatsRecordTooltip from '@/routes/Gacha/hooks/useStatsRecordTooltip'
 import capitalize from '@/utilities/capitalize'
 import GachaImage from './Image'
 
@@ -118,10 +119,12 @@ export default memo(function GachaImageItem (props: GachaImageItemProps) {
   } = props
 
   const styles = useStyles()
-  const { dayjs, t } = useI18n({ ns: KnownI18nNs.GachaPage })
+  const { t } = useI18n({ ns: KnownI18nNs.GachaPage })
+
+  const buildRecordTooltip = useStatsRecordTooltip()
   const tooltip = useMemo(
-    () => buildTooltip({ time, itemName, version, genshinImpactCharacter2 }, t, dayjs),
-    [dayjs, genshinImpactCharacter2, itemName, t, time, version],
+    () => buildRecordTooltip({ itemName, version, genshinImpactCharacter2, time }),
+    [buildRecordTooltip, genshinImpactCharacter2, itemName, time, version],
   )
 
   return (
@@ -171,26 +174,3 @@ export default memo(function GachaImageItem (props: GachaImageItemProps) {
     </Tooltip>
   )
 })
-
-interface TootlipInputs {
-  time: StatsRecord['time']
-  itemName: StatsRecord['itemName']
-  version: StatsRecord['version']
-  genshinImpactCharacter2: StatsRecord['genshinImpactCharacter2']
-}
-
-function buildTooltip (
-  inputs: TootlipInputs,
-  t: ReturnType<typeof useI18n>['t'],
-  dayjs: ReturnType<typeof useI18n>['dayjs'],
-): string {
-  const { itemName, time, version, genshinImpactCharacter2 } = inputs
-  return [
-    itemName,
-    version && t('ImageItem.Titles.Version', { value: version }),
-    genshinImpactCharacter2 && t('ImageItem.Titles.GenshinImpactCharacter2'),
-    dayjs(time).format('LLLL'),
-  ]
-    .filter((el) => typeof el === 'string')
-    .join('\n')
-}

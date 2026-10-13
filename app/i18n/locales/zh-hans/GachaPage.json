@@ -1,10 +1,8 @@
 {
   "Up": "UP",
-  "ImageItem": {
-    "Titles": {
-      "Version": "版本：{{value}}",
-      "GenshinImpactCharacter2": "$t(Common:GenshinImpact.Gacha.Banner.Character)-2"
-    }
+  "StatsRecordTooltip": {
+    "Version": "版本：{{value}}",
+    "GenshinImpactCharacter2": "$t(Common:GenshinImpact.Gacha.Banner.Character)-2"
   },
   "Toolbar": {
     "AccountMenu": {
