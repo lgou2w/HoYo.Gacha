@@ -26,9 +26,9 @@ export default function useStatsRecordTooltip () {
       const { keyof, input, category } = args
       return [
         input.itemName,
-        category && t('Banner', { keyof, category }),
         input.version && t('Version', { value: input.version }),
         input.genshinImpactCharacter2 && t('GenshinImpactCharacter2'),
+        category && t('Banner', { keyof, category }),
         dayjs(input.time).format('LLLL'),
       ]
         .filter((el) => typeof el === 'string')

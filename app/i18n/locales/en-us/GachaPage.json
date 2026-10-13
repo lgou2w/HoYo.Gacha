@@ -1,9 +1,9 @@
 {
   "Up": "UP",
   "StatsRecordTooltip": {
-    "Banner": "$t(Common:{{keyof}}.Gacha.Banner.{{category}})",
     "Version": "Version: {{value}}",
-    "GenshinImpactCharacter2": "$t(Common:GenshinImpact.Gacha.Banner.Character)-2"
+    "GenshinImpactCharacter2": "$t(Common:GenshinImpact.Gacha.Banner.Character)-2",
+    "Banner": "$t(Common:{{keyof}}.Gacha.Banner.{{category}})"
   },
   "Toolbar": {
     "AccountMenu": {

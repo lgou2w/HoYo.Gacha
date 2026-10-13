@@ -159,12 +159,12 @@ export interface AggregatedStats {
 
 export interface BannerTaggedRecord {
   record: StatsRecord
-  category: BannerCategory
+  category?: BannerCategory | null
 }
 
 export interface RelationTag {
   record: StatsRecord
-  category: BannerCategory
+  category?: BannerCategory | null
   count: number
 }
 

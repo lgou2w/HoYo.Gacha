@@ -601,7 +601,8 @@ pub struct AggregatedTags<'a> {
 #[serde(rename_all = "camelCase")]
 pub struct BannerTaggedRecord<'a> {
   pub record: StatsRecord<'a>,
-  pub category: BannerCategory,
+  #[serde(skip_serializing_if = "Option::is_none", default = "Option::default")]
+  pub category: Option<BannerCategory>,
 }
 
 /// A record that appears the most times among the aggregated golden pulls.
@@ -609,7 +610,8 @@ pub struct BannerTaggedRecord<'a> {
 #[serde(rename_all = "camelCase")]
 pub struct RelationTag<'a> {
   pub record: StatsRecord<'a>,
-  pub category: BannerCategory,
+  #[serde(skip_serializing_if = "Option::is_none", default = "Option::default")]
+  pub category: Option<BannerCategory>,
   /// How many times `record` appears.
   pub count: u64,
 }
@@ -1115,13 +1117,13 @@ fn compute_aggregated_tags<'a>(
       });
 
     tags.luck = luck.map(|(_, e)| BannerTaggedRecord {
-      category: e.category,
       record: e.clone(),
+      category: (e.genshin_impact_character2 != Some(true)).then_some(e.category),
     });
 
     tags.unluck = unluck.map(|(_, e)| BannerTaggedRecord {
-      category: e.category,
       record: e.clone(),
+      category: (e.genshin_impact_character2 != Some(true)).then_some(e.category),
     });
   }
 
@@ -1145,7 +1147,7 @@ fn compute_aggregated_tags<'a>(
 
     tags.relation = counts.last().map(|(e, count)| RelationTag {
       record: (*e).clone(),
-      category: e.category,
+      category: (e.genshin_impact_character2 != Some(true)).then_some(e.category),
       count: *count,
     });
   }
