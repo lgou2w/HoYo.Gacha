@@ -34,6 +34,12 @@
         "PermanentOde": "常驻颂愿",
         "PermanentOde_title": "奇遇回声",
         "EventOde": "活动颂愿"
+      },
+      "Rarity": {
+        "Golden": "传说（5星）",
+        "Purple": "卓越（4星）",
+        "Blue": "优异（3星）",
+        "Green": "精良（2星）"
       }
     }
   },
@@ -78,6 +84,11 @@
         "Bangboo_title": "卓越搭档",
         "ExclusiveRescreening": "独家重映",
         "WEngineReverberation": "音擎回响"
+      },
+      "Rarity": {
+        "Golden": "S级",
+        "Purple": "A级",
+        "Blue": "B级"
       }
     }
   }

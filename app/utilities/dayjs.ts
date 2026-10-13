@@ -2,10 +2,12 @@ import dayjs from 'dayjs'
 import 'dayjs/locale/en'
 import zhCN from 'dayjs/locale/zh-cn'
 import 'dayjs/locale/zh-tw'
+import calendar from 'dayjs/plugin/calendar'
 import localizedFormat from 'dayjs/plugin/localizedFormat'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import updateLocale from 'dayjs/plugin/updateLocale'
 
+dayjs.extend(calendar)
 dayjs.extend(localizedFormat)
 dayjs.extend(relativeTime)
 dayjs.extend(updateLocale)

@@ -18,6 +18,7 @@ i18n
   })
 
 export default i18n
+export { Trans } from 'react-i18next'
 export * from './locales'
 export * from './hooks'
 

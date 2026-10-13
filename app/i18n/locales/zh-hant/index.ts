@@ -10,6 +10,16 @@ export default {
     text: '繁體中文',
     dayjs: 'zh-tw',
     gacha: 'zh-tw',
+    calendarFormats: {
+      'Clientarea.Overview.GridTags': {
+        lastDay: '[昨天]',
+        sameDay: '[今天]',
+        nextDay: '[明天]',
+        nextWeek: '[下週]dd',
+        lastWeek: '[上週]dd',
+        sameElse: 'YYYY/MM/DD',
+      },
+    },
   },
   Common,
   GachaPage,

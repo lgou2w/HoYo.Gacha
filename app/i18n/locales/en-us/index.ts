@@ -10,6 +10,16 @@ export default {
     text: 'English (US)',
     dayjs: 'en',
     gacha: 'en-us',
+    calendarFormats: {
+      'Clientarea.Overview.GridTags': {
+        lastDay: '[Yesterday]',
+        sameDay: '[Today]',
+        nextDay: '[Tomorrow]',
+        nextWeek: '[Next] dddd',
+        lastWeek: '[Last] dddd',
+        sameElse: 'DD/MM/YYYY',
+      },
+    },
   },
   Common,
   GachaPage,

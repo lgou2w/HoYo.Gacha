@@ -22,6 +22,11 @@
         "Lightrace_short": "Lightrace",
         "ChronicledAndLightrace": "Chronicled & Lightrace Wish",
         "ChronicledAndLightrace_short": "Chronicled & Lightrace"
+      },
+      "Rarity": {
+        "Golden": "5★",
+        "Purple": "4★",
+        "Blue": "3★"
       }
     }
   },
@@ -34,6 +39,12 @@
         "PermanentOde": "Standard Ode",
         "PermanentOde_title": "Encounter Echoes",
         "EventOde": "Event Ode"
+      },
+      "Rarity": {
+        "Golden": "Legendary (5-Star)",
+        "Purple": "Elite (4-Star)",
+        "Blue": "Exceptional (3-Star)",
+        "Green": "Excellent (2-Star)"
       }
     }
   },
@@ -57,6 +68,11 @@
         "CollabCharacter_short": "Character Collab",
         "CollabWeapon": "Light Cone Collab Warp",
         "CollabWeapon_short": "Light Cone Collab"
+      },
+      "Rarity": {
+        "Golden": "5★",
+        "Purple": "4★",
+        "Blue": "3★"
       }
     }
   },
@@ -78,6 +94,11 @@
         "Bangboo_title": "An Outstanding Partner",
         "ExclusiveRescreening": "Exclusive Rescreening",
         "WEngineReverberation": "W-Engine Reverberation"
+      },
+      "Rarity": {
+        "Golden": "5★",
+        "Purple": "4★",
+        "Blue": "3★"
       }
     }
   }

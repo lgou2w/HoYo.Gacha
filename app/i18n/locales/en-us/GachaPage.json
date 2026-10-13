@@ -63,6 +63,14 @@
         "UpPercentage_purple": "$t(Up) purple rate: ",
         "Last_golden": "Last gold: ",
         "Last_purple": "Last purple: "
+      },
+      "GridTags": {
+        "Title": "$t(Common:{{keyof}}.Gacha.Name) Tags",
+        "Recent": "Latest: {{date}}, +{{count, number}} pulls",
+        "Luck": "Luckiest $t(Common:{{keyof}}.Gacha.Rarity.Golden): <item>{{itemName}}</item> in <1>{{count, number}}</1> pulls",
+        "Unluck": "Unluckiest $t(Common:{{keyof}}.Gacha.Rarity.Golden): <item>{{itemName}}</item> after <1>{{count, number}}</1> pulls",
+        "Relation": "Most Encountered $t(Common:{{keyof}}.Gacha.Rarity.Golden): <1>{{itemName}}</1>, obtained <1>{{count, number}}</1> times",
+        "Crazy": "Craziest Day: <1>{{date}}</1> with <1>{{count, number}}</1> total pulls"
       }
     },
     "Analysis": {
