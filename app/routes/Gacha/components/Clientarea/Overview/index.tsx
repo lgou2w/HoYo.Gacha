@@ -1,5 +1,6 @@
 import { makeStyles, tokens } from '@fluentui/react-components'
 import OverviewGrid from './Grid'
+import OverviewTooltips from './Tooltips'
 
 const useStyles = makeStyles({
   root: {
@@ -16,6 +17,7 @@ export default function Overview () {
   return (
     <div className={styles.root}>
       <OverviewGrid />
+      <OverviewTooltips />
     </div>
   )
 }

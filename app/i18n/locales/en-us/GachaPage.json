@@ -71,6 +71,13 @@
         "Unluck": "Unluckiest $t(Common:{{keyof}}.Gacha.Rarity.Golden): <item>{{itemName}}</item> after <1>{{count, number}}</1> pulls",
         "Relation": "Most Encountered $t(Common:{{keyof}}.Gacha.Rarity.Golden): <1>{{itemName}}</1>, obtained <1>{{count, number}}</1> times",
         "Crazy": "Craziest Day: <1>{{date}}</1> with <1>{{count, number}}</1> total pulls"
+      },
+      "Tooltips": {
+        "First": "Total {{title}} <1>{{total, number}}</1> times, total value: <2>{{value, number}}</2>",
+        "Second": "$t(Common:{{keyof}}.Gacha.Name) records date coverage: <time>{{start}}</time> - <time>{{end}}</time>",
+        "Third": "Due to official settings, only $t(Common:{{keyof}}.Gacha.Name) data records from the <1>most recent 6 months</1> are available. There is approximately a <1>one-hour</1> delay in retrieving the latest data. During peak periods for new banners, this delay may be extended. For precise timing, please refer to the in-game data.",
+        "Third_one_year": "Due to official settings, only $t(Common:{{keyof}}.Gacha.Name) data records from the <1>most recent year's</1> is available. There is approximately a <1>one-hour</1> delay in retrieving the latest data. During peak periods for new banners, this delay may be extended. For precise timing, please refer to the in-game data.",
+        "Third_one_year_and_collaboration": "Due to official settings, only the <1>most recent year's</1> $t(Common:{{keyof}}.Gacha.Name) data records and the <1>most recent two years'</1> Collaboration $t(Common:{{keyof}}.Gacha.Name) data records are available. There is approximately a <1>one-hour</1> delay in retrieving the latest data. During peak periods for new banners, this delay may be extended. For precise timing, please refer to the in-game data."
       }
     },
     "Analysis": {
