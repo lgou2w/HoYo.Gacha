@@ -3,6 +3,8 @@ import { Body1, Caption1, Image, makeStyles, mergeClasses, tokens } from '@fluen
 import { Account, KeyofAccountBusiness, KnownAccountProperties } from '@/api/Account'
 import BusinessImages from '@/assets/Images/BusinessImages'
 import { KnownI18nNs, useI18n } from '@/i18n'
+import { ItemCategory } from '@/routes/Gacha/api/stats'
+import GachaImage from '@/routes/Gacha/components/Image'
 
 const useStyles = makeStyles({
   root: {
@@ -66,10 +68,21 @@ function Avatar (props: AvatarProps) {
 
   return (
     <div className={mergeClasses(styles.root, withPadding && styles.withPadding)}>
-      <Image
-        className={styles.image}
-        src={BusinessImages[keyof].Icon}
-      />
+      {avatarId
+        ? (
+            <GachaImage
+              className={styles.image}
+              keyof={keyof}
+              itemCategory={ItemCategory.Character}
+              itemId={+avatarId}
+            />
+          )
+        : (
+            <Image
+              className={styles.image}
+              src={BusinessImages[keyof].Icon}
+            />
+          )}
     </div>
   )
 }
