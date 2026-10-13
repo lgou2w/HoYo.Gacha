@@ -83,16 +83,14 @@ export default function OverviewTooltips () {
   return (
     <div className={styles.root}>
       <TooltipLine>
-        {business.toBe(MiliastraWonderland)
+        {isMiliastraWonderland
           ? (
               <>
                 <TooltipTotal banner={stats?.banners[BannerCategory.PermanentOde]} />
                 <TooltipTotal banner={stats?.banners[BannerCategory.EventOde]} />
               </>
             )
-          : (
-              <TooltipTotal total={isZenlessZoneZero ? stats?.aggregated?.total : stats?.total} />
-            )}
+          : <TooltipTotal total={isZenlessZoneZero ? stats?.aggregated?.total : stats?.total} />}
       </TooltipLine>
       <TooltipLine>
         <Trans
