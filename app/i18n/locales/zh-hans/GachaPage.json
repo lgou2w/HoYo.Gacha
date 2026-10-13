@@ -1,6 +1,7 @@
 {
   "Up": "UP",
   "StatsRecordTooltip": {
+    "Banner": "$t(Common:{{keyof}}.Gacha.Banner.{{category}})",
     "Version": "版本：{{value}}",
     "GenshinImpactCharacter2": "$t(Common:GenshinImpact.Gacha.Banner.Character)-2"
   },
@@ -65,7 +66,7 @@
         "Recent": "最近于 {{date}}，新增 {{count, number}} 抽",
         "Luck": "最幸运的$t(Common:{{keyof}}.Gacha.Rarity.Golden)：<item>{{itemName}}</item>，<1>{{count, number}}</1> 抽就出啦",
         "Unluck": "最非的$t(Common:{{keyof}}.Gacha.Rarity.Golden)：<item>{{itemName}}</item>，共花费 <1>{{count, number}}</1> 抽才出",
-        "Relation": "最有缘的$t(Common:{{keyof}}.Gacha.Rarity.Golden)：<1>{{itemName}}</1>，重复抽到 <1>{{count, number}}</1> 次",
+        "Relation": "最有缘的$t(Common:{{keyof}}.Gacha.Rarity.Golden)：<item>{{itemName}}</item>，重复抽到 <1>{{count, number}}</1> 次",
         "Crazy": "最疯狂的一天：<1>{{date}}</1>，这一天共抽 <1>{{count, number}}</1> 次"
       },
       "Tooltips": {

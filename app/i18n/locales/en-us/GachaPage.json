@@ -1,6 +1,7 @@
 {
   "Up": "UP",
   "StatsRecordTooltip": {
+    "Banner": "$t(Common:{{keyof}}.Gacha.Banner.{{category}})",
     "Version": "Version: {{value}}",
     "GenshinImpactCharacter2": "$t(Common:GenshinImpact.Gacha.Banner.Character)-2"
   },
@@ -69,7 +70,7 @@
         "Recent": "Latest: {{date}}, +{{count, number}} pulls",
         "Luck": "Luckiest $t(Common:{{keyof}}.Gacha.Rarity.Golden): <item>{{itemName}}</item> in <1>{{count, number}}</1> pulls",
         "Unluck": "Unluckiest $t(Common:{{keyof}}.Gacha.Rarity.Golden): <item>{{itemName}}</item> after <1>{{count, number}}</1> pulls",
-        "Relation": "Most Encountered $t(Common:{{keyof}}.Gacha.Rarity.Golden): <1>{{itemName}}</1>, obtained <1>{{count, number}}</1> times",
+        "Relation": "Most Encountered $t(Common:{{keyof}}.Gacha.Rarity.Golden): <item>{{itemName}}</item>, obtained <1>{{count, number}}</1> times",
         "Crazy": "Craziest Day: <1>{{date}}</1> with <1>{{count, number}}</1> total pulls"
       },
       "Tooltips": {

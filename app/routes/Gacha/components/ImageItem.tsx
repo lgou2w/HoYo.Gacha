@@ -139,8 +139,8 @@ export default memo(function GachaImageItem (props: GachaImageItemProps) {
 
   const buildRecordTooltip = useStatsRecordTooltip()
   const tooltip = useMemo(
-    () => buildRecordTooltip({ itemName, version, genshinImpactCharacter2, time }),
-    [buildRecordTooltip, genshinImpactCharacter2, itemName, time, version],
+    () => buildRecordTooltip({ keyof, input: { itemName, version, genshinImpactCharacter2, time } }),
+    [buildRecordTooltip, genshinImpactCharacter2, itemName, keyof, time, version],
   )
 
   const catalog = keyof === KeyofMiliastraWonderland

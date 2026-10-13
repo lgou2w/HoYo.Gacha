@@ -255,7 +255,7 @@ impl BannerCategory {
   }
 }
 
-#[derive(Clone, Debug, Default, Serialize)]
+#[derive(Clone, Copy, Debug, Default, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct UsedPity {
   value: u64,
@@ -295,6 +295,14 @@ pub struct StatsRecord<'a> {
   // Distinguish EventOde-1_1, EventOde-1_2, EventOde-2_1, EventOde-2_2
   #[serde(skip_serializing_if = "Option::is_none")]
   pub miliastra_wonderland_event_ode: Option<GachaType>,
+
+  /// Banner category this record was computed under.
+  ///
+  /// Internal-only: not serialized to the frontend. Used by
+  /// `compute_aggregated_tags` to tag luck/unluck/relation with their
+  /// origin banner without maintaining a parallel origins array.
+  #[serde(skip)]
+  pub category: BannerCategory,
 }
 
 #[derive(Clone, Debug)]
@@ -456,6 +464,7 @@ impl<'a> StatsRecord<'a> {
       version,
       genshin_impact_character2,
       miliastra_wonderland_event_ode,
+      category,
     }
   }
 }
@@ -577,11 +586,22 @@ pub struct UpWinStats {
 #[derive(Clone, Debug, Default, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AggregatedTags<'a> {
-  pub luck: Option<StatsRecord<'a>>,
-  pub unluck: Option<StatsRecord<'a>>,
+  pub luck: Option<BannerTaggedRecord<'a>>,
+  pub unluck: Option<BannerTaggedRecord<'a>>,
   pub relation: Option<RelationTag<'a>>,
   pub crazy: Option<DailyTag>,
   pub recent: Option<DailyTag>,
+}
+
+/// A single record paired with the banner category it came from.
+///
+/// Used only inside [`AggregatedTags`] — the `StatsRecord` itself stays
+/// banner-agnostic to keep the `values` payload small.
+#[derive(Clone, Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct BannerTaggedRecord<'a> {
+  pub record: StatsRecord<'a>,
+  pub category: BannerCategory,
 }
 
 /// A record that appears the most times among the aggregated golden pulls.
@@ -589,6 +609,7 @@ pub struct AggregatedTags<'a> {
 #[serde(rename_all = "camelCase")]
 pub struct RelationTag<'a> {
   pub record: StatsRecord<'a>,
+  pub category: BannerCategory,
   /// How many times `record` appears.
   pub count: u64,
 }
@@ -1093,8 +1114,15 @@ fn compute_aggregated_tags<'a>(
         )
       });
 
-    tags.luck = luck.map(|(_, e)| e.clone());
-    tags.unluck = unluck.map(|(_, e)| e.clone());
+    tags.luck = luck.map(|(_, e)| BannerTaggedRecord {
+      category: e.category,
+      record: e.clone(),
+    });
+
+    tags.unluck = unluck.map(|(_, e)| BannerTaggedRecord {
+      category: e.category,
+      record: e.clone(),
+    });
   }
 
   // Relation
@@ -1102,18 +1130,22 @@ fn compute_aggregated_tags<'a>(
     let mut counts: HashMap<u32, (&StatsRecord<'a>, u64)> =
       HashMap::with_capacity(golden.values.len());
 
-    for stats in &golden.values {
+    for record in &golden.values {
       counts
-        .entry(stats.item_id)
-        .and_modify(|(_, sum)| *sum += 1)
-        .or_insert((stats, 1));
+        .entry(record.item_id)
+        .and_modify(|(e, sum)| {
+          *e = record; // Always use the latest
+          *sum += 1;
+        })
+        .or_insert((record, 1));
     }
 
     let mut counts: Vec<_> = counts.into_values().collect();
     counts.sort_by_key(|(_, sum)| *sum);
 
-    tags.relation = counts.last().map(|(record, count)| RelationTag {
-      record: (*record).clone(),
+    tags.relation = counts.last().map(|(e, count)| RelationTag {
+      record: (*e).clone(),
+      category: e.category,
       count: *count,
     });
   }

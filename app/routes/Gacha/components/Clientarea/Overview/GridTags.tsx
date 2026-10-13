@@ -2,9 +2,9 @@ import { memo, useMemo } from 'react'
 import { Title3, makeStyles, tokens } from '@fluentui/react-components'
 import { ArrowTrendingLinesRegular, CalendarFilled, EmojiMehRegular, EmojiSparkleRegular, SparkleRegular } from '@fluentui/react-icons'
 import { KnownI18nNs, Trans, useI18n } from '@/i18n'
-import { AggregatedStats, StatsRecord } from '@/routes/Gacha/api/stats'
+import { AggregatedStats } from '@/routes/Gacha/api/stats'
 import { useBusiness } from '@/routes/Gacha/contexts/Business/hooks'
-import useStatsRecordTooltip from '@/routes/Gacha/hooks/useStatsRecordTooltip'
+import useStatsRecordTooltip, { StatsRecordTooltipArgs } from '@/routes/Gacha/hooks/useStatsRecordTooltip'
 import BadgeLabel from './BadgeLabel'
 import HighlightSpan from './HighlightSpan'
 
@@ -62,12 +62,8 @@ export default memo(function OverviewGridTags (props: OverviewGridTagsProps) {
 
   const buildRecordTooltip = useStatsRecordTooltip()
   const renderItem = useMemo(
-    () => function HighlightItem (record: StatsRecord) {
-      return (
-        <HighlightSpan
-          tooltip={buildRecordTooltip(record)}
-        />
-      )
+    () => function HighlightItem (args: StatsRecordTooltipArgs) {
+      return <HighlightSpan tooltip={buildRecordTooltip(args)} />
     },
     [buildRecordTooltip],
   )
@@ -105,13 +101,17 @@ export default memo(function OverviewGridTags (props: OverviewGridTagsProps) {
               ns={KnownI18nNs.GachaPage}
               i18nKey={`${I18nScope}.Luck`}
               components={{
-                item: renderItem(luck),
+                item: renderItem({
+                  keyof: business.keyof,
+                  input: luck.record,
+                  category: luck.category,
+                }),
                 1: <HighlightSpan />,
               }}
               values={{
                 keyof: business.keyof,
-                itemName: luck.itemName,
-                count: luck.usedPity?.value,
+                itemName: luck.record.itemName,
+                count: luck.record.usedPity?.value,
               }}
             />
           </BadgeLabel>
@@ -125,13 +125,17 @@ export default memo(function OverviewGridTags (props: OverviewGridTagsProps) {
               ns={KnownI18nNs.GachaPage}
               i18nKey={`${I18nScope}.Unluck`}
               components={{
-                item: renderItem(unluck),
+                item: renderItem({
+                  keyof: business.keyof,
+                  input: unluck.record,
+                  category: unluck.category,
+                }),
                 1: <HighlightSpan />,
               }}
               values={{
                 keyof: business.keyof,
-                itemName: unluck.itemName,
-                count: unluck.usedPity?.value,
+                itemName: unluck.record.itemName,
+                count: unluck.record.usedPity?.value,
               }}
             />
           </BadgeLabel>
@@ -144,7 +148,14 @@ export default memo(function OverviewGridTags (props: OverviewGridTagsProps) {
             <Trans
               ns={KnownI18nNs.GachaPage}
               i18nKey={`${I18nScope}.Relation`}
-              components={{ 1: <HighlightSpan /> }}
+              components={{
+                item: renderItem({
+                  keyof: business.keyof,
+                  input: relation.record,
+                  category: relation.category,
+                }),
+                1: <HighlightSpan />,
+              }}
               values={{
                 keyof: business.keyof,
                 itemName: relation.record.itemName,

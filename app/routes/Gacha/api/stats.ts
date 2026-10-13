@@ -157,8 +157,14 @@ export interface AggregatedStats {
   tags: AggregatedTags
 }
 
+export interface BannerTaggedRecord {
+  record: StatsRecord
+  category: BannerCategory
+}
+
 export interface RelationTag {
   record: StatsRecord
+  category: BannerCategory
   count: number
 }
 
@@ -169,8 +175,8 @@ export interface DailyTag {
 }
 
 export interface AggregatedTags {
-  luck?: StatsRecord | null
-  unluck?: StatsRecord | null
+  luck?: BannerTaggedRecord | null
+  unluck?: BannerTaggedRecord | null
   relation?: RelationTag | null
   crazy?: DailyTag | null
   recent?: DailyTag | null
