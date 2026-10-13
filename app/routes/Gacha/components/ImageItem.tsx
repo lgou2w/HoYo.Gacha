@@ -1,8 +1,9 @@
 import { ComponentProps, memo, useMemo } from 'react'
-import { Tooltip, TooltipProps, makeStyles, mergeClasses, tokens } from '@fluentui/react-components'
-import { KeyofAccountBusiness } from '@/api/Account'
+import { Image, Tooltip, TooltipProps, makeStyles, mergeClasses, tokens } from '@fluentui/react-components'
+import { KeyofAccountBusiness, KeyofMiliastraWonderland } from '@/api/Account'
+import BusinessImages from '@/assets/Images/BusinessImages'
 import { KnownI18nNs, useI18n } from '@/i18n'
-import { Rarity, StatsRecord } from '@/routes/Gacha/api/stats'
+import { ItemCategory, Rarity, StatsRecord } from '@/routes/Gacha/api/stats'
 import useStatsRecordTooltip from '@/routes/Gacha/hooks/useStatsRecordTooltip'
 import capitalize from '@/utilities/capitalize'
 import GachaImage from './Image'
@@ -83,6 +84,21 @@ const useStyles = makeStyles({
     borderTopLeftRadius: tokens.borderRadiusMedium,
     borderBottomRightRadius: tokens.borderRadiusMedium,
   },
+  labelCatalog: {
+    top: '0.075rem',
+    left: '0.075rem',
+    border: 'none',
+    borderRadius: tokens.borderRadiusMedium,
+    backgroundColor: 'rgba(0, 0, 0, 0.35)',
+    width: '1rem',
+    height: '1rem',
+    minWidth: '1rem',
+    padding: '0.075rem',
+    '& img': {
+      width: '100%',
+      height: '100%',
+    },
+  },
 })
 
 export interface GachaImageItemProps extends Omit<ComponentProps<'div'>, 'children' | 'ref'> {
@@ -127,6 +143,10 @@ export default memo(function GachaImageItem (props: GachaImageItemProps) {
     [buildRecordTooltip, genshinImpactCharacter2, itemName, time, version],
   )
 
+  const catalog = keyof === KeyofMiliastraWonderland
+    && (itemCategory === ItemCategory.CosmeticCatalog
+      || (itemId >= 270000 && itemId <= 279999))
+
   return (
     <Tooltip
       content={{
@@ -168,6 +188,11 @@ export default memo(function GachaImageItem (props: GachaImageItemProps) {
         {!noUpBadge && isUp && (
           <span className={mergeClasses(styles.label, styles.labelUp)}>
             {t('Up')}
+          </span>
+        )}
+        {noUpBadge && catalog && (
+          <span className={mergeClasses(styles.label, styles.labelCatalog)}>
+            <Image src={BusinessImages[keyof].IconCostumeSynthesis} />
           </span>
         )}
       </div>
