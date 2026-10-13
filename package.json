@@ -18,6 +18,7 @@
   "scripts": {
     "clean": "pnpm app:clean && pnpm tauri:clean",
     "dev": "concurrently --raw --kill-others \"pnpm:app:dev\" \"pnpm:tauri:dev\"",
+    "build": "pnpm app:build && pnpm tauri:build",
     "lint": "pnpm app:lint && pnpm tauri:lint",
     "test": "pnpm app:test && pnpm tauri:test",
     "app:clean": "rimraf dist",

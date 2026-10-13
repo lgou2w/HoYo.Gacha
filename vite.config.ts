@@ -9,7 +9,7 @@ import packageJson from './package.json' with { type: 'json' }
 // https://github.com/microsoft/griffel/issues/1106
 const griffelResolver = createResolverFactory()({
   alias: {
-    '@/*': [path.resolve(import.meta.dirname, 'app')],
+    '@': [path.resolve(import.meta.dirname, 'app')],
   },
 })
 
@@ -48,7 +48,7 @@ export default defineConfig((env) => {
       tsconfigPaths: true,
       extensions: ['.js', '.jsx', '.ts', '.tsx'],
       alias: {
-        '@/*': path.resolve(import.meta.dirname, 'app'),
+        '@': path.resolve(import.meta.dirname, 'app'),
       },
     },
     clearScreen: false,

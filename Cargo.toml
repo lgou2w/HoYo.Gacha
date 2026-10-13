@@ -51,3 +51,10 @@ webview2-com = { version = "0.39.1", default-features = false }
 
 [profile.dev]
 incremental = true
+
+[profile.release]
+panic = "abort"
+lto = true
+codegen-units = 1
+opt-level = "s"
+strip = true
