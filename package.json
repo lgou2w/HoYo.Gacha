@@ -52,7 +52,10 @@
     "react-i18next": "^17.0.16"
   },
   "devDependencies": {
-    "@griffel/vite-plugin": "^1.0.1",
+    "@babel/preset-react": "^7.29.7",
+    "@babel/preset-typescript": "^7.29.7",
+    "@griffel/tag-processor": "^1.0.16",
+    "@griffel/vite-plugin": "^0.1.16",
     "@stylistic/eslint-plugin": "^5.10.0",
     "@tauri-apps/cli": "^2.12.1",
     "@types/node": "^24.19.2",

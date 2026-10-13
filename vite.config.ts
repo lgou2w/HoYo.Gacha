@@ -1,17 +1,10 @@
 /// <reference types="vitest/config" />
 
 import path from 'node:path'
-import { createResolverFactory, griffel } from '@griffel/vite-plugin'
+import griffel from '@griffel/vite-plugin'
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 import packageJson from './package.json' with { type: 'json' }
-
-// https://github.com/microsoft/griffel/issues/1106
-const griffelResolver = createResolverFactory()({
-  alias: {
-    '@': [path.resolve(import.meta.dirname, 'app')],
-  },
-})
 
 export default defineConfig((env) => {
   const isDev = env.command === 'serve'
@@ -29,9 +22,15 @@ export default defineConfig((env) => {
       sourcemap: isDev,
     },
     plugins: [
-      griffel({
+      isProd && griffel({
         include: ['app\/**\/*.{ts,tsx}'],
-        resolverFactory: () => griffelResolver,
+        babelOptions: {
+          compact: false,
+          presets: [
+            '@babel/preset-typescript',
+            '@babel/preset-react',
+          ],
+        },
       }),
       react(),
     ],
