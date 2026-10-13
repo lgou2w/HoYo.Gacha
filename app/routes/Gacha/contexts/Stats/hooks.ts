@@ -5,12 +5,9 @@ import { GachaStatsQueryArgs, gachaStatsQueryOptions } from './query'
 import { GachaStatsContext } from './types'
 
 export function useGachaStats () {
-  const state = use(GachaStatsContext)
-  if (!state) {
-    throw new Error('useGachaStats must be used within an GachaStatsProvider')
-  } else {
-    return state
-  }
+  // Because the GachaStatsContext is unwrapped,
+  // it is a direct reference to the GachaStats value.
+  return use(GachaStatsContext)
 }
 
 export function useGachaStatsSuspenseQuery<T extends AccountBusiness> (

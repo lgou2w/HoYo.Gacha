@@ -37,7 +37,7 @@ export default function AnalysisColumns () {
   const visibleBanners = useVisibleBanners(stats, banners)
 
   const itemContent = useCallback<SortableListProps<BannerCategory>['itemContent']>((id, _index, sortable) => {
-    const dataset = stats.banners[id]
+    const dataset = stats?.banners[id]
     if (!dataset) {
       return null
     }
@@ -50,7 +50,7 @@ export default function AnalysisColumns () {
         />
       </div>
     )
-  }, [stats.banners, styles.columnWrapper])
+  }, [stats?.banners, styles.columnWrapper])
 
   const handleWheel = useHorizontalWheelScroll({
     ease: 0.15,
