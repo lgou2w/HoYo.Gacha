@@ -1,5 +1,5 @@
 import { ReactNode, memo, useMemo } from 'react'
-import { Badge, BadgeProps, Caption1, Title3, Tooltip, makeStyles, mergeClasses, tokens } from '@fluentui/react-components'
+import { Caption1, Title3, makeStyles, mergeClasses, tokens } from '@fluentui/react-components'
 import { KeyofAccountBusiness, KeyofZenlessZoneZero } from '@/api/Account'
 import Placeholder from '@/components/Placeholder'
 import { KnownI18nNs, useI18n } from '@/i18n'
@@ -9,6 +9,8 @@ import BannerDragIcon from '@/routes/Gacha/components/Banner/DragIcon'
 import GachaImageItem from '@/routes/Gacha/components/ImageItem'
 import GachaTicket from '@/routes/Gacha/components/Ticket'
 import { useBusiness } from '@/routes/Gacha/contexts/Business/hooks'
+import BadgeLabel from './BadgeLabel'
+import HighlightSpan from './HighlightSpan'
 import { Aggregated, GridItemDataset, deriveGridItem } from './types'
 
 const useStyles = makeStyles({
@@ -68,11 +70,6 @@ const useStyles = makeStyles({
     flexDirection: 'row',
     columnGap: tokens.spacingHorizontalS,
   },
-  label: {
-    flex: '0 0 auto',
-    boxShadow: tokens.shadow2,
-    whiteSpace: 'pre-wrap',
-  },
   labelPercentage: {
     marginLeft: tokens.spacingHorizontalXXS,
     fontFamily: tokens.fontFamilyMonospace,
@@ -131,21 +128,20 @@ export default memo(function OverviewGridItem (props: OverviewGridItemProps) {
       </div>
       <div className={styles.labels}>
         <div className={styles.labelsGroup}>
-          <GroupLabel className={styles.label} color="brand" appearance="tint">
+          <BadgeLabel color="brand" appearance="tint">
             {t('Total', { count: d.total })}
-          </GroupLabel>
-          <GroupLabel className={styles.label} color="success" appearance="tint">
+          </BadgeLabel>
+          <BadgeLabel color="success" appearance="tint">
             {t('Sum', { count: d.sum, context: d.rarityContext })}
-          </GroupLabel>
+          </BadgeLabel>
           {d.isBanner && (
-            <GroupLabel className={styles.label} color="severe" appearance="tint">
+            <BadgeLabel color="severe" appearance="tint">
               {t('NextPity', { count: d.nextPity.value })}
-            </GroupLabel>
+            </BadgeLabel>
           )}
         </div>
         <div className={styles.labelsGroup}>
           <StatLabel
-            className={styles.label}
             label={t('Average', { context: d.rarityContext })}
             value={d.average}
             tooltip={d.average > 0 && `${d.usedPitySum} / ${d.sum} ≈ ${d.average}`}
@@ -153,7 +149,6 @@ export default memo(function OverviewGridItem (props: OverviewGridItemProps) {
             numeric
           />
           <StatLabel
-            className={styles.label}
             label={t('Percentage', { context: d.rarityContext })}
             value={d.percentage}
             tooltip={d.percentage > 0 && `${d.sum} / ${d.total} ≈ ${d.percentage} %`}
@@ -164,7 +159,6 @@ export default memo(function OverviewGridItem (props: OverviewGridItemProps) {
         {d.up && (
           <div className={styles.labelsGroup}>
             <StatLabel
-              className={styles.label}
               label={t('UpAverage', { context: d.rarityContext })}
               value={d.up.average}
               tooltip={d.up.average > 0 && `${d.up.usedPitySum} / ${d.up.sum} ≈ ${d.up.average}`}
@@ -172,7 +166,6 @@ export default memo(function OverviewGridItem (props: OverviewGridItemProps) {
               numeric
             />
             <StatLabel
-              className={styles.label}
               label={t('UpPercentage', { context: d.rarityContext })}
               value={d.up.percentage}
               tooltip={d.up.percentage > 0 && `${d.up.sum} / ${d.total} ≈ ${d.up.percentage} %`}
@@ -184,7 +177,6 @@ export default memo(function OverviewGridItem (props: OverviewGridItemProps) {
         {d.showcase && (
           <div className={styles.labelsGroup}>
             <StatLabel
-              className={styles.label}
               label={t('Last', { context: d.rarityContext })}
               value={d.showcase.itemName}
               suffix={d.showcase.usedPity && (
@@ -211,51 +203,6 @@ export default memo(function OverviewGridItem (props: OverviewGridItemProps) {
   )
 })
 
-function GroupLabel (props: BadgeProps) {
-  const {
-    appearance = 'filled',
-    color = 'informative',
-    size = 'large',
-    children,
-    ...rest
-  } = props
-
-  return (
-    <Badge
-      appearance={appearance}
-      color={color}
-      size={size}
-      {...rest}
-    >
-      {children}
-    </Badge>
-  )
-}
-
-const useStatLabelStyles = makeStyles({
-  tooltip: {
-    whiteSpace: 'pre-wrap',
-  },
-  value: {
-    display: 'inline-block',
-    position: 'relative',
-    zIndex: 1,
-    color: tokens.colorBrandForeground1,
-    userSelect: 'none',
-    cursor: 'default',
-  },
-  valueInteractive: {
-    textDecoration: 'underline dashed',
-    textDecorationColor: tokens.colorBrandStroke1,
-    textDecorationThickness: '1px',
-    textUnderlineOffset: '0.25rem',
-    cursor: 'help',
-  },
-  numeric: {
-    fontFamily: tokens.fontFamilyMonospace,
-  },
-})
-
 interface StatLabelProps {
   className?: string
   label: ReactNode
@@ -267,43 +214,14 @@ interface StatLabelProps {
 
 function StatLabel (props: StatLabelProps) {
   const { className, label, value, suffix, tooltip, numeric } = props
-  const styles = useStatLabelStyles()
-
-  const valueNode = (
-    <div
-      className={mergeClasses(
-        styles.value,
-        !!tooltip && styles.valueInteractive,
-        numeric && styles.numeric,
-      )}
-    >
-      {value}
-    </div>
-  )
-
   return (
-    <GroupLabel className={className}>
+    <BadgeLabel className={className}>
       {label}
-      {tooltip
-        ? (
-            <Tooltip
-              content={{
-                children: tooltip,
-                className: mergeClasses(
-                  styles.tooltip,
-                  numeric && styles.numeric,
-                ),
-              }}
-              relationship="description"
-              positioning="above"
-              withArrow
-            >
-              {valueNode}
-            </Tooltip>
-          )
-        : valueNode}
+      <HighlightSpan tooltip={tooltip} numeric={numeric}>
+        {value}
+      </HighlightSpan>
       {suffix}
-    </GroupLabel>
+    </BadgeLabel>
   )
 }
 
