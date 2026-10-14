@@ -83,6 +83,15 @@
     },
     "Analysis": {
       "ColumnItem": {
+        "Total": "{{count, number}}",
+        "Pull": "pulls",
+        "Labels": {
+          "Average": "Average",
+          "AverageAndUp": "Average / $t(Up)",
+          "UpWin": "$t(Up) Win",
+          "Up": "$t(Up)",
+          "Count": "Count"
+        }
       }
     }
   }

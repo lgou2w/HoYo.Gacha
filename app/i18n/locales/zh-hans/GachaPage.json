@@ -79,6 +79,15 @@
     },
     "Analysis": {
       "ColumnItem": {
+        "Total": "{{count, number}}",
+        "Pull": "抽",
+        "Labels": {
+          "Average": "平均",
+          "AverageAndUp": "平均 / $t(Up)",
+          "UpWin": "$t(Up)不歪",
+          "Up": "$t(Up)",
+          "Count": "统计"
+        }
       }
     }
   }
