@@ -1,6 +1,7 @@
 import { BorderRadiusTokens, FluentProviderCustomStyleHooks, FontSizeTokens, HorizontalSpacingTokens, LineHeightTokens, StrokeWidthTokens, VerticalSpacingTokens } from '@fluentui/react-components'
 import useBadgeStyles from './useBadgeStyles'
 import useButtonStyles from './useButtonStyles'
+import useDividerStyles from './useDividierStyles'
 import useFieldStyles from './useFieldStyles'
 import useInputStyles from './useInputStyles'
 import useMenuButtonStyles from './useMenuButtonStyles'
@@ -97,6 +98,7 @@ type CustomStyleHook = (state: unknown) => void
 export const CustomStylesHooks: FluentProviderCustomStyleHooks = {
   useBadgeStyles_unstable: useBadgeStyles as CustomStyleHook,
   useButtonStyles_unstable: useButtonStyles as CustomStyleHook,
+  useDividerStyles_unstable: useDividerStyles as CustomStyleHook,
   useFieldStyles_unstable: useFieldStyles as CustomStyleHook,
   useInputStyles_unstable: useInputStyles as CustomStyleHook,
   useMenuButtonStyles_unstable: useMenuButtonStyles as CustomStyleHook,
