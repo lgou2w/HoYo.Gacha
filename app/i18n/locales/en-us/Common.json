@@ -96,9 +96,9 @@
         "WEngineReverberation": "W-Engine Reverberation"
       },
       "Rarity": {
-        "Golden": "5★",
-        "Purple": "4★",
-        "Blue": "3★"
+        "Golden": "S-Rank",
+        "Purple": "A-Rank",
+        "Blue": "B-Rank"
       }
     }
   }
