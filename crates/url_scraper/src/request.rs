@@ -81,28 +81,28 @@ impl GachaUrlResponse<'_> {
   }
 }
 
-pub trait GachaUrlRequester {
-  fn request<'a>(
-    &'a self,
+pub trait GachaUrlRequester<'a> {
+  fn request<'p>(
+    &'p self,
     endpoint: GachaLogEndpoint,
     options: AsParamsOptions<'a>,
     timeout: Option<Duration>,
-  ) -> impl Future<Output = Result<GachaUrlResponse<'a>, GachaUrlRequestError>>;
+  ) -> impl Future<Output = Result<GachaUrlResponse<'a>, GachaUrlRequestError>> + 'p;
 
-  fn request_with_retry<'a, S>(
-    &'a self,
+  fn request_with_retry<'p, S>(
+    &'p self,
     endpoint: GachaLogEndpoint,
     options: AsParamsOptions<'a>,
     retry: RetryOptions,
     sleeper: fn(Duration) -> S,
-  ) -> Pin<Box<dyn Future<Output = Result<GachaUrlResponse<'a>, GachaUrlRequestError>> + Send + 'a>>
+  ) -> Pin<Box<dyn Future<Output = Result<GachaUrlResponse<'a>, GachaUrlRequestError>> + Send + 'p>>
   where
     S: Future<Output = ()> + Send + 'static;
 }
 
-impl GachaUrlRequester for ParsedGachaUrl<'_> {
-  async fn request<'a>(
-    &'a self,
+impl<'a> GachaUrlRequester<'a> for ParsedGachaUrl<'a> {
+  async fn request<'p>(
+    &'p self,
     endpoint: GachaLogEndpoint,
     options: AsParamsOptions<'a>,
     timeout: Option<Duration>,
@@ -171,13 +171,13 @@ impl GachaUrlRequester for ParsedGachaUrl<'_> {
     }
   }
 
-  fn request_with_retry<'a, S>(
-    &'a self,
+  fn request_with_retry<'p, S>(
+    &'p self,
     endpoint: GachaLogEndpoint,
     options: AsParamsOptions<'a>,
     retry: RetryOptions,
     sleeper: fn(Duration) -> S,
-  ) -> Pin<Box<dyn Future<Output = Result<GachaUrlResponse<'a>, GachaUrlRequestError>> + Send + 'a>>
+  ) -> Pin<Box<dyn Future<Output = Result<GachaUrlResponse<'a>, GachaUrlRequestError>> + Send + 'p>>
   where
     S: Future<Output = ()> + Send + 'static,
   {

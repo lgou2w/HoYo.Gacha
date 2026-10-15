@@ -193,41 +193,87 @@ pub struct AsParamsOptions<'a> {
 }
 
 impl<'a> ParsedGachaUrl<'a> {
-  /// Convert the current parsed Gacha URL into an array of query parameters for an HTTP request.
+  /// Convert the current parsed Gacha URL into an array of query parameters
+  /// for an HTTP request.
+  ///
   /// If optional parameters for `options` are provided, then use them first.
-  pub fn as_params(&'a self, options: AsParamsOptions<'a>) -> Vec<(&'static str, Cow<'a, str>)> {
+  ///
+  /// # `Cow::clone()` cost
+  ///
+  /// Every field is a `Cow<'a, str>` whose variant depends on whether the
+  /// original URL contained percent-encoded bytes:
+  ///
+  /// - **Zero-cost** for `Cow::Borrowed`: `clone()` is a pointer + length
+  ///   copy. In practice this covers every field except `authkey`, because
+  ///   the other values (`"1"`, `"2"`, `"zh-cn"`, `"prod_gf_cn"`,
+  ///   `"webview_gacha"`, …) are already URL-safe and come out of
+  ///   `form_urlencoded::parse` as `Borrowed`.
+  /// - **One allocation** for `Cow::Owned`: `clone()` reallocates the
+  ///   `String`. In practice only `authkey` hits this, since authkeys are
+  ///   usually percent-encoded (`%2B`, `%3D`, …) and thus decode into an
+  ///   owned `String`.
+  ///
+  /// `request_with_retry` may clone this list up to `retry.max_attempts`
+  /// times; the `authkey` reallocation is a few hundred bytes per attempt
+  /// and is negligible next to the HTTP round-trip it precedes.
+  pub fn as_params(&self, options: AsParamsOptions<'a>) -> Vec<(&'static str, Cow<'a, str>)> {
     let mut params = vec![
       // Required params
       (PARAM_SIGN_TYPE, Cow::clone(&self.sign_type)),
       (PARAM_AUTHKEY_VER, Cow::clone(&self.authkey_ver)),
+      // ⚠️ Real allocation: `authkey` almost always contains percent-encoded
+      // bytes (`%2B`, `%3D`, …), so `form_urlencoded::parse` decodes it into
+      // an owned `String` — `Cow::clone()` reallocates ~1 KB here. Called once
+      // per `request_with_retry` attempt (default `max_attempts: 5`), so up to
+      // ~5 KB total. Acceptable next to the HTTP round-trip it precedes; do
+      // not "optimize" this without measuring first.
       (PARAM_AUTHKEY, Cow::clone(&self.authkey)),
       (PARAM_GAME_BIZ, Cow::Borrowed(self.gamebiz.codename())),
     ];
 
+    /// Push a parameter into `params`.
+    ///
+    /// - `Cow(expr)` — `expr: Option<Cow<'a, str>>`, pushed as-is.
+    /// - `CowOr(first, fallback)` — `first: Option<&'a str>`, `fallback: &Cow<'a, str>`;
+    ///   `first` wins, otherwise `fallback` is cloned (zero-cost if borrowed).
+    /// - `Num(expr)` — `expr: Option<u32>`, `to_string()`-ed into `Cow::Owned`.
     macro_rules! push_param {
-      ($key:expr, Owned($value:expr)) => {
+      ($key:expr, Cow($value:expr)) => {
+        if let Some(value) = $value {
+          params.push(($key, value));
+        }
+      };
+      ($key:expr, CowOr($first:expr, $fallback:expr)) => {
+        push_param!(
+          $key,
+          Cow(match $first {
+            Some(v) => Some(Cow::Borrowed(v)),
+            None => Some($fallback.clone()),
+          })
+        )
+      };
+      ($key:expr, Num($value:expr)) => {
         if let Some(value) = $value {
           params.push(($key, Cow::Owned(value.to_string())));
         }
       };
-      ($key:expr, Borrowed($value:expr)) => {
-        if let Some(value) = $value {
-          params.push(($key, Cow::Borrowed(value)));
-        }
-      };
     }
 
-    // Allow overriding lang and gacha_type
-    push_param! { PARAM_REGION, Borrowed(self.region.as_deref()) }
-    push_param! { PARAM_LANG, Borrowed(options.lang.or(Some(&self.lang))) }
-    push_param! { PARAM_AUTH_APPID, Borrowed(self.auth_appid.as_deref()) }
-    push_param! { self.gacha_type.name, Owned(options.gacha_type.or(self.gacha_type.value)) }
-    push_param! { self.init_gacha_type.name, Owned(options.init_gacha_type.or(self.init_gacha_type.value)) }
+    // Optional params — all `Borrowed` in practice, so the `clone()`s below
+    // are pointer copies. The `Num(...)` calls allocate a small `String`
+    // for the numeric fields (also negligible).
+
+    // // Allow overriding lang and gacha_type
+    push_param! { PARAM_REGION, Cow(self.region.clone()) }
+    push_param! { PARAM_LANG, CowOr(options.lang, self.lang) }
+    push_param! { PARAM_AUTH_APPID, Cow(self.auth_appid.clone()) }
+    push_param! { self.gacha_type.name, Num(options.gacha_type.or(self.gacha_type.value)) }
+    push_param! { self.init_gacha_type.name, Num(options.init_gacha_type.or(self.init_gacha_type.value)) }
 
     // Optional params
-    push_param! { PARAM_END_ID, Borrowed(options.end_id.or(self.end_id.as_deref())) }
-    push_param! { PARAM_SIZE, Owned(options.size.or(self.size)) }
-    push_param! { PARAM_PAGE, Owned(options.page) }
+    push_param! { PARAM_END_ID, Cow(options.end_id.map(Cow::Borrowed).or_else(|| self.end_id.clone())) }
+    push_param! { PARAM_SIZE, Num(options.size.or(self.size)) }
+    push_param! { PARAM_PAGE, Num(options.page) }
 
     params
   }
@@ -248,6 +294,7 @@ mod tests {
     assert_eq!(parsed.gamebiz, GameServer::HKRPG_CN);
     assert_eq!(parsed.sign_type, "2");
     assert_eq!(parsed.authkey_ver, "1");
+    assert!(matches!(parsed.authkey, Cow::Owned(_))); // Owned
     assert_eq!(parsed.authkey, "yourauthkey+"); // '+' == "%2B"
     assert_eq!(parsed.lang, "zh-cn");
     assert_eq!(parsed.auth_appid, None);
