@@ -1,6 +1,7 @@
 import { AccountBusiness } from '@/api/Account'
 import { LanguageMetadata } from '@/i18n'
 import { AggregatedStats, BannerCategory, BannerStats, Rarity, StatsRecord, UsedPity } from '@/routes/Gacha/api/stats'
+import { hasUpBanner } from '@/routes/Gacha/components/types'
 
 export const Aggregated = 'Aggregated'
 export type Aggregated = typeof Aggregated
@@ -92,14 +93,7 @@ export function deriveGridItem (
   const golden = dataset.rarity[Rarity.Golden]
   const purple = dataset.rarity[Rarity.Purple]
 
-  const hasUp
-    = !isBeginner
-      && !isPermanent
-      && !isChronicledAndLightrace
-      && !isBangboo
-      && !isPermanentOde
-      && !isEventOde
-
+  const hasUp = isBanner && hasUpBanner(dataset.category)
   const rarityContext = (isPermanentOde ? Rarity.Purple : Rarity.Golden)
 
   const total = dataset.total

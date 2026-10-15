@@ -42,3 +42,12 @@ export function currencySrc (
       : assets.IconCurrency02
   }
 }
+
+export function hasUpBanner (category: BannerCategory): boolean {
+  return category !== BannerCategory.Beginner
+    && category !== BannerCategory.Permanent
+    && category !== BannerCategory.ChronicledAndLightrace
+    && category !== BannerCategory.Bangboo
+    && category !== BannerCategory.PermanentOde
+    && category !== BannerCategory.EventOde
+}

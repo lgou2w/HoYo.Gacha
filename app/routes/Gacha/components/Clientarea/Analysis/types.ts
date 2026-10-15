@@ -1,6 +1,7 @@
 import { AccountBusiness } from '@/api/Account'
 import { LanguageMetadata } from '@/i18n'
 import { BannerCategory, BannerStats, Rarity } from '@/routes/Gacha/api/stats'
+import { hasUpBanner } from '@/routes/Gacha/components/types'
 
 export interface ColumnItemDerived {
   category: BannerCategory
@@ -42,14 +43,7 @@ export function deriveColumnItem (
   }
 
   const total = dataset.total
-
-  const hasUp
-    = !isBeginner
-      && !isPermanent
-      && !isChronicledAndLightrace
-      && !isBangboo
-      && !isPermanentOde
-      && !isEventOde
+  const hasUp = hasUpBanner(category)
 
   return {
     category,
