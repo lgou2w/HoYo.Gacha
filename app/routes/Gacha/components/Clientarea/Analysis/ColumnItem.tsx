@@ -1,5 +1,6 @@
 import { memo, useMemo } from 'react'
 import { Divider, Subtitle2, Title1, makeStyles, tokens } from '@fluentui/react-components'
+import { ArrowBidirectionalLeftRightFilled } from '@fluentui/react-icons'
 import { AccountBusiness } from '@/api/Account'
 import { KnownI18nNs, useI18n } from '@/i18n'
 import { BannerStats } from '@/routes/Gacha/api/stats'
@@ -26,6 +27,7 @@ const useStyles = makeStyles({
   },
   dragIcon: {
     position: 'absolute',
+    fontSize: tokens.fontSizeBase400,
     top: tokens.spacingVerticalL,
     right: tokens.spacingHorizontalL,
     cursor: 'pointer',
@@ -79,7 +81,9 @@ export default memo(function AnalysisColumnItem (props: AnalysisColumnItemProps)
       {dragRef && (
         <BannerDragIcon
           className={styles.dragIcon}
+          icon={ArrowBidirectionalLeftRightFilled}
           dragRef={dragRef}
+          tooltipPositioning="above-end"
         />
       )}
       <div className={styles.header}>

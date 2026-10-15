@@ -1,15 +1,16 @@
 import { Tooltip, TooltipProps } from '@fluentui/react-components'
-import { GridDotsRegular } from '@fluentui/react-icons'
+import { FluentIcon } from '@fluentui/react-icons'
 import { KnownI18nNs, useI18n } from '@/i18n'
 
 export interface BannerDragIconProps {
   className?: string
+  icon: FluentIcon
   dragRef: (el: Element | null) => void
   tooltipPositioning?: TooltipProps['positioning']
 }
 
 export default function BannerDragIcon (props: BannerDragIconProps) {
-  const { className, dragRef, tooltipPositioning } = props
+  const { className, icon: Icon, dragRef, tooltipPositioning } = props
   const { t } = useI18n({ ns: KnownI18nNs.GachaPage })
 
   return (
@@ -19,7 +20,7 @@ export default function BannerDragIcon (props: BannerDragIconProps) {
       relationship="label"
       withArrow
     >
-      <GridDotsRegular
+      <Icon
         className={className}
         ref={dragRef}
       />

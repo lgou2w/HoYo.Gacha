@@ -1,5 +1,6 @@
 import { ReactNode, memo, useMemo } from 'react'
 import { Caption1, Title3, makeStyles, mergeClasses, tokens } from '@fluentui/react-components'
+import { ArrowMoveRegular } from '@fluentui/react-icons'
 import { KeyofAccountBusiness, KeyofZenlessZoneZero } from '@/api/Account'
 import Placeholder from '@/components/Placeholder'
 import { KnownI18nNs, useI18n } from '@/i18n'
@@ -111,8 +112,9 @@ export default memo(function OverviewGridItem (props: OverviewGridItemProps) {
         {d.isBanner && dragHandleRef && (
           <BannerDragIcon
             className={styles.badgeDragIcon}
+            icon={ArrowMoveRegular}
             dragRef={dragHandleRef}
-            tooltipPositioning="before"
+            tooltipPositioning="above-end"
           />
         )}
       </div>
