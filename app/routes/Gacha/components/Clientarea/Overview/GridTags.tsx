@@ -22,11 +22,11 @@ const useStyles = makeStyles({
     boxShadow: tokens.shadow2,
   },
   header: {
-    display: 'inline-flex',
+    display: 'flex',
     flexDirection: 'column',
   },
   labels: {
-    display: 'inline-flex',
+    display: 'flex',
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: tokens.spacingHorizontalS,

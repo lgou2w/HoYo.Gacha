@@ -17,7 +17,7 @@ const useStyles = makeStyles({
     maxHeight: ToolbarHeight,
   },
   actions: {
-    display: 'inline-flex',
+    display: 'flex',
     flexDirection: 'row',
     flex: '1 0 auto',
     justifyContent: 'space-between',

@@ -5,7 +5,7 @@ import { ToolbarHeight } from '@/routes/Gacha/components/types'
 
 const useStyles = makeStyles({
   root: {
-    display: 'inline-flex',
+    display: 'flex',
     flexDirection: 'column',
     rowGap: tokens.spacingVerticalXS,
     justifyContent: 'space-between',
@@ -14,7 +14,7 @@ const useStyles = makeStyles({
     maxHeight: ToolbarHeight,
   },
   label: {
-    display: 'inline-flex',
+    display: 'flex',
     flexDirection: 'row',
     alignItems: 'center',
     columnGap: tokens.spacingHorizontalXS,
@@ -28,7 +28,7 @@ const useStyles = makeStyles({
     fontSize: tokens.fontSizeBase400,
   },
   content: {
-    display: 'inline-flex',
+    display: 'flex',
     flexDirection: 'row',
     flex: '1 0 auto',
     columnGap: tokens.spacingHorizontalS,

@@ -30,7 +30,7 @@ const useStyles = makeStyles({
     position: 'absolute',
     top: 0,
     right: 0,
-    display: 'inline-flex',
+    display: 'flex',
     flexDirection: 'row',
     alignItems: 'center',
     columnGap: tokens.spacingHorizontalXS,
@@ -57,16 +57,16 @@ const useStyles = makeStyles({
     cursor: 'pointer',
   },
   header: {
-    display: 'inline-flex',
+    display: 'flex',
     flexDirection: 'column',
   },
   labels: {
-    display: 'inline-flex',
+    display: 'flex',
     flexDirection: 'column',
     rowGap: tokens.spacingVerticalS,
   },
   labelsGroup: {
-    display: 'inline-flex',
+    display: 'flex',
     flexDirection: 'row',
     columnGap: tokens.spacingHorizontalS,
   },

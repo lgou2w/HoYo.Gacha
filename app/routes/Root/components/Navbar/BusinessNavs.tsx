@@ -9,7 +9,7 @@ import Nav from './Nav'
 
 const useStyles = makeStyles({
   root: {
-    display: 'inline-flex',
+    display: 'flex',
     flexDirection: 'column',
   },
   nav: {

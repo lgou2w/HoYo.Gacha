@@ -3,7 +3,7 @@ import { Slot, Tab, imageClassNames, makeStyles, mergeClasses, tabClassNames, to
 
 const useStyles = makeStyles({
   root: {
-    display: 'inline-flex',
+    display: 'flex',
     flex: '0 0 auto',
     justifyContent: 'center',
     borderRadius: tokens.borderRadiusSmall,

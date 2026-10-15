@@ -10,12 +10,12 @@ import { ColumnItemDerived } from './types'
 
 const useStyles = makeStyles({
   root: {
-    display: 'inline-flex',
+    display: 'flex',
     flexDirection: 'column',
     rowGap: tokens.spacingVerticalXXS,
   },
   group: {
-    display: 'inline-flex',
+    display: 'flex',
     justifyContent: 'space-between',
   },
   groupAverage: { color: tokens.colorPaletteGreenForeground1 },

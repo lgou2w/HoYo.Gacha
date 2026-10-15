@@ -8,7 +8,7 @@ import GachaImage from '@/routes/Gacha/components/Image'
 
 const useStyles = makeStyles({
   root: {
-    display: 'inline-flex',
+    display: 'flex',
     flexDirection: 'row',
     height: 'inherit',
     columnGap: tokens.spacingHorizontalS,
@@ -89,7 +89,7 @@ function Avatar (props: AvatarProps) {
 
 const useIdentityStyles = makeStyles({
   root: {
-    display: 'inline-flex',
+    display: 'flex',
     flexDirection: 'column',
     justifyContent: 'center',
   },

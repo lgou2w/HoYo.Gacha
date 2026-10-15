@@ -12,7 +12,7 @@ const useStyles = makeStyles({
     rowGap: tokens.spacingVerticalL,
   },
   actions: {
-    display: 'inline-flex',
+    display: 'flex',
     flexDirection: 'row',
     flex: '0 0 auto',
     flexWrap: 'nowrap',

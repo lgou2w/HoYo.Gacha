@@ -31,11 +31,11 @@ const useStyles = makeStyles({
     cursor: 'pointer',
   },
   header: {
-    display: 'inline-flex',
+    display: 'flex',
     flexDirection: 'column',
   },
   headerTitle: {
-    display: 'inline-flex',
+    display: 'flex',
     alignItems: 'end',
   },
   headerTotal: {
@@ -52,7 +52,7 @@ const useStyles = makeStyles({
     marginBottom: tokens.spacingVerticalXS,
   },
   divider: {
-    display: 'inline-flex',
+    display: 'flex',
     flexGrow: 0,
   },
   records: {},
