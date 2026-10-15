@@ -37,9 +37,11 @@ const useStyles = makeStyles({
     display: 'flex',
     flexDirection: 'column',
   },
+  headerSubtitle: {
+    marginRight: `calc(${tokens.spacingHorizontalL} + ${tokens.spacingHorizontalS})`,
+  },
   headerTitle: {
     display: 'flex',
-    alignItems: 'end',
   },
   headerTotal: {
     fontFamily: tokens.fontFamilyNumeric,
@@ -48,6 +50,7 @@ const useStyles = makeStyles({
     marginLeft: tokens.spacingHorizontalXS,
   },
   headerTicket: {
+    alignSelf: 'end',
     width: tokens.fontSizeBase600,
     height: 'auto',
     aspectRatio: 1,
@@ -87,7 +90,7 @@ export default memo(function AnalysisColumnItem (props: AnalysisColumnItemProps)
         />
       )}
       <div className={styles.header}>
-        <Subtitle2 wrap={false} truncate>
+        <Subtitle2 className={styles.headerSubtitle} wrap={false} truncate>
           <BannerCategoryName
             category={d.category}
             context="title"
