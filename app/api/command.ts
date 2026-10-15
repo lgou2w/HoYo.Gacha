@@ -71,10 +71,11 @@ export function declareCommand<Args extends InvokeArgs | undefined, Result = voi
   }
 
   const command = invoke.bind(undefined, name) as Command<Args, Result>
-  return once ? withOnce(command) : command
+  return once ? withOnce(name, command) : command
 }
 
 function withOnce<Args extends InvokeArgs | undefined, Result = void> (
+  name: string,
   command: Command<Args, Result>,
 ): OnceCommand<Args, Result> {
   let initialized = false
@@ -84,11 +85,11 @@ function withOnce<Args extends InvokeArgs | undefined, Result = void> (
     if (!initialized) {
       initialized = true
       promise = command.apply(this, args as [Args]).catch((error) => {
-        console.warn('[Command] The promise of the cached command %s is not resolved: %o', command.name, error)
+        console.warn('[Command] The promise of the cached command %s is not resolved: %o', name, error)
         initialized = false
         promise = undefined
 
-        const enhancedError = new Error(`Command "${command.name}" execution failed: ${error.message}`)
+        const enhancedError = new Error(`Command "${name}" execution failed: ${error.message}`)
         enhancedError.cause = error
         throw enhancedError
       })
@@ -96,10 +97,10 @@ function withOnce<Args extends InvokeArgs | undefined, Result = void> (
       if (import.meta.env.DEV) {
         promise.then(
           (result) => {
-            console.debug('[Command] Once command %s resolved with result: %o', command.name, result)
+            console.debug('[Command] Once command %s resolved with result: %o', name, result)
           },
           (error) => {
-            console.debug('[Command] Once command %s execution failed: %o', command.name, error)
+            console.debug('[Command] Once command %s execution failed: %o', name, error)
           },
         )
       }
