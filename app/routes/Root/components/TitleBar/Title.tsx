@@ -1,5 +1,5 @@
 import { ComponentProps } from 'react'
-import { Subtitle2 } from '@fluentui/react-components'
+import { Caption1, Subtitle2, tokens } from '@fluentui/react-components'
 import { useLocation } from '@tanstack/react-router'
 import { KnownI18nNs, useI18n } from '@/i18n'
 
@@ -7,6 +7,11 @@ export default function Title (props: Omit<ComponentProps<'div'>, 'children'>) {
   return (
     <div {...props}>
       <TitlePath />
+      {import.meta.env.DEV && (
+        <Caption1 as="span" style={{ margin: '0 auto', fontFamily: tokens.fontFamilyMonospace }}>
+          (Running in Development Mode)
+        </Caption1>
+      )}
     </div>
   )
 }
