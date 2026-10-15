@@ -1,22 +1,20 @@
-use std::path::Path;
 use std::process;
-use std::sync::{Arc, OnceLock};
+use std::sync::Arc;
 
 use tauri::Theme;
 use tracing::{error, info};
 
+use crate::bootstrap::environment::Environment;
 use crate::bootstrap::tracing::Tracing;
 use crate::bootstrap::window_state::WindowState;
 use crate::business::metadata::MetadataService;
-use crate::constants;
 use crate::database::Database;
 
 pub struct Context {
   tracing: Tracing,
-  pub cwd: &'static Path,
-  pub webview_version: OnceLock<String>,
 
   // Shared to Tauri state
+  pub env: Arc<Environment>,
   pub metadata: Arc<MetadataService>,
   pub database: Arc<Database>,
   window_state: WindowState, // Because it's Arc
@@ -25,10 +23,10 @@ pub struct Context {
 impl Context {
   #[tracing::instrument]
   pub async fn new() -> Self {
-    let cwd = &*constants::EXE_WORKING_DIR;
     let tracing = Tracing::new();
 
     info!("Initializing application context");
+    let env = Environment::new();
     let metadata = MetadataService::load()
       .await
       .expect("Failed to initialize gacha metadata");
@@ -41,8 +39,7 @@ impl Context {
 
     Self {
       tracing,
-      cwd,
-      webview_version: OnceLock::new(),
+      env: Arc::new(env),
       metadata: Arc::new(metadata),
       database: Arc::new(database),
       window_state: WindowState::default(),

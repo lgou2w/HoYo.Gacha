@@ -46,6 +46,7 @@ pub async fn run(context: Context) -> ! {
       .invoke_handler(generate_handler![
         // App
         crate::bootstrap::handlers::locale,
+        crate::bootstrap::handlers::environment,
         // KValue
         crate::database::schemas::kvalue_handlers::database_find_kvalue,
         crate::database::schemas::kvalue_handlers::database_create_kvalue,
@@ -98,6 +99,7 @@ fn setup(
   let (has_window_state, window_state) = context.load_window_state();
 
   // Shared context states
+  app.manage(Arc::clone(&context.env));
   app.manage(Arc::clone(&context.metadata));
   app.manage(Arc::clone(&context.database));
   app.manage(window_state.clone()); // Because it's Arc
@@ -210,7 +212,7 @@ fn setup(
       // Store the WebView2 version in the context
       if let Ok(Ok(value)) = hg_ffi::webview::version(&webview) {
         info!("Webview2 version: {value:?}");
-        let _ = context_cloned.webview_version.set(value);
+        let _ = context_cloned.env.webview_version.set(value);
       }
 
       // Set WebView2 accelerator keys

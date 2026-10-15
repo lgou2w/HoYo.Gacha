@@ -1,5 +1,6 @@
 import { QueryClient } from '@tanstack/react-query'
 import { createRootRouteWithContext } from '@tanstack/react-router'
+import { AppCommands } from '@/api/App'
 import { ThemeStore } from '@/contexts/Theme/store'
 import Root from './page'
 
@@ -17,8 +18,10 @@ const rootRoute = createRootRouteWithContext<RootContext>()({
       'color:white; background-color:orange; font-weight: bold;',
     )
 
+    const environment = await AppCommands.environment()
     const themeData = await ctx.context.themeStore.load()
     return {
+      environment,
       themeData,
     }
   },
