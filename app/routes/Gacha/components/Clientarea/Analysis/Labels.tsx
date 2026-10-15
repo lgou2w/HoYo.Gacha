@@ -27,7 +27,8 @@ const useStyles = makeStyles({
   groupBlue: { color: tokens.colorPaletteBlueBorderActive },
   groupGreen: { color: tokens.colorPaletteGreenForeground1 },
   numeric: {
-    fontFamily: tokens.fontFamilyNumeric,
+    fontFamily: tokens.fontFamilyMonospace,
+    whiteSpace: 'pre-wrap',
   },
   separator: {
     color: tokens.colorNeutralForeground1,
@@ -88,12 +89,12 @@ export default function ColumnItemLabels (props: LabelsProps) {
         className: styles.groupUpWin,
         kind: LabelRowKind.UpWin,
         label: `${rarityKey(Rarity.Golden)} ${rowLabel(LabelRowKind.UpWin)}`,
-        value: <NumericValue styles={styles} sum={golden.upWin.sum} percentage={golden.upWin.percentage} />,
+        value: <NumericValue styles={styles} sum={golden.upWin.sum} pct={golden.upWin.percentage} />,
       }, {
         className: styles.groupUp,
         kind: LabelRowKind.Up,
         label: `${rarityKey(Rarity.Golden)} ${rowLabel(LabelRowKind.Up)}`,
-        value: <NumericValue styles={styles} sum={golden.up.sum} percentage={golden.up.percentage} />,
+        value: <NumericValue styles={styles} sum={golden.up.sum} pct={golden.up.percentage} />,
       })
     } else if (!d.isPermanentOde && !d.isEventOde) {
       result.push({
@@ -123,7 +124,7 @@ export default function ColumnItemLabels (props: LabelsProps) {
           className,
           kind: rarity,
           label: `${rarityKey(rarity)} ${rowLabel('Count')}`,
-          value: <NumericValue styles={styles} sum={sum || 0} percentage={pct || 0} />,
+          value: <NumericValue styles={styles} sum={sum || 0} pct={pct || 0} />,
         })
       }
     }
@@ -160,11 +161,11 @@ export default function ColumnItemLabels (props: LabelsProps) {
 interface NumericValueProps {
   styles: ReturnType<typeof useStyles>
   sum: number
-  percentage: number
+  pct: number
 }
 
 function NumericValue (props: NumericValueProps) {
-  const { styles, sum, percentage } = props
+  const { styles, sum, pct } = props
   return (
     <>
       <span className={styles.numeric}>
@@ -174,11 +175,20 @@ function NumericValue (props: NumericValueProps) {
         {` [ `}
       </span>
       <span className={styles.numeric}>
-        {`${percentage}%`}
+        {`${formatPercentage(pct)}%`}
       </span>
       <span className={styles.separator}>
         {` ]`}
       </span>
     </>
   )
+}
+
+/**
+ * Formats a percentage value to a string with two decimal places,
+ * ensuring the integer part is at least two characters wide.
+ */
+function formatPercentage (pct: number): string {
+  const [int, frac] = pct.toFixed(2).split('.')
+  return `${int.padStart(2, ' ')}.${frac}`
 }

@@ -87,6 +87,15 @@
           "UpWin": "$t(Up)不歪",
           "Up": "$t(Up)",
           "Count": "统计"
+        },
+        "Records": {
+          "NextPity": "已垫",
+          "HardPity": "保底!",
+          "Up": "$t(Up)",
+          "NoPurpleUp": {
+            "Text": "为什么没有 $t(Up) 标识？",
+            "Tooltip": "自 v3.1 起新增<1>『定制调频』</1>功能，可自定概率提升 <2>$t(Common:{{keyof}}.Gacha.Rarity.Purple)</2> 信号的获取范围，因此不再显示固定的 <2>$t(Up)</2> 状态。"
+          }
         }
       }
     }

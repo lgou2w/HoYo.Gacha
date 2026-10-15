@@ -91,6 +91,15 @@
           "UpWin": "$t(Up) Win",
           "Up": "$t(Up)",
           "Count": "Count"
+        },
+        "Records": {
+          "NextPity": "Pity Count",
+          "HardPity": "Hard!",
+          "Up": "$t(Up)",
+          "NoPurpleUp": {
+            "Text": "Why is there no $t(Up) badge?",
+            "Tooltip": "Since v3.1, the <1>Custom Search</1> function has been added, allowing you to customize the banners of rate-up <2>$t(Common:{{keyof}}.Gacha.Rarity.Purple)</2> Signals. Therefore, a fixed <2>$t(Up)</2> status is no longer displayed."
+          }
         }
       }
     }

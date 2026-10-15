@@ -9,6 +9,7 @@ import BannerDragIcon from '@/routes/Gacha/components/Banner/DragIcon'
 import GachaTicket from '@/routes/Gacha/components/Ticket'
 import { useBusiness } from '@/routes/Gacha/contexts/Business/hooks'
 import ColumnItemLabels from './Labels'
+import ColumnItemRecords from './Records'
 import { deriveColumnItem } from './types'
 
 const useStyles = makeStyles({
@@ -57,7 +58,6 @@ const useStyles = makeStyles({
     display: 'flex',
     flexGrow: 0,
   },
-  records: {},
 })
 
 export interface AnalysisColumnItemProps {
@@ -111,9 +111,7 @@ export default memo(function AnalysisColumnItem (props: AnalysisColumnItemProps)
       <Divider className={styles.divider}>{d.timeRange || 'N/A'}</Divider>
       <ColumnItemLabels dataset={dataset} derived={d} />
       <Divider className={styles.divider} />
-      <div className={styles.records}>
-        Records
-      </div>
+      <ColumnItemRecords dataset={dataset} />
     </div>
   )
 })
