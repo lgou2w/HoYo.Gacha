@@ -3,7 +3,8 @@ use std::collections::HashSet;
 use std::time::Duration;
 
 use hg_gamebiz::{GachaLogEndpoint, Game, Uid};
-use hg_url_parser::{AsParamsOptions, ParsedGachaUrl};
+use hg_url_parser::finder::DirtyGachaUrl;
+use hg_url_parser::{AsParamsOptions, GachaUrlParseError, ParsedGachaUrl};
 use snafu::{ResultExt, Snafu};
 
 use crate::KnownGachaType;
@@ -12,6 +13,9 @@ use crate::request::{GachaUrlRequestError, GachaUrlRequester, GachaUrlResponse, 
 #[derive(Debug, Snafu)]
 #[snafu(context(suffix(false)))]
 pub enum GachaUrlValidationError {
+  #[snafu(display("{source}"))]
+  Parse { source: GachaUrlParseError },
+
   #[snafu(display("{source}"))]
   Request { source: GachaUrlRequestError },
 
@@ -37,11 +41,68 @@ pub struct VerifyOptions {
   /// When `true`, the request uses [`GachaLogEndpoint::Hk4eBeyond`] and the
   /// Miliastra Wonderland gacha type set instead of the standard Genshin Impact ones.
   pub is_beyond: bool,
+
   /// Skip URLs whose `auth_appid` is not `webview_gacha`.
   ///
-  /// Gacha URLs collected from the game's disk cache always carry `auth_appid=webview_gacha`;
-  /// Set to `true` when verifying cache-sourced URLs, `false` otherwise.
+  /// Gacha URLs collected from the game's disk cache always carry
+  /// `auth_appid=webview_gacha`; URLs pasted by hand usually do not. Set to
+  /// `true` when verifying cache-sourced URLs, `false` otherwise.
   pub is_webview_gacha: bool,
+
+  /// When `true`, a URL that fails [`ParsedGachaUrl::parse`] returns
+  /// immediately as [`GachaUrlValidationError::Parse`]. When `false`, the
+  /// source is skipped and later sources are still tried.
+  ///
+  /// Set to `true` for single-source verification (e.g. a user-pasted URL),
+  /// `false` when scanning a cache directory where some entries may be
+  /// malformed.
+  pub fail_parse: bool,
+}
+
+/// A source of a raw gacha URL string.
+///
+/// [`VerifiedGachaUrl::verify`] calls [`Self::url`] on every element of its
+/// `sources` slice to obtain the string to parse. Implement this for any
+/// type that carries a gacha URL — [`DirtyGachaUrl`], [`String`], `&str`,
+/// or a wrapper of your own.
+pub trait VerificationSource {
+  /// Returns the raw URL string to parse and verify.
+  fn url(&self) -> &str;
+}
+
+impl VerificationSource for DirtyGachaUrl {
+  #[inline]
+  fn url(&self) -> &str {
+    &self.value
+  }
+}
+
+impl VerificationSource for str {
+  #[inline]
+  fn url(&self) -> &str {
+    self
+  }
+}
+
+impl VerificationSource for String {
+  #[inline]
+  fn url(&self) -> &str {
+    self.as_str()
+  }
+}
+
+impl<T: VerificationSource + ?Sized> VerificationSource for &T {
+  #[inline]
+  fn url(&self) -> &str {
+    (**self).url()
+  }
+}
+
+impl<T: VerificationSource + ?Sized> VerificationSource for Box<T> {
+  #[inline]
+  fn url(&self) -> &str {
+    (**self).url()
+  }
 }
 
 /// A verified gacha URL that has been confirmed to belong to a specific uid.
@@ -60,30 +121,34 @@ pub struct VerifyOptions {
 /// point into `sources`.
 #[derive(Debug)]
 pub struct VerifiedGachaUrl<'a, C = ()> {
-  /// Owner uid
+  /// Owner uid.
   pub uid: Uid,
-  /// Endpoint (Without query parameters)
+  /// Endpoint without query parameters.
   pub url: &'a str,
-  /// Query parameters
+  /// Query parameters reconstructed from the winning request.
   pub params: Vec<(&'static str, Cow<'a, str>)>,
-  /// Parsed gacha url
+  /// The parsed gacha URL that matched.
   pub parsed: ParsedGachaUrl<'a>,
-  /// Context
+  /// The source element that produced `parsed`.
   pub context: &'a C,
 }
 
 impl<'a, C> VerifiedGachaUrl<'a, C> {
   /// Verify which of the given `sources` corresponds to `uid`.
   ///
-  /// `parse` is called **lazily** — only for sources that are actually
-  /// examined. Sources after the first match are never parsed, which matters
-  /// when `sources` is a large cache list.
-  ///
   /// Returns the first source whose parsed URL yields a gacha log for `uid`.
-  /// Return `None` from `parse` to skip a source (e.g. on parse failure).
+  /// Sources after the match are never parsed — matters when `sources` is a
+  /// large cache list.
+  ///
+  /// Parse failures are handled according to [`VerifyOptions::fail_parse`]:
+  /// in strict mode (`fail_parse = true`) the first failure returns
+  /// immediately; in lenient mode (`fail_parse = false`) the source is
+  /// skipped and later sources are still tried.
   ///
   /// # Errors
   ///
+  /// - [`GachaUrlValidationError::Parse`] — a source failed to parse and
+  ///   [`VerifyOptions::fail_parse`] is `true`.
   /// - [`GachaUrlValidationError::Request`] — the HTTP request failed
   ///   irrecoverably.
   /// - [`GachaUrlValidationError::EmptyData`] — every candidate returned an
@@ -92,15 +157,14 @@ impl<'a, C> VerifiedGachaUrl<'a, C> {
   ///   response.
   /// - [`GachaUrlValidationError::InconsistentUid`] — one or more sources
   ///   resolved to a `uid` other than `expected`.
-  pub async fn verify<T, S>(
+  pub async fn verify<S>(
     uid: Uid,
     sources: &'a [C],
-    parser: T,
     options: VerifyOptions,
     sleeper: fn(Duration) -> S,
   ) -> Result<Self, GachaUrlValidationError>
   where
-    T: Fn(&'a C) -> Option<ParsedGachaUrl<'a>>,
+    C: VerificationSource + 'a,
     S: Future<Output = ()> + Send + 'static,
   {
     let mut endpoint = GachaLogEndpoint::Standard;
@@ -121,15 +185,24 @@ impl<'a, C> VerifiedGachaUrl<'a, C> {
 
     for source in sources {
       // `source: &'a C` — this borrow lives as long as `sources`.
-      let Some(parsed) = parser(source) else {
-        continue;
+      let parsed = match ParsedGachaUrl::parse(source.url()) {
+        Ok(parsed) => parsed,
+        Err(err) => {
+          if options.fail_parse {
+            return Err(GachaUrlValidationError::Parse { source: err });
+          } else {
+            continue;
+          }
+        }
       };
 
-      // If it's a url from webcaches, then its 'auth_appid' parameter must have this value;
-      // otherwise, you might encounter errors like { retcode: -109, message: "app id error" }
-      // This error indicates that the `authkey` was not generated by the `webview_gacha` endpoint.
-      // It's speculated that the `authkey` and `auth_appid` parameters are bound together.
-      // Authkeys generated by different endpoints cannot be used interchangeably.
+      // If it's a url from webcaches, then its 'auth_appid' parameter must
+      // have this value; otherwise, you might encounter errors like
+      // { retcode: -109, message: "app id error" }.
+      // This error indicates that the `authkey` was not generated by the
+      // `webview_gacha` endpoint. It's speculated that the `authkey` and
+      // `auth_appid` parameters are bound together. Authkeys generated by
+      // different endpoints cannot be used interchangeably.
       if options.is_webview_gacha && !parsed.is_auth_appid_webview_gacha() {
         continue;
       }
@@ -243,4 +316,88 @@ where
   }
 
   Ok(response)
+}
+
+// Test
+#[cfg(test)]
+mod test {
+  use super::*;
+
+  // SAFETY
+  const UID: Uid = Uid::parse(Game::Hk4e, 100_000_000).unwrap();
+
+  #[tokio::test]
+  async fn bad_url() {
+    let err = VerifiedGachaUrl::verify(
+      UID,
+      &["bad url"],
+      VerifyOptions {
+        is_beyond: false,
+        is_webview_gacha: false,
+        fail_parse: true,
+      },
+      tokio::time::sleep,
+    )
+    .await
+    .unwrap_err();
+
+    assert!(matches!(
+      err,
+      GachaUrlValidationError::Parse {
+        source: GachaUrlParseError::Invalid
+      }
+    ));
+  }
+
+  #[tokio::test]
+  async fn bad_url_lenient() {
+    let err = VerifiedGachaUrl::verify(
+      UID,
+      &["bad url"],
+      VerifyOptions {
+        is_beyond: false,
+        is_webview_gacha: false,
+        fail_parse: false,
+      },
+      tokio::time::sleep,
+    )
+    .await
+    .unwrap_err();
+
+    // In lenient mode, invalid URLs are skipped; with no
+    // other sources left to try, the result is NotFound.
+    assert!(matches!(err, GachaUrlValidationError::NotFound));
+  }
+
+  #[tokio::test]
+  async fn empty_sources() {
+    let sources: &[&str] = &[];
+    let err = VerifiedGachaUrl::verify(UID, sources, VerifyOptions::default(), tokio::time::sleep)
+      .await
+      .unwrap_err();
+
+    assert!(matches!(err, GachaUrlValidationError::NotFound));
+  }
+
+  #[tokio::test]
+  async fn webview_gacha_filter_skips() {
+    /// A well-formed URL without `auth_appid=webview_gacha`.
+    const URL_NO_AUTH_APPID: &str = "https://public-operation-hk4e.mihoyo.com/gacha_info/api/getGachaLog?authkey_ver=1&sign_type=2&authkey=abc&lang=zh-cn&game_biz=hk4e_cn";
+
+    let err = VerifiedGachaUrl::verify(
+      UID,
+      &[URL_NO_AUTH_APPID],
+      VerifyOptions {
+        is_beyond: false,
+        is_webview_gacha: true,
+        fail_parse: true,
+      },
+      tokio::time::sleep,
+    )
+    .await
+    .unwrap_err();
+
+    // URL filtered out before any HTTP request → NotFound.
+    assert!(matches!(err, GachaUrlValidationError::NotFound));
+  }
 }
