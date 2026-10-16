@@ -6,8 +6,8 @@ use hg_gamebiz::{GachaLogEndpoint, Game, Uid};
 use hg_url_parser::{AsParamsOptions, ParsedGachaUrl};
 use snafu::{ResultExt, Snafu};
 
+use crate::KnownGachaType;
 use crate::request::{GachaUrlRequestError, GachaUrlRequester, GachaUrlResponse, RetryOptions};
-use crate::{GachaTypes, KnownGachaType};
 
 #[derive(Debug, Snafu)]
 #[snafu(context(suffix(false)))]
@@ -105,15 +105,15 @@ impl<'a, C> VerifiedGachaUrl<'a, C> {
   {
     let mut endpoint = GachaLogEndpoint::Standard;
     let mut types = match uid.gamebiz().game() {
-      Game::Hk4e => GachaTypes::HK4E,
-      Game::Hkrpg => GachaTypes::HKRPG,
-      Game::Nap => GachaTypes::NAP,
+      Game::Hk4e => KnownGachaType::Hk4e,
+      Game::Hkrpg => KnownGachaType::Hkrpg,
+      Game::Nap => KnownGachaType::Nap,
     };
 
     // For 'Genshin Impact: Miliastra Wonderland'
     if options.is_beyond {
       endpoint = GachaLogEndpoint::Hk4eBeyond;
-      types = GachaTypes::BEYOND;
+      types = KnownGachaType::Beyond;
     }
 
     let mut actuals = HashSet::<u32>::with_capacity(sources.len());
@@ -188,7 +188,7 @@ impl<'a, C> VerifiedGachaUrl<'a, C> {
 async fn fast_requests<'a, S>(
   parsed: &ParsedGachaUrl<'a>,
   endpoint: GachaLogEndpoint,
-  types: &dyn KnownGachaType,
+  types: KnownGachaType,
   sleeper: fn(Duration) -> S,
 ) -> Result<GachaUrlResponse<'a>, GachaUrlRequestError>
 where

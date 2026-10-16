@@ -6,22 +6,59 @@ use time::macros::format_description;
 
 pub type GachaType = u32;
 
-pub trait KnownGachaType {
-  /// Returns the permanent gacha type for the game.
-  fn permanent(&self) -> GachaType;
-
-  /// Returns all known gacha types for the game.
-  fn values(&self) -> &'static [GachaType];
+/// Known gacha types for each business.
+///
+/// A closed set — new games must add a variant here. Every `match` on this
+/// enum will fail to compile until the new variant is handled, which keeps
+/// `permanent()` and `values()` in sync with the game list.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub enum KnownGachaType {
+  /// 'Genshin Impact'
+  Hk4e,
+  /// 'Honkai: Star Rail'
+  Hkrpg,
+  /// 'Zenless Zone Zero'
+  Nap,
+  /// 'Genshin Impact: Miliastra Wonderland'
+  Beyond,
 }
 
-/// Known Gacha types constant module
+impl KnownGachaType {
+  /// Returns the permanent gacha type for the game.
+  #[inline]
+  pub const fn permanent(&self) -> GachaType {
+    match self {
+      Self::Hk4e => GachaTypes::Hk4e::PERMANENT,
+      Self::Hkrpg => GachaTypes::Hkrpg::PERMANENT,
+      Self::Nap => GachaTypes::Nap::PERMANENT,
+      Self::Beyond => GachaTypes::Beyond::PERMANENT,
+    }
+  }
+
+  /// Returns all known gacha types for the game.
+  #[inline]
+  pub const fn values(&self) -> &'static [GachaType] {
+    match self {
+      Self::Hk4e => GachaTypes::Hk4e::VALUES,
+      Self::Hkrpg => GachaTypes::Hkrpg::VALUES,
+      Self::Nap => GachaTypes::Nap::VALUES,
+      Self::Beyond => GachaTypes::Beyond::VALUES,
+    }
+  }
+}
+
+/// Known Gacha types constant modules.
+///
+/// Each module is a flat namespace of `pub const` values; the enums
+/// [`KnownGachaType`] is the type-level handle used by callers.
 #[allow(non_snake_case)]
 pub mod GachaTypes {
-  use super::*;
+  use super::GachaType;
 
   /// For 'Genshin Impact'
-  pub struct Hk4e(());
-  impl Hk4e {
+  pub mod Hk4e {
+    use super::GachaType;
+
     pub const BEGINNER: GachaType = 100;
     pub const PERMANENT: GachaType = 200;
     /// Character (Shares pity value with `Character - 2`)
@@ -34,29 +71,14 @@ pub mod GachaTypes {
     pub const CHRONICLED: GachaType = 500;
 
     pub const VALUES: &[GachaType] = &[
-      Self::PERMANENT,
-      Self::CHARACTER,
-      Self::CHARACTER2,
-      Self::WEAPON,
-      Self::CHRONICLED,
-      Self::BEGINNER, // Low priority
+      PERMANENT, CHARACTER, CHARACTER2, WEAPON, CHRONICLED, BEGINNER, // Low priority
     ];
   }
 
-  pub const HK4E: &dyn KnownGachaType = &Hk4e(());
-  impl KnownGachaType for Hk4e {
-    fn permanent(&self) -> GachaType {
-      Self::PERMANENT
-    }
-
-    fn values(&self) -> &'static [GachaType] {
-      Self::VALUES
-    }
-  }
-
   /// For 'Honkai: Star Rail'
-  pub struct Hkrpg(());
-  impl Hkrpg {
+  pub mod Hkrpg {
+    use super::GachaType;
+
     pub const BEGINNER: GachaType = 2;
     pub const PERMANENT: GachaType = 1;
     pub const CHARACTER: GachaType = 11;
@@ -65,29 +87,19 @@ pub mod GachaTypes {
     pub const COLLAB_LIGHTCONE: GachaType = 22;
 
     pub const VALUES: &[GachaType] = &[
-      Self::PERMANENT,
-      Self::CHARACTER,
-      Self::LIGHTCONE,
-      Self::COLLAB_CHARACTER,
-      Self::COLLAB_LIGHTCONE,
-      Self::BEGINNER, // Low priority
+      PERMANENT,
+      CHARACTER,
+      LIGHTCONE,
+      COLLAB_CHARACTER,
+      COLLAB_LIGHTCONE,
+      BEGINNER, // Low priority
     ];
   }
 
-  pub const HKRPG: &dyn KnownGachaType = &Hkrpg(());
-  impl KnownGachaType for Hkrpg {
-    fn permanent(&self) -> GachaType {
-      Self::PERMANENT
-    }
-
-    fn values(&self) -> &'static [GachaType] {
-      Self::VALUES
-    }
-  }
-
   /// For 'Zenless Zone Zero'
-  pub struct Nap(());
-  impl Nap {
+  pub mod Nap {
+    use super::GachaType;
+
     pub const PERMANENT: GachaType = 1;
     pub const CHARACTER: GachaType = 2;
     pub const WENGINE: GachaType = 3;
@@ -96,29 +108,19 @@ pub mod GachaTypes {
     pub const WENGINE_REVERBERATION: GachaType = 103;
 
     pub const VALUES: &[GachaType] = &[
-      Self::PERMANENT,
-      Self::CHARACTER,
-      Self::WENGINE,
-      Self::BANGBOO,
-      Self::EXCLUSIVE_RESCREENING,
-      Self::WENGINE_REVERBERATION,
+      PERMANENT,
+      CHARACTER,
+      WENGINE,
+      BANGBOO,
+      EXCLUSIVE_RESCREENING,
+      WENGINE_REVERBERATION,
     ];
   }
 
-  pub const NAP: &dyn KnownGachaType = &Nap(());
-  impl KnownGachaType for Nap {
-    fn permanent(&self) -> GachaType {
-      Self::PERMANENT
-    }
-
-    fn values(&self) -> &'static [GachaType] {
-      Self::VALUES
-    }
-  }
-
   /// For 'Genshin Impact: Miliastra Wonderland'
-  pub struct Beyond(());
-  impl Beyond {
+  pub mod Beyond {
+    use super::GachaType;
+
     pub const PERMANENT: GachaType = 1000;
     /// Event Ode.
     /// Includes: Manekin (Male) and Manekina (Female) event odes.
@@ -134,18 +136,7 @@ pub mod GachaTypes {
     /// Manekina Cosmetic Event Ode - 2 (Female)
     pub const EVENT_MANEKINA2: GachaType = 20022;
 
-    pub const VALUES: &[GachaType] = &[Self::PERMANENT, Self::EVENT];
-  }
-
-  pub const BEYOND: &dyn KnownGachaType = &Beyond(());
-  impl KnownGachaType for Beyond {
-    fn permanent(&self) -> GachaType {
-      Self::PERMANENT
-    }
-
-    fn values(&self) -> &'static [GachaType] {
-      Self::VALUES
-    }
+    pub const VALUES: &[GachaType] = &[PERMANENT, EVENT];
   }
 }
 

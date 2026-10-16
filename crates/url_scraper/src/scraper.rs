@@ -247,7 +247,7 @@ where
 #[cfg(test)]
 mod tests {
   use super::*;
-  use crate::GachaTypes;
+  use crate::KnownGachaType;
 
   #[tokio::test]
   #[ignore = "Hard-coded unit test"]
@@ -265,7 +265,7 @@ mod tests {
     let logs = scraper
       .scrape(
         GachaLogEndpoint::Standard,
-        &[ScrapeRange::from(GachaTypes::HKRPG.permanent(), None)],
+        &[ScrapeRange::from(KnownGachaType::Hkrpg.permanent(), None)],
         None,
       )
       .await
