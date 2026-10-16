@@ -279,6 +279,40 @@ impl<'a> ParsedGachaUrl<'a> {
   }
 }
 
+/// Encode `input` into an `application/x-www-form-urlencoded` query string.
+///
+/// Returns `None` when `input` is empty, so callers can cleanly distinguish
+/// "no query string" from "empty query string" and avoid producing a
+/// trailing `?` in the final URL.
+///
+/// The result does **not** include a leading `?` — it is the raw query
+/// portion only.
+///
+/// # Example
+///
+/// ```
+/// # use std::borrow::Cow;
+/// # use hoyo_gacha_url_parser::encode_params;
+///
+/// let params = [("lang", Cow::Borrowed("zh-cn")), ("size", Cow::Borrowed("20"))];
+/// assert_eq!(
+///     encode_params(&params).as_deref(),
+///     Some("lang=zh-cn&size=20"),
+/// );
+/// assert_eq!(encode_params(&[]), None);
+/// ```
+pub fn encode_params(input: &[(&str, Cow<'_, str>)]) -> Option<String> {
+  if input.is_empty() {
+    None
+  } else {
+    Some(
+      form_urlencoded::Serializer::new(String::new())
+        .extend_pairs(input)
+        .finish(),
+    )
+  }
+}
+
 // endregion
 
 // Tests
@@ -319,6 +353,24 @@ mod tests {
     assert_eq!(
       parsed.url,
       "https://public-operation-hkrpg.mihoyo.com/common/gacha_record/api/getGachaLog"
+    );
+  }
+
+  #[test]
+  fn encode_params_empty() {
+    let params: [(&str, Cow<'_, str>); 0] = [];
+    assert_eq!(encode_params(&params), None);
+  }
+
+  #[test]
+  fn encode_params_nonempty() {
+    let params = [
+      ("lang", Cow::Borrowed("zh-cn")),
+      ("size", Cow::Borrowed("20")),
+    ];
+    assert_eq!(
+      encode_params(&params).as_deref(),
+      Some("lang=zh-cn&size=20"),
     );
   }
 }

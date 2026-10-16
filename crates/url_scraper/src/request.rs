@@ -5,7 +5,7 @@ use std::time::Duration;
 
 use exponential_backoff::Backoff;
 use hg_gamebiz::{GachaLogEndpoint, GachaLogEndpointProvider, GameServer};
-use hg_url_parser::parser::{AsParamsOptions, ParsedGachaUrl};
+use hg_url_parser::{AsParamsOptions, ParsedGachaUrl};
 use reqwest::Client as ReqwestClient;
 use snafu::{OptionExt, ResultExt, Snafu};
 

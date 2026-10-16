@@ -25,4 +25,6 @@ pub static REGEX_GACHA_URL: LazyLock<Regex> = LazyLock::new(|| {
 });
 
 pub mod finder;
-pub mod parser;
+mod parser;
+
+pub use parser::*;

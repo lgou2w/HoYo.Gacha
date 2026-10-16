@@ -1,7 +1,7 @@
 use std::time::Duration;
 
 use hg_gamebiz::GachaLogEndpoint;
-use hg_url_parser::parser::{AsParamsOptions, ParsedGachaUrl};
+use hg_url_parser::{AsParamsOptions, ParsedGachaUrl};
 
 use crate::request::{GachaUrlRequestError, GachaUrlRequester, RetryOptions};
 use crate::{GachaLog, GachaLogs, GachaType};

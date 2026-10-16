@@ -3,7 +3,7 @@ use std::collections::HashSet;
 use std::time::Duration;
 
 use hg_gamebiz::{GachaLogEndpoint, Game, Uid};
-use hg_url_parser::parser::{AsParamsOptions, ParsedGachaUrl};
+use hg_url_parser::{AsParamsOptions, ParsedGachaUrl};
 use snafu::{ResultExt, Snafu};
 
 use crate::request::{GachaUrlRequestError, GachaUrlRequester, GachaUrlResponse, RetryOptions};
@@ -32,13 +32,32 @@ pub enum GachaUrlValidationError {
 
 #[derive(Clone, Debug, PartialEq, Eq, Default)]
 pub struct VerifyOptions {
-  /// If need `Genshin Impact: Miliastra Wonderland` endpoint.
+  /// Use the `Genshin Impact: Miliastra Wonderland` gacha log endpoint.
+  ///
+  /// When `true`, the request uses [`GachaLogEndpoint::Hk4eBeyond`] and the
+  /// Miliastra Wonderland gacha type set instead of the standard Genshin Impact ones.
   pub is_beyond: bool,
-  /// If the gacha urls are from webcaches, it will check the `auth_appid` parameter of the gacha url to determine if it is from webcaches.
+  /// Skip URLs whose `auth_appid` is not `webview_gacha`.
+  ///
+  /// Gacha URLs collected from the game's disk cache always carry `auth_appid=webview_gacha`;
+  /// Set to `true` when verifying cache-sourced URLs, `false` otherwise.
   pub is_webview_gacha: bool,
 }
 
-/// A verified gacha url (Lifetime: 'a) that has been confirmed to belong to the specified uid.
+/// A verified gacha URL that has been confirmed to belong to a specific uid.
+///
+/// Returned by [`Self::verify`].
+///
+/// # Lifetimes
+///
+/// `'a` is the lifetime of the `sources` slice passed to [`Self::verify`].
+/// All borrowed fields — [`Self::url`], [`Self::params`], [`Self::parsed`],
+/// [`Self::context`] — borrow from that slice, so the caller must keep it
+/// alive for as long as this value is used.
+///
+/// `parsed` is an owned [`ParsedGachaUrl`] (there is no persistent value in
+/// the caller's data to borrow from), but its inner `&'a str` fields still
+/// point into `sources`.
 #[derive(Debug)]
 pub struct VerifiedGachaUrl<'a, C = ()> {
   /// Owner uid
@@ -54,6 +73,25 @@ pub struct VerifiedGachaUrl<'a, C = ()> {
 }
 
 impl<'a, C> VerifiedGachaUrl<'a, C> {
+  /// Verify which of the given `sources` corresponds to `uid`.
+  ///
+  /// `parse` is called **lazily** — only for sources that are actually
+  /// examined. Sources after the first match are never parsed, which matters
+  /// when `sources` is a large cache list.
+  ///
+  /// Returns the first source whose parsed URL yields a gacha log for `uid`.
+  /// Return `None` from `parse` to skip a source (e.g. on parse failure).
+  ///
+  /// # Errors
+  ///
+  /// - [`GachaUrlValidationError::Request`] — the HTTP request failed
+  ///   irrecoverably.
+  /// - [`GachaUrlValidationError::EmptyData`] — every candidate returned an
+  ///   empty list (e.g. the account's data has not been synced yet).
+  /// - [`GachaUrlValidationError::NotFound`] — no source produced a valid
+  ///   response.
+  /// - [`GachaUrlValidationError::InconsistentUid`] — one or more sources
+  ///   resolved to a `uid` other than `expected`.
   pub async fn verify<T, S>(
     uid: Uid,
     sources: &'a [C],
