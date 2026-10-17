@@ -2,7 +2,7 @@ use std::borrow::Cow;
 use std::collections::HashSet;
 use std::time::Duration;
 
-use hg_gamebiz::{GachaLogEndpoint, Game, Uid};
+use hg_gamebiz::{GachaLogEndpoint, Game, GameServer, Gamebiz, Uid};
 use hg_url_parser::finder::DirtyGachaUrl;
 use hg_url_parser::{AsParamsOptions, GachaUrlParseError, ParsedGachaUrl};
 use snafu::{ResultExt, Snafu};
@@ -15,6 +15,16 @@ use crate::request::{GachaUrlRequestError, GachaUrlRequester, GachaUrlResponse, 
 pub enum GachaUrlValidationError {
   #[snafu(display("{source}"))]
   Parse { source: GachaUrlParseError },
+
+  #[snafu(display(
+    "Gacha url game_biz does not match the account: expected {expected}, got {}, region: {region:?}",
+    actual.codename()
+  ))]
+  InconsistentGamebiz {
+    expected: Gamebiz,
+    actual: GameServer,
+    region: Option<String>,
+  },
 
   #[snafu(display("{source}"))]
   Request { source: GachaUrlRequestError },
@@ -49,14 +59,28 @@ pub struct VerifyOptions {
   /// `true` when verifying cache-sourced URLs, `false` otherwise.
   pub is_webview_gacha: bool,
 
-  /// When `true`, a URL that fails [`ParsedGachaUrl::parse`] returns
-  /// immediately as [`GachaUrlValidationError::Parse`]. When `false`, the
-  /// source is skipped and later sources are still tried.
+  /// When `true`, any pre-request check failure returns immediately:
   ///
-  /// Set to `true` for single-source verification (e.g. a user-pasted URL),
-  /// `false` when scanning a cache directory where some entries may be
-  /// malformed.
-  pub fail_parse: bool,
+  /// - [`ParsedGachaUrl::parse`] failure → [`GachaUrlValidationError::Parse`]
+  /// - `game_biz` / `region` mismatch → [`GachaUrlValidationError::InconsistentGamebiz`]
+  ///
+  /// When `false`, a failing source is skipped and later sources are still
+  /// tried. No pre-request failure is recorded in lenient mode; if nothing
+  /// matches, [`GachaUrlValidationError::NotFound`] is returned.
+  ///
+  /// # Callers
+  ///
+  /// - **`from_webcaches` → `false`** — a `webCaches` directory may contain
+  ///   a few corrupt URL entries; skipping them lets the scan continue.
+  ///   `game_biz` mismatch is practically unreachable here because the
+  ///   directory is game-specific.
+  /// - **`from_dirty` → `true`** — single-source verification; any failure
+  ///   is reported directly.
+  ///
+  /// Set to `true` for single-source verification. Set to `false` only when
+  /// scanning a directory or list where skipping malformed entries is
+  /// acceptable.
+  pub fail_checks: bool,
 }
 
 /// A source of a raw gacha URL string.
@@ -140,15 +164,17 @@ impl<'a, C> VerifiedGachaUrl<'a, C> {
   /// Sources after the match are never parsed — matters when `sources` is a
   /// large cache list.
   ///
-  /// Parse failures are handled according to [`VerifyOptions::fail_parse`]:
-  /// in strict mode (`fail_parse = true`) the first failure returns
-  /// immediately; in lenient mode (`fail_parse = false`) the source is
-  /// skipped and later sources are still tried.
+  /// Pre-request checks (parse, `auth_appid`, `game_biz` / `region`) are
+  /// controlled by [`VerifyOptions::fail_checks`]: strict mode returns the
+  /// first failure, lenient mode skips and continues.
   ///
   /// # Errors
   ///
   /// - [`GachaUrlValidationError::Parse`] — a source failed to parse and
-  ///   [`VerifyOptions::fail_parse`] is `true`.
+  ///   [`VerifyOptions::fail_checks`] is `true`.
+  /// - [`GachaUrlValidationError::InconsistentGamebiz`] — a source's
+  ///   `game_biz` / `region` does not match the account and
+  ///   [`VerifyOptions::fail_checks`] is `true`.
   /// - [`GachaUrlValidationError::Request`] — the HTTP request failed
   ///   irrecoverably.
   /// - [`GachaUrlValidationError::EmptyData`] — every candidate returned an
@@ -188,9 +214,14 @@ impl<'a, C> VerifiedGachaUrl<'a, C> {
       let parsed = match ParsedGachaUrl::parse(source.url()) {
         Ok(parsed) => parsed,
         Err(err) => {
-          if options.fail_parse {
+          if options.fail_checks {
             return Err(GachaUrlValidationError::Parse { source: err });
           } else {
+            // Lenient mode: skip unparseable sources. `from_webcaches` is
+            // the only caller that sets `fail_checks = false`, and a
+            // corrupt cache entry is not worth reporting if another entry
+            // matches. The debug line preserves the diagnosis in logs
+            // without surfacing it as the final error.
             continue;
           }
         }
@@ -205,6 +236,32 @@ impl<'a, C> VerifiedGachaUrl<'a, C> {
       // different endpoints cannot be used interchangeably.
       if options.is_webview_gacha && !parsed.is_auth_appid_webview_gacha() {
         continue;
+      }
+
+      // Reject URLs whose `game_biz` / `region` does not match the account.
+      //
+      // The embedded `authkey` is bound to a specific `(game, server)` pair;
+      // sending it to the wrong endpoint yields
+      // `{ retcode: -111, message: "game name error" }`.
+      //
+      // In practice this only fires for `from_dirty` (user-pasted URLs).
+      // `from_webcaches` scans a game-specific directory, so every URL is
+      // guaranteed to match.
+      //
+      // In lenient mode there is nothing to record: this check is
+      // unreachable for cache scans, and `from_dirty` always runs strict.
+      // The `continue` is kept for symmetry with the other pre-request
+      // checks.
+      if !ensure_gamebiz(&parsed, &uid) {
+        if options.fail_checks {
+          return Err(GachaUrlValidationError::InconsistentGamebiz {
+            expected: uid.gamebiz(),
+            actual: parsed.gamebiz,
+            region: parsed.region.as_deref().map(ToOwned::to_owned),
+          });
+        } else {
+          continue;
+        }
       }
 
       // See: https://github.com/lgou2w/HoYo.Gacha/issues/159
@@ -236,26 +293,64 @@ impl<'a, C> VerifiedGachaUrl<'a, C> {
       }
     }
 
-    if actuals.is_empty() {
-      // No matching uid found from gacha urls
-      if contains_empty {
-        // HACK: If the account's record data has not been
-        //   synchronised, then a special error kind is returned.
-        //   When the record is empty, it is impossible to determine whether
-        //   the URL is consistent with the expected UID. This is a necessary measure.
-        EmptyData.fail()?
-      } else {
-        NotFound.fail()?
-      }
-    } else {
-      // Apparently, these actual gacha urls do not match the expected uid
-      InconsistentUid {
+    // No source matched. Report the most specific reason available, from
+    // most to least informative:
+    //
+    //   InconsistentUid > EmptyData > NotFound
+
+    // Apparently, these actual gacha urls do not match the expected uid
+    if !actuals.is_empty() {
+      return InconsistentUid {
         expected: *uid,
         actuals,
       }
-      .fail()?
+      .fail();
     }
+
+    // HACK: If the account's record data has not been
+    //   synchronised, then a special error kind is returned.
+    //   When the record is empty, it is impossible to determine whether
+    //   the URL is consistent with the expected UID. This is a necessary measure.
+    if contains_empty {
+      return EmptyData.fail();
+    }
+
+    NotFound.fail()
   }
+}
+
+/// Verify that a gacha URL belongs to the account identified by `uid`.
+///
+/// A gacha URL carries two pieces of business identity that must both match
+/// the account, otherwise the URL is unusable:
+///
+/// 1. **`game_biz`** — the `(game, server)` pair encoded in the URL, e.g.
+///    `hk4e_cn`, `hkrpg_global`, `nap_cn`. Must match the account's own
+///    `(game, server)`. A mismatch triggers
+///    `{ retcode: -111, message: "game name error" }` on the server side,
+///    because `authkey` and `auth_appid` are bound to a single server.
+///
+/// 2. **`region`** — the specific region within that server, e.g.
+///    `prod_gf_cn`, `os_asia`, `prod_official_usa`. This parameter is
+///    **optional** in the URL:
+///    - When present, it must match the account's region exactly.
+///    - When absent, the URL is region-agnostic within its server, and no
+///      region check is performed.
+///
+/// Returns `true` when both checks pass.
+fn ensure_gamebiz(url: &ParsedGachaUrl<'_>, uid: &Uid) -> bool {
+  let expected = uid.gamebiz();
+
+  // game_biz: must match (game, server) exactly.
+  if url.gamebiz.game() != expected.game() || url.gamebiz.server() != expected.server() {
+    return false;
+  }
+
+  // region: optional; validate only when the URL carries one.
+  url
+    .region
+    .as_deref()
+    .is_none_or(|region| region == expected.region())
 }
 
 async fn fast_requests<'a, S>(
@@ -334,7 +429,7 @@ mod tests {
       VerifyOptions {
         is_beyond: false,
         is_webview_gacha: false,
-        fail_parse: true,
+        fail_checks: true,
       },
       tokio::time::sleep,
     )
@@ -357,7 +452,7 @@ mod tests {
       VerifyOptions {
         is_beyond: false,
         is_webview_gacha: false,
-        fail_parse: false,
+        fail_checks: false,
       },
       tokio::time::sleep,
     )
@@ -390,14 +485,46 @@ mod tests {
       VerifyOptions {
         is_beyond: false,
         is_webview_gacha: true,
-        fail_parse: true,
+        // `fail_checks` is irrelevant here: the `auth_appid` filter runs
+        // before any `fail_checks`-controlled check. Any value works.
+        fail_checks: true,
       },
       tokio::time::sleep,
     )
     .await
     .unwrap_err();
 
-    // URL filtered out before any HTTP request → NotFound.
+    // Filtered out by `auth_appid` before any HTTP request → NotFound.
     assert!(matches!(err, GachaUrlValidationError::NotFound));
+  }
+
+  #[tokio::test]
+  async fn gamebiz_mismatch_strict() {
+    // URL is for `hkrpg_cn`, but `UID` is Hk4e.
+    const URL_HKRPG: &str = "https://public-operation-hkrpg.mihoyo.com/common/hkrpg_gacha_record/api/getGachaLog?authkey_ver=1&sign_type=2&authkey=abc&lang=zh-cn&game_biz=hkrpg_cn";
+
+    let err = VerifiedGachaUrl::verify(
+      UID,
+      &[URL_HKRPG],
+      VerifyOptions {
+        is_beyond: false,
+        is_webview_gacha: false,
+        fail_checks: true,
+      },
+      tokio::time::sleep,
+    )
+    .await
+    .unwrap_err();
+
+    assert!(matches!(
+      err,
+      GachaUrlValidationError::InconsistentGamebiz {
+        expected,
+        actual,
+        region,
+      } if expected == UID.gamebiz()
+        && actual == GameServer::HKRPG_CN
+        && region.is_none()
+    ));
   }
 }
