@@ -56,7 +56,7 @@ impl DetailedError for GachaUrlRequestError {
     Some(match self {
       Self::UnsupportedEndpoint { gamebiz, endpoint } => json!({
         KIND: stringify!(UnsupportedEndpoint),
-        "gamebiz": format_args!("{gamebiz:?}"),
+        "gamebiz": gamebiz.codename(),
         "endpoint": format_args!("{endpoint:?}"),
       }),
       Self::Reqwest { source } => debug_detail(stringify!(Reqwest), source),
@@ -80,13 +80,33 @@ impl DetailedError for GachaUrlRequestError {
 
 impl DetailedError for GachaUrlValidationError {
   fn name(&self) -> &'static str {
-    stringify!(GachaUrlValidationError)
+    match self {
+      // Source-bearing variants: delegate to the inner error, if it has
+      // details of its own.
+      Self::Parse { source } => source.name(),
+      Self::Request { source } => source.name(),
+
+      _ => stringify!(GachaUrlValidationError),
+    }
   }
 
   fn details(&self) -> Option<serde_json::Value> {
     match self {
+      // Source-bearing variants: delegate to the inner error, if it has
+      // details of its own.
       Self::Parse { source } => source.details(),
       Self::Request { source } => source.details(),
+
+      Self::InconsistentGamebiz {
+        expected,
+        actual,
+        region,
+      } => Some(json!({
+        KIND: stringify!(InconsistentGamebiz),
+        "expected": expected.to_string(),
+        "actual": actual.codename(),
+        "region": region,
+      })),
       Self::EmptyData => Some(json!({
         KIND: stringify!(EmptyData),
       })),
