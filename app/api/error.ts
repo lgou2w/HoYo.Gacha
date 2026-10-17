@@ -35,6 +35,29 @@ export function extractErrorMessage (error: unknown): string {
   }
 }
 
+export type AppErrorOfKind<
+  E extends AppError<string, { kind: string } | null>,
+  K extends string,
+>
+  = & Omit<E, 'details'>
+    & { details: Extract<NonNullable<E['details']>, { kind: K }> }
+
+export function isAppErrorOfKind<
+  E extends AppError<string, { kind: string } | null>,
+  K extends NonNullable<E['details']> extends { kind: infer Kind extends string } ? Kind : never,
+> (
+  error: unknown,
+  name: E['name'],
+  kind: K,
+): error is AppErrorOfKind<E, K> {
+  if (!isAppError(error) || error.name !== name) {
+    return false
+  }
+
+  const details = error.details as { kind?: unknown } | null | undefined
+  return details != null && details.kind === kind
+}
+
 // `kind` mirrors `std::io::ErrorKind`'s Debug representation (e.g. "NotFound").
 // See: https://doc.rust-lang.org/std/io/enum.ErrorKind.html
 export interface NativeIoError {

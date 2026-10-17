@@ -67,8 +67,11 @@ pub async fn run(context: Context) -> ! {
         crate::database::schemas::gacha_record_handlers::database_delete_gacha_records,
         crate::database::schemas::gacha_record_handlers::database_delete_gacha_records_with_newer_than_end_id,
         // Business
+        crate::business::handlers::business_from_webcaches_gacha_url,
+        crate::business::handlers::business_from_dirty_gacha_url,
         crate::business::handlers::business_resolve_image,
         crate::business::handlers::business_analyze_records,
+        crate::business::handlers::business_fetch_records,
       ])
       .build(generate_context!())
       .expect("error while building Tauri application");
@@ -155,7 +158,9 @@ fn setup(
   //
   // Verified against:
   //   * Tauri 2.12.x  — the regression was introduced here.
-  //   * Tauri 2.11.6  — last known-good release (this is what we pinned).
+  //   * Tauri 2.11.6  — last known-good release.
+  //   * Tauri 2.12.4  — regression still present; this workaround is
+  //                     retained on top of it (see `Cargo.toml`).
   //
   // ## Fix
   //
