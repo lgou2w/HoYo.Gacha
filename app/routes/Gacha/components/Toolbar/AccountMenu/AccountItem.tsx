@@ -1,7 +1,7 @@
 import { ComponentProps } from 'react'
 import { Body1, Caption1, Image, makeStyles, mergeClasses, tokens } from '@fluentui/react-components'
 import { Account, KeyofAccountBusiness, KnownAccountProperties } from '@/api/Account'
-import BusinessImages from '@/assets/Images/BusinessImages'
+import BusinessImages from '@/assets/images/BusinessImages'
 import { KnownI18nNs, useI18n } from '@/i18n'
 import { ItemCategory } from '@/routes/Gacha/api/stats'
 import GachaImage from '@/routes/Gacha/components/Image'

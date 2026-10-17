@@ -4,7 +4,7 @@ import { RestrictToElement } from '@dnd-kit/dom/modifiers'
 import { useSortable } from '@dnd-kit/react/sortable'
 import { Image, makeStyles, tabClassNames, tokens } from '@fluentui/react-components'
 import { AccountBusinessKeys } from '@/api/Account'
-import BusinessImages from '@/assets/Images/BusinessImages'
+import BusinessImages from '@/assets/images/BusinessImages'
 import Nav from './Nav'
 
 const useStyles = makeStyles({

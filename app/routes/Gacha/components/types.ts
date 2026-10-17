@@ -1,5 +1,5 @@
 import { KeyofAccountBusiness } from '@/api/Account'
-import BusinessImages from '@/assets/Images/BusinessImages'
+import BusinessImages from '@/assets/images/BusinessImages'
 import { BannerCategory } from '@/routes/Gacha/api/stats'
 
 export const ToolbarHeight = '4rem'

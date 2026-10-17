@@ -1,6 +1,6 @@
 import { CSSProperties, PropsWithChildren, memo, useMemo } from 'react'
 import { Body1, Caption1, Image, Tooltip, makeStyles, mergeClasses, tokens } from '@fluentui/react-components'
-import GachaImageNone from '@/assets/Images/Gacha/None.avif'
+import GachaImageNone from '@/assets/images/Gacha/None.avif'
 import { KnownI18nNs, useI18n } from '@/i18n'
 import { BannerCategory, Rarity, StatsRecord } from '@/routes/Gacha/api/stats'
 import GachaImage from '@/routes/Gacha/components/Image'

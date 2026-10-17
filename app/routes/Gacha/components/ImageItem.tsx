@@ -1,7 +1,7 @@
 import { ComponentProps, memo, useMemo } from 'react'
 import { Image, Tooltip, TooltipProps, makeStyles, mergeClasses, tokens } from '@fluentui/react-components'
 import { KeyofAccountBusiness, KeyofMiliastraWonderland } from '@/api/Account'
-import BusinessImages from '@/assets/Images/BusinessImages'
+import BusinessImages from '@/assets/images/BusinessImages'
 import { KnownI18nNs, useI18n } from '@/i18n'
 import { ItemCategory, Rarity, StatsRecord } from '@/routes/Gacha/api/stats'
 import useStatsRecordTooltip from '@/routes/Gacha/hooks/useStatsRecordTooltip'

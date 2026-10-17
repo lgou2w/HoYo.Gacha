@@ -2,7 +2,7 @@ import { ComponentProps } from 'react'
 import { Image, Spinner } from '@fluentui/react-components'
 import { useQuery } from '@tanstack/react-query'
 import { AccountBusiness, KeyofAccountBusiness } from '@/api/Account'
-import None from '@/assets/Images/Gacha/None.avif'
+import None from '@/assets/images/Gacha/None.avif'
 import { BusinessCommands } from '@/routes/Gacha/api/business'
 import { StatsRecord } from '@/routes/Gacha/api/stats'
 
