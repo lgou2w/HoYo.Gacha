@@ -9,7 +9,7 @@ use snafu::{ResultExt, Snafu};
 use tracing::info;
 
 use crate::constants;
-use crate::error::DetailedError;
+use crate::error::{DetailedError, debug_detail};
 
 mod connection;
 mod extends;
@@ -36,6 +36,14 @@ pub enum DatabaseError {
 impl DetailedError for DatabaseError {
   fn name(&self) -> &'static str {
     stringify!(DatabaseError)
+  }
+
+  fn details(&self) -> Option<serde_json::Value> {
+    Some(match self {
+      Self::Pool { source } => debug_detail(stringify!(Pool), source),
+      Self::Interact { source } => debug_detail(stringify!(Interact), source),
+      Self::Sqlite { source } => debug_detail(stringify!(Sqlite), source),
+    })
   }
 }
 
