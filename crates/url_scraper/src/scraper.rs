@@ -230,8 +230,8 @@ where
         break;
       }
 
-      scraped.region = region;
-      scraped.region_time_zone = region_time_zone;
+      scraped.region = scraped.region.take().or(region);
+      scraped.region_time_zone = scraped.region_time_zone.take().or(region_time_zone);
 
       // SAFETY, checked above
       end_id.clone_from(&list.last().as_ref().unwrap().id);
