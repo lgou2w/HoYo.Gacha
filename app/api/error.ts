@@ -41,3 +41,25 @@ export interface NativeIoError {
   kind: string // too many variants to enumerate
   message: string
 }
+
+// Database error
+
+export const NamedDatabaseError = 'DatabaseError' as const
+export type NamedDatabaseError = typeof NamedDatabaseError
+
+export enum DatabaseErrorKind {
+  Pool = 'Pool',
+  Interact = 'Interact',
+  Sqlite = 'Sqlite',
+}
+
+export type DatabaseError = AppError<
+  NamedDatabaseError,
+  | null
+  | { kind: DatabaseErrorKind, cause: string }
+>
+
+export function isDatabaseError (error: unknown): error is DatabaseError {
+  return isAppError(error)
+    && error.name === NamedDatabaseError
+}

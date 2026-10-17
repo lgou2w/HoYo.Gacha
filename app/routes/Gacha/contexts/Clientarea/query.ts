@@ -1,5 +1,6 @@
 import { mutationOptions, queryOptions } from '@tanstack/react-query'
 import { createKValueStore } from '@/api/KValue'
+import { DatabaseError } from '@/api/error'
 import queryClient from '@/queryClient'
 import { Clientarea, isClientarea } from './types'
 
@@ -15,7 +16,7 @@ type ClientareaInitialQueryKey = typeof ClientareaInitialQueryKey
 export function clientareaInitialQueryOptions () {
   return queryOptions<
     Clientarea,
-    Error,
+    DatabaseError | Error,
     Clientarea,
     ClientareaInitialQueryKey
   >({
@@ -48,7 +49,7 @@ const UpdateClientareaInitialMutationKey = [...ClientareaInitialQueryKey, 'Updat
 export function clientareaInitialMutationOptions () {
   return mutationOptions<
     Clientarea,
-    Error,
+    DatabaseError | Error,
     Clientarea,
     { previous: Clientarea | undefined }
   >({

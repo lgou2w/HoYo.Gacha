@@ -73,11 +73,20 @@ Object.freeze(KValueCommands)
 export interface KValueStore {
   /** The key currently used by this store. */
   readonly key: string
-  /** Read the stored value, or `null` if absent. */
+  /**
+   * Read the stored value, or `null` if absent.
+   * @throws DatabaseError
+   */
   read (): string | null | Promise<string | null>
-  /** Write a value. */
+  /**
+   * Write a value.
+   * @throws DatabaseError
+   */
   write (val: string): void | Promise<void>
-  /** Remove the stored value. */
+  /**
+   * Remove the stored value.
+   * @throws DatabaseError
+   */
   clear (): void | Promise<void>
 }
 

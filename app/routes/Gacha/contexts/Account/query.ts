@@ -3,6 +3,7 @@ import { produce } from 'immer'
 import { Account, AccountBusiness, AccountCommands, CreateAccountArgs, DeleteAccountArgs, KeyofAccountBusiness } from '@/api/Account'
 import { GachaRecordCommands } from '@/api/GachaRecord'
 import { KValueStore, createKValueStore } from '@/api/KValue'
+import { DatabaseError } from '@/api/error'
 import queryClient from '@/queryClient'
 import { CustomLocale } from '@/routes/Gacha/api/business'
 import { invalidateGachaStatsQuery } from '@/routes/Gacha/contexts/Stats/query'
@@ -20,7 +21,7 @@ type AccountsQueryKey = ReturnType<typeof accountsQueryKey>
 export function accountsQueryOptions (keyof: KeyofAccountBusiness) {
   return queryOptions<
     Account[],
-    Error,
+    DatabaseError | Error,
     Account[],
     AccountsQueryKey
   >({
@@ -61,7 +62,7 @@ export function ensureAccountsQueryData (keyof: KeyofAccountBusiness) {
 export function createAccountMutationOptions () {
   return mutationOptions<
     Account,
-    /* DatabaseError |  */Error,
+    DatabaseError | Error,
     CreateAccountArgs
   >({
     mutationKey: [KeyAccounts, 'Create'],
@@ -111,7 +112,7 @@ function createUpdateAccountFieldsMutationOptions<Args, U extends keyof Account>
   return () => {
     return mutationOptions<
       Account | null,
-      /* DatabaseError | */ Error,
+      DatabaseError | Error,
       Args
     >({
       mutationKey,
@@ -166,7 +167,7 @@ async function onDeleteAccountSuccess (data: Account) {
 export function deleteAccountMutationOptions () {
   return mutationOptions<
     Account | null,
-    /* DatabaseError | */ Error,
+    DatabaseError | Error,
     DeleteAccountArgs
   >({
     mutationKey: [KeyAccounts, 'Delete'],
@@ -181,7 +182,7 @@ export function deleteAccountWholeMutationOptions () {
   return mutationOptions<
     | { account: Account, deletedRecords?: number }
     | null,
-    /* DatabaseError | */ Error,
+    DatabaseError | Error,
     DeleteAccountArgs & (
       | { whole?: null }
       | { whole: boolean, customLocale: CustomLocale }
@@ -299,7 +300,7 @@ type SelectedAccountUidQueryKey = ReturnType<typeof selectedAccountUidQueryKey>
 export function selectedAccountUidQueryOptions (keyof: KeyofAccountBusiness) {
   return queryOptions<
     Account['uid'] | null,
-    Error,
+    DatabaseError | Error,
     Account['uid'] | null,
     SelectedAccountUidQueryKey
   >({
@@ -342,7 +343,7 @@ export interface UpdateSelectedAccountUidArgs {
 export function selectedAccountUidMutationOptions () {
   return mutationOptions<
     Account | null,
-    Error,
+    DatabaseError | Error,
     UpdateSelectedAccountUidArgs
   >({
     mutationKey: UpdateSelectedAccountUidQueryKey,

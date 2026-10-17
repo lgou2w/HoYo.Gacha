@@ -1,5 +1,6 @@
 import { queryOptions } from '@tanstack/react-query'
 import { AccountBusiness, KeyofAccountBusiness } from '@/api/Account'
+import { DatabaseError } from '@/api/error'
 import queryClient from '@/queryClient'
 import { AnalyzeRecordsArgs, BusinessCommands } from '@/routes/Gacha/api/business'
 import { GachaStats } from '@/routes/Gacha/api/stats'
@@ -32,7 +33,7 @@ export function gachaStatsQueryOptions<T extends AccountBusiness> (
   const { business, uid, customLocale } = args
   return queryOptions<
     GachaStats<T> | null,
-    Error,
+    DatabaseError | Error,
     GachaStats<T> | null,
     GachaStatsQueryKey
   >({

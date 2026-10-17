@@ -1,6 +1,7 @@
 import { mutationOptions, queryOptions } from '@tanstack/react-query'
 import { KeyofAccountBusiness } from '@/api/Account'
 import { KValueStore, createKValueStore } from '@/api/KValue'
+import { DatabaseError } from '@/api/error'
 import queryClient from '@/queryClient'
 import { SortableDefaults, SortablePreferences } from './types'
 
@@ -116,7 +117,7 @@ export function sortableQueryOptions<T extends string> (
 ) {
   return queryOptions<
     SortablePreferences<T>,
-    Error/*  | DatabaseError */,
+    DatabaseError | Error,
     SortablePreferences<T>,
     SortableQueryKey
   >({
@@ -153,7 +154,7 @@ export function sortableMutationOptions<T extends string> (
 ) {
   return mutationOptions<
     SortablePreferences<T>,
-    Error,
+    DatabaseError | Error,
     { keyof: KeyofAccountBusiness, newVal: SortablePreferences<T> },
     { previous: SortablePreferences<T> | undefined }
   >({
