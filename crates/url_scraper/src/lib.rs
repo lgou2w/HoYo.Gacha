@@ -1,8 +1,9 @@
 #![forbid(unsafe_code)]
 
 pub mod request;
-pub mod scraper;
+mod scraper;
 mod types;
 pub mod validate;
 
+pub use scraper::*;
 pub use types::*;

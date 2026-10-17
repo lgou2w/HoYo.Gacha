@@ -29,19 +29,23 @@ macro_rules! cb {
   };
 }
 
-pub struct GachaUrlScraper<'a, S> {
-  url: ParsedGachaUrl<'a>,
+pub struct GachaUrlScraper<'u, 'a, S> {
+  url: &'u ParsedGachaUrl<'a>,
   retry: RetryOptions,
   sleeper: fn(Duration) -> S,
   callback: Option<Callback>,
 }
 
-impl<'a, S> GachaUrlScraper<'a, S>
+impl<'u, 'a, S> GachaUrlScraper<'u, 'a, S>
 where
   S: Future<Output = ()> + Send + 'static,
 {
+  /// Create a scraper that borrows `url` for its entire lifetime.
+  ///
+  /// The caller must keep `url` alive as long as the scraper is in use —
+  /// this avoids owning a `ParsedGachaUrl` just to read a few fields.
   pub fn new(
-    url: ParsedGachaUrl<'a>,
+    url: &'u ParsedGachaUrl<'a>,
     retry: RetryOptions,
     sleeper: fn(Duration) -> S,
     callback: Option<Callback>,
@@ -55,8 +59,8 @@ where
   }
 
   #[inline]
-  pub const fn url(&self) -> &ParsedGachaUrl<'_> {
-    &self.url
+  pub const fn url(&self) -> &ParsedGachaUrl<'a> {
+    self.url
   }
 }
 
@@ -70,7 +74,7 @@ pub struct ScrapeRange<'a> {
 
 impl<'a> ScrapeRange<'a> {
   #[inline]
-  pub const fn from(gacha_type: GachaType, last_end_id: LastEndId<'a>) -> Self {
+  pub const fn new(gacha_type: GachaType, last_end_id: LastEndId<'a>) -> Self {
     Self {
       gacha_type,
       last_end_id,
@@ -104,7 +108,7 @@ impl ScrapedGachaLogs {
   }
 }
 
-impl<'a, S> GachaUrlScraper<'a, S>
+impl<'u, 'a, S> GachaUrlScraper<'u, 'a, S>
 where
   S: Future<Output = ()> + Send + 'static,
 {
@@ -152,50 +156,51 @@ where
         .await?;
 
       // Ensure the data is not empty
-      if let Some(GachaLogs {
+      let Some(GachaLogs {
         list,
         region,
         region_time_zone,
       }) = response.data
-        && !list.is_empty()
-      {
-        scraped.region = region;
-        scraped.region_time_zone = region_time_zone;
+      else {
+        // no data, break loop
+        break;
+      };
 
-        // SAFETY, checked
-        end_id.clone_from(&list.last().as_ref().unwrap().id);
-
-        // Check if the slice reached the specified last end id
-        let mut should_break = false;
-        let logs = if let Some(last_end_id) = scrape_range.last_end_id {
-          let mut temp = Vec::with_capacity(list.len());
-          for log in list {
-            if last_end_id.cmp(&log.id).is_lt() {
-              temp.push(log);
-            } else {
-              should_break = true;
-            }
-          }
-
-          temp
-        } else {
-          list
-        };
-
-        // Tell the visitor about the new data
-        cb! { self.callback => Event::Data(&logs[..]) }
-        scraped.data.extend(logs);
-
-        // reached the specified last end id, break loop
-        if should_break {
-          break;
-        } else {
-          continue;
-        }
+      if list.is_empty() {
+        break;
       }
 
-      // no data, break loop
-      break;
+      scraped.region = region;
+      scraped.region_time_zone = region_time_zone;
+
+      // SAFETY, checked above
+      end_id.clone_from(&list.last().as_ref().unwrap().id);
+
+      // Check if the slice reached the specified last end id
+      let mut should_break = false;
+      let logs = if let Some(last_end_id) = scrape_range.last_end_id {
+        let mut temp = Vec::with_capacity(list.len());
+        for log in list {
+          if last_end_id.cmp(&log.id).is_lt() {
+            temp.push(log);
+          } else {
+            should_break = true;
+          }
+        }
+
+        temp
+      } else {
+        list
+      };
+
+      // Tell the visitor about the new data
+      cb! { self.callback => Event::Data(&logs[..]) }
+      scraped.data.extend(logs);
+
+      // reached the specified last end id, break loop
+      if should_break {
+        break;
+      }
     }
 
     // Tell the visitor we've completed scraping this gacha type
@@ -256,7 +261,7 @@ mod tests {
 
     let parsed = ParsedGachaUrl::parse(url).unwrap();
     let scraper = GachaUrlScraper::new(
-      parsed,
+      &parsed,
       RetryOptions::default(),
       tokio::time::sleep,
       Some(Box::new(|event| println!("Scraper event: {event:?}"))),
@@ -265,7 +270,7 @@ mod tests {
     let logs = scraper
       .scrape(
         GachaLogEndpoint::Standard,
-        &[ScrapeRange::from(KnownGachaType::Hkrpg.permanent(), None)],
+        &[ScrapeRange::new(KnownGachaType::Hkrpg.permanent(), None)],
         None,
       )
       .await
