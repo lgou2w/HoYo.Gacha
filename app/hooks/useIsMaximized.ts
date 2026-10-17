@@ -16,7 +16,7 @@ export default function useIsMaximized (): boolean {
       return
     }
 
-    let unlisten: () => void | undefined
+    let unlisten: (() => void) | undefined
     let cancelled = false
 
     const updateMaximized = async () => {

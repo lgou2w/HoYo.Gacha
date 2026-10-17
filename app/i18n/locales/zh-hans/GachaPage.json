@@ -57,7 +57,7 @@
         "UpAverage_golden": "$t(Up)平均每金：",
         "UpAverage_purple": "$t(Up)平均每紫：",
         "UpPercentage_golden": "$t(Up)出金率：",
-        "UpPercentage_purple": "$t(Up)出金率：",
+        "UpPercentage_purple": "$t(Up)出紫率：",
         "Last_golden": "最近出金：",
         "Last_purple": "最近出紫："
       },
