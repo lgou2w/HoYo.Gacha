@@ -138,7 +138,7 @@ impl_questioner_with_handlers! {
         business: AccountBusiness,
         uid: u32,
         data_folder: String,
-        properties: Option<String>
+        properties: Option<Properties>
       }: fetch_one -> Account,
 
   #[database_update_account_data_folder]
@@ -154,7 +154,7 @@ impl_questioner_with_handlers! {
     = update_account_properties {
         business: AccountBusiness,
         uid: u32,
-        properties: Option<String>
+        properties: Option<Properties>
       }: fetch_optional -> Option<Account>,
 
   #[database_update_account_data_folder_and_properties]
@@ -163,7 +163,7 @@ impl_questioner_with_handlers! {
         business: AccountBusiness,
         uid: u32,
         data_folder: String,
-        properties: Option<String>
+        properties: Option<Properties>
       }: fetch_optional -> Option<Account>,
 
   #[database_delete_account]
