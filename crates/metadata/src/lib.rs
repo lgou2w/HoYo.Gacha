@@ -5,7 +5,7 @@ pub mod providers;
 pub mod raw;
 mod types;
 
-pub use bake::MismatchedItemsAndNames;
+pub use bake::{LOCALE_ALIASES, MismatchedItemsAndNames};
 pub use types::*;
 
 pub fn load<T: providers::MetadataProvider>(

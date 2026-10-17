@@ -212,7 +212,7 @@ struct BakedBanner {
 /// See:
 /// * https://github.com/lgou2w/HoYo.Gacha/issues/89
 /// * https://github.com/lgou2w/HoYo.Gacha/issues/118
-static LOCALE_ALIASES: LazyLock<HashMap<&'static str, &'static str>> = LazyLock::new(|| {
+pub static LOCALE_ALIASES: LazyLock<HashMap<&'static str, &'static str>> = LazyLock::new(|| {
   HashMap::from_iter([
     ("de", "de-de"),
     ("en", "en-us"),
