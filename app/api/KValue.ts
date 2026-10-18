@@ -154,8 +154,8 @@ export function createKValueStore (options: KValueStoreOptions): KValueStore {
   }
 }
 
-/** Debug logger that is stripped out in production builds. */
-const debug: (...args: unknown[]) => void = import.meta.env.PROD
+/** Debug logger that is stripped out in production or test builds. */
+const debug: (...args: unknown[]) => void = import.meta.env.PROD || import.meta.env.MODE === 'test'
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   ? () => {}
   : (...args) => console.debug(...args)

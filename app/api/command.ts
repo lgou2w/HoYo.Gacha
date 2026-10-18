@@ -66,7 +66,7 @@ export function declareCommand<Args extends InvokeArgs | undefined, Result = voi
 ): Command<Args, Result> | OnceCommand<Args, Result> {
   const once = options?.once ?? false
 
-  if (import.meta.env.DEV) {
+  if (import.meta.env.DEV && import.meta.env.MODE !== 'test') {
     console.debug(`[Command] Declaration ${once ? 'once ' : ''}command:`, name)
   }
 
@@ -85,7 +85,10 @@ function withOnce<Args extends InvokeArgs | undefined, Result = void> (
     if (!initialized) {
       initialized = true
       promise = command.apply(this, args as [Args]).catch((error) => {
-        console.warn('[Command] The promise of the cached command %s is not resolved: %o', name, error)
+        if (import.meta.env.MODE !== 'test') {
+          console.warn('[Command] The promise of the cached command %s is not resolved: %o', name, error)
+        }
+
         initialized = false
         promise = undefined
 
@@ -94,7 +97,7 @@ function withOnce<Args extends InvokeArgs | undefined, Result = void> (
         throw enhancedError
       })
 
-      if (import.meta.env.DEV) {
+      if (import.meta.env.DEV && import.meta.env.MODE !== 'test') {
         promise.then(
           (result) => {
             console.debug('[Command] Once command %s resolved with result: %o', name, result)

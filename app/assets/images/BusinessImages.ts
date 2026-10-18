@@ -20,7 +20,7 @@ const BusinessImages = Object.entries<string>(import.meta.glob('@/assets/images/
   return acc
 }, {} as BusinessImages)
 
-if (import.meta.env.DEV) {
+if (import.meta.env.DEV && import.meta.env.MODE !== 'test') {
   console.debug('BusinessImages:', BusinessImages)
 }
 
