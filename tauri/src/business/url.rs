@@ -147,12 +147,6 @@ pub async fn from_webcaches(
     },
   )
   .await
-  .inspect_err(|error| {
-    warn!(
-      message = "Failed to verify gacha URL from webCaches",
-      ?error,
-    );
-  })
 }
 
 /// See [`GachaUrl::from_dirty`].
