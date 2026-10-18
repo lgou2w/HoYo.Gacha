@@ -47,7 +47,7 @@ export default function debounce<F extends AnyFunction> (
     const last = Date.now() - timestamp!
 
     if (last < wait && last >= 0) {
-      timeoutId = window.setTimeout(later, wait - last)
+      timeoutId = setTimeout(later, wait - last)
     } else {
       timeoutId = undefined
 
@@ -74,7 +74,7 @@ export default function debounce<F extends AnyFunction> (
     const callNow = immediate && !timeoutId
 
     if (!timeoutId) {
-      timeoutId = window.setTimeout(later, wait)
+      timeoutId = setTimeout(later, wait)
     }
 
     if (callNow) {
@@ -96,7 +96,7 @@ export default function debounce<F extends AnyFunction> (
       return
     }
 
-    window.clearTimeout(timeoutId)
+    clearTimeout(timeoutId)
     timeoutId = undefined
     storedContext = undefined
     storedArguments = undefined

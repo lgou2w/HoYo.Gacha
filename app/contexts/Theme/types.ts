@@ -77,7 +77,7 @@ export const DefaultThemeData = {
 // Utilites
 
 export function prefersColorScheme (): ColorScheme {
-  return window.matchMedia('(prefers-color-scheme: light)').matches
+  return matchMedia('(prefers-color-scheme: light)').matches
     ? Light
     : Dark
 }
