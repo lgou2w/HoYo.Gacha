@@ -31,7 +31,7 @@ pub async fn business_from_webcaches_gacha_url(
 }
 
 #[tauri::command]
-#[tracing::instrument]
+#[tracing::instrument(skip(dirty))]
 pub async fn business_from_dirty_gacha_url(
   business: AccountBusiness,
   uid: u32,

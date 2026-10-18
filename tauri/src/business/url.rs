@@ -8,6 +8,7 @@ use serde::{Serialize, Serializer};
 use snafu::{ResultExt, Snafu};
 use time::OffsetDateTime;
 use time::serde::rfc3339;
+use tracing::{debug, warn};
 
 use crate::constants;
 use crate::database::schemas::AccountBusiness;
@@ -108,6 +109,13 @@ impl GachaUrl {
 }
 
 /// See [`GachaUrl::from_webcaches`].
+#[tracing::instrument(
+  skip_all,
+  fields(
+    business,
+    uid = uid.value(),
+  ),
+)]
 pub async fn from_webcaches(
   business: AccountBusiness,
   uid: Uid,
@@ -117,7 +125,16 @@ pub async fn from_webcaches(
   const POLICY: CreationTimePolicy = CreationTimePolicy::Valid;
 
   let webcaches_folder = data_folder.join(WEBCACHES_FOLDER_NAME);
+  debug!(
+    message = "Scanning webCaches for gacha URLs",
+    ?webcaches_folder
+  );
+
   let dirties = DirtyGachaUrl::from_webcaches(webcaches_folder, POLICY).context(Find)?;
+  debug!(
+    message = "Collected dirty gacha URLs from disk cache",
+    count = dirties.len()
+  );
 
   verify(
     business,
@@ -130,14 +147,28 @@ pub async fn from_webcaches(
     },
   )
   .await
+  .inspect_err(|error| {
+    warn!(
+      message = "Failed to verify gacha URL from webCaches",
+      ?error,
+    );
+  })
 }
 
 /// See [`GachaUrl::from_dirty`].
+#[tracing::instrument(
+  skip_all,
+  fields(
+    business,
+    uid = uid.value(),
+  ),
+)]
 pub async fn from_dirty(
   business: AccountBusiness,
   uid: Uid,
   dirty: String,
 ) -> Result<GachaUrl, GachaUrlError> {
+  debug!(message = "Verifying manually provided gacha URL");
   verify(
     business,
     uid,
@@ -154,12 +185,21 @@ pub async fn from_dirty(
   .await
 }
 
+#[tracing::instrument(
+  skip_all,
+  fields(
+    business,
+    uid = uid.value(),
+    candidate_count = dirties.len(),
+  ),
+)]
 async fn verify(
   business: AccountBusiness,
   uid: Uid,
   dirties: &[DirtyGachaUrl],
   options: VerifyOptions,
 ) -> Result<GachaUrl, GachaUrlError> {
+  debug!(message = "Starting URL verification");
   VerifiedGachaUrl::verify(uid, dirties, options, tokio::time::sleep)
     .await
     .map(|verified| {
@@ -169,14 +209,25 @@ async fn verify(
         .creation_time
         .map(|utc| utc.to_offset(*constants::LOCAL_OFFSET));
 
-      GachaUrl {
+      let url = GachaUrl {
         business,
         owner: verified.uid,
         creation_time,
         value,
-      }
+      };
+
+      debug!(
+        message = "Normalized verified URL",
+        normalized_len = url.value.len(),
+        creation_time = ?url.creation_time
+      );
+
+      url
     })
     .context(Verify)
+    .inspect_err(|error| {
+      warn!(message = "Verification rejected candidate URL(s)", ?error);
+    })
 }
 
 /// Normalize a gacha URL by encoding its query parameters.
