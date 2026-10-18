@@ -71,6 +71,15 @@ use crate::error::{DetailedError, KIND};
 
 #[derive(Debug, Snafu)]
 pub enum GachaFetchError {
+  #[snafu(display("{source}"), context(suffix(false)))]
+  Parse { source: GachaUrlParseError },
+
+  #[snafu(display("{source}"), context(suffix(false)))]
+  Request { source: GachaUrlRequestError },
+
+  #[snafu(display("{source}"))]
+  Database { source: DatabaseError },
+
   #[snafu(
     display("Invalid {business:?} account uid: {value}"),
     context(suffix(false))
@@ -79,12 +88,6 @@ pub enum GachaFetchError {
     business: AccountBusiness,
     value: u32,
   },
-
-  #[snafu(display("{source}"), context(suffix(false)))]
-  Parse { source: GachaUrlParseError },
-
-  #[snafu(display("{source}"), context(suffix(false)))]
-  Request { source: GachaUrlRequestError },
 
   /// A scraped log reported a different `uid` than the one we're fetching
   /// for. Emitted from the scrape callback before any records are
@@ -101,9 +104,6 @@ pub enum GachaFetchError {
     lang: String,
     item_name: String,
   },
-
-  #[snafu(display("{source}"))]
-  Database { source: DatabaseError },
 }
 
 impl DetailedError for GachaFetchError {
@@ -121,18 +121,17 @@ impl DetailedError for GachaFetchError {
 
   fn details(&self) -> Option<serde_json::Value> {
     match self {
-      Self::InvalidUid { business, value } => Some(json!({
-        KIND: stringify!(InvalidUid),
-        "business": business,
-        "value": value,
-      })),
-
       // Source-bearing variants: delegate to the inner error, if it has
       // details of its own.
       Self::Parse { source } => source.details(),
       Self::Request { source } => source.details(),
       Self::Database { source } => source.details(),
 
+      Self::InvalidUid { business, value } => Some(json!({
+        KIND: stringify!(InvalidUid),
+        "business": business,
+        "value": value,
+      })),
       Self::InconsistentUid { expected, actual } => Some(json!({
         KIND: stringify!(InconsistentUid),
         "expected": expected,
