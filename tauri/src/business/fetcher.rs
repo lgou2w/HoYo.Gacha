@@ -442,24 +442,20 @@ async fn scrape(
 
   match business {
     AccountBusiness::GenshinImpact | AccountBusiness::ZenlessZoneZero => {
-      debug!(message = "Scraping standard endpoint", endpoint = ?GachaLogEndpoint::Standard);
+      debug!("Scraping endpoint: {:?}", GachaLogEndpoint::Standard);
       scraper
         .scrape(GachaLogEndpoint::Standard, &ranges, None)
         .await
     }
     AccountBusiness::MiliastraWonderland => {
-      debug!(message = "Scraping beyond endpoint", endpoint = ?GachaLogEndpoint::Hk4eBeyond);
+      debug!("Scraping endpoint: {:?}", GachaLogEndpoint::Hk4eBeyond);
       scraper
         .scrape(GachaLogEndpoint::Hk4eBeyond, &ranges, None)
         .await
     }
     AccountBusiness::HonkaiStarRail => {
       let (standard, collabs) = split_hkrpg_collabs(ranges);
-      debug!(
-        message = "Scraping hkrpg standard + collabs endpoints",
-        ?standard,
-        ?collabs
-      );
+      debug!(message = "Scraping endpoints", ?standard, ?collabs);
       scraper
         .scrape_multiple(
           &[
@@ -700,7 +696,7 @@ fn to_record(
   };
 
   // Prefer the per-record uid's timezone (exact `Gamebiz`). Fall back to
-  // the region-level timezone from the server, then UTC.
+  // the region-level timezone from the server, then local.
   let timezone_offset = Uid::parse(business.as_game(), log.uid)
     .map(|uid| uid.gamebiz().timezone())
     .unwrap_or_else(|| {
