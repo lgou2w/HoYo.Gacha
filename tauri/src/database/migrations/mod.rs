@@ -30,15 +30,17 @@ define_migrations! {
 
 #[tracing::instrument(skip_all)]
 pub async fn apply_migrations(database: &Database) -> Result<(), DatabaseError> {
-  let expected_version = Migration::values().len();
+  const EXPECTED_VERSION: usize = Migration::values().len();
+
   let current_version = database
     .interact(|conn| conn.query_row("PRAGMA USER_VERSION;", [], |row| row.get::<_, u32>(0)))
     .await? as usize;
 
-  if current_version >= expected_version {
+  if current_version >= EXPECTED_VERSION {
     debug!(
       message = "Database schema is up to date",
-      current_version, expected_version,
+      current_version,
+      expected_version = EXPECTED_VERSION,
     );
     return Ok(());
   }
@@ -46,15 +48,19 @@ pub async fn apply_migrations(database: &Database) -> Result<(), DatabaseError> 
   let start = Instant::now();
   info!(
     message = "Applying database migrations...",
-    current_version, expected_version,
+    current_version,
+    expected_version = EXPECTED_VERSION,
   );
 
-  for migration in Migration::values().iter().skip(current_version) {
-    info!(message = "Applying migration...", ?migration.name);
-    database
-      .interact(|conn| conn.execute_batch(migration.sql))
-      .await?;
-  }
+  database
+    .interact(move |conn| {
+      for migration in Migration::values().iter().skip(current_version) {
+        info!(message = "Applying migration...", ?migration.name);
+        conn.execute_batch(migration.sql)?;
+      }
+      Ok(())
+    })
+    .await?;
 
   // When new migrations are applied, we should vacuum the database to reclaim space and optimize performance.
   info!("Vacuuming database to reclaim space");
@@ -72,7 +78,7 @@ pub async fn apply_migrations(database: &Database) -> Result<(), DatabaseError> 
   info!(
     message = "Database migrations completed",
     from = current_version,
-    to = expected_version,
+    to = EXPECTED_VERSION,
     elapsed = ?start.elapsed(),
   );
   Ok(())
