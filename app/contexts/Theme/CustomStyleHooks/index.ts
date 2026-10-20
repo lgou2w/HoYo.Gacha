@@ -95,7 +95,7 @@ export const OverridedFluentTokens:
 // https://github.com/microsoft/fluentui/pull/34166
 type CustomStyleHook = (state: unknown) => void
 
-export const CustomStylesHooks: FluentProviderCustomStyleHooks = {
+export const CustomStyleHooks: FluentProviderCustomStyleHooks = {
   useBadgeStyles_unstable: useBadgeStyles as CustomStyleHook,
   useButtonStyles_unstable: useButtonStyles as CustomStyleHook,
   useDividerStyles_unstable: useDividerStyles as CustomStyleHook,

@@ -3,7 +3,7 @@ import { FluentProvider, FluentProviderProps } from '@fluentui/react-components'
 import { isTauri } from '@tauri-apps/api/core'
 import { TauriEvent, UnlistenFn, listen } from '@tauri-apps/api/event'
 import { produce } from 'immer'
-import { CustomStylesHooks } from './CustomStyleHooks'
+import { CustomStyleHooks } from './CustomStyleHooks'
 import { ThemeStore } from './store'
 import { ColorScheme, Namespace, ThemeContext, ThemeContextValue, ThemeData, applyScaling, createNamespaceThemes, prefersColorScheme } from './types'
 
@@ -123,6 +123,6 @@ function useFluentProps (options: UseFluentPropsOptions): FluentProviderProps {
   return useMemo<FluentProviderProps>(() => ({
     theme: themes[namespace]?.[colorScheme] ?? themes.web[colorScheme],
     style: isSupportedMica ? MICA_STYLES : undefined,
-    customStyleHooks_unstable: CustomStylesHooks,
+    customStyleHooks_unstable: CustomStyleHooks,
   }), [colorScheme, isSupportedMica, namespace, themes])
 }
