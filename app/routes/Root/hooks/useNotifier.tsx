@@ -167,11 +167,11 @@ function createPromiseHandler (
     input,
     contents,
   ) => {
-    const { title, body, footer, ...rest } = contents.loading
+    const { title, dismissible, body, footer, ...rest } = contents.loading
     const toastId = notify(
       renderToastContent({
         title,
-        dismissible: contents.loading.dismissible,
+        dismissible,
         body,
         footer,
         media: <Spinner size="extra-tiny" />,
