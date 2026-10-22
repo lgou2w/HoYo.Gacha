@@ -46,8 +46,8 @@ use std::sync::LazyLock;
 
 use hg_gamebiz::Uid;
 use hg_metadata::{Locale, Metadata, UpRarity};
-use hg_url_scraper::GachaType;
 use hg_url_scraper::GachaTypes::{Beyond, Hk4e, Hkrpg, Nap};
+use hg_url_scraper::{GachaType, KnownGachaType};
 use serde::Serialize;
 use time::serde::rfc3339;
 use time::{Date, OffsetDateTime, UtcOffset};
@@ -482,6 +482,22 @@ pub struct GachaStats<'a> {
   pub gacha_type_categories: HashMap<GachaType, BannerCategory>,
   pub banners: HashMap<BannerCategory, BannerStats<'a>>,
   pub aggregated: Option<AggregatedStats<'a>>,
+  /// Scrape ranges for the next update, derived from `banners`.
+  ///
+  /// One entry per **banner category**, using that banner's representative
+  /// `gacha_type` — the same value `BannerStats::gacha_type` already holds.
+  /// This is safe because the server treats merged types as one pagination
+  /// stream:
+  ///
+  /// - **Genshin Impact** — `301` and `400` return the same log list, so
+  ///   querying `301` (the merged `Character` banner's type) covers both.
+  /// - **Miliastra Wonderland** — `2000` (the merged `EventOde` banner's
+  ///   type) covers `20011` / `20012` / `20021` / `20022`; the scraper
+  ///   doesn't need to request each `op_gacha_type` separately.
+  ///
+  /// `last_end_id` is the newest record id of the merged banner; paginating
+  /// from it resumes across every underlying raw type.
+  pub gacha_ranges: Vec<(GachaType, Option<&'a str>)>,
 }
 
 #[derive(Clone, Debug, Serialize)]
@@ -649,6 +665,8 @@ impl<'a> GachaStats<'a> {
       .map(|banner| (banner.gacha_type, banner.category))
       .collect();
 
+    let gacha_ranges = compute_gacha_ranges(&ctx, &banners);
+
     Self {
       business: ctx.business,
       uid: ctx.uid.value(),
@@ -658,6 +676,7 @@ impl<'a> GachaStats<'a> {
       gacha_type_categories,
       banners,
       aggregated,
+      gacha_ranges,
     }
   }
 }
@@ -1190,6 +1209,65 @@ fn compute_aggregated_tags<'a>(
   tags
 }
 
+/// Derive the next scrape ranges from `banners`.
+///
+/// Uses each banner's representative `gacha_type` (the value stored in
+/// `BannerStats::gacha_type`) rather than expanding back to raw types. The
+/// server treats merged types as a single pagination stream — `301` and
+/// `400` share a log list, and `2000` covers every `EventOde` variant — so
+/// one range per banner is correct and avoids duplicate requests.
+///
+/// `total == 0` banners are **kept** with `last_end_id = None`: the scraper
+/// then paginates from `end_id = "0"`, pulling the entire history. Dropping
+/// them would permanently lock the user out of those banners, since the
+/// local DB never receives a first batch to derive a `last_end_id` from.
+///
+/// Skipped:
+/// - `Beginner` once it reaches the per-game cap (Genshin Impact: 20,
+///   Honkai: Star Rail: 50); Zenless Zone Zero has no cap because Beginner
+///   is unused there.
+///
+/// Result is sorted by [`KnownGachaType::values`] priority — the same order
+/// the scraper walks, so the first page requested is the user-facing
+/// "permanent / character / weapon / …" order, not the arbitrary HashMap
+/// iteration order.
+fn compute_gacha_ranges<'a>(
+  ctx: &AnalyzeContext<'a>,
+  banners: &HashMap<BannerCategory, BannerStats<'a>>,
+) -> Vec<(GachaType, Option<&'a str>)> {
+  let mut ranges: Vec<(GachaType, Option<&'a str>)> = banners
+    .values()
+    .filter(|banner| match banner.category {
+      BannerCategory::Beginner => {
+        banner.total
+          < match ctx.business {
+            AccountBusiness::GenshinImpact => 20,
+            AccountBusiness::HonkaiStarRail => 50,
+            _ => return true,
+          }
+      }
+      _ => true,
+    })
+    .map(|banner| (banner.gacha_type, banner.last_end_id))
+    .collect();
+
+  // Reorder based on custom priority
+  let priority: HashMap<GachaType, usize> = match ctx.business {
+    AccountBusiness::GenshinImpact => KnownGachaType::Hk4e,
+    AccountBusiness::HonkaiStarRail => KnownGachaType::Hkrpg,
+    AccountBusiness::ZenlessZoneZero => KnownGachaType::Nap,
+    AccountBusiness::MiliastraWonderland => KnownGachaType::Beyond,
+  }
+  .values()
+  .iter()
+  .enumerate()
+  .map(|(index, gacha_type)| (*gacha_type, index))
+  .collect();
+
+  ranges.sort_by_key(|(gacha_type, _)| priority.get(gacha_type).copied().unwrap_or(usize::MAX));
+  ranges
+}
+
 // endregion
 
 // Tests
@@ -1200,6 +1278,44 @@ mod tests {
   use crate::database::schemas::GachaRecordQuestioner;
 
   use super::*;
+
+  #[test]
+  fn gacha_ranges_empty() {
+    let business = AccountBusiness::GenshinImpact;
+    let uid = Uid::parse(business.as_game(), 100000000).unwrap();
+    let ctx = AnalyzeContext::new(None, business, uid, &[], None);
+
+    let banners = HashMap::new();
+    assert!(compute_gacha_ranges(&ctx, &banners).is_empty());
+  }
+
+  #[test]
+  fn gacha_ranges_keeps_zero_total_banner() {
+    let business = AccountBusiness::GenshinImpact;
+    let uid = Uid::parse(business.as_game(), 100000000).unwrap();
+    let ctx = AnalyzeContext::new(None, business, uid, &[], None);
+
+    // A zero-total banner must survive: the scraper interprets
+    // `last_end_id = None` as "start from end_id = 0" and pulls the
+    // entire history. Dropping it would lock the user out forever.
+    let banners = HashMap::from_iter([(
+      BannerCategory::Character,
+      BannerStats {
+        category: BannerCategory::Character,
+        gacha_type: Hk4e::CHARACTER,
+        total: 0,
+        start_time: None,
+        end_time: None,
+        last_end_id: None,
+        rarity: RarityStatsMap::default(),
+      },
+    )]);
+
+    assert_eq!(
+      compute_gacha_ranges(&ctx, &banners),
+      vec![(Hk4e::CHARACTER, None)],
+    );
+  }
 
   #[test]
   fn analyze() {

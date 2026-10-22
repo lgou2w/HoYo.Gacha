@@ -90,6 +90,7 @@ export interface GachaStats<T extends AccountBusiness> {
   aggregated: T extends MiliastraWonderland
     ? never
     : AggregatedStats
+  gachaRanges: [GachaType<T>, GachaRecord<T>['id'] | null][]
 }
 
 export interface BannerStats<T extends AccountBusiness> {
