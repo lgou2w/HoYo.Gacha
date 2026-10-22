@@ -96,6 +96,7 @@ impl ToSql for AccountBusiness {
 // Account
 
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Account {
   pub business: AccountBusiness,
   pub uid: u32,

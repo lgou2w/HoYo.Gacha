@@ -37,6 +37,7 @@ use crate::database::{Database, DatabaseError, impl_questioner_with_handlers};
 //
 
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct GachaRecord {
   pub business: AccountBusiness,
   pub uid: u32,
