@@ -10,7 +10,7 @@
   "license": "MIT OR Apache-2.0",
   "private": "true",
   "type": "module",
-  "packageManager": "pnpm@12.14.0+sha512.c18ba6d87993d3d164cb5e8948f32b2c06ee854487e06cd8d86781342fb3e5bb4634367034711e86802baa9c37bea906ce1929ad08d70884c97d801df13389a6",
+  "packageManager": "pnpm@12.15.0+sha512.b3951d6d6ff4a9f13dc7cf56cd28d2b8eb37dbcc9c68e52e1e1191873ea9f82a017287ab50baadc5ccc494f036c67c0e47eb13608c2fa36f47711b61ea128e61",
   "engines": {
     "node": "^22 || >=24",
     "pnpm": ">=10"
@@ -37,19 +37,19 @@
     "@dnd-kit/dom": "^0.5.1",
     "@dnd-kit/helpers": "^0.5.1",
     "@dnd-kit/react": "^0.5.1",
-    "@fluentui/react-components": "^9.74.9",
+    "@fluentui/react-components": "^9.74.10",
     "@fluentui/react-icons": "^2.0.344",
-    "@fluentui/react-motion-components-preview": "^0.15.9",
-    "@tanstack/react-query": "^5.104.3",
-    "@tanstack/react-query-devtools": "^5.104.3",
+    "@fluentui/react-motion-components-preview": "^0.15.10",
+    "@tanstack/react-query": "^5.104.5",
+    "@tanstack/react-query-devtools": "^5.104.5",
     "@tanstack/react-router": "^1.170.45",
     "@tauri-apps/api": "^2.12.4",
     "dayjs": "^1.11.23",
-    "i18next": "^26.4.7",
-    "immer": "^11.1.21",
+    "i18next": "^26.5.4",
+    "immer": "^11.2.6",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
-    "react-i18next": "^17.0.20",
+    "react-i18next": "^17.1.0",
     "react-virtuoso": "^4.18.19"
   },
   "devDependencies": {
@@ -75,8 +75,8 @@
     "jsdom": "^30.1.3",
     "rimraf": "^6.1.3",
     "typescript": "^6.0.3",
-    "typescript-eslint": "^8.71.2",
-    "vite": "^8.3.4",
+    "typescript-eslint": "^8.72.0",
+    "vite": "^8.3.5",
     "vitest": "^5.0.5"
   }
 }
