@@ -23,6 +23,28 @@
           "Label": "更多操作",
           "FullUpdate": "全量更新",
           "ManualInput": "手动输入链接"
+        },
+        "Obtain": {
+          "Loading": "获取$t(Common:{{keyof}}.Gacha.Name)链接...",
+          "Error": "获取$t(Common:{{keyof}}.Gacha.Name)链接失败："
+        },
+        "Fetch": {
+          "Loading": "拉取$t(Common:{{keyof}}.Gacha.Name)记录...",
+          "Success": {
+            "Title": "拉取$t(Common:{{keyof}}.Gacha.Name)记录成功：",
+            "AddedBody": "新增 {{count, number}} 条新记录。",
+            "DeletedBody": "移除 {{count, number}} 条不正确记录。"
+          },
+          "Error": "拉取$t(Common:{{keyof}}.Gacha.Name)记录失败：",
+          "Event": {
+            "Idle": "空闲中...",
+            "Sleeping": "等待中...",
+            "Ready": "准备拉取记录：$t(Common:{{keyof}}.Gacha.Banner.{{category}})",
+            "Pagination": "拉取第 {{count, number}} 页记录...",
+            "Data": "拉取到 {{count, number}} 条新记录。",
+            "Completed": "完成拉取记录：$t(Common:{{keyof}}.Gacha.Banner.{{category}})",
+            "Finished": "全部完成。"
+          }
         }
       }
     },

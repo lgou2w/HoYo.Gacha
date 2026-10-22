@@ -1,7 +1,7 @@
 import { use } from 'react'
 import { useMutation, useSuspenseQueries } from '@tanstack/react-query'
 import { KeyofAccountBusiness } from '@/api/Account'
-import { accountsQueryOptions, selectedAccountUidMutationOptions, selectedAccountUidQueryOptions } from './query'
+import { accountsQueryOptions, selectedAccountUidMutationOptions, selectedAccountUidQueryOptions, updateAccountPropertiesMutation } from './query'
 import { AccountContext } from './types'
 
 export function useAccount () {
@@ -24,4 +24,8 @@ export function useAccountSuspenseQueries (keyof: KeyofAccountBusiness) {
 
 export function useSelectedAccountUidMutation () {
   return useMutation(selectedAccountUidMutationOptions())
+}
+
+export function useUpdateAccountPropertiesMutation () {
+  return useMutation(updateAccountPropertiesMutation())
 }

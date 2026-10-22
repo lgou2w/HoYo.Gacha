@@ -23,6 +23,28 @@
           "Label": "More options",
           "FullUpdate": "Full update",
           "ManualInput": "Manual input URL"
+        },
+        "Obtain": {
+          "Loading": "Obtaining $t(Common:{{keyof}}.Gacha.Name) URL...",
+          "Error": "Failed to obtain $t(Common:{{keyof}}.Gacha.Name) URL:"
+        },
+        "Fetch": {
+          "Loading": "Fetching $t(Common:{{keyof}}.Gacha.Name) Records...",
+          "Error": "Failed to fetch $t(Common:{{keyof}}.Gacha.Name) Records:",
+          "Success": {
+            "Title": "Successfully fetched $t(Common:{{keyof}}.Gacha.Name) Records:",
+            "AddedBody": "Added {{changes}} new records.",
+            "DeletedBody": "Delete {{changes}} incorrect records."
+          },
+          "Event": {
+            "Idle": "Idle...",
+            "Sleeping": "Sleeping...",
+            "Ready": "Ready to fetch records: $t(Common:{{keyof}}.Gacha.Banner.{{category}})",
+            "Pagination": "Fetching records for page {{count, number}}...",
+            "Data": "Fetched {{count, number}} new records.",
+            "Completed": "Completed fetching records: $t(Common.{{keyof}}.Gacha.Banner.{{category}})",
+            "Finished": "All done."
+          }
         }
       }
     },
