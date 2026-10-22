@@ -15,6 +15,11 @@ import useMenuSplitGroupStyles from './useMenuSplitGroupStyles'
 import useSpinnerStyles from './useSpinnerStyles'
 import useSplitButtonStyles from './useSplitButtonStyles'
 import useTabStyles from './useTabStyles'
+import useToastBodyStyles from './useToastBodyStyles'
+import useToastContainerStyles from './useToastContainerStyles'
+import useToastFooterStyles from './useToastFooterStyles'
+import useToastStyles from './useToastStyles'
+import useToastTitleStyles from './useToastTitleStyles'
 import useTooltipStyles from './useTooltipStyles'
 
 // Customizing a theme
@@ -112,5 +117,10 @@ export const CustomStyleHooks: FluentProviderCustomStyleHooks = {
   useSpinnerStyles_unstable: useSpinnerStyles as CustomStyleHook,
   useSplitButtonStyles_unstable: useSplitButtonStyles as CustomStyleHook,
   useTabStyles_unstable: useTabStyles as CustomStyleHook,
+  useToastBodyStyles_unstable: useToastBodyStyles as CustomStyleHook,
+  useToastContainerStyles_unstable: useToastContainerStyles as CustomStyleHook,
+  useToastFooterStyles_unstable: useToastFooterStyles as CustomStyleHook,
+  useToastStyles_unstable: useToastStyles as CustomStyleHook,
+  useToastTitleStyles_unstable: useToastTitleStyles as CustomStyleHook,
   useTooltipStyles_unstable: useTooltipStyles as CustomStyleHook,
 }

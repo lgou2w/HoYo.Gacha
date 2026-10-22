@@ -2,6 +2,7 @@ import { PropsWithChildren } from 'react'
 import { makeStyles, tokens } from '@fluentui/react-components'
 import { NavbarWidth, TitleBarHeight } from '@/routes/Root/components/types'
 import { MainScrollableAreaId } from '@/routes/types'
+import GlobalNotifier from './GlobalNotifier'
 import Navbar from './Navbar'
 import TitleBar from './TitleBar'
 
@@ -37,6 +38,7 @@ export default function Layout (props: PropsWithChildren) {
       <Navbar />
       <main className={styles.content} id={MainScrollableAreaId}>
         <TitleBar />
+        <GlobalNotifier />
         <div className={styles.wrapper}>
           {props.children}
         </div>
