@@ -1,6 +1,6 @@
 import { Toaster, ToasterProps, tokens } from '@fluentui/react-components'
 import useNotifier from '@/routes/Root/hooks/useNotifier'
-import { NavbarWidth, ScrollbarWidth, TitleBarHeight } from './types'
+import { NavbarWidth, TitleBarHeight } from './types'
 
 export interface NotifierProps {
   toasterId: string
@@ -23,14 +23,20 @@ export default function Notifier (props: NotifierProps) {
 // FIXME: String is working, should it be an inline css property
 const Offsets: ToasterProps['offset'] = {
   'top-start': {
-    vertical: `calc(${TitleBarHeight} + ${tokens.spacingVerticalL} - ${tokens.spacingVerticalM})` as unknown as number,
+    vertical: `calc(${TitleBarHeight})` as unknown as number,
     horizontal: `calc(${NavbarWidth} + ${tokens.spacingHorizontalL})` as unknown as number,
   },
-  top: { vertical: `calc(${TitleBarHeight} + ${tokens.spacingVerticalL} - ${tokens.spacingVerticalM})` as unknown as number },
-  'top-end': {
-    vertical: `calc(${TitleBarHeight} + ${tokens.spacingVerticalL} - ${tokens.spacingVerticalM})` as unknown as number,
-    horizontal: `calc(${tokens.spacingHorizontalL} + ${ScrollbarWidth})` as unknown as number,
+  top: {
+    vertical: `calc(${TitleBarHeight})` as unknown as number,
   },
-  'bottom-start': { horizontal: `calc(${NavbarWidth} + ${tokens.spacingHorizontalL})` as unknown as number },
-  'bottom-end': { horizontal: `calc(${tokens.spacingHorizontalL} + ${ScrollbarWidth})` as unknown as number },
+  'top-end': {
+    vertical: `calc(${TitleBarHeight})` as unknown as number,
+    horizontal: `calc(${tokens.spacingHorizontalL} + 16px)` as unknown as number,
+  },
+  'bottom-start': {
+    horizontal: `calc(${NavbarWidth} + ${tokens.spacingHorizontalL})` as unknown as number,
+  },
+  'bottom-end': {
+    horizontal: `calc(${tokens.spacingHorizontalL} + 16px)` as unknown as number,
+  },
 }
