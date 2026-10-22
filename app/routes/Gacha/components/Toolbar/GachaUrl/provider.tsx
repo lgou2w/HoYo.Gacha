@@ -8,10 +8,8 @@ export default function GachaUrlProvider (props: PropsWithChildren) {
   const { selected } = useAccount()
 
   const state = useMemo<GachaUrlContextValue>(() => {
-    const {
-      gachaUrl: value,
-      gachaUrlCreationTime: creationTime,
-    } = selected?.properties || {}
+    const value = selected?.properties?.gachaUrl
+    const creationTime = selected?.properties?.gachaUrlCreationTime
 
     // HACK: The Gacha url is valid for 1 day.
     const deadline = creationTime
@@ -23,10 +21,11 @@ export default function GachaUrlProvider (props: PropsWithChildren) {
 
     return {
       value,
+      creationTime,
       deadline,
       hasExpired,
     }
-  }, [dayjs, selected?.properties])
+  }, [dayjs, selected?.properties?.gachaUrl, selected?.properties?.gachaUrlCreationTime])
 
   return (
     <GachaUrlContext value={state}>

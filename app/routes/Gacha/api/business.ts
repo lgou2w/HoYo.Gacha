@@ -5,7 +5,7 @@ import { declareCommand } from '@/api/command'
 import { LanguageMetadata } from '@/i18n'
 import { BannerCategory, GachaStats, StatsRecord } from './stats'
 
-export interface GachaUrl<T extends AccountBusiness> {
+export interface GachaUrl<T extends AccountBusiness = AccountBusiness> {
   business: T
   owner: Account['uid']
   creationTime?: string | null
