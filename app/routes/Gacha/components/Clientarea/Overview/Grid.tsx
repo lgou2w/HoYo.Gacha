@@ -19,8 +19,24 @@ const useStyles = makeStyles({
   },
   item: {
     display: 'flex',
-    flex: '1 0 auto',
-    minWidth: `calc(max(50%, 20rem) - ${tokens.spacingHorizontalL} / 2)`,
+    // `flexGrow: 1` — stretch to fill the row when this item is alone
+    // (single-column layout, or the last banner when the count is odd).
+    // Without it the item stops at `flexBasis` and leaves blank space on
+    // the right.
+    // `flexShrink: 0` — keep `flexBasis` intact on narrow windows instead
+    // of squeezing the item below its intended width.
+    // Use `flexBasis` (not `minWidth`) so the initial size is fixed. In a
+    // two-column row the two bases plus the gap exactly fill the container,
+    // so `flexGrow` has nothing to distribute — dragging one item does not
+    // stretch its neighbour. The previous `flex: '1 0 auto'` + `minWidth`
+    // variant left `flexBasis` at `auto`, giving `flexGrow` free space to
+    // expand during a drag and snap back on drop.
+    //
+    // `max(50%, 20rem)` keeps two columns at ≥ 656px (`2 × 20rem + gap`)
+    // and collapses to one column below that.
+    flexGrow: 1,
+    flexShrink: 0,
+    flexBasis: `calc(max(50%, 20rem) - ${tokens.spacingHorizontalL} / 2)`,
   },
   tags: {
     display: 'flex',
