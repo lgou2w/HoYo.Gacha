@@ -9,20 +9,25 @@ import { Aggregated, GridItemId } from './types'
 
 const useStyles = makeStyles({
   root: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(2, 1fr)',
-    gridAutoFlow: 'dense',
-    gap: tokens.spacingVerticalL,
+    display: 'flex',
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    flex: '0 0 auto',
     width: '100%',
+    rowGap: tokens.spacingVerticalL,
+    columnGap: tokens.spacingHorizontalL,
   },
   item: {
     display: 'flex',
+    flex: '1 0 auto',
+    minWidth: `calc(max(50%, 20rem) - ${tokens.spacingHorizontalL} / 2)`,
   },
   tags: {
     display: 'flex',
+    width: `calc(max(50%, 20rem) - ${tokens.spacingHorizontalL} / 2)`,
   },
   tagsSpanFull: {
-    gridColumn: 'span 2',
+    width: '100%',
   },
 })
 
