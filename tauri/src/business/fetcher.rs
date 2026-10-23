@@ -129,7 +129,7 @@ impl DetailedError for GachaFetchError {
 
       Self::InvalidUid { business, value } => Some(json!({
         KIND: stringify!(InvalidUid),
-        "business": business,
+        "keyof": business.as_str(),
         "value": value,
       })),
       Self::InconsistentUid { expected, actual } => Some(json!({
@@ -143,7 +143,7 @@ impl DetailedError for GachaFetchError {
         item_name,
       } => Some(json!({
         KIND: stringify!(Metadata),
-        "business": business,
+        "keyof": business.as_str(),
         "lang": lang,
         "itemName": item_name,
       })),

@@ -1,0 +1,34 @@
+{
+  "Unexpected": "An unexpected error occurred: {{message}}",
+  "DatabaseError": "An unexpected database error occurred: {{message}}",
+  "GachaUrlFindError": {
+    "OpenDiskCache": "Failed to open disk cache: {{cause.message}} ({{cause.kind}})",
+    "ReadDiskCache": "Failed to read disk cache: {{cause.message}} ({{cause.kind}})",
+    "OpenWebcaches": "Failed to open webcaches: {{cause.message}} ({{cause.kind}}). The game data folder location may have moved. Please check and modify it in Account List - Edit Account.",
+    "EmptyWebCaches": "No valid webCaches version directory found. Please try launching the game at least once!"
+  },
+  "GachaUrlParseError": {
+    "Invalid": "Invalid Gacha URL.",
+    "MissingParam": "Gacha URL is missing required parameter: {{name}}",
+    "UnsupportedGamebiz": "Unsupported game biz: {{value}}"
+  },
+  "GachaUrlRequestError": {
+    "UnsupportedEndpoint": "Game biz '{{gamebiz}}' does not support endpoint type: {{endpoint}}",
+    "Reqwest": "Error when requesting the Gacha URL: {{cause}}",
+    "AuthkeyTimeout": "The Gacha URL has expired. Please reopen the history interface in the game!",
+    "VisitTooFrequently": "The Gacha URL was visited too frequently. Please try again later!",
+    "UnexpectedResponse": "The Gacha URL returned an unexpected response: {{message}} (retcode: {{retcode}})",
+    "ReachedMaxAttempts": "Request reached max attempts. Please try again later!"
+  },
+  "GachaUrlValidationError": {
+    "InconsistentGamebiz": "Gacha URL game biz does not match the account: expected {{expected}}, got {{actual}}",
+    "EmptyData": "The Gacha URL returned empty data. The latest data may be delayed; please try again later!",
+    "NotFound": "No valid Gacha URL found. Please try opening the history interface in the game!",
+    "InconsistentUid": "Owner uid of the Gacha URL does not match. Expected: {{expected}}, actuals: {{actuals}}. Please reopen the history interface with the current account and try again!"
+  },
+  "GachaFetchError": {
+    "InvalidUid": "Invalid $t(Common:{{keyof}}.Name) account uid: {{value}}",
+    "InconsistentUid": "Scraped data uid does not match: expected {{expected}}, got {{actual}}",
+    "Metadata": "Missing metadata item: $t(Common:{{keyof}}.Name), lang: {{lang}}, item name: {{itemName}}"
+  }
+}

@@ -1,4 +1,5 @@
 import Common from './Common.json' with { type: 'json' }
+import Error from './Error.json' with { type: 'json' }
 import GachaPage from './GachaPage.json' with { type: 'json' }
 import HomePage from './HomePage.json' with { type: 'json' }
 import RootPage from './RootPage.json' with { type: 'json' }
@@ -22,6 +23,7 @@ export default {
     },
   },
   Common,
+  Error,
   GachaPage,
   HomePage,
   RootPage,

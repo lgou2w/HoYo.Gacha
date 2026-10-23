@@ -1,6 +1,6 @@
 import { MouseEventHandler, use, useCallback, useRef, useState } from 'react'
 import { Account, AccountBusiness } from '@/api/Account'
-import { extractErrorMessage } from '@/api/error'
+import errorTrans from '@/api/errorTrans'
 import { KnownI18nNs, UseI18n, useI18n } from '@/i18n'
 import { BusinessCommands, FetchRecordsOptions, GachaUrl, SaveToDatabase } from '@/routes/Gacha/api/business'
 import { isGachaUrlAuthkeyTimeout } from '@/routes/Gacha/api/error'
@@ -30,6 +30,9 @@ export function useGachaUrl () {
     return state
   }
 }
+
+// Because errorTrans must use a scope-free t
+const I18nScope = 'Toolbar.GachaUrl.Action'
 
 enum ObtainGachaUrlStatus {
   Ok = 'Ok',
@@ -92,7 +95,7 @@ function useObtainGachaUrl (t: UseI18n['t']) {
       dataFolder: selected.dataFolder,
     }), {
       loading: {
-        title: t('Obtain.Loading', { keyof }),
+        title: t(`${I18nScope}.Obtain.Loading`, { keyof }),
       },
       error (error) {
         if (isGachaUrlAuthkeyTimeout(error)) {
@@ -102,8 +105,8 @@ function useObtainGachaUrl (t: UseI18n['t']) {
         return {
           dismissible: true,
           timeout: DefaultNotifierTimeouts.error * 2,
-          title: t('Obtain.Error', { keyof }),
-          body: extractErrorMessage(error),
+          title: t(`${I18nScope}.Obtain.Error`, { keyof }),
+          body: errorTrans(t, error),
         }
       },
     })
@@ -150,7 +153,7 @@ function useFetchRecords (t: UseI18n['t']) {
     const keyof = AccountBusiness[options.business]
     const promise = promiseNotify(fetch(options), {
       loading: {
-        title: t('Fetch.Loading', { keyof }),
+        title: t(`${I18nScope}.Fetch.Loading`, { keyof }),
       },
       success (value) {
         // Positive numbers are added, negative numbers are deleted
@@ -160,8 +163,8 @@ function useFetchRecords (t: UseI18n['t']) {
         return {
           dismissible: true,
           timeout: DefaultNotifierTimeouts.success * 2,
-          title: t('Fetch.Success.Title', { keyof }),
-          body: t(`Fetch.Success.${body}`, {
+          title: t(`${I18nScope}.Fetch.Success.Title`, { keyof }),
+          body: t(`${I18nScope}.Fetch.Success.${body}`, {
             count: Math.abs(value),
           }),
         }
@@ -170,8 +173,8 @@ function useFetchRecords (t: UseI18n['t']) {
         return {
           dismissible: true,
           timeout: DefaultNotifierTimeouts.error * 2,
-          title: t('Fetch.Error', { keyof }),
-          body: extractErrorMessage(error),
+          title: t(`${I18nScope}.Fetch.Error`, { keyof }),
+          body: errorTrans(t, error),
         }
       },
     })
@@ -187,7 +190,7 @@ function useFetchRecords (t: UseI18n['t']) {
 }
 
 export function useAction () {
-  const { t, constants: { gacha: customLocale } } = useI18n({ ns: KnownI18nNs.GachaPage, scope: 'Toolbar.GachaUrl.Action' })
+  const { t, constants: { gacha: customLocale } } = useI18n({ ns: KnownI18nNs.GachaPage })
   const { selected } = useAccount()
   const stats = useGachaStats()
 
