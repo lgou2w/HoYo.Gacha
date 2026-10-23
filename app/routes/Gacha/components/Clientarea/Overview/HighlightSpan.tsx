@@ -18,7 +18,9 @@ const useStyles = makeStyles({
     cursor: 'help',
   },
   numeric: {
-    fontFamily: tokens.fontFamilyMonospace,
+    fontFamily: `'Consolas', ${tokens.fontFamilyBase}`,
+    fontVariantNumeric: 'tabular-nums',
+    fontFeatureSettings: 'tnum',
   },
   tooltip: {
     whiteSpace: 'pre-wrap',

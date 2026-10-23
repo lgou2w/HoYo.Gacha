@@ -146,14 +146,20 @@ export default memo(function OverviewGridItem (props: OverviewGridItemProps) {
           <StatLabel
             label={t('Average', { context: d.rarityContext })}
             value={d.average}
-            tooltip={d.average > 0 && `${d.usedPitySum} / ${d.sum} ≈ ${d.average}`}
+            tooltip={d.average > 0 && t('AverageTooltip', {
+              context: d.rarityContext,
+              formula: `${d.usedPitySum} / ${d.sum} ≈ ${d.average}`,
+            })}
             suffix={d.isBanner && <StatLabelTicket keyof={business.keyof} category={d.category} />}
             numeric
           />
           <StatLabel
             label={t('Percentage', { context: d.rarityContext })}
             value={d.percentage}
-            tooltip={d.percentage > 0 && `${d.sum} / ${d.total} ≈ ${d.percentage} %`}
+            tooltip={d.percentage > 0 && t('PercentageTooltip', {
+              context: d.rarityContext,
+              formula: `${d.sum} / ${d.total} ≈ ${d.percentage} %`,
+            })}
             suffix={<i className={styles.labelPercentage}>%</i>}
             numeric
           />
@@ -163,14 +169,20 @@ export default memo(function OverviewGridItem (props: OverviewGridItemProps) {
             <StatLabel
               label={t('UpAverage', { context: d.rarityContext })}
               value={d.up.average}
-              tooltip={d.up.average > 0 && `${d.up.usedPitySum} / ${d.up.sum} ≈ ${d.up.average}`}
+              tooltip={d.up.average > 0 && t('UpAverageTooltip', {
+                context: d.rarityContext,
+                formula: `${d.up.usedPitySum} / ${d.up.sum} ≈ ${d.up.average}`,
+              })}
               suffix={d.isBanner && <StatLabelTicket keyof={business.keyof} category={d.category} />}
               numeric
             />
             <StatLabel
               label={t('UpPercentage', { context: d.rarityContext })}
               value={d.up.percentage}
-              tooltip={d.up.percentage > 0 && `${d.up.sum} / ${d.total} ≈ ${d.up.percentage} %`}
+              tooltip={d.up.percentage > 0 && t('UpPercentageTooltip', {
+                context: d.rarityContext,
+                formula: `${d.up.sum} / ${d.total} ≈ ${d.up.percentage} %`,
+              })}
               suffix={<i className={styles.labelPercentage}>%</i>}
               numeric
             />
