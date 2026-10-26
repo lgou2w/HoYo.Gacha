@@ -29,7 +29,11 @@ export function accountsQueryOptions (keyof: KeyofAccountBusiness) {
     queryKey: accountsQueryKey(keyof),
     queryFn: async function accountsQueryFn () {
       const accounts = await AccountCommands.findAll({ business: AccountBusiness[keyof] })
-      await SelectedAccountUidStorage.inspect(keyof, accounts)
+      const selected = await SelectedAccountUidStorage.inspect(keyof, accounts)
+      queryClient.setQueryData<Account['uid'] | null>(
+        selectedAccountUidQueryKey(keyof),
+        selected,
+      )
       return accounts
     },
   })
@@ -77,9 +81,12 @@ export function createAccountMutationOptions () {
         }),
       )
 
-      // After creation, select the new account and refresh the selection query.
+      // After creation, select the new account.
       await SelectedAccountUidStorage.save(keyof, data.uid)
-      await invalidateSelectedAccountUidQuery(keyof)
+      queryClient.setQueryData<Account['uid'] | null>(
+        selectedAccountUidQueryKey(keyof),
+        data.uid,
+      )
     },
   })
 }
@@ -159,8 +166,11 @@ async function onDeleteAccountSuccess (data: Account) {
 
   // If the deleted account was selected, re-inspect the selection.
   if (accounts) {
-    await SelectedAccountUidStorage.inspect(keyof, accounts)
-    await invalidateSelectedAccountUidQuery(keyof)
+    const selected = await SelectedAccountUidStorage.inspect(keyof, accounts)
+    queryClient.setQueryData<Account['uid'] | null>(
+      selectedAccountUidQueryKey(keyof),
+      selected,
+    )
   }
 }
 
@@ -284,8 +294,11 @@ const SelectedAccountUidStorage = Object.freeze({
       if (firstAccount) {
         console.debug('Auto-selecting first account %o for %s', firstAccount, keyof)
         await this.save(keyof, firstAccount.uid)
+        selected = firstAccount.uid
       }
     }
+
+    return selected
   },
 })
 
@@ -321,13 +334,14 @@ export function ensureSelectedAccountUidQueryData (
   })
 }
 
-export function invalidateSelectedAccountUidQuery (
-  keyof: KeyofAccountBusiness,
-) {
-  return queryClient.invalidateQueries({
-    queryKey: selectedAccountUidQueryKey(keyof),
-  })
-}
+// Deprecated
+// export function invalidateSelectedAccountUidQuery (
+//   keyof: KeyofAccountBusiness,
+// ) {
+//   return queryClient.invalidateQueries({
+//     queryKey: selectedAccountUidQueryKey(keyof),
+//   })
+// }
 
 const UpdateSelectedAccountUidQueryKey = [
   KeyAccounts,
@@ -370,10 +384,11 @@ export function selectedAccountUidMutationOptions () {
         return null
       }
     },
-    onSuccess (_data, args) {
-      // Invalidate the query cache for selected account
-      invalidateSelectedAccountUidQuery(
-        AccountBusiness[args.business] as KeyofAccountBusiness,
+    onSuccess (data, args) {
+      const keyof = AccountBusiness[args.business] as KeyofAccountBusiness
+      queryClient.setQueryData<Account['uid'] | null>(
+        selectedAccountUidQueryKey(keyof),
+        data?.uid ?? null,
       )
     },
   })
