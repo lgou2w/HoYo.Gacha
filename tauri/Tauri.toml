@@ -8,7 +8,7 @@ version = "1.3.0"
 # See: package.json - scripts - dev & build
 # before-dev-command   = "pnpm app:dev"
 # before-build-command = "pnpm app:build"
-dev-url = "http://localhost:1420"
+dev-url = "http://127.0.0.1:1420"
 frontend-dist = "../dist"
 
 [bundle]
