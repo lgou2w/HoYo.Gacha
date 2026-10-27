@@ -319,6 +319,8 @@ function RecordsVirtoso (props: RecordsVirtosoProps) {
   const { ref, dataset, rarity } = props
   const styles = useVirtosoStyles()
 
+  // HACK: Prior to v1.3.0, `useVersionLabel` was optional;
+  // it is now always rendered.
   const items = useMemo(
     () => buildVirtosoItems(dataset, rarity, true),
     [dataset, rarity],
