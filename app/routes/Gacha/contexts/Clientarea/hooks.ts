@@ -1,6 +1,6 @@
 import { use } from 'react'
 import { useMutation, useSuspenseQuery } from '@tanstack/react-query'
-import { clientareaInitialMutationOptions, clientareaInitialQueryOptions } from './query'
+import { clientareaPreferenceMutationOptions, clientareaPreferenceQueryOptions } from './query'
 import { ClientareaContext } from './types'
 
 export function useClientarea () {
@@ -12,10 +12,10 @@ export function useClientarea () {
   }
 }
 
-export function useClientareaInitialSuspenseQuery () {
-  return useSuspenseQuery(clientareaInitialQueryOptions())
+export function useClientareaPreferenceSuspenseQuery () {
+  return useSuspenseQuery(clientareaPreferenceQueryOptions())
 }
 
-export function useClientareaInitialMutation () {
-  return useMutation(clientareaInitialMutationOptions())
+export function useClientareaPreferenceMutation () {
+  return useMutation(clientareaPreferenceMutationOptions())
 }

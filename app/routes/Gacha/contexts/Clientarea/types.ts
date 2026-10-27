@@ -15,7 +15,7 @@ export function isClientarea (val: unknown): val is Clientarea {
 
 export interface ClientareaContextValue {
   readonly active: Clientarea
-  change (newVal: Clientarea): Promise<Clientarea>
+  change (newVal: Clientarea): void
 }
 
 export const ClientareaContext = createContext<ClientareaContextValue | null>(null)

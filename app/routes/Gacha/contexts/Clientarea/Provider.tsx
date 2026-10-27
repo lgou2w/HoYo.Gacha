@@ -1,14 +1,16 @@
-import { PropsWithChildren, useCallback, useMemo } from 'react'
-import { useClientareaInitialMutation, useClientareaInitialSuspenseQuery } from './hooks'
+import { PropsWithChildren, useCallback, useMemo, useState } from 'react'
+import { useClientareaPreferenceSuspenseQuery } from './hooks'
 import { ClientareaContext, ClientareaContextValue } from './types'
 
 export default function ClientareaProvider (props: PropsWithChildren) {
-  const { data: active } = useClientareaInitialSuspenseQuery()
-  const { mutateAsync } = useClientareaInitialMutation()
+  const { data: initial } = useClientareaPreferenceSuspenseQuery()
 
-  const change = useCallback<ClientareaContextValue['change']>(async (newVal) => {
-    return mutateAsync(newVal)
-  }, [mutateAsync])
+  // Session-scoped: seeded from the persisted default, reset when the provider
+  // remounts (e.g. switching business) — matches v1.2 behavior.
+  const [active, setActive] = useState(initial)
+  const change = useCallback<ClientareaContextValue['change']>((newVal) => {
+    setActive(newVal)
+  }, [])
 
   const state = useMemo<ClientareaContextValue>(
     () => ({ active, change }),

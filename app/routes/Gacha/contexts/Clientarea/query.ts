@@ -10,26 +10,26 @@ const ClientareaStore = createKValueStore({
   localStorage: 'HG_GACHA_CLIENTAREA',
 })
 
-const ClientareaInitialQueryKey = ['Clientarea.Initial'] as const
-type ClientareaInitialQueryKey = typeof ClientareaInitialQueryKey
+const ClientareaPreferenceQueryKey = ['Clientarea.Preference'] as const
+type ClientareaPreferenceQueryKey = typeof ClientareaPreferenceQueryKey
 
-export function clientareaInitialQueryOptions () {
+export function clientareaPreferenceQueryOptions () {
   return queryOptions<
     Clientarea,
     DatabaseError | Error,
     Clientarea,
-    ClientareaInitialQueryKey
+    ClientareaPreferenceQueryKey
   >({
     staleTime: Infinity,
-    queryKey: ClientareaInitialQueryKey,
-    queryFn: async function clientareaInitialQueryFn () {
+    queryKey: ClientareaPreferenceQueryKey,
+    queryFn: async function clientareaPreferenceQueryFn () {
       const clientarea = await ClientareaStore.read()
       if (!clientarea) {
         return DefaultClientarea
       }
 
       if (!isClientarea(clientarea)) {
-        console.error(`Unexpected Clientarea initial value: ${clientarea}`)
+        console.error(`Unexpected Clientarea preference value: ${clientarea}`)
         try {
           await ClientareaStore.clear()
         } catch (err) {
@@ -44,37 +44,37 @@ export function clientareaInitialQueryOptions () {
   })
 }
 
-const UpdateClientareaInitialMutationKey = [...ClientareaInitialQueryKey, 'Update'] as const
+const UpdateClientareaPreferenceMutationKey = [...ClientareaPreferenceQueryKey, 'Update'] as const
 
-export function clientareaInitialMutationOptions () {
+export function clientareaPreferenceMutationOptions () {
   return mutationOptions<
     Clientarea,
     DatabaseError | Error,
     Clientarea,
     { previous: Clientarea | undefined }
   >({
-    mutationKey: UpdateClientareaInitialMutationKey,
+    mutationKey: UpdateClientareaPreferenceMutationKey,
     async mutationFn (newVal) {
       await ClientareaStore.write(newVal)
       return newVal
     },
     async onMutate (newVal) {
-      await queryClient.cancelQueries({ queryKey: ClientareaInitialQueryKey })
-      const previous = queryClient.getQueryData<Clientarea>(ClientareaInitialQueryKey)
-      queryClient.setQueryData<Clientarea>(ClientareaInitialQueryKey, newVal)
+      await queryClient.cancelQueries({ queryKey: ClientareaPreferenceQueryKey })
+      const previous = queryClient.getQueryData<Clientarea>(ClientareaPreferenceQueryKey)
+      queryClient.setQueryData<Clientarea>(ClientareaPreferenceQueryKey, newVal)
       return { previous }
     },
     onError (_error, _variables, onMutateResult) {
       if (onMutateResult?.previous !== undefined) {
         queryClient.setQueryData<Clientarea>(
-          ClientareaInitialQueryKey,
+          ClientareaPreferenceQueryKey,
           onMutateResult.previous,
         )
       }
     },
     onSettled () {
       return queryClient.invalidateQueries({
-        queryKey: ClientareaInitialQueryKey,
+        queryKey: ClientareaPreferenceQueryKey,
       })
     },
   })
