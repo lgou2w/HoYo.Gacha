@@ -42,6 +42,7 @@ pub async fn run(context: Context) -> ! {
     let context_cloned = Arc::clone(&context);
     let app = TauriBuilder::default()
       .plugin(tauri_plugin_clipboard_manager::init())
+      .plugin(tauri_plugin_shell::init())
       .setup(move|app| setup(app, context_cloned, color_scheme))
       .on_window_event(on_window_event)
       .invoke_handler(generate_handler![
