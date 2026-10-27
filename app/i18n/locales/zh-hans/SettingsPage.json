@@ -1,0 +1,73 @@
+{
+  "Sidebar": {
+    "Hero": {
+      "License": "仅供个人学习交流使用。请勿用于任何商业或违法违规用途。本软件不会向您索要任何关于 ©miHoYo 账户的账号密码信息，也不会收集任何用户数据。 所产生的数据（包括但不限于使用数据、抽卡数据、UID 信息等）均保存在用户本地。",
+      "Copyright": "玩家自制工具。游戏内容及资产归 ©miHoYo 版权所有。"
+    }
+  },
+  "General": {
+    "Title": "常规",
+    "Language": {
+      "Title": "语言",
+      "Subtitle": "更改应用使用的主要语言。"
+    },
+    "GachaClientarea": {
+      "Title": "业务启动标签页",
+      "Subtitle": "选择默认业务的启动标签页。",
+      "Overview": "$t(GachaPage:Toolbar.ClientareaTabs.Overview)",
+      "Analysis": "$t(GachaPage:Toolbar.ClientareaTabs.Analysis)",
+      "Chart": "$t(GachaPage:Toolbar.ClientareaTabs.Chart)"
+    },
+    "BusinessVisibility": {
+      "Title": "导航栏业务项可见性",
+      "Subtitle": "控制导航栏中业务相关条目的显示与隐藏。"
+    }
+  },
+  "Appearance": {
+    "Title": "外观",
+    "Namespace": {
+      "Title": "主题颜色",
+      "Subtitle": "更改应用中显示的主要颜色。"
+    },
+    "ColorScheme": {
+      "Title": "偏好配色方案",
+      "Subtitle": "切换应用使用浅色主题或深色主题。",
+      "Option": {
+        "System": "跟随系统",
+        "Light": "浅色",
+        "Dark": "深色"
+      }
+    },
+    "ScaleLevel": {
+      "Title": "界面缩放",
+      "Subtitle": "更改应用界面的缩放等级。"
+    },
+    "Font": {
+      "Title": "界面字体",
+      "Subtitle": "更改应用界面的字体。",
+      "None": "无"
+    }
+  },
+  "About": {
+    "Title": "关于",
+    "Specification": {
+      "Title": "设备规格",
+      "Copy": "复制",
+      "Copied": "已复制",
+      "OperatingSystem": "操作系统",
+      "SystemVersion": "系统版本",
+      "WebView2": "WebView2",
+      "Tauri": "Tauri",
+      "GitCommit": "Git 提交",
+      "AppVersion": "应用版本"
+    },
+    "CreateLnk": {
+      "Title": "桌面快捷方式",
+      "Subtitle": "为应用创建桌面快捷方式。",
+      "Button": "创建",
+      "Loading": "正在创建快捷方式...",
+      "Success": "创建成功。",
+      "Error": "创建失败："
+    }
+  }
+}

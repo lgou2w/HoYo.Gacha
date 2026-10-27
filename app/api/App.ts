@@ -26,6 +26,15 @@ export const AppCommands = {
 
   environment:
     declareCommand<undefined, Environment>('environment', { once: true }),
+
+  systemFonts:
+    declareCommand<undefined, string[]>('system_fonts', { once: true }),
+
+  createAppLnk:
+    declareCommand<undefined>('create_app_lnk'),
+
+  openDatabaseFolder:
+    declareCommand<undefined>('open_database_folder'),
 } as const
 
 Object.freeze(AppCommands)

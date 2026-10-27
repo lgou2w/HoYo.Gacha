@@ -48,6 +48,9 @@ pub async fn run(context: Context) -> ! {
         // App
         crate::bootstrap::handlers::locale,
         crate::bootstrap::handlers::environment,
+        crate::bootstrap::handlers::system_fonts,
+        crate::bootstrap::handlers::create_app_lnk,
+        crate::bootstrap::handlers::open_database_folder,
         // KValue
         crate::database::schemas::kvalue_handlers::database_find_kvalue,
         crate::database::schemas::kvalue_handlers::database_create_kvalue,

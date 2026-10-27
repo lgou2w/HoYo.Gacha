@@ -3,6 +3,7 @@ import Error from './Error.json' with { type: 'json' }
 import GachaPage from './GachaPage.json' with { type: 'json' }
 import HomePage from './HomePage.json' with { type: 'json' }
 import RootPage from './RootPage.json' with { type: 'json' }
+import SettingsPage from './SettingsPage.json' with { type: 'json' }
 
 export default {
   code: 'en-US',
@@ -27,4 +28,5 @@ export default {
   GachaPage,
   HomePage,
   RootPage,
+  SettingsPage,
 } as const
