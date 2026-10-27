@@ -23,20 +23,25 @@ export default function Notifier (props: NotifierProps) {
 // FIXME: String is working, should it be an inline css property
 const Offsets: ToasterProps['offset'] = {
   'top-start': {
-    vertical: `calc(${TitleBarHeight})` as unknown as number,
+    vertical: TitleBarHeight as unknown as number,
     horizontal: `calc(${NavbarWidth} + ${tokens.spacingHorizontalL})` as unknown as number,
   },
   top: {
-    vertical: `calc(${TitleBarHeight})` as unknown as number,
+    vertical: TitleBarHeight as unknown as number,
   },
   'top-end': {
-    vertical: `calc(${TitleBarHeight})` as unknown as number,
+    vertical: TitleBarHeight as unknown as number,
     horizontal: `calc(${tokens.spacingHorizontalL} + 16px)` as unknown as number,
   },
   'bottom-start': {
+    vertical: tokens.spacingHorizontalL as unknown as number,
     horizontal: `calc(${NavbarWidth} + ${tokens.spacingHorizontalL})` as unknown as number,
   },
+  bottom: {
+    vertical: tokens.spacingHorizontalL as unknown as number,
+  },
   'bottom-end': {
+    vertical: tokens.spacingHorizontalL as unknown as number,
     horizontal: `calc(${tokens.spacingHorizontalL} + 16px)` as unknown as number,
   },
 }
