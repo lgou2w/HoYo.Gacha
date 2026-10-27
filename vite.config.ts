@@ -1,5 +1,6 @@
 /// <reference types="vitest/config" />
 
+import childProcess from 'node:child_process'
 import path from 'node:path'
 import griffel from '@griffel/vite-plugin'
 import react from '@vitejs/plugin-react'
@@ -9,6 +10,12 @@ import packageJson from './package.json' with { type: 'json' }
 export default defineConfig((env) => {
   const isDev = env.command === 'serve'
   const isProd = env.command === 'build'
+
+  const commitDate = runGit(['show', '--no-patch', '--format=%ci'])
+  const commitHash = runGit(['rev-parse', 'HEAD'])
+    ?? process.env.GITHUB_SHA
+    ?? process.env.CI_COMMIT_SHA
+    ?? null
 
   return {
     test: {
@@ -42,6 +49,8 @@ export default defineConfig((env) => {
       __APP_HOMEPAGE__: `"${packageJson.homepage}"`,
       __APP_REPOSITORY__: `"${packageJson.repository}"`,
       __APP_ISSUES__: `"${packageJson.bugs}"`,
+      __APP_COMMIT_DATE__: commitDate && `"${commitDate}"`,
+      __APP_COMMIT_HASH__: commitHash && `"${commitHash}"`,
     },
     resolve: {
       tsconfigPaths: true,
@@ -69,3 +78,15 @@ export default defineConfig((env) => {
     },
   }
 })
+
+function runGit (args: string[]): string | null {
+  try {
+    const out = childProcess.execFileSync('git', args, {
+      encoding: 'utf-8',
+      stdio: ['ignore', 'pipe', 'ignore'],
+    })
+    return out.trim() || null
+  } catch {
+    return null
+  }
+}
