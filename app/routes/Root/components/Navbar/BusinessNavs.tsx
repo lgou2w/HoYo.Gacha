@@ -3,8 +3,7 @@ import { RestrictToVerticalAxis } from '@dnd-kit/abstract/modifiers'
 import { RestrictToElement } from '@dnd-kit/dom/modifiers'
 import { useSortable } from '@dnd-kit/react/sortable'
 import { Image, makeStyles, tabClassNames, tokens } from '@fluentui/react-components'
-import { AccountBusiness, AccountBusinessKeys } from '@/api/Account'
-import BusinessImages from '@/assets/images/BusinessImages'
+import { BusinessRoute, BusinessRoutes } from '@/routes/Root/hooks/useBusinessRoutes'
 import { BusinessVisibility, useBusinessVisibilitySuspenseQuery } from '@/routes/Root/hooks/useBusinessVisibility'
 import Nav from './Nav'
 
@@ -20,18 +19,11 @@ const useStyles = makeStyles({
   },
 })
 
-const Navs = AccountBusinessKeys
-  .map((keyof) => ({
-    keyof,
-    pathname: `/Gacha/${keyof}`,
-    icon: BusinessImages[keyof].Icon!,
-  }))
-
 function shouldBeRendered (
   visibility: BusinessVisibility,
-  nav: typeof Navs[number],
+  route: BusinessRoute,
 ): boolean {
-  const visible = visibility[AccountBusiness[nav.keyof]]
+  const visible = visibility[route.business]
   return visible === null || visible
 }
 
@@ -42,15 +34,15 @@ const BusinessNavs = memo(function BusinessNavs () {
 
   return (
     <div className={styles.root} ref={containerRef}>
-      {Navs
-        .filter((nav) => shouldBeRendered(visibility, nav))
-        .map((nav, index) => (
+      {BusinessRoutes
+        .filter((route) => shouldBeRendered(visibility, route))
+        .map((route, index) => (
           <BusinessNav
-            key={nav.keyof}
+            key={route.keyof}
             className={styles.nav}
             index={index}
-            pathname={nav.pathname}
-            icon={nav.icon}
+            pathname={route.pathname}
+            icon={route.icon}
             container={containerRef}
           />
         ))}

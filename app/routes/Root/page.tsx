@@ -3,11 +3,14 @@ import { Outlet } from '@tanstack/react-router'
 import EnvironmentProvider from '@/contexts/Environment/Provider'
 import ThemeProvider from '@/contexts/Theme/Provider'
 import Layout from './components/Layout'
+import { useRememberLastBusinessRoute } from './hooks/useBusinessRoutes'
 import rootRoute from './route'
 
 export default function Root () {
   const { environment, themeData } = rootRoute.useLoaderData()
   const { themeStore } = rootRoute.useRouteContext()
+
+  useRememberLastBusinessRoute()
 
   return (
     <EnvironmentProvider value={environment}>
