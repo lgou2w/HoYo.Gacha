@@ -152,6 +152,19 @@ export function isGachaUrlValidationError (error: unknown): error is GachaUrlVal
     && error.name === NamedGachaUrlValidationError
 }
 
+export function isGachaUrlInconsistentUid (
+  error: unknown,
+): error is AppErrorOfKind<
+  GachaUrlValidationError,
+  GachaUrlValidationErrorKind.InconsistentUid
+> {
+  return isAppErrorOfKind(
+    error,
+    NamedGachaUrlValidationError,
+    GachaUrlValidationErrorKind.InconsistentUid,
+  )
+}
+
 // See: tauri/src/business/url.rs
 export type GachaUrlError
   = | GachaUrlFindError

@@ -3,7 +3,7 @@ import { Account, AccountBusiness } from '@/api/Account'
 import errorTrans from '@/api/errorTrans'
 import { KnownI18nNs, UseI18n, useI18n } from '@/i18n'
 import { BusinessCommands, FetchRecordsOptions, GachaUrl, SaveToDatabase } from '@/routes/Gacha/api/business'
-import { isGachaUrlAuthkeyTimeout } from '@/routes/Gacha/api/error'
+import { NamedGachaUrlRequestError, isGachaUrlAuthkeyTimeout, isGachaUrlInconsistentUid } from '@/routes/Gacha/api/error'
 import { useAccount, useUpdateAccountPropertiesMutation } from '@/routes/Gacha/contexts/Account/hooks'
 import { useGachaStats } from '@/routes/Gacha/contexts/Stats/hooks'
 import { invalidateGachaStatsQuery } from '@/routes/Gacha/contexts/Stats/query'
@@ -52,8 +52,15 @@ type ObtainGachaUrlResult
  *
  * - Returns the cached URL if it is still valid.
  * - Otherwise requests a fresh one from webcaches.
- * - On `AuthkeyTimeout`, returns `{ status: ObtainGachaUrlStatus.Expired }` so the
- *   caller can clear the persisted URL fields.
+ * - On `InconsistentUid`, also returns `{ status: ObtainGachaUrlStatus.Expired }`.
+ *   This variant is unreachable through `fromWebcachesGachaUrl` in normal
+ *   use (the `webCaches` directory is game-specific, so a cache-sourced URL's
+ *   owner uid always matches the account); it indicates a tampered `gachaUrl`
+ *   value. Clearing it here prevents an endless retry loop and forces a fresh
+ *   `webCaches` scan on the next attempt.
+ * - On `EmptyData` (URLs returned no log, so the uid could not be verified),
+ *   the URL is **not** treated as expired — the server may still be syncing
+ *   the account's records. The error is rethrown so the caller surfaces it.
  * - If there is no selected account, returns `{ status: ObtainGachaUrlStatus.Unavailable }`;
  *   the caller should neither fetch nor persist.
  * - If the request itself yields no URL (e.g. an invalid/forged `uid` that
@@ -125,15 +132,37 @@ function useObtainGachaUrl (t: UseI18n['t']) {
         }
       }
     } catch (error) {
-      // AuthkeyTimeout is an expected business state (the authkey expired), not
-      // a failure: treat it as "no valid URL" so the caller can clear the
-      // persisted URL fields and stop, instead of surfacing an error.
-      // Any other error must be rethrown as-is — swallowing it would be
-      // mistaken for expiry and cause the caller to wipe valid URL data, and
-      // would hide a real failure behind a null-ish result. This branch is the
-      // only place that makes that decision, hence the explicit check.
-      if (isGachaUrlAuthkeyTimeout(error)) {
-        console.debug('[GachaUrl] obtain: expired (authkey timeout)', { uid: selected.uid })
+      // Two backend errors mean "the stored URL is unusable and should be
+      // cleared": both resolve to `Expired` so the caller wipes the persisted
+      // fields and stops, instead of surfacing a user-facing error.
+      //
+      // - `AuthkeyTimeout` — the authkey expired. Business-as-usual; the user
+      //   reopens the in-game history page to mint a fresh URL.
+      //
+      // - `InconsistentUid` — the server responded with a `log.uid` that does
+      //   not match the account. The `webCaches` directory is game-specific,
+      //   so a URL read from it always belongs to some account of the same
+      //   game/server — in practice the URL's owner uid matches the account
+      //   and this branch is unreachable through `fromWebcachesGachaUrl`.
+      //   Reaching it means the stored `gachaUrl` value was tampered with
+      //   (e.g. someone hand-edited the database or pasted a URL copied from
+      //   another account). Keeping it cached would make every retry fail
+      //   identically, so clear it here and let the next attempt re-derive
+      //   from a fresh `webCaches` scan.
+      //
+      // `EmptyData` (every candidate returned an empty log list, so the uid
+      // could not be determined) is deliberately **not** treated as expiry:
+      // the URL may still be valid — the server just hasn't synced the
+      // account's records yet (up to ~1h after a banner change). Clearing it
+      // would discard a usable URL and force the user through a redundant
+      // re-verification. It falls through to `throw` and shows a normal error.
+      //
+      // Any other error must be rethrown as-is: swallowing it would be
+      // mistaken for expiry and cause the caller to wipe a still-valid URL,
+      // and would hide a real failure behind a null-ish result.
+      if (isGachaUrlAuthkeyTimeout(error) || isGachaUrlInconsistentUid(error)) {
+        const reason = error.name === NamedGachaUrlRequestError ? 'authkey timeout' : 'inconsistent uid'
+        console.debug(`[GachaUrl] obtain: expired (${reason})`, { uid: selected.uid })
         return { status: ObtainGachaUrlStatus.Expired }
       } else {
         throw error
