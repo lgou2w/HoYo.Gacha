@@ -10,7 +10,7 @@
   "license": "MIT OR Apache-2.0",
   "private": "true",
   "type": "module",
-  "packageManager": "pnpm@12.15.0+sha512.b3951d6d6ff4a9f13dc7cf56cd28d2b8eb37dbcc9c68e52e1e1191873ea9f82a017287ab50baadc5ccc494f036c67c0e47eb13608c2fa36f47711b61ea128e61",
+  "packageManager": "pnpm@12.16.0+sha512.e9ccc91a0b8d52da297c16841f9ee05f3ddd631bd757ef26a211687d4a38de653c614453649294438c58be74c2ba62d53e633a4e153708c012296d0f3ee27b36",
   "engines": {
     "node": "^22 || >=24",
     "pnpm": ">=10"
@@ -42,16 +42,16 @@
     "@fluentui/react-motion-components-preview": "^0.15.10",
     "@tanstack/react-query": "^5.104.5",
     "@tanstack/react-query-devtools": "^5.104.5",
-    "@tanstack/react-router": "^1.170.45",
+    "@tanstack/react-router": "^1.170.46",
     "@tauri-apps/api": "^2.12.4",
     "@tauri-apps/plugin-clipboard-manager": "^2.5.0",
     "@tauri-apps/plugin-shell": "^2.5.0",
     "dayjs": "^1.11.23",
-    "i18next": "^26.5.5",
+    "i18next": "^26.5.11",
     "immer": "^11.2.9",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
-    "react-i18next": "^17.1.2",
+    "react-i18next": "^17.1.9",
     "react-virtuoso": "^4.18.19"
   },
   "devDependencies": {
