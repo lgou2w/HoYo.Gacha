@@ -1,4 +1,5 @@
 import { Field, Input, makeStyles, tokens } from '@fluentui/react-components'
+import CopyButton from '@/components/CopyButton'
 import { KnownI18nNs, useI18n } from '@/i18n'
 import { useBusiness } from '@/routes/Gacha/contexts/Business/hooks'
 import { useGachaUrl } from './hooks'
@@ -27,8 +28,17 @@ export default function GachaUrlInput () {
       <Input
         className={styles.root}
         input={{ className: url.hasExpired ? styles.inputExpired : styles.inputValid }}
-        value={url.value || ''}
         placeholder={t('Toolbar.GachaUrl.Placeholder', { keyof: business.keyof })}
+        contentAfter={(
+          <CopyButton
+            content={url.value}
+            disabled={!url.value}
+            appearance="subtle"
+            shape="circular"
+            secret
+          />
+        )}
+        value={url.value || ''}
         appearance="outline"
         size="large"
         readOnly

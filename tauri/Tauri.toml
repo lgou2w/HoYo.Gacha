@@ -51,9 +51,10 @@ permissions = [
   "core:window:allow-set-theme",
   "core:window:allow-start-dragging",
   "core:window:allow-toggle-maximize",
-  # "clipboard-manager:allow-read-text",
-  # "clipboard-manager:allow-write-image",
-  # "clipboard-manager:allow-write-text",
+  "clipboard-manager:allow-read-text",
+  "clipboard-manager:allow-write-image",
+  "clipboard-manager:allow-write-text",
+  "clipboard-manager:allow-write-secret",
   # "process:allow-exit",
   # "shell:allow-open",
 ]

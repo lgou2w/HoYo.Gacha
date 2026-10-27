@@ -40,6 +40,7 @@ serde = { workspace = true, features = ["derive"] }
 serde_json = { workspace = true }
 snafu = { workspace = true }
 tauri = { workspace = true, features = ["wry", "compression", "devtools"] }
+tauri-plugin-clipboard-manager = { workspace = true }
 time = { workspace = true, features = ["macros", "formatting", "parsing", "serde", "local-offset"] }
 tokio = { workspace = true, features = ["macros", "rt-multi-thread", "fs", "sync", "time"] }
 tracing = { workspace = true, features = ["attributes"] }
