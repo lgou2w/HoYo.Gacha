@@ -2,7 +2,7 @@ import { PeopleRegular } from '@fluentui/react-icons'
 import { KnownI18nNs } from '@/i18n'
 import ToolbarContainer from '@/routes/Gacha/components/Toolbar/Container'
 import AccountMenuInner from './Menu'
-import AccountMenuProvider from './provider'
+import AccountMenuProvider from './Provider'
 
 export default function AccountMenu () {
   return (

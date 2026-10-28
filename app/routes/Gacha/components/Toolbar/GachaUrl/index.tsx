@@ -3,7 +3,7 @@ import ToolbarContainer from '@/routes/Gacha/components/Toolbar/Container'
 import GachaUrlAction from './Action'
 import GachaUrlInput from './Input'
 import GachaUrlLabel from './Label'
-import GachaUrlProvider from './provider'
+import GachaUrlProvider from './Provider'
 
 export default function GachaUrl () {
   return (
