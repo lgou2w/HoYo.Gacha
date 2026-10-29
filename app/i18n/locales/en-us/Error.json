@@ -1,6 +1,12 @@
 {
   "Unexpected": "An unexpected error occurred: {{message}}",
   "DatabaseError": "An unexpected database error occurred: {{message}}",
+  "DataFolderLocateError": {
+    "UnityLogNotFound": "Unity log file not found: {{path}}",
+    "OpenUnityLog": "Failed to opening Unity log file: '{{path}}', cause: {{cause.message}} ({{cause.kind}})",
+    "Invalid": "Invalid game data folder.",
+    "Vacant": "Game data folder is vacant."
+  },
   "GachaUrlFindError": {
     "OpenDiskCache": "Failed to open disk cache: {{cause.message}} ({{cause.kind}})",
     "ReadDiskCache": "Failed to read disk cache: {{cause.message}} ({{cause.kind}})",

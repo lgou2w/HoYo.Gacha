@@ -72,6 +72,8 @@ pub async fn run(context: Context) -> ! {
         crate::database::schemas::gacha_record_handlers::database_delete_gacha_records,
         crate::database::schemas::gacha_record_handlers::database_delete_gacha_records_with_newer_than_end_id,
         // Business
+        crate::business::handlers::business_validate_uid,
+        crate::business::handlers::business_locate_data_folder,
         crate::business::handlers::business_from_webcaches_gacha_url,
         crate::business::handlers::business_from_dirty_gacha_url,
         crate::business::handlers::business_resolve_image,

@@ -5,6 +5,9 @@ use hg_gamebiz::Uid;
 use tauri::ipc::{Channel, IpcResponse, Response};
 use tracing::debug;
 
+use crate::business::data_folder::{
+  DataFolder, DataFolderLocateError, DataFolderLocator, DataFolderLocatorFactory,
+};
 use crate::business::fetcher::{self, FetchEventPayload, FetchOptions, GachaFetchError};
 use crate::business::img_resolver;
 use crate::business::metadata::TauriMetadataState;
@@ -13,6 +16,27 @@ use crate::business::url::{GachaUrl, GachaUrlError};
 use crate::database::schemas::{AccountBusiness, GachaRecordQuestioner};
 use crate::database::{DatabaseError, TauriDatabaseState};
 use crate::error::AppError;
+
+#[tauri::command]
+pub async fn business_validate_uid(business: AccountBusiness, uid: u32) -> Option<&'static str> {
+  Uid::parse(business.as_game(), uid).map(|res| res.gamebiz().server().as_str())
+}
+
+#[tauri::command]
+#[tracing::instrument]
+pub async fn business_locate_data_folder(
+  business: AccountBusiness,
+  uid: u32,
+  factory: DataFolderLocatorFactory,
+) -> Result<Option<DataFolder>, AppError<DataFolderLocateError>> {
+  // Generally, the uid should be valid, but we still need to check it here to avoid panics.
+  let Some(uid) = Uid::parse(business.as_game(), uid) else {
+    return Ok(None);
+  };
+
+  let data_folder = factory.locate(business, uid).await?;
+  Ok(Some(data_folder))
+}
 
 #[tauri::command]
 #[tracing::instrument]

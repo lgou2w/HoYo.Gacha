@@ -28,7 +28,8 @@
         "Purple": "4★",
         "Blue": "3★"
       }
-    }
+    },
+    "DataFolder": "X:/Genshin Impact/Genshin Impact Game/GenshinImpact_Data"
   },
   "MiliastraWonderland": {
     "Name": "Genshin Impact: Miliastra Wonderland",
@@ -46,7 +47,8 @@
         "Blue": "Exceptional (3-Star)",
         "Green": "Excellent (2-Star)"
       }
-    }
+    },
+    "DataFolder": "$t(Common:GenshinImpact.DataFolder)"
   },
   "HonkaiStarRail": {
     "Name": "Honkai: Star Rail",
@@ -74,7 +76,8 @@
         "Purple": "4★",
         "Blue": "3★"
       }
-    }
+    },
+    "DataFolder": "X:/Star Rail/Game/StarRail_Data"
   },
   "ZenlessZoneZero": {
     "Name": "Zenless Zone Zero",
@@ -100,6 +103,7 @@
         "Purple": "A-Rank",
         "Blue": "B-Rank"
       }
-    }
+    },
+    "DataFolder": "X:/ZenlessZoneZero Game/ZenlessZoneZero_Data"
   }
 }

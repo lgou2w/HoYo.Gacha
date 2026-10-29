@@ -1,6 +1,12 @@
 {
   "Unexpected": "发生意外错误：{{message}}",
   "DatabaseError": "发生数据库意外错误：{{message}}",
+  "DataFolderLocateError": {
+    "UnityLogNotFound": "Unity 日志文件未存在：{{path}}",
+    "OpenUnityLog": "打开 Unity 日志文件时错误：'{{path}}'，原因：{{cause.message}} ({{cause.kind}})",
+    "Invalid": "无效的游戏数据目录。",
+    "Vacant": "空缺的游戏数据目录。"
+  },
   "GachaUrlFindError": {
     "OpenDiskCache": "打开硬盘缓存时错误：{{cause.message}} ({{cause.kind}})",
     "ReadDiskCache": "读取硬盘缓存时错误：{{cause.message}} ({{cause.kind}})",

@@ -1,6 +1,40 @@
 import { Account, AccountBusiness } from '@/api/Account'
 import { AppError, AppErrorOfKind, DatabaseError, NativeIoError, isAppError, isAppErrorOfKind } from '@/api/error'
 
+export const NamedDataFolderLocateError = 'DataFolderLocateError' as const
+export type NamedDataFolderLocateError = typeof NamedDataFolderLocateError
+
+export enum DataFolderLocateErrorKind {
+  UnityLogNotFound = 'UnityLogNotFound',
+  OpenUnityLog = 'OpenUnityLog',
+  Invalid = 'Invalid',
+  Vacant = 'Vacant',
+}
+
+export type DataFolderLocateError = AppError<
+  NamedDataFolderLocateError,
+  | {
+    kind: DataFolderLocateErrorKind.UnityLogNotFound
+    path: string
+  }
+  | {
+    kind: DataFolderLocateErrorKind.OpenUnityLog
+    path: string
+    cause: NativeIoError
+  }
+  | {
+    kind: DataFolderLocateErrorKind.Invalid
+  }
+  | {
+    kind: DataFolderLocateErrorKind.Vacant
+  }
+>
+
+export function isDataFolderLocateError (error: unknown): error is DataFolderLocateError {
+  return isAppError(error)
+    && error.name === NamedDataFolderLocateError
+}
+
 export const NamedGachaUrlFindError = 'GachaUrlFindError' as const
 export type NamedGachaUrlFindError = typeof NamedGachaUrlFindError
 

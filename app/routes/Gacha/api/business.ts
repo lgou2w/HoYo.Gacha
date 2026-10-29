@@ -1,9 +1,38 @@
 import { Channel } from '@tauri-apps/api/core'
 import { Account, AccountBusiness } from '@/api/Account'
 import { GachaRecord, GachaType } from '@/api/GachaRecord'
-import { declareCommand } from '@/api/command'
+import { Command, declareCommand } from '@/api/command'
 import { LanguageMetadata } from '@/i18n'
 import { BannerCategory, GachaStats, StatsRecord } from './stats'
+
+export type ValidateUidArgs
+  = Pick<Account, 'business' | 'uid'>
+
+export type ValidateUid
+  = Command<ValidateUidArgs, 'official' | 'oversea' | null>
+
+export interface DataFolder<T extends AccountBusiness = AccountBusiness> {
+  business: T
+  value: string
+}
+
+export enum DataFolderLocatorFactoryKind {
+  UnityLog = 'UnityLog',
+  Manual = 'Manual',
+}
+
+export type DataFolderLocatorFactory
+  = | { [DataFolderLocatorFactoryKind.UnityLog]: null }
+    | { [DataFolderLocatorFactoryKind.Manual]: { title: string } }
+
+export interface LocateDataFolderArgs<T extends AccountBusiness> extends Record<string, unknown> {
+  business: T
+  uid: Account['uid']
+  factory: DataFolderLocatorFactory
+}
+
+export type LocateDataFolder
+  = <T extends AccountBusiness> (args: LocateDataFolderArgs<T>) => Promise<DataFolder<T> | null>
 
 export interface GachaUrl<T extends AccountBusiness = AccountBusiness> {
   business: T
@@ -98,6 +127,15 @@ export type FetchRecords
 
 // commands
 export const BusinessCommands = {
+  validateUid:
+    declareCommand('business_validate_uid') as ValidateUid,
+
+  /**
+   * @throws `DataFolderLocateError`
+   */
+  locateDataFolder:
+    declareCommand('business_locate_data_folder') as LocateDataFolder,
+
   /**
    * @throws `GachaUrlError`
    */

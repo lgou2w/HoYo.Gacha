@@ -1,3 +1,4 @@
+pub mod data_folder;
 mod error;
 pub mod fetcher;
 pub mod handlers;
