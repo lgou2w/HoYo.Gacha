@@ -47,6 +47,7 @@ const useStyles = makeStyles({
     fontFamily: tokens.fontFamilyNumeric,
   },
   headerPull: {
+    alignSelf: 'flex-end',
     marginLeft: tokens.spacingHorizontalXS,
   },
   headerTicket: {
