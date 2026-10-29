@@ -37,7 +37,7 @@ raw-window-handle = { version = "0.6.2", default-features = false }
 regex = { version = "1.13.1", default-features = false, features = ["std"] }
 reqwest = { version = "0.13.5", default-features = false }
 rfd = { version = "0.17.2", default-features = false }
-rusqlite = { version = "0.41.0", default-features = false }
+rusqlite = { version = "0.41.1", default-features = false }
 sha1 = { version = "0.11.0", default-features = false }
 serde = { version = "1.0.229", default-features = false, features = ["std"] }
 serde_json = { version = "1.0.154", default-features = false, features = ["std"] }
@@ -45,7 +45,7 @@ snafu = { version = "0.9.2", default-features = false, features = ["std", "rust_
 tauri = { version = "2.12.5", default-features = false }
 tauri-build = { version = "2.7.4", default-features = false }
 tauri-plugin-clipboard-manager = { version = "2.5.0", default-features = false }
-tauri-plugin-shell = { version = "2.5.0", default-features = false }
+tauri-plugin-shell = { version = "2.6.0", default-features = false }
 time = { version = "0.3.55", default-features = false, features = ["std"] }
 tokio = { version = "1.54.1", default-features = false }
 tracing = { version = "0.1.44", default-features = false, features = ["std"] }
