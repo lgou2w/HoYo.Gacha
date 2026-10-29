@@ -338,6 +338,51 @@ impl Gamebiz {
     self.timezone
   }
 
+  #[inline]
+  pub const fn is_hk4e(&self) -> bool {
+    self.inner.is_hk4e()
+  }
+
+  #[inline]
+  pub const fn is_hkrpg(&self) -> bool {
+    self.inner.is_hkrpg()
+  }
+
+  #[inline]
+  pub const fn is_nap(&self) -> bool {
+    self.inner.is_nap()
+  }
+
+  #[inline]
+  pub const fn is_official(&self) -> bool {
+    self.inner.is_official()
+  }
+
+  #[inline]
+  pub const fn is_oversea(&self) -> bool {
+    self.inner.is_oversea()
+  }
+
+  #[inline]
+  pub const fn codename(&self) -> &'static str {
+    self.inner.codename()
+  }
+
+  #[inline]
+  pub const fn display_name(&self) -> &'static str {
+    self.inner.display_name()
+  }
+
+  #[inline]
+  pub const fn bin_name(&self) -> &'static str {
+    self.inner.bin_name()
+  }
+
+  #[inline]
+  pub const fn data_folder_name(&self) -> &'static str {
+    self.inner.data_folder_name()
+  }
+
   /// Resolves a `Gamebiz` instance based on the provided `codename` and `region`.
   pub fn resolve(codename: &str, region: &str) -> Option<Self> {
     match (codename, region) {
