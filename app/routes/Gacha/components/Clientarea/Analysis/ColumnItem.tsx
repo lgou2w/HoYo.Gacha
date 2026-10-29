@@ -112,7 +112,9 @@ export default memo(function AnalysisColumnItem (props: AnalysisColumnItemProps)
               )}
         </div>
       </div>
-      <Divider className={styles.divider}>{d.timeRange || 'N/A'}</Divider>
+      <Divider className={styles.divider}>
+        {d.timeRange || t('NoData')}
+      </Divider>
       <ColumnItemLabels dataset={dataset} derived={d} />
       <Divider className={styles.divider} />
       <ColumnItemRecords dataset={dataset} />

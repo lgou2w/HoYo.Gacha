@@ -66,6 +66,7 @@
     "Overview": {
       "GridItem": {
         "Aggregated": "Aggregated",
+        "NoData": "No data available",
         "Total_zero": "No pulls record yet",
         "Total_one": "{{count}} pull in total",
         "Total": "{{count, number}} pulls in total",
@@ -115,6 +116,7 @@
       "ColumnItem": {
         "Total": "{{count, number}}",
         "Pull": "pulls",
+        "NoData": "No data available",
         "Labels": {
           "Average": "Average",
           "AverageAndUp": "Average / $t(Up)",

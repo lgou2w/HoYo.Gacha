@@ -2,7 +2,6 @@ import { ReactNode, memo, useMemo } from 'react'
 import { Caption1, Title3, makeStyles, mergeClasses, tokens } from '@fluentui/react-components'
 import { ArrowMoveRegular } from '@fluentui/react-icons'
 import { KeyofAccountBusiness, KeyofZenlessZoneZero } from '@/api/Account'
-import Placeholder from '@/components/Placeholder'
 import { KnownI18nNs, useI18n } from '@/i18n'
 import { BannerCategory } from '@/routes/Gacha/api/stats'
 import BannerCategoryName from '@/routes/Gacha/components/Banner/CategoryName'
@@ -125,7 +124,7 @@ export default memo(function OverviewGridItem (props: OverviewGridItemProps) {
             : t(Aggregated)}
         </Title3>
         <Caption1 as="p">
-          {d.timeRange || <Placeholder />}
+          {d.timeRange || t('NoData')}
         </Caption1>
       </div>
       <div className={styles.labels}>

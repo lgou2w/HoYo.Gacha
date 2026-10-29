@@ -66,6 +66,7 @@
     "Overview": {
       "GridItem": {
         "Aggregated": "总计",
+        "NoData": "暂无数据",
         "Total": "共 {{count, number}} 抽",
         "Sum_golden_zero": "暂无出金",
         "Sum_golden": "已出 {{count, number}} 金",
@@ -111,6 +112,7 @@
       "ColumnItem": {
         "Total": "{{count, number}}",
         "Pull": "抽",
+        "NoData": "暂无数据",
         "Labels": {
           "Average": "平均",
           "AverageAndUp": "平均 / $t(Up)",
