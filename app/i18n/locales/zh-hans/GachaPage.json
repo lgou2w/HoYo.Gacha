@@ -10,7 +10,13 @@
       "Label": "账号",
       "Available": "可用账号",
       "Add": "添加新的账号",
-      "NoAvailable": "无账号"
+      "NoAvailable": "无账号",
+      "More": {
+        "Label": "更多选项",
+        "Edit": "编辑账号",
+        "ChooseAvatar": "修改头像",
+        "Delete": "删除账号"
+      }
     },
     "GachaUrl": {
       "Label": "$t(Common:{{keyof}}.Gacha.Name)链接",
@@ -53,6 +59,38 @@
       "Overview": "概览",
       "Analysis": "分析",
       "Chart": "统计"
+    }
+  },
+  "UpsertAccount": {
+    "Form": {
+      "Uid": {
+        "Label": "UID",
+        "Placeholder": "游戏内账号的 UID",
+        "Required": "请输入 UID 字段值。",
+        "Pattern": "请输入正确的 UID 格式。",
+        "Exists": "该账号 UID 已经存在。"
+      },
+      "DisplayName": {
+        "Label": "显示名称",
+        "Placeholder": "账号的显示名称（可选，仅用于识别）",
+        "MaxLength": "超过最大字符长度限制。"
+      },
+      "DataFolder": {
+        "Label": "游戏数据目录",
+        "Placeholder": "游戏数据目录的完整路径。\n例如：\"$t(Common:{{keyof}}.DataFolder)\"",
+        "Required": "请选择游戏数据目录。",
+        "AutoFind": "自动查找",
+        "ManualFind": "手动选择"
+      },
+      "ValidMessage": "有效。",
+      "Cancel": "取消",
+      "Submit": "确认"
+    },
+    "Dialog": {
+      "Title_add": "添加新账号：$t(Common:{{keyof}}.Name)",
+      "Title_edit": "编辑账号：$t(Common:{{keyof}}.Name)",
+      "Success_add": "成功添加新账号：{{identity}}",
+      "Success_edit": "成功编辑账号：{{identity}}"
     }
   },
   "Clientarea": {

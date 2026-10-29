@@ -1,5 +1,6 @@
-import { ComponentType, createContext } from 'react'
+import { ComponentType, RefObject, createContext } from 'react'
 import { MenuListProps } from '@fluentui/react-components'
+import { UpsertAccountDialogHandle } from '@/routes/Gacha/components/UpsertAccount/Dialog'
 import { useSelectedAccountUidMutation } from '@/routes/Gacha/contexts/Account/hooks'
 
 export const CheckedKey = 'selected-account'
@@ -34,7 +35,7 @@ export interface AccountMenuContextValue {
   }
 
   /** Imperative refs to dialogs. */
-  readonly refs: {}
+  readonly upsertDialogRef: RefObject<UpsertAccountDialogHandle | null>
 }
 
 export const AccountMenuContext = createContext<AccountMenuContextValue | null>(null)

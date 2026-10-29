@@ -10,7 +10,13 @@
       "Label": "Accounts",
       "Available": "Available",
       "Add": "Add new account",
-      "NoAvailable": "No account"
+      "NoAvailable": "No account",
+      "More": {
+        "Label": "More options",
+        "Edit": "Edit account",
+        "ChooseAvatar": "Choose avatar",
+        "Delete": "Delete account"
+      }
     },
     "GachaUrl": {
       "Label": "$t(Common:{{keyof}}.Gacha.Name) URL",
@@ -53,6 +59,38 @@
       "Overview": "Overview",
       "Analysis": "Analysis",
       "Chart": "Chart"
+    }
+  },
+  "UpsertAccount": {
+    "Form": {
+      "Uid": {
+        "Label": "UID",
+        "Placeholder": "UID for in-game account",
+        "Required": "Please enter the UID field value.",
+        "Pattern": "Please enter the correct UID format.",
+        "Exists": "This account UID already exists."
+      },
+      "DisplayName": {
+        "Label": "Display Name",
+        "Placeholder": "Display name (Optional, for identification purposes only)",
+        "MaxLength": "Maximum character length limit exceeded."
+      },
+      "DataFolder": {
+        "Label": "Data Folder",
+        "Placeholder": "Full path to the game data folder. \nFor Example: \"$t(Common:{{keyof}}.DataFolder)\"",
+        "Required": "Please choice the game data folder.",
+        "AutoFind": "Auto Find",
+        "ManualFind": "Manual Choice"
+      },
+      "ValidMessage": "It's valid.",
+      "Cancel": "Cancel",
+      "Submit": "Confirm"
+    },
+    "Dialog": {
+      "Title_add": "Add new account: $t(Common:{{keyof}}.Name)",
+      "Title_edit": "Edit account: $t(Common:{{keyof}}.Name)",
+      "Success_add": "Successfully added new account: {{identity}}",
+      "Success_edit": "Successfully edited account: {{identity}}"
     }
   },
   "Clientarea": {

@@ -1,8 +1,10 @@
 import { PeopleRegular } from '@fluentui/react-icons'
 import { KnownI18nNs } from '@/i18n'
 import ToolbarContainer from '@/routes/Gacha/components/Toolbar/Container'
+import UpsertAccountDialog from '@/routes/Gacha/components/UpsertAccount/Dialog'
 import AccountMenuInner from './Menu'
 import AccountMenuProvider from './Provider'
+import { useAccountMenu } from './hooks'
 
 export default function AccountMenu () {
   return (
@@ -16,6 +18,12 @@ export default function AccountMenu () {
       >
         <AccountMenuInner />
       </ToolbarContainer>
+      <UpsertAccount />
     </AccountMenuProvider>
   )
+}
+
+function UpsertAccount () {
+  const { upsertDialogRef } = useAccountMenu()
+  return <UpsertAccountDialog ref={upsertDialogRef} />
 }

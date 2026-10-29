@@ -1,7 +1,8 @@
-import { PropsWithChildren, useCallback, useMemo } from 'react'
+import { PropsWithChildren, useCallback, useMemo, useRef } from 'react'
 import { useAccount, useSelectedAccountUidMutation } from '@/routes/Gacha/contexts/Account/hooks'
 import { useBusiness } from '@/routes/Gacha/contexts/Business/hooks'
 import { AccountMenuContext, AccountMenuContextValue, CheckedKey } from './types'
+import { UpsertAccountDialogHandle } from '../../UpsertAccount/Dialog'
 
 export default function AccountMenuProvider (props: PropsWithChildren) {
   const business = useBusiness()
@@ -44,14 +45,11 @@ export default function AccountMenuProvider (props: PropsWithChildren) {
     [handleSelect, selected],
   )
 
-  const refs = useMemo<AccountMenuContextValue['refs']>(
-    () => ({}),
-    [],
-  )
+  const upsertDialogRef = useRef<UpsertAccountDialogHandle>(null)
 
   const state = useMemo<AccountMenuContextValue>(
-    () => ({ mutation, menu, refs }),
-    [menu, mutation, refs],
+    () => ({ mutation, menu, upsertDialogRef }),
+    [menu, mutation, upsertDialogRef],
   )
 
   return (
