@@ -315,3 +315,49 @@ pub mod webview {
 }
 
 // endregion
+
+// region: Async File Dialog
+
+pub mod rfd {
+  use std::ffi::c_void;
+  use std::num::NonZeroIsize;
+
+  use raw_window_handle::{
+    DisplayHandle, HandleError, HasDisplayHandle, HasWindowHandle, RawWindowHandle,
+    Win32WindowHandle, WindowHandle,
+  };
+  use rfd::AsyncFileDialog;
+  use windows::Win32::Foundation::HWND;
+
+  struct MyWindowHandle(isize);
+
+  impl HasWindowHandle for MyWindowHandle {
+    fn window_handle(&self) -> Result<WindowHandle<'_>, HandleError> {
+      let hwnd = NonZeroIsize::new(self.0).unwrap();
+      let raw = RawWindowHandle::Win32(Win32WindowHandle::new(hwnd));
+      let wrapper = unsafe { WindowHandle::borrow_raw(raw) };
+      Ok(wrapper)
+    }
+  }
+
+  impl HasDisplayHandle for MyWindowHandle {
+    fn display_handle(&self) -> Result<DisplayHandle<'_>, HandleError> {
+      Ok(DisplayHandle::windows())
+    }
+  }
+
+  pub fn new(hwnd: Option<isize>) -> AsyncFileDialog {
+    let mut rfd = AsyncFileDialog::new();
+
+    if let Some(hwnd) = hwnd
+      .map(|ptr| HWND(ptr as *mut c_void))
+      .or_else(super::window_hwnd)
+    {
+      rfd = rfd.set_parent(&MyWindowHandle(hwnd.0 as isize));
+    }
+
+    rfd
+  }
+}
+
+// endregion

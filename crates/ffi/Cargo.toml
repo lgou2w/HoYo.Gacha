@@ -12,6 +12,8 @@ license.workspace = true
 publish.workspace = true
 
 [dependencies]
+raw-window-handle = { workspace = true }
+rfd = { workspace = true }
 tauri = { workspace = true, features = ["wry"] }
 webview2-com = { workspace = true }
 windows = { workspace = true, features = [
