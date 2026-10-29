@@ -30,6 +30,14 @@ use time::OffsetDateTime;
 //         UpPurple : [u32],                       // ↑
 //         Version  : Option<String>               // 1.0, 2.1
 //       }
+//     ],
+//
+//     // Since v1.3.0
+//     // Business-wide version timeline. `point -> version`.
+//     Versions: [
+//       ["1.0", "2020-09-15T06:00:00+08:00"],
+//       ["1.1", "2020-11-01T06:00:00+08:00"],
+//       ["1.2", "2020-12-01T06:00:00+08:00"],
 //     ]
 //   }
 // ]
@@ -70,6 +78,10 @@ pub struct RawBusiness {
   pub id: u8,
   pub categories: Vec<RawCategory>,
   pub banners: Vec<RawBanner>,
+  /// Business-wide version timeline. Consulted when a banner has no
+  /// [`RawBanner::version`] of its own — i.e. Permanent, Collab, and
+  /// Bangboo banners whose version changes over time.
+  pub versions: Option<Vec<RawVersionPoint>>,
 }
 
 #[derive(Debug)]
@@ -118,4 +130,26 @@ pub struct RawBanner {
   pub up_golden: HashSet<u32>,
   pub up_purple: HashSet<u32>,
   pub version: Option<String>,
+}
+
+#[derive(Debug)]
+pub struct RawVersionPoint {
+  pub version: String,
+  pub since: OffsetDateTime,
+}
+
+#[cfg(feature = "json")]
+impl<'de> serde::Deserialize<'de> for RawVersionPoint {
+  fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+  where
+    D: serde::Deserializer<'de>,
+  {
+    use serde::Deserialize;
+    use time::format_description::well_known::Rfc3339;
+
+    // Both tuple slots are strings; `since` is RFC 3339.
+    let (version, since): (String, String) = Deserialize::deserialize(deserializer)?;
+    let since = OffsetDateTime::parse(&since, &Rfc3339).map_err(serde::de::Error::custom)?;
+    Ok(Self { version, since })
+  }
 }

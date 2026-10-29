@@ -431,7 +431,7 @@ impl<'a> StatsRecord<'a> {
     let rarity = ctx.rarity_of(record.rank_type);
     let used_pity = pity.map(|n| UsedPity::compute(category, n, rarity));
 
-    let (is_up, version) = ctx
+    let (is_up, mut version) = ctx
       .metadata
       .and_then(|metadata| metadata.banner(ctx.business.into(), record.gacha_type, record.time))
       .map(|banner| {
@@ -444,6 +444,15 @@ impl<'a> StatsRecord<'a> {
         (is_up, banner.version())
       })
       .unwrap_or_default();
+
+    // Business-wide timeline fallback.
+    if version.is_none()
+      && let Some(timeline) = ctx
+        .metadata
+        .and_then(|metadata| metadata.versions(ctx.business.into()))
+    {
+      version = timeline.version_at(record.time);
+    }
 
     let genshin_impact_character2 = (ctx.business == AccountBusiness::GenshinImpact
       && record.gacha_type == Hk4e::CHARACTER2)

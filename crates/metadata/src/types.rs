@@ -21,10 +21,59 @@ pub struct Item<'a> {
   pub rank_type: u8,
 }
 
+/// Business-wide version timeline.
+///
+/// Maps a point in time to the game version active at that moment.
+/// Built from [`RawVersionPoint`] entries and stored sorted by start time,
+/// so [`Self::version_at`] is a binary search.
+#[derive(Debug)]
+pub struct VersionTimeline {
+  /// Sorted by start time ascending.
+  points: Vec<(OffsetDateTime, String)>,
+}
+
+impl VersionTimeline {
+  #[inline]
+  pub(crate) fn from_sorted(points: Vec<(OffsetDateTime, String)>) -> Self {
+    Self { points }
+  }
+
+  /// Version active at `point`. Returns the version whose start time is
+  /// the last `<= point`, or `None` if `point` precedes the first entry.
+  #[inline]
+  pub fn version_at(&self, point: OffsetDateTime) -> Option<&str> {
+    let idx = self.points.partition_point(|(t, _)| *t <= point);
+    if idx == 0 {
+      None
+    } else {
+      Some(&self.points[idx - 1].1)
+    }
+  }
+
+  /// Iterate over `(start, version)` in ascending order. Used by the
+  /// frontend to build "filter by version" UI.
+  #[inline]
+  pub fn iter(&self) -> impl Iterator<Item = (OffsetDateTime, &str)> {
+    self.points.iter().map(|(t, v)| (*t, v.as_ref()))
+  }
+
+  #[inline]
+  pub fn len(&self) -> usize {
+    self.points.len()
+  }
+
+  #[inline]
+  pub fn is_empty(&self) -> bool {
+    self.points.is_empty()
+  }
+}
+
 pub trait Metadata: Debug + Send + Sync {
   fn locale(&self, bid: u8, locale: &str) -> Option<&dyn Locale>;
   fn locales(&self, bid: u8) -> Option<MapValues<'_, Arc<str>, Box<dyn Locale>>>;
   fn banner(&self, bid: u8, gacha_type: u32, point: OffsetDateTime) -> Option<&dyn Banner>;
+  /// Business-wide version timeline, if the metadata provides one.
+  fn versions(&self, bid: u8) -> Option<&VersionTimeline>;
 }
 
 pub trait Locale: Debug + Send + Sync {

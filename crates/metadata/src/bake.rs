@@ -6,8 +6,8 @@ use std::sync::{Arc, LazyLock, OnceLock};
 use snafu::{Snafu, ensure};
 use time::OffsetDateTime;
 
-use crate::raw::{RawBanner, RawBusiness, RawCategory, RawLocale, RawMetadata};
-use crate::{Banner, Item, Locale, Metadata, UpRarity};
+use crate::raw::{RawBanner, RawBusiness, RawCategory, RawLocale, RawMetadata, RawVersionPoint};
+use crate::{Banner, Item, Locale, Metadata, UpRarity, VersionTimeline};
 
 #[derive(Debug, Snafu)]
 #[snafu(display(
@@ -51,6 +51,8 @@ struct BakedBusiness {
   locales: HashMap<Arc<str>, Box<dyn Locale>>,
   /// `gacha_type` → banners of that type.
   banners: HashMap<u32, BannerSet>,
+  /// Business-wide version timeline.
+  versions: Option<VersionTimeline>,
 }
 
 /// Baked locale: all items for one `(business, locale)` pair.
@@ -258,6 +260,10 @@ impl Metadata for BakedMetadata {
       .get(&gacha_type)?
       .find_active_at(point)
   }
+
+  fn versions(&self, bid: u8) -> Option<&VersionTimeline> {
+    self.businesses.get(&bid)?.versions.as_ref()
+  }
 }
 
 impl Locale for BakedLocale {
@@ -332,6 +338,7 @@ fn bake_business(raw: RawBusiness) -> Result<(u8, BakedBusiness), MismatchedItem
     id,
     categories,
     banners,
+    versions,
   } = raw;
 
   Ok((
@@ -339,6 +346,7 @@ fn bake_business(raw: RawBusiness) -> Result<(u8, BakedBusiness), MismatchedItem
     BakedBusiness {
       locales: bake_locales(id, categories)?,
       banners: bake_banners(banners),
+      versions: bake_version_timeline(versions),
     },
   ))
 }
@@ -454,4 +462,15 @@ fn bake_banners(banners: Vec<RawBanner>) -> HashMap<u32, BannerSet> {
     .into_iter()
     .map(|(gacha_type, banners)| (gacha_type, BannerSet::new(banners)))
     .collect()
+}
+
+fn bake_version_timeline(raw: Option<Vec<RawVersionPoint>>) -> Option<VersionTimeline> {
+  let mut baked: Vec<(OffsetDateTime, String)> =
+    raw?.into_iter().map(|p| (p.since, p.version)).collect();
+
+  // Config order should already be chronological, but sorting here means
+  // metadata authors cannot silently break `partition_point` by reordering.
+  baked.sort_by_key(|(t, _)| *t);
+
+  Some(VersionTimeline::from_sorted(baked))
 }
