@@ -101,6 +101,13 @@
     "BannerDragIcon": {
       "Tooltip": "Drag to reorder"
     },
+    "Personalization": {
+      "Button": "Personalization",
+      "Analysis": {
+        "ClassicSwitcher": "Use the Classic version",
+        "VersionLabelSwitcher": "Show version label"
+      }
+    },
     "Overview": {
       "GridItem": {
         "Aggregated": "Aggregated",

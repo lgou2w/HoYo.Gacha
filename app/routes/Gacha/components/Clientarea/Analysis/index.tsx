@@ -1,21 +1,31 @@
-import { makeStyles, tokens } from '@fluentui/react-components'
-import AnalysisColumns from './Columns'
+import React, { ComponentType, LazyExoticComponent, Suspense } from 'react'
+import { Spinner } from '@fluentui/react-components'
+import { useClassicSuspenseQuery } from './hooks'
 
-const useStyles = makeStyles({
-  root: {
-    display: 'flex',
-    flexDirection: 'column',
-    flex: '1 0 auto',
-    rowGap: tokens.spacingVerticalL,
-  },
-})
+enum AnalysisVersion {
+  Classic = 'Classic',
+  Remastered = 'Remastered',
+}
+
+const AnalysisVersions = Object.values(AnalysisVersion)
+
+const VersionComponents = AnalysisVersions
+  .reduce((acc, version) => {
+    acc[version] = React.lazy(() => import(`./${version}/index.tsx`))
+    return acc
+  }, {} as Record<AnalysisVersion, LazyExoticComponent<ComponentType>>)
 
 export default function Analysis () {
-  const styles = useStyles()
+  const { data: useClassic } = useClassicSuspenseQuery()
+  const Component = VersionComponents[
+    useClassic
+      ? AnalysisVersion.Classic
+      : AnalysisVersion.Remastered
+  ]
 
   return (
-    <div className={styles.root}>
-      <AnalysisColumns />
-    </div>
+    <Suspense fallback={<Spinner />}>
+      <Component />
+    </Suspense>
   )
 }

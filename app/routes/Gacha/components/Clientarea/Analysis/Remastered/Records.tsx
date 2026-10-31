@@ -4,6 +4,7 @@ import { Caption1, Divider, SelectTabEventHandler, Tab, TabList, Tooltip, makeSt
 import { AccountBusiness, ZenlessZoneZero } from '@/api/Account'
 import { KnownI18nNs, Trans, useI18n } from '@/i18n'
 import { BannerCategory, BannerStats, PityRarityStats, Rarity, StatsRecord } from '@/routes/Gacha/api/stats'
+import { useVersionLabelSuspenseQuery } from '@/routes/Gacha/components/Clientarea/Analysis/hooks'
 import { useBusiness } from '@/routes/Gacha/contexts/Business/hooks'
 import capitalize from '@/utilities/capitalize'
 import RecordItem, { RecordItemNextPity, RecordItemWrapper } from './RecordItem'
@@ -319,11 +320,10 @@ function RecordsVirtoso (props: RecordsVirtosoProps) {
   const { ref, dataset, rarity } = props
   const styles = useVirtosoStyles()
 
-  // HACK: Prior to v1.3.0, `useVersionLabel` was optional;
-  // it is now always rendered.
+  const { data: useVersionLabel } = useVersionLabelSuspenseQuery()
   const items = useMemo(
-    () => buildVirtosoItems(dataset, rarity, true),
-    [dataset, rarity],
+    () => buildVirtosoItems(dataset, rarity, useVersionLabel),
+    [dataset, rarity, useVersionLabel],
   )
 
   return (

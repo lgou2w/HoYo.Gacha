@@ -12,8 +12,10 @@ import useMenuItemStyles from './useMenuItemStyles'
 import useMenuListStyles from './useMenuListStyles'
 import useMenuPopoverStyles from './useMenuPopoverStyles'
 import useMenuSplitGroupStyles from './useMenuSplitGroupStyles'
+import useSkeletonItemStyles from './useSkeletonItemStyles'
 import useSpinnerStyles from './useSpinnerStyles'
 import useSplitButtonStyles from './useSplitButtonStyles'
+import useSwitchStyles from './useSwitchStyles'
 import useTabStyles from './useTabStyles'
 import useTableCellStyles from './useTableCellStyles'
 import useTableHeaderCellStyles from './useTableHeaderCellStyles'
@@ -116,8 +118,10 @@ export const CustomStyleHooks: FluentProviderCustomStyleHooks = {
   useMenuListStyles_unstable: useMenuListStyles as CustomStyleHook,
   useMenuPopoverStyles_unstable: useMenuPopoverStyles as CustomStyleHook,
   useMenuSplitGroupStyles_unstable: useMenuSplitGroupStyles as CustomStyleHook,
+  useSkeletonItemStyles_unstable: useSkeletonItemStyles as CustomStyleHook,
   useSpinnerStyles_unstable: useSpinnerStyles as CustomStyleHook,
   useSplitButtonStyles_unstable: useSplitButtonStyles as CustomStyleHook,
+  useSwitchStyles_unstable: useSwitchStyles as CustomStyleHook,
   useTableCellStyles_unstable: useTableCellStyles as CustomStyleHook,
   useTableHeaderCellStyles_unstable: useTableHeaderCellStyles as CustomStyleHook,
   useTabStyles_unstable: useTabStyles as CustomStyleHook,

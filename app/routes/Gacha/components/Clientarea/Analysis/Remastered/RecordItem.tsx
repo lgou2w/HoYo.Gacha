@@ -81,10 +81,10 @@ const useStyles = makeStyles({
     color: tokens.colorPaletteGreenForeground1,
   },
   labelUp: {
-    [`&[data-rarity="${Rarity.Golden}"]`]: {
+    [`[data-rarity="${Rarity.Golden}"]`]: {
       color: tokens.colorPaletteMarigoldForeground1,
     },
-    [`&[data-rarity="${Rarity.Purple}"]`]: {
+    [`[data-rarity="${Rarity.Purple}"]`]: {
       color: tokens.colorPaletteBerryForeground1,
     },
   },

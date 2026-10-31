@@ -1,14 +1,26 @@
-import { ComponentPropsWithoutRef } from 'react'
+import { makeStyles, tokens } from '@fluentui/react-components'
 import Spacing from '@/components/Spacing'
-import BannerVisibilityMenu from '@/routes/Gacha/components/Banner/VisibilityMenu'
 import LastUpdated from './LastUpdated'
+import Personalization from './Personalization'
 
-export default function ClientareaActions (props: Omit<ComponentPropsWithoutRef<'div'>, 'children'>) {
+const useStyles = makeStyles({
+  root: {
+    display: 'flex',
+    flexDirection: 'row',
+    flex: '0 0 auto',
+    flexWrap: 'nowrap',
+    alignItems: 'center',
+    columnGap: tokens.spacingHorizontalL,
+  },
+})
+
+export default function ClientareaActions () {
+  const styles = useStyles()
   return (
-    <div {...props}>
+    <div className={styles.root}>
       <LastUpdated />
       <Spacing />
-      <BannerVisibilityMenu />
+      <Personalization />
     </div>
   )
 }

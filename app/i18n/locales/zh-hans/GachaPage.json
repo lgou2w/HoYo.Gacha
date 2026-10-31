@@ -101,6 +101,13 @@
     "BannerDragIcon": {
       "Tooltip": "拖动以重新排序"
     },
+    "Personalization": {
+      "Button": "个性化设置",
+      "Analysis": {
+        "ClassicSwitcher": "使用经典版",
+        "VersionLabelSwitcher": "显示版本标签"
+      }
+    },
     "Overview": {
       "GridItem": {
         "Aggregated": "总计",
