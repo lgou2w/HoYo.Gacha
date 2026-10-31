@@ -39,6 +39,7 @@ export default function BannerVisibilityMenu () {
       checkedValues={{ [CheckedName]: visible }}
       onCheckedValueChange={handleChange}
       positioning={{ align: 'end', offset: { crossAxis: 0, mainAxis: 8 } }}
+      closeOnScroll
     >
       <MenuTrigger disableButtonEnhancement>
         <MenuButton className={styles.menuButton} icon={<EyeRegular />} appearance="outline" size="small">

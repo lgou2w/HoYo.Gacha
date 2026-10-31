@@ -14,6 +14,7 @@ export default function AccountMenuInner () {
       positioning={{ offset: { crossAxis: 0, mainAxis: 8 } }}
       checkedValues={checkedValues}
       onCheckedValueChange={handleSelect}
+      closeOnScroll
     >
       <MenuTrigger disableButtonEnhancement>
         {(props) => (

@@ -33,6 +33,7 @@ const ActionMenu = memo(function ActionMenu (props: ActionMenuProps) {
   return (
     <Menu
       positioning={{ align: 'end', offset: { crossAxis: 0, mainAxis: 8 } }}
+      closeOnScroll
     >
       <MenuTrigger disableButtonEnhancement>
         {(triggerProps) => (
