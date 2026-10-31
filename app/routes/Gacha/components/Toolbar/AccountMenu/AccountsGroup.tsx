@@ -41,7 +41,7 @@ export default function AccountsGroup () {
 const useItemStyles = makeStyles({
   radio: {
     alignItems: 'center',
-    '&[aria-checked=true]': {
+    '[aria-checked=true]': {
       color: tokens.colorBrandForeground1,
     },
     [`& .${menuItemRadioClassNames.content}`]: {

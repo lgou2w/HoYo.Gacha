@@ -39,7 +39,7 @@ const useButtonStyles = makeStyles({
     margin: 0,
     padding: 0,
     border: `${tokens.strokeWidthThin} solid ${tokens.colorNeutralStroke1}`,
-    '&[aria-expanded=true]': {
+    '[aria-expanded=true]': {
       color: tokens.colorBrandForeground2Hover,
       boxShadow: tokens.shadow2,
       ...shorthands.borderColor(tokens.colorBrandStroke1),
