@@ -8,8 +8,8 @@ export default function General () {
   return (
     <Section title={{ tKey: 'General.Title', tNs: KnownI18nNs.SettingsPage }}>
       <Language />
-      <GachaClientarea />
       <BusinessVisibility />
+      <GachaClientarea />
     </Section>
   )
 }
