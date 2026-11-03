@@ -202,7 +202,7 @@ function RecordsNoPurpleTooltip () {
         content={(
           <Trans
             ns={KnownI18nNs.GachaPage}
-            i18nKey="Clientarea.Analysis.ColumnItem.Records.NoPurpleUp.Tooltip"
+            i18nKey="Clientarea.Analysis.Remastered.ColumnItem.Records.NoPurpleUp.Tooltip"
             values={{ keyof: business.keyof }}
             components={{
               1: <span className={styles.brand} />,
@@ -215,7 +215,7 @@ function RecordsNoPurpleTooltip () {
         withArrow
       >
         <Caption1 className={styles.text}>
-          {t('Clientarea.Analysis.ColumnItem.Records.NoPurpleUp.Text')}
+          {t('Clientarea.Analysis.Remastered.ColumnItem.Records.NoPurpleUp.Text')}
         </Caption1>
       </Tooltip>
     </div>

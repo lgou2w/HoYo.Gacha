@@ -110,7 +110,6 @@
     },
     "Overview": {
       "GridItem": {
-        "Aggregated": "总计",
         "NoData": "暂无数据",
         "Total": "共 {{count, number}} 抽",
         "Sum_golden_zero": "暂无出金",
@@ -154,24 +153,53 @@
       }
     },
     "Analysis": {
-      "ColumnItem": {
-        "Total": "{{count, number}}",
-        "Pull": "抽",
-        "NoData": "暂无数据",
-        "Labels": {
-          "Average": "平均",
-          "AverageAndUp": "平均 / $t(Up)",
-          "UpWin": "$t(Up)不歪",
-          "Up": "$t(Up)",
-          "Count": "统计"
+      "Classic": {
+        "Table": {
+          "Title": "$t(Common:{{keyof}}.Gacha.Name)数据占比",
+          "Labels": {
+            "AverageAndUp": "$t(Common:{{keyof}}.Gacha.Rarity.{{rarity}}) 平均 / $t(Up)",
+            "UpWin": "$t(Common:{{keyof}}.Gacha.Rarity.{{rarity}}) $t(Up)不歪",
+            "Up": "$t(Common:{{keyof}}.Gacha.Rarity.{{rarity}}) $t(Up)",
+            "Golden": "$t(Common:{{keyof}}.Gacha.Rarity.Golden) 统计",
+            "Purple": "$t(Common:{{keyof}}.Gacha.Rarity.Purple) 统计",
+            "Blue": "$t(Common:{{keyof}}.Gacha.Rarity.Blue) 统计",
+            "Green": "$t(Common:{{keyof}}.Gacha.Rarity.Green) 统计",
+            "Aggregated": "$t(Common:{{keyof}}.Gacha.Banner.Aggregated)"
+          }
         },
-        "Records": {
-          "NextPity": "已垫",
-          "HardPity": "保底!",
-          "Up": "$t(Up)",
-          "NoPurpleUp": {
-            "Text": "为什么没有 $t(Up) 标识？",
-            "Tooltip": "自 v3.1 起新增<1>『定制调频』</1>功能，可自定概率提升 <2>$t(Common:{{keyof}}.Gacha.Rarity.Purple)</2> 信号的获取范围，因此不再显示固定的 <2>$t(Up)</2> 状态。"
+        "Histories": {
+          "Title": "$t(Common:{{keyof}}.Gacha.Rarity.Golden) $t(Common:{{keyof}}.Gacha.Name)历史",
+          "Title_MiliastraWonderland": "装扮套装$t(Common:MiliastraWonderland.Gacha.Name)历史",
+          "Total": "$t(Clientarea.Overview.GridItem.Total)",
+          "Sum": "{{count, number}} 总",
+          "Sum_up": "{{count, number}} $t(Up)"
+        },
+        "RecordOrder": {
+          "Label": "排序方式：",
+          "NewestFirst": "最新优先",
+          "OldestFirst": "最早优先"
+        }
+      },
+      "Remastered": {
+        "ColumnItem": {
+          "Total": "{{count, number}}",
+          "Pull": "抽",
+          "NoData": "暂无数据",
+          "Labels": {
+            "Average": "平均",
+            "AverageAndUp": "平均 / $t(Up)",
+            "UpWin": "$t(Up)不歪",
+            "Up": "$t(Up)",
+            "Count": "统计"
+          },
+          "Records": {
+            "NextPity": "已垫",
+            "HardPity": "保底!",
+            "Up": "$t(Up)",
+            "NoPurpleUp": {
+              "Text": "为什么没有 $t(Up) 标识？",
+              "Tooltip": "自 v3.1 起新增<1>『定制调频』</1>功能，可自定概率提升 <2>$t(Common:{{keyof}}.Gacha.Rarity.Purple)</2> 信号的获取范围，因此不再显示固定的 <2>$t(Up)</2> 状态。"
+            }
           }
         }
       }

@@ -1,4 +1,6 @@
 import { makeStyles, tokens } from '@fluentui/react-components'
+import { AnalysisHistories } from './Histories'
+import { AnalysisTable } from './Table'
 
 const useStyles = makeStyles({
   root: {
@@ -14,7 +16,8 @@ export default function AnalysisClassic () {
 
   return (
     <div className={styles.root}>
-      Classic
+      <AnalysisTable />
+      <AnalysisHistories />
     </div>
   )
 }

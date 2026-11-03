@@ -21,7 +21,8 @@
         "Lightrace": "溯光祈愿",
         "Lightrace_short": "溯光",
         "ChronicledAndLightrace": "集录 & 溯光祈愿",
-        "ChronicledAndLightrace_short": "集录 & 溯光"
+        "ChronicledAndLightrace_short": "集录 & 溯光",
+        "Aggregated": "总计"
       }
     }
   },
@@ -33,7 +34,8 @@
       "Banner": {
         "PermanentOde": "常驻颂愿",
         "PermanentOde_title": "奇遇回声",
-        "EventOde": "活动颂愿"
+        "EventOde": "活动颂愿",
+        "Aggregated": "总计"
       },
       "Rarity": {
         "Golden": "传说（5星）",
@@ -62,7 +64,8 @@
         "CollabCharacter": "角色联动跃迁",
         "CollabCharacter_short": "角色联动",
         "CollabWeapon": "光锥联动跃迁",
-        "CollabWeapon_short": "光锥联动"
+        "CollabWeapon_short": "光锥联动",
+        "Aggregated": "总计"
       }
     }
   },
@@ -83,7 +86,9 @@
         "Bangboo_short": "邦布",
         "Bangboo_title": "卓越搭档",
         "ExclusiveRescreening": "独家重映",
-        "WEngineReverberation": "音擎回响"
+        "WEngineReverberation": "音擎回响",
+        "Aggregated": "总计",
+        "Aggregated_tooltip": "(不含邦布频段)"
       },
       "Rarity": {
         "Golden": "S级",

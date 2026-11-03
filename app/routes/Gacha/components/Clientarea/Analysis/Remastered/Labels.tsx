@@ -4,6 +4,7 @@ import { AccountBusiness } from '@/api/Account'
 import Placeholder from '@/components/Placeholder'
 import { KnownI18nNs, useI18n } from '@/i18n'
 import { BannerStats, Rarity } from '@/routes/Gacha/api/stats'
+import NumericValue from '@/routes/Gacha/components/Clientarea/Analysis/NumericValue'
 import { useBusiness } from '@/routes/Gacha/contexts/Business/hooks'
 import capitalize from '@/utilities/capitalize'
 import { ColumnItemDerived } from './types'
@@ -26,13 +27,6 @@ const useStyles = makeStyles({
   groupPurple: { color: tokens.colorPaletteBerryForeground1 },
   groupBlue: { color: tokens.colorPaletteBlueBorderActive },
   groupGreen: { color: tokens.colorPaletteGreenForeground1 },
-  numeric: {
-    fontFamily: tokens.fontFamilyMonospace,
-    whiteSpace: 'pre-wrap',
-  },
-  separator: {
-    color: tokens.colorNeutralForeground1,
-  },
 })
 
 interface LabelsProps {
@@ -69,7 +63,7 @@ export default function ColumnItemLabels (props: LabelsProps) {
   const business = useBusiness()
   const rows = useMemo<LabelRow[]>(() => {
     const rarityKey = (r: Rarity) => t(`Common:${business.keyof}.Gacha.Rarity.${capitalize(r)}`)
-    const rowLabel = (k: string) => t(`Clientarea.Analysis.ColumnItem.Labels.${k}`)
+    const rowLabel = (k: string) => t(`Clientarea.Analysis.Remastered.ColumnItem.Labels.${k}`)
 
     const result: LabelRow[] = []
 
@@ -78,30 +72,24 @@ export default function ColumnItemLabels (props: LabelsProps) {
         className: styles.groupAverageAndUp,
         kind: LabelRowKind.AverageAndUp,
         label: `${rarityKey(Rarity.Golden)} ${rowLabel(LabelRowKind.AverageAndUp)}`,
-        value: (
-          <>
-            <span className={styles.numeric}>{golden.average}</span>
-            <span className={styles.separator}>{` / `}</span>
-            <span className={styles.numeric}>{golden.up.average}</span>
-          </>
-        ),
+        value: <NumericValue sum={golden.average} pct={golden.up.average} average />,
       }, {
         className: styles.groupUpWin,
         kind: LabelRowKind.UpWin,
         label: `${rarityKey(Rarity.Golden)} ${rowLabel(LabelRowKind.UpWin)}`,
-        value: <NumericValue styles={styles} sum={golden.upWin.sum} pct={golden.upWin.percentage} />,
+        value: <NumericValue sum={golden.upWin.sum} pct={golden.upWin.percentage} />,
       }, {
         className: styles.groupUp,
         kind: LabelRowKind.Up,
         label: `${rarityKey(Rarity.Golden)} ${rowLabel(LabelRowKind.Up)}`,
-        value: <NumericValue styles={styles} sum={golden.up.sum} pct={golden.up.percentage} />,
+        value: <NumericValue sum={golden.up.sum} pct={golden.up.percentage} />,
       })
     } else if (!d.isPermanentOde && !d.isEventOde) {
       result.push({
         className: styles.groupAverage,
         kind: LabelRowKind.Average,
         label: `${rarityKey(Rarity.Golden)} ${rowLabel(LabelRowKind.Average)}`,
-        value: <span className={styles.numeric}>{golden.average}</span>,
+        value: <NumericValue sum={golden.average} pct={0} average />,
       }, {
         kind: LabelRowPlaceholder,
         key: 'placeholder-1',
@@ -124,7 +112,7 @@ export default function ColumnItemLabels (props: LabelsProps) {
           className,
           kind: rarity,
           label: `${rarityKey(rarity)} ${rowLabel('Count')}`,
-          value: <NumericValue styles={styles} sum={sum || 0} pct={pct || 0} />,
+          value: <NumericValue sum={sum || 0} pct={pct || 0} />,
         })
       }
     }
@@ -156,39 +144,4 @@ export default function ColumnItemLabels (props: LabelsProps) {
       })}
     </div>
   )
-}
-
-interface NumericValueProps {
-  styles: ReturnType<typeof useStyles>
-  sum: number
-  pct: number
-}
-
-function NumericValue (props: NumericValueProps) {
-  const { styles, sum, pct } = props
-  return (
-    <>
-      <span className={styles.numeric}>
-        {sum}
-      </span>
-      <span className={styles.separator}>
-        {` [ `}
-      </span>
-      <span className={styles.numeric}>
-        {`${formatPercentage(pct)}%`}
-      </span>
-      <span className={styles.separator}>
-        {` ]`}
-      </span>
-    </>
-  )
-}
-
-/**
- * Formats a percentage value to a string with two decimal places,
- * ensuring the integer part is at least two characters wide.
- */
-function formatPercentage (pct: number): string {
-  const [int, frac] = pct.toFixed(2).split('.')
-  return `${int.padStart(2, ' ')}.${frac}`
 }

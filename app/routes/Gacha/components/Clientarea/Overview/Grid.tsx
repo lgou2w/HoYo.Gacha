@@ -1,11 +1,12 @@
 import { useCallback, useMemo } from 'react'
 import { makeStyles, mergeClasses, tokens } from '@fluentui/react-components'
+import { AggregatedCategory } from '@/routes/Gacha/components/Banner/CategoryName'
 import { useBannerSortable, useVisibleBanners } from '@/routes/Gacha/contexts/BannerSortable/hooks'
 import SortableList, { SortableListProps } from '@/routes/Gacha/contexts/Sortable/List'
 import { useGachaStats } from '@/routes/Gacha/contexts/Stats/hooks'
 import GridItem from './GridItem'
 import GridTags from './GridTags'
-import { Aggregated, GridItemId } from './types'
+import { GridItemId } from './types'
 
 const useStyles = makeStyles({
   root: {
@@ -61,18 +62,18 @@ export default function OverviewGrid () {
 
     const result: GridItemId[] = [...visibleBanners]
     if (stats.aggregated) {
-      result.push(Aggregated)
+      result.push(AggregatedCategory)
     }
 
     return result
   }, [visibleBanners, stats])
 
   const handleReorder = useCallback((nextVisible: GridItemId[]) => {
-    banners.reorder(nextVisible.filter((id) => id !== Aggregated))
+    banners.reorder(nextVisible.filter((id) => id !== AggregatedCategory))
   }, [banners])
 
   const itemContent = useCallback<SortableListProps<GridItemId>['itemContent']>((id, _index, sortable) => {
-    const isAggregated = id === Aggregated
+    const isAggregated = id === AggregatedCategory
     const dataset = isAggregated
       ? stats?.aggregated
       : stats?.banners[id]
@@ -96,7 +97,7 @@ export default function OverviewGrid () {
       className={styles.root}
       onReorder={handleReorder}
       items={items}
-      itemDisabled={(id) => id === Aggregated}
+      itemDisabled={(id) => id === AggregatedCategory}
       itemContent={itemContent}
       trailing={stats?.aggregated && (
         <div className={mergeClasses(

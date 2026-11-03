@@ -100,7 +100,7 @@ export interface RecordItemProps {
   prevRecord?: StatsRecord | null
 }
 
-const I18nScope = 'Clientarea.Analysis.ColumnItem.Records'
+const I18nScope = 'Clientarea.Analysis.Remastered.ColumnItem.Records'
 
 const RecordItem = memo(function RecordItem (props: RecordItemProps) {
   const { category, rarity, record, prevRecord } = props

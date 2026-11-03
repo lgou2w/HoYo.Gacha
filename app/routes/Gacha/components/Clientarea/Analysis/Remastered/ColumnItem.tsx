@@ -73,7 +73,7 @@ export default memo(function AnalysisColumnItem (props: AnalysisColumnItemProps)
   const { dataset, dragRef } = props
   const styles = useStyles()
 
-  const { dayjs, t } = useI18n({ ns: KnownI18nNs.GachaPage, scope: 'Clientarea.Analysis.ColumnItem' })
+  const { dayjs, t } = useI18n({ ns: KnownI18nNs.GachaPage, scope: 'Clientarea.Analysis.Remastered.ColumnItem' })
   const business = useBusiness()
   const d = useMemo(
     () => deriveColumnItem(dataset, dayjs),

@@ -11,7 +11,7 @@ import GachaTicket from '@/routes/Gacha/components/Ticket'
 import { useBusiness } from '@/routes/Gacha/contexts/Business/hooks'
 import BadgeLabel from './BadgeLabel'
 import HighlightSpan from './HighlightSpan'
-import { Aggregated, GridItemDataset, deriveGridItem } from './types'
+import { GridItemDataset, deriveGridItem } from './types'
 
 const useStyles = makeStyles({
   root: {
@@ -60,6 +60,12 @@ const useStyles = makeStyles({
     display: 'flex',
     flexDirection: 'column',
   },
+  headerTitle: {
+    display: 'inline-flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    columnGap: tokens.spacingHorizontalS,
+  },
   labels: {
     display: 'flex',
     flexDirection: 'column',
@@ -105,9 +111,7 @@ export default memo(function OverviewGridItem (props: OverviewGridItemProps) {
   return (
     <div className={styles.root}>
       <div className={mergeClasses(styles.badge, d.isAggregated && styles.badgeAggregated)}>
-        {d.isBanner
-          ? <BannerCategoryName category={d.category} />
-          : t(Aggregated)}
+        <BannerCategoryName category={d.category} />
         {d.isBanner && dragHandleRef && (
           <BannerDragIcon
             className={styles.badgeDragIcon}
@@ -118,10 +122,12 @@ export default memo(function OverviewGridItem (props: OverviewGridItemProps) {
         )}
       </div>
       <div className={styles.header}>
-        <Title3 as="h2">
-          {d.isBanner
-            ? <BannerCategoryName category={d.category} context="title" />
-            : t(Aggregated)}
+        <Title3 className={styles.headerTitle} as="h2">
+          <BannerCategoryName
+            category={d.category}
+            context="title"
+            tooltip
+          />
         </Title3>
         <Caption1 as="p">
           {d.timeRange || t('NoData')}

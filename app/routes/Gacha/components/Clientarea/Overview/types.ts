@@ -1,12 +1,10 @@
 import { AccountBusiness } from '@/api/Account'
 import { LanguageMetadata } from '@/i18n'
 import { AggregatedStats, BannerCategory, BannerStats, Rarity, StatsRecord, UsedPity } from '@/routes/Gacha/api/stats'
+import { AggregatedCategory } from '@/routes/Gacha/components/Banner/CategoryName'
 import { hasUpBanner } from '@/routes/Gacha/components/types'
 
-export const Aggregated = 'Aggregated'
-export type Aggregated = typeof Aggregated
-
-export type GridItemId = BannerCategory | Aggregated
+export type GridItemId = BannerCategory | AggregatedCategory
 
 /**
  * Default banner order. `Aggregated` is always last and cannot be dragged.
@@ -24,7 +22,7 @@ export const DefaultBannerOrders: GridItemId[] = [
   BannerCategory.EventOde,
   BannerCategory.ExclusiveRescreening,
   BannerCategory.WEngineReverberation,
-  Aggregated,
+  AggregatedCategory,
 ]
 
 export type GridItemDataset
@@ -64,7 +62,7 @@ export interface BannerGridItemDerived extends GridItemDerivedBase {
 export interface AggregatedGridItemDerived extends GridItemDerivedBase {
   isBanner: false
   isAggregated: true
-  category: Aggregated
+  category: AggregatedCategory
 }
 
 export type GridItemDerived = BannerGridItemDerived | AggregatedGridItemDerived
@@ -74,7 +72,7 @@ export function deriveGridItem (
   dayjs: LanguageMetadata['dayjs'],
 ): GridItemDerived {
   const isBanner = 'category' in dataset
-  const category: GridItemId = isBanner ? dataset.category : Aggregated
+  const category: GridItemId = isBanner ? dataset.category : AggregatedCategory
 
   const isBeginner = category === BannerCategory.Beginner
   const isPermanent = category === BannerCategory.Permanent
@@ -151,7 +149,7 @@ export function deriveGridItem (
       ...base,
       isBanner: false,
       isAggregated: true,
-      category: Aggregated,
+      category: AggregatedCategory,
     }
   }
 }

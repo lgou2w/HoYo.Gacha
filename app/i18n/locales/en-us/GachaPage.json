@@ -110,7 +110,6 @@
     },
     "Overview": {
       "GridItem": {
-        "Aggregated": "Aggregated",
         "NoData": "No data available",
         "Total_zero": "No pulls record yet",
         "Total_one": "{{count}} pull in total",
@@ -158,24 +157,53 @@
       }
     },
     "Analysis": {
-      "ColumnItem": {
-        "Total": "{{count, number}}",
-        "Pull": "pulls",
-        "NoData": "No data available",
-        "Labels": {
-          "Average": "Average",
-          "AverageAndUp": "Average / $t(Up)",
-          "UpWin": "$t(Up) Win",
-          "Up": "$t(Up)",
-          "Count": "Count"
+      "Classic": {
+        "Table": {
+          "Title": "Proportion of Data",
+          "Labels": {
+            "AverageAndUp": "$t(Common:{{keyof}}.Gacha.Rarity.{{rarity}}) Average / $t(Up)",
+            "UpWin": "$t(Common:{{keyof}}.Gacha.Rarity.{{rarity}}) $t(Up) Win",
+            "Up": "$t(Common:{{keyof}}.Gacha.Rarity.{{rarity}}) $t(Up)",
+            "Golden": "$t(Common:{{keyof}}.Gacha.Rarity.Golden) Count",
+            "Purple": "$t(Common:{{keyof}}.Gacha.Rarity.Purple) Count",
+            "Blue": "$t(Common:{{keyof}}.Gacha.Rarity.Blue) Count",
+            "Green": "$t(Common:{{keyof}}.Gacha.Rarity.Green) Count",
+            "Aggregated": "$t(Common:{{keyof}}.Gacha.Banner.Aggregated)"
+          }
         },
-        "Records": {
-          "NextPity": "Pity Count",
-          "HardPity": "Hard!",
-          "Up": "$t(Up)",
-          "NoPurpleUp": {
-            "Text": "Why is there no $t(Up) badge?",
-            "Tooltip": "Since v3.1, the <1>Custom Search</1> function has been added, allowing you to customize the banners of rate-up <2>$t(Common:{{keyof}}.Gacha.Rarity.Purple)</2> Signals. Therefore, a fixed <2>$t(Up)</2> status is no longer displayed."
+        "Histories": {
+          "Title": "$t(Common:{{keyof}}.Gacha.Rarity.Golden) $t(Common:{{keyof}}.Gacha.Name) History",
+          "Title_MiliastraWonderland": "Costume Set $t(Common:MiliastraWonderland.Gacha.Name) History",
+          "Total": "$t(Clientarea.Overview.GridItem.Total)",
+          "Sum": "{{count, number}} total",
+          "Sum_up": "{{count, number}} $t(Up)"
+        },
+        "RecordOrder": {
+          "Label": "Sort by:",
+          "NewestFirst": "Newest first",
+          "OldestFirst": "Oldest first"
+        }
+      },
+      "Remastered": {
+        "ColumnItem": {
+          "Total": "{{count, number}}",
+          "Pull": "pulls",
+          "NoData": "No data available",
+          "Labels": {
+            "Average": "Average",
+            "AverageAndUp": "Average / $t(Up)",
+            "UpWin": "$t(Up) Win",
+            "Up": "$t(Up)",
+            "Count": "Count"
+          },
+          "Records": {
+            "NextPity": "Pity Count",
+            "HardPity": "Hard!",
+            "Up": "$t(Up)",
+            "NoPurpleUp": {
+              "Text": "Why is there no $t(Up) badge?",
+              "Tooltip": "Since v3.1, the <1>Custom Search</1> function has been added, allowing you to customize the banners of rate-up <2>$t(Common:{{keyof}}.Gacha.Rarity.Purple)</2> Signals. Therefore, a fixed <2>$t(Up)</2> status is no longer displayed."
+            }
           }
         }
       }

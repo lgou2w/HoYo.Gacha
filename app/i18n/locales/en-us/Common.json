@@ -21,7 +21,8 @@
         "Lightrace": "Lightrace Wish",
         "Lightrace_short": "Lightrace",
         "ChronicledAndLightrace": "Chronicled & Lightrace Wish",
-        "ChronicledAndLightrace_short": "Chronicled & Lightrace"
+        "ChronicledAndLightrace_short": "Chronicled & Lightrace",
+        "Aggregated": "Aggregated"
       },
       "Rarity": {
         "Golden": "5★",
@@ -39,7 +40,8 @@
       "Banner": {
         "PermanentOde": "Standard Ode",
         "PermanentOde_title": "Encounter Echoes",
-        "EventOde": "Event Ode"
+        "EventOde": "Event Ode",
+        "Aggregated": "Aggregated"
       },
       "Rarity": {
         "Golden": "Legendary (5-Star)",
@@ -69,7 +71,8 @@
         "CollabCharacter": "Character Collab Warp",
         "CollabCharacter_short": "Character Collab",
         "CollabWeapon": "Light Cone Collab Warp",
-        "CollabWeapon_short": "Light Cone Collab"
+        "CollabWeapon_short": "Light Cone Collab",
+        "Aggregated": "Aggregated"
       },
       "Rarity": {
         "Golden": "5★",
@@ -96,7 +99,9 @@
         "Bangboo_short": "Bangboo",
         "Bangboo_title": "An Outstanding Partner",
         "ExclusiveRescreening": "Exclusive Rescreening",
-        "WEngineReverberation": "W-Engine Reverberation"
+        "WEngineReverberation": "W-Engine Reverberation",
+        "Aggregated": "Aggregated",
+        "Aggregated_tooltip": "(Excluding Bangboo Channel)"
       },
       "Rarity": {
         "Golden": "S-Rank",

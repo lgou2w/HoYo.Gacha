@@ -8,7 +8,9 @@ import { Clientarea } from '@/routes/Gacha/contexts/Clientarea/types'
 import AnalysisPersonalization from './Analysis/Personalization'
 
 const useStyles = makeStyles({
-  root: {},
+  root: {
+    flexShrink: 0,
+  },
   trigger: {
     '[aria-expanded=true]': {
       color: tokens.colorBrandForeground2Hover,
