@@ -59,11 +59,11 @@ impl Database {
     // Database storage folder
     //   In debug mode  : is in the tauri folder
     //   In release mode: Current executable folder
-    let path = if cfg!(debug_assertions) || cfg!(test) {
-      PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(constants::DATABASE)
+    cfg_if::cfg_if!(if #[cfg(any(debug_assertions, test))] {
+      let path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(constants::DATABASE);
     } else {
-      constants::EXE_WORKING_DIR.join(constants::DATABASE)
-    };
+      let path = constants::EXE_WORKING_DIR.join(constants::DATABASE);
+    });
 
     Self::new_with(path).await
   }
